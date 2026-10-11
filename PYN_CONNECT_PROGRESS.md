@@ -2272,3 +2272,55 @@ The upstream merge of October 10 (`0e3dfa5bb`, the data-driven partner registry)
 ### Remaining
 
 Jennifer 3638 (flattened export) and 1865 (another site's SVG) are data problems; inferred breezeways in garden-style buildings are proposals to review; raster-only floorplates still cannot be detected; the `pyn-system` bucket / production-database mismatch is an environment matter the resolver now tolerates. Gaps M20, M23 updated and M25–M27 added in `gaps_map_plotting_feature.md`.
+
+---
+
+## 37. Performance: Map & Plotting delivery, Inventory and Unit Detail data loading (October 11, 2026)
+
+**Brief:** the implementation phase of `performance-audit-report.md` (the audit of October 11; its findings C1–C8). **Branch:** `performance/nextjs-data-loading-optimization` from `main` `29c056606` (PR #23). Rule as before: no business behaviour, schema, authorization or write changed; Rails touched only where Next could not do it (one read-only listing filter). Uncommitted on the branch as of this entry (the brief asked for no automatic commit).
+
+### What changed, and why
+
+| Audit finding | Change | Where |
+|---|---|---|
+| C1 — the floor SVG proxied uncompressed, re-resolved per request, never cached | The `plan-svg` route gzips its answer when the client accepts it (291 KB → 164 KB; 1.41 MB → 496 KB), carries a strong ETag made of the level and the stored file name (every upload gets a time-stamped name from `SiteMapUploader#filename`, so a replaced file changes the tag), answers `If-None-Match` with a bodiless 304 without reading the store, and sends `Cache-Control: private, no-cache` so the browser keeps the file and revalidates on every mount. The hook's fetches no longer say `cache: 'no-store'`; the canvas's Retry asks with `cache: 'reload'` and `fresh=1`, which goes past the browser's copy and the server's memory | `pyn-connect-web/src/app/api/properties/[propId]/plan-svg/route.ts`, `src/core/hooks/usePropertyMap.ts` (`planRequest`, `fresh`) |
+| C1(4) / C8 — `floorplates.json` read again for every SVG and for the background | The page's loader remembers the floorplates listing it just received, per session cookie (hashed) and property, for a minute; the route reads it back, so a map open reads the listing once instead of three times (Beans) and a floor switch reads it not at all. `fresh=1` forgets it | `src/core/repository/remote/planListing.server.ts` (new), `propertyInventory.server.ts` |
+| C2 — the SVG requested only after hydration | The map page preloads the first level's SVG (and a Beans property's background) from the server render (`ReactDOM.preload(…, { as: 'fetch', crossOrigin: 'anonymous' })`) when that level opens on its SVG, decided with the hook's own level/layer logic; the hook's fetch consumes the preloaded response | `src/app/(connect)/properties/[propId]/map/page.tsx` (`preloadFirstPlan`) |
+| C4 — Google Fonts stylesheet blocking first paint | Manrope (UI) and Inter (Beans SVG labels) are served from this origin: four OFL variable woff2 files (latin, latin-ext) under `public/fonts/` with `@font-face … font-display: swap` at the top of `globals.css`; the `<link>`s to fonts.googleapis.com are gone from the root layout and from the map screen | `src/app/globals.css`, `src/app/layout.tsx`, `src/core/screens/properties/propertyMap.screen.tsx`, `public/fonts/*.woff2` |
+| C5 — every unit with every field in the map's payload | `trimForMapScreen` empties, before the model crosses to the browser, the unit and amenity fields the map never reads (photos, interior images, buttons, lease terms, descriptions, galleries, video links); the shape stays, Tour Setup keeps the full model | `src/core/repository/remote/propertyMap.server.ts`, the map page |
+| C6 — the SVG downloaded for a floor shown on its image | The hook loads a level's SVG only when the SVG layer is the one shown (`space === 'svg'`), or when the Auto Plot wizard's scope needs it; Detect Hallways keeps reading on demand | `src/core/hooks/usePropertyMap.ts` (the "floor SVGs" effect) |
+| C7 — Unit Detail loading all four listings with every unit | The page reads the inventory without units and the one unit as a page of one (`units.json?page=1&per_page=1&ids=`), in parallel; `unitsLoaded` stays false so the counts keep reading the floorplates meta. Rails: an `ids` filter on `Connect::UnitListingQuery` (whitelisted integers, within the property's scope) and `:ids` in `connect_listing_params` | `src/app/(connect)/properties/[propId]/units/[unitId]/page.tsx`, `src/core/repository/remote/api/inventory.api.ts`, `app/queries/connect/unit_listing_query.rb`, `app/controllers/units_controller.rb`, `test/controllers/units_controller_test.rb` (new, 3 tests) |
+| H P2 — the Units tab re-reading page 1 after a tab round-trip | **Considered and reverted.** A one-minute page memory in `useInventoryUnits` was tried; it broke the standing expectation that a revisit of the Units tab reads its page again (`listingsAndInventory.spec.ts`, the §29 design) and changed when the user sees fresh inventory for ~130 ms of saving. Left as it was | — |
+
+Not implemented, on purpose (see the audit's §H and §J): the Next router cache for dynamic pages (`staleTimes`) — a save then a back-navigation within the window would show pre-save data unless every save refreshes; the demo-store / wayfinding-engine code splitting (medium effort, no measured user-facing gain locally); the Rails `view=map` slim serializer (the Next-side trim removes the payload cost; the Rails time of `units.json` is dominated by the production dyno's memory, an infrastructure item); direct S3/CloudFront delivery (bucket CORS and edge gzip are infrastructure); the CMS dyno memory itself.
+
+### Before → after (local pair: CMS :3100 on `pynwheel_audit_clone` in development mode, Connect production build on :3005, headless Chrome, minted super-admin session; S3 reached from this Mac, which varies run to run)
+
+| Case / step | Before | After |
+|---|---|---|
+| Cypress Terra 8005 first open: plan ready | 2,798 ms | **2,000 ms** |
+| … SVG request starts at / hydrated at | 1,025 ms / 1,038 ms | **534 ms** / 664 ms (preloaded) |
+| … floor SVG + background on the wire | 291,480 + 380,832 B | **163,829 + 184,774 B** |
+| … Rails reads per open | 7 (floorplates ×3) | **5** (floorplates ×1) |
+| … reload: plan ready / SVG bytes | 2,441 ms / full again | **450 ms** / 304 (300 B each) |
+| … floor switch / away-and-back | 1,723 / 1,242 ms | 551 / 553 ms |
+| Jennifer 1412 floorplate 3638 first open: plan ready | 7,017 ms (SVG 1,412,369 B in 5.9 s) | **1,418 ms** (495,745 B in 1.0 s) |
+| … reload / away-and-back | 4,320 / 5,422 ms | **431 / 533 ms** (304) |
+| John 1411 floorplate 1867 (opens on the image): SVG requests | 1 (555,588 B, unused) | **0** |
+| Document raw (gz): 8005 / 1412 / 1411 / 1618 | 495 / 410 / 717 / 770 KB (25 / 33 / 58 / 67 KB) | 439 / 301 / 446 / 472 KB (24 / 23 / 32 / 35 KB) |
+| Hydrated, first open: 8005 / 1412 / 1411 / 1618 | 1,038 / 1,041 / 1,500 / 1,102 ms | 664 / 718 / 720 / 713 ms |
+| Emulated 1.5 Mbps / 500 ms: plan ready 8005 / 1412-3638 | 9,790 / 18,557 ms | **6,783 / 7,794 ms** |
+| Emulated 4 Mbps / 300 ms: 8005 / 1412-3638 | 5,821 / 9,576 ms | 3,034 / 3,107 ms |
+| fonts.googleapis.com delayed 8 s: editor visible 8005 / 1412 / 1411 | 9,381 / 9,391 / 9,002 ms | **867 / 362 / 875 ms** (no request to Google) |
+| Google Fonts requests per page | 1–2 | 0 |
+| Inventory open, hydrated: 8005 / 1411 / 1618 | 1,706 / 1,418 / 885 ms | 392 / 386 / 415 ms |
+| Unit Detail: Rails reads / document raw 8005 / 1411 / 1618 | 4 incl. every unit / 489 / 676 / 642 KB | 4 incl. one unit / **52 / 81 / 97 KB** |
+
+The dual-map verification of October 10 (`svg_map_qa/scripts/verify.mjs`, 31 checks on Cypress Terra, Jennifer Demo FP, John Demo and Hazel: floors over the background, pointer-placed units, layer defaults, Detect, routes, Undo) passes unchanged after the change, with 0 non-GET requests, 0 page errors, 0 console errors. The map page's own markers and overlays count the same as before in every case (113 / 110 / 110 plotted polygons on Cypress Terra; 55 of 55, 43 of 43, 6 of 6 on the image floors).
+
+### Tests
+
+- Rails: `test/controllers/units_controller_test.rb` (3: a page of one by id, scope kept across properties, non-numeric ids ignored) with `floorplates_controller_test.rb` and `upload_url_test.rb`: 16 runs, 73 assertions, 0 failures. Whole suite: 210 runs, 975 assertions, 1 failure + 3 errors, all in upstream's `PartnerConfigurationsControllerTest` (fails on `main` too, §36).
+- Connect: `tsc --noEmit` clean; `next build` clean (map route 49.6 kB, shared 102 kB, unchanged). New `tests/e2e/planDelivery.spec.ts` (gzip + ETag + 304 + `fresh=1`; an image-first floor requests no SVG until Floor SVG is picked; an SVG-first floor is preloaded, requested once, 304 on reload; Unit Detail on one unit). Playwright results on the development pair: see the end of this section.
+
+**Playwright results (development pair: CMS :3100 on `pynwheel_development`, Connect production build on :3005, minted super-admin session; `perf_audit/results/after/e2e-*.log`).** Parallel run of `planDelivery`, `hallways`, `wayfindingLogic`, `listingsAndInventory`, `mapCanvas`, `mapPlotting`, `wayfinding`, `hazel` with two workers: **85 passed, 10 failed, 1 skipped** in 8.7 min. The ten: three `hallways.spec.ts` POC-parity tests whose fixture folder is not on this Mac (ENOENT, pre-existing, §36); Hazel's stale "Boardroom · In Stops List" expectation (the development dump, §36); four floor-SVG tests of property 1468 (`hazel.spec.ts:484`, `mapCanvas.spec.ts:336` and `:463`, `mapPlotting.spec.ts:73`) that timed out on the 2.6 MB file from S3 under the two-worker load and **pass one at a time (4/4 in 47 s)**; `listingsAndInventory.spec.ts:110`, broken by the Units-tab page memory (reverted, above) and **passing again on the rebuilt copy**; and the new `planDelivery.spec.ts:93`, which looked for a "Floor image" button where the switch says "Background image" (spec fixed). Final serial run of `listingsAndInventory.spec.ts:110` + `planDelivery.spec.ts`: **4 passed, 1 skipped** (the preload assertion needs a floor that opens on its SVG, which 1468 does not have in this dump; the preload itself is verified on the clone with Cypress Terra: two `<link rel="preload" as="fetch">` in the document, the SVG requested at 534 ms, one request per file). Not run here: `amenities`, `tourSetup`, `interactions`, `routes`, `screens`, `listingSearch` (untouched code paths).

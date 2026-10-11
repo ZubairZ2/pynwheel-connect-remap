@@ -1099,3 +1099,16 @@ Branch `feature/tour_app_rails_api`; full account in `tour-app-backend-api.md` �
   frame numbers. Stale selection across properties and the 4,832-row picker were the real app
   findings there (both fixed). Launch entry `rails-cms-prod` runs the verify server on the
   production copy; a token can be minted with `rails runner` for `TOUR_API_TOKEN` and must be revoked.
+
+## 32. Performance: how the Map & Plotting SVG, the map payload and Unit Detail are delivered (October 11, 2026)
+
+Added on branch `performance/nextjs-data-loading-optimization` (PYN_CONNECT_PROGRESS.md §37; the audit is `performance-audit-report.md`, evidence in `perf_audit/`).
+
+- **The plan-svg route** (`src/app/api/properties/[propId]/plan-svg/route.ts`) resolves the file from the floorplates listing the page's loader just received for the same session (`planListing.server.ts`: a minute's memory keyed by the hashed session cookie and the property id; `fresh=1` forgets it), gzips the body for a client that accepts it, and answers with a strong ETag — `"plan-<sha1 of level + stored file name>"` — plus `Cache-Control: private, no-cache`, so the browser keeps the file and revalidates on every mount (304, no store read). Every upload gets a new time-stamped name (`SiteMapUploader#filename`), so a replaced file always changes the tag. Do not put `cache: 'no-store'` back on the hook's fetches: it would defeat both the preload and the 304.
+- **Preload:** the map page emits `<link rel="preload" as="fetch" crossorigin>` for the first level's SVG (and the Beans background) when that level opens on its SVG, using the hook's own level/layer decision (`generateMapLevels`, `initialLocalMapState`, `activeSpace`). A preload without `crossorigin` is not matched by `fetch()` (credentials mode), so keep the attribute.
+- **Which SVGs load:** the hook loads a level's SVG only when the SVG layer is shown or the Auto Plot wizard's scope needs it; Detect Hallways fetches on demand. A floor that opens on its image (stored hallways, raster pins) downloads nothing until "Floor SVG" is picked.
+- **Retry** marks the level (and a failed background) in `fresh`, and the next request goes with `cache: 'reload'` and `fresh=1`.
+- **The map's payload:** `trimForMapScreen` (propertyMap.server.ts) empties the unit and amenity fields the map never reads before the model is serialized into the page; the type is unchanged. Tour Setup takes the full model (it prints descriptions and photos). Any new map feature that needs one of the emptied fields must add it back there.
+- **Unit Detail** reads the inventory without units plus one unit through the paged listing (`units.json?page=1&per_page=1&ids=`; `Connect::UnitListingQuery#apply_ids`, whitelisted integers, inside the property's scope), with `unitsLoaded: false` so counts come from the floorplates meta. There is still no `units#show`.
+- **Fonts:** Manrope and Inter are `@font-face` rules at the top of `globals.css` over `public/fonts/*.woff2` (OFL, the latin and latin-ext subsets); no request to Google Fonts remains. The Beans Inter labels inside floor SVGs match the `font-family: 'Inter'` rule.
+- **Measuring:** `perf_audit/scripts/*` against the clone pair (`rails-perf-audit` :3100, `connect-perf` :3005 from a `next build` copy); `tests/e2e/planDelivery.spec.ts` asserts the delivery contract on the development pair.

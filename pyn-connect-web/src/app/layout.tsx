@@ -7,16 +7,12 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // The fonts (Manrope for the UI, Inter for Beans floor SVG labels) are served
+  // from this origin through @font-face rules in globals.css: a stylesheet from
+  // fonts.googleapis.com in this head blocked every first paint until Google
+  // answered (performance audit, October 11, 2026: C4).
   return (
     <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
-      </head>
       <body>{children}</body>
     </html>
   );

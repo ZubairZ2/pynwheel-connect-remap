@@ -1,5 +1,6 @@
 import 'server-only';
 
+import type { InventoryAmenity, InventoryUnit } from '~/core/models/data/propertyInventory.data';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
 import { parseWayfindingGraph, parseWayfindingWriteMeta } from '~/core/repository/parser/wayfinding.parser';
 import { loadPropertyInventory } from './propertyInventory.server';
@@ -32,3 +33,49 @@ export const loadPropertyMap = async (cookie: string | null, id: number): Promis
 
   return { status: 'found', map: { inventory: inventory.inventory, graph: parsed, write: parseWayfindingWriteMeta(graph.body) } };
 };
+
+/**
+ * The map model with the fields the Map & Plotting screen never reads
+ * emptied, for the page that hands it to the browser.
+ *
+ * `units.json` carries everything the units grid, the unit form and the Tour
+ * Setup talking points show — lease terms, the three buttons, interior
+ * images, photos, descriptions — at about 1.2 KB a unit; the map reads a
+ * unit's identity, placement and plan only. Emptied before the model is
+ * serialized into the page, the document and the RSC payload of a
+ * 339-unit property shrink by more than half (performance audit, October 11,
+ * 2026: C5). The shape is unchanged, so every generator keeps its type; the
+ * Tour Setup screen keeps the full model (it prints the descriptions and
+ * photos).
+ */
+export const trimForMapScreen = (map: PropertyMap): PropertyMap => ({
+  ...map,
+  inventory: {
+    ...map.inventory,
+    units: map.inventory.units.map(trimUnit),
+    amenities: map.inventory.amenities.map(trimAmenity)
+  }
+});
+
+const trimUnit = (unit: InventoryUnit): InventoryUnit => ({
+  ...unit,
+  image: null,
+  secondaryImage: null,
+  interiorImages: [],
+  buttons: [],
+  leaseTerms: [],
+  additionalFee: null,
+  descriptionTitle: null,
+  description: null,
+  stopDescription: null
+});
+
+const trimAmenity = (amenity: InventoryAmenity): InventoryAmenity => ({
+  ...amenity,
+  image: null,
+  gallery: [],
+  videoLink: null,
+  videoLinkButtonLabel: null,
+  description: null,
+  directionalText: null
+});

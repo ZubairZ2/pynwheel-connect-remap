@@ -28,6 +28,8 @@ export interface UnitListingRequest {
   perPage: number;
   /** The day "available now" is measured against (yyyy-mm-dd, the CMS's zone). */
   today?: string;
+  /** Only these units (Unit Detail reads its one unit this way), within the property's scope as ever. */
+  ids?: number[];
   q?: string;
   floorplan?: string[];
   availability?: string[];
@@ -49,6 +51,7 @@ export const fetchInventoryUnitsPage = (cookie: string | null, propertyId: numbe
       page: request.page,
       per_page: request.perPage,
       today: request.today,
+      ids: request.ids?.join(','),
       q: request.q,
       floorplan: request.floorplan?.join(','),
       availability: request.availability?.join(','),

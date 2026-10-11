@@ -132,6 +132,17 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const pendingSlot = useRef<'svg' | 'bg'>('svg');
   const loading = useRef(new Set<string>());
+  /**
+   * Plan files whose next request must go past every cache (the canvas's
+   * Retry): the browser's copy and the server's memory of the listing. Any
+   * other request lets the browser reuse what it holds — a preloaded
+   * response, or a stored copy it revalidates with the route's ETag.
+   */
+  const fresh = useRef(new Set<string>());
+  const planRequest = (url: string, key: string): [string, RequestInit | undefined] => {
+    if (!fresh.current.delete(key)) return [url, undefined];
+    return [`${url}${url.includes('?') ? '&' : '?'}fresh=1`, { cache: 'reload' }];
+  };
 
   const level = levelById(levels, state.levelId) ?? levels[0] ?? null;
   const space: PlanSpace = level ? activeSpace(level, state) : 'raster';
@@ -177,7 +188,7 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
       const own = planAssets(target, state.planOverrides[target.id]);
       if (!own.svg) throw new Error('no svg');
       const url = own.svg.local ? own.svg.url : APP_API.planSvg(map.inventory.property.id, { kind: target.kind, id: target.recordId });
-      const response = await fetch(url, { cache: 'no-store' });
+      const response = await fetch(url);
       if (!response.ok) throw new Error(String(response.status));
       return response.text();
     },
@@ -199,7 +210,7 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     loading.current.add('background');
     patch(() => ({ background: { status: 'loading' } }));
     try {
-      const response = await fetch(APP_API.planSvg(map.inventory.property.id, { background: true }), { cache: 'no-store' });
+      const response = await fetch(...planRequest(APP_API.planSvg(map.inventory.property.id, { background: true }), 'background'));
       if (!response.ok) {
         const error = await planError(response);
         patch(() => ({ background: { status: 'failed', error } }));
@@ -231,7 +242,7 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
   const fetchBackgroundText = useCallback(async (): Promise<string | null> => {
     if (!sharedBackground) return null;
     if (backgroundText.current) return backgroundText.current;
-    const response = await fetch(APP_API.planSvg(map.inventory.property.id, { background: true }), { cache: 'no-store' });
+    const response = await fetch(APP_API.planSvg(map.inventory.property.id, { background: true }));
     if (!response.ok) throw new Error(String(response.status));
     const text = await response.text();
     backgroundText.current = text;
@@ -262,7 +273,8 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
       patch((current) => ({ svgDocs: { ...current.svgDocs, [target.id]: { status: 'loading' } } }));
       try {
         const url = own.svg.local ? own.svg.url : APP_API.planSvg(map.inventory.property.id, { kind: target.kind, id: target.recordId });
-        const response = await fetch(url, { cache: 'no-store' });
+        const [requestUrl, init] = own.svg.local ? [url, undefined] : planRequest(url, target.id);
+        const response = await fetch(requestUrl, init);
         if (!response.ok) {
           const error = await planError(response);
           patch((current) => ({ svgDocs: { ...current.svgDocs, [target.id]: { status: 'failed', error } } }));
@@ -291,12 +303,17 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     [levels]
   );
 
+  // The level in view loads its floor SVG when that is the layer it shows: a
+  // two-file floorplate opening on its image (its stored plotting is there)
+  // leaves the file alone until the Floor SVG layer is picked. Detect Hallways
+  // reads a floor's SVG on demand (`fetchSvgText`), whichever layer shows.
   useEffect(() => {
-    const wanted = level ? [level, ...apScopeLevels(state.ap)] : apScopeLevels(state.ap);
+    const shown = level && space === 'svg' ? [level] : [];
+    const wanted = [...shown, ...apScopeLevels(state.ap)];
     wanted.forEach((target) => {
       if (!state.svgDocs[target.id]) void loadSvg(target);
     });
-  }, [level, state.ap, state.svgDocs, apScopeLevels, loadSvg]);
+  }, [level, space, state.ap, state.svgDocs, apScopeLevels, loadSvg]);
 
   // The shared background is read once the floor in view is on its SVG (the only layer it is drawn under).
   useEffect(() => {
@@ -1285,16 +1302,21 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
         applyLocalFile(file, /\.svg$/i.test(file.name) ? 'svg' : state.dropSlot);
       },
       clearPlan,
-      // A fresh request for the floor SVG (the effect above re-issues it; the CMS re-resolves the file's URL), and for the background if it failed.
+      // A fresh request for the floor SVG (the effect above re-issues it past every cache; the CMS re-resolves the file's URL), and for the background if it failed.
       retrySvg: () => {
         if (!level) return;
+        fresh.current.add(level.id);
         patch((current) => {
           const svgDocs = { ...current.svgDocs };
           delete svgDocs[level.id];
+          if (current.background?.status === 'failed') fresh.current.add('background');
           return { svgDocs, background: current.background?.status === 'failed' ? null : current.background };
         });
       },
-      retryBackground: () => patch((current) => ({ background: current.background?.status === 'failed' ? null : current.background })),
+      retryBackground: () => {
+        fresh.current.add('background');
+        patch((current) => ({ background: current.background?.status === 'failed' ? null : current.background }));
+      },
       openPublish: () => patch(() => ({ publishOpen: true })),
       closePublish: () => patch(() => ({ publishOpen: false })),
       runCmsRoute,

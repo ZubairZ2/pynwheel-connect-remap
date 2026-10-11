@@ -82,10 +82,7 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
 
   return (
     <div className="bo-inv bo-map">
-      {/* Beans / Figma exports print their labels in Inter with no fallback; the CMS loads it the same way (shared/_beans_svg_fonts). */}
-      {map.inventory.beansSvg && (
-        <link rel="stylesheet" precedence="default" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
-      )}
+      {/* Beans / Figma exports print their labels in Inter with no fallback; the font is served from this origin (globals.css @font-face), so nothing here waits for a stylesheet. */}
       <Breadcrumb
         items={[
           { label: i18n.t(M.breadcrumbRoot), href: APP_ROUTES.properties },

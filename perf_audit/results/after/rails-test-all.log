@@ -1,0 +1,911 @@
+[WARN] [RAILS] No valid API key has been set, notifications will not be sent 
+DEPRECATION WARNING: #fog_provider is deprecated and has no effect (called from block in <top (required)> at /Users/zubairzulifqar/pynwheel-staging/config/initializers/carrierwave.rb:40)
+Run options: --seed 57468
+
+# Running:
+
+DEPRECATION WARNING: Defining enums with keyword arguments is deprecated and will be removed
+in Rails 8.0. Positional arguments should be used instead:
+
+enum :coloring_mode, {:by_property=>0, :by_floorplan=>1, :by_bedroom=>2}
+ (called from <class:Community> at /Users/zubairzulifqar/pynwheel-staging/app/models/community.rb:178)
+DEPRECATION WARNING: Defining enums with keyword arguments is deprecated and will be removed
+in Rails 8.0. Positional arguments should be used instead:
+
+enum :availability_status, {:available=>0, :limited_availability=>1, :almost_gone=>2, :sold_out=>3}
+ (called from <class:Floorplan> at /Users/zubairzulifqar/pynwheel-staging/app/models/floorplan.rb:25)
+[INFO] [RAILS] -------------------------------------------------------------------------- 
+[INFO] [RAILS] WayfindingStopTest: test_kind,_note_length,_radius_and_floor_are_validated 
+[INFO] [RAILS] -------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] WayfindingStopTest: test_a_placed_destination_stop_is_valid_and_duck-types_the_legacy_stop 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------ 
+.[INFO] [RAILS] ------------------------------------------------------- 
+[INFO] [RAILS] WayfindingStopTest: test_saving_moves_the_level_version 
+[INFO] [RAILS] ------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------------------------------- 
+[INFO] [RAILS] PartnerConfigurationsControllerTest: test_anonymous_visitors_are_turned_away 
+[INFO] [RAILS] ---------------------------------------------------------------------------- 
+E
+
+Error:
+PartnerConfigurationsControllerTest#test_anonymous_visitors_are_turned_away:
+NoMethodError: undefined method `key' for nil
+    test/controllers/partner_configurations_controller_test.rb:121:in `block (2 levels) in <class:PartnerConfigurationsControllerTest>'
+    test/controllers/partner_configurations_controller_test.rb:120:in `each'
+    test/controllers/partner_configurations_controller_test.rb:120:in `block in <class:PartnerConfigurationsControllerTest>'
+
+bin/rails test test/controllers/partner_configurations_controller_test.rb:119
+
+[INFO] [RAILS] ----------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] PartnerConfigurationsControllerTest: test_every_routed_action_is_denied_to_every_non-admin_role 
+[INFO] [RAILS] ----------------------------------------------------------------------------------------------- 
+E
+
+Error:
+PartnerConfigurationsControllerTest#test_every_routed_action_is_denied_to_every_non-admin_role:
+NoMethodError: undefined method `key' for nil
+    test/controllers/partner_configurations_controller_test.rb:61:in `block (3 levels) in <class:PartnerConfigurationsControllerTest>'
+    test/controllers/partner_configurations_controller_test.rb:60:in `each'
+    test/controllers/partner_configurations_controller_test.rb:60:in `block (2 levels) in <class:PartnerConfigurationsControllerTest>'
+    test/controllers/partner_configurations_controller_test.rb:56:in `each'
+    test/controllers/partner_configurations_controller_test.rb:56:in `block in <class:PartnerConfigurationsControllerTest>'
+
+bin/rails test test/controllers/partner_configurations_controller_test.rb:55
+
+[INFO] [RAILS] ------------------------------------------------------------------------------ 
+[INFO] [RAILS] PartnerConfigurationsControllerTest: test_denied_requests_have_no_side_effects 
+[INFO] [RAILS] ------------------------------------------------------------------------------ 
+E
+
+Error:
+PartnerConfigurationsControllerTest#test_denied_requests_have_no_side_effects:
+NoMethodError: undefined method `reload' for nil
+    test/controllers/partner_configurations_controller_test.rb:103:in `block in <class:PartnerConfigurationsControllerTest>'
+
+bin/rails test test/controllers/partner_configurations_controller_test.rb:102
+
+[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+[INFO] [RAILS] PartnerConfigurationsControllerTest: test_denial_does_not_depend_on_the_request_format 
+[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [5452dfbc-7ebf-438a-9ec2-045442e8d0e0] method=GET path=/communities/203999749/partner_configurations/bulk_export format=html controller=PartnerConfigurationsController action=bulk_export status=302 allocations=67832 duration=143.62 view=0.00 db=39.14 location=http://localhost/ 
+[INFO] [RAILS] [592d6eef-6b00-4d33-9048-31ae16a7c4ef] method=GET path=/communities/203999749/partner_configurations/bulk_export.json format=json controller=PartnerConfigurationsController action=bulk_export status=0 allocations=1126 duration=3.28 view=0.00 db=0.92 
+[INFO] [RAILS] [03bf598a-ec03-46eb-b25f-0dfd09e22873] method=GET path=/communities/203999749/partner_configurations/bulk_export.csv format=csv controller=PartnerConfigurationsController action=bulk_export status=0 allocations=1030 duration=3.03 view=0.00 db=1.05 
+.[INFO] [RAILS] --------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] PartnerConfigurationsControllerTest: test_a_denied_response_leaks_no_partner_or_property_data 
+[INFO] [RAILS] --------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [72cedf37-75dc-4ef6-94c3-0a1bbad3fd71] method=GET path=/communities/203999749/partner_configurations format=html controller=PartnerConfigurationsController action=index status=302 allocations=17471 duration=53.35 view=0.00 db=18.46 location=http://localhost/ 
+[INFO] [RAILS] [a3c3c1a8-f6e5-4cb4-81f4-ca310a22fde2] method=GET path=/communities/203999749/partner_configurations/bulk_export.csv format=csv controller=PartnerConfigurationsController action=bulk_export status=0 allocations=1030 duration=2.06 view=0.00 db=0.41 
+.[INFO] [RAILS] ---------------------------------------------------------------------------- 
+[INFO] [RAILS] PartnerConfigurationsControllerTest: test_a_super_admin_can_reach_the_screen 
+[INFO] [RAILS] ---------------------------------------------------------------------------- 
+[INFO] [RAILS] [4629450e-504a-46ae-ad97-4cfe1a114722] method=GET path=/communities/203999749/partner_configurations format=html controller=PartnerConfigurationsController action=index status=500 allocations=5897673 duration=10225.79 view=0.00 db=16.49 
+[FATAL] [RAILS] [4629450e-504a-46ae-ad97-4cfe1a114722]   
+[4629450e-504a-46ae-ad97-4cfe1a114722] ActionView::Template::Error (wrong number of arguments (1 for 4) for `rgba'):
+[4629450e-504a-46ae-ad97-4cfe1a114722] 
+Causes:
+[4629450e-504a-46ae-ad97-4cfe1a114722] Sass::SyntaxError (wrong number of arguments (1 for 4) for `rgba')
+[4629450e-504a-46ae-ad97-4cfe1a114722] ArgumentError (wrong number of arguments (1 for 4))
+[4629450e-504a-46ae-ad97-4cfe1a114722]      6:     %title= yield(:title)
+[4629450e-504a-46ae-ad97-4cfe1a114722]      7:     %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
+[4629450e-504a-46ae-ad97-4cfe1a114722]      8:     = csrf_meta_tags
+[4629450e-504a-46ae-ad97-4cfe1a114722]      9:     = stylesheet_link_tag    'application', media: 'all'
+[4629450e-504a-46ae-ad97-4cfe1a114722]     10:     = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
+[4629450e-504a-46ae-ad97-4cfe1a114722]     11:     
+[4629450e-504a-46ae-ad97-4cfe1a114722]     12:     - if Rails.env.development?
+[4629450e-504a-46ae-ad97-4cfe1a114722]   
+[4629450e-504a-46ae-ad97-4cfe1a114722] app/views/layouts/application.html.haml:9
+[4629450e-504a-46ae-ad97-4cfe1a114722] test/controllers/partner_configurations_controller_test.rb:136:in `block in <class:PartnerConfigurationsControllerTest>' 
+F
+
+Failure:
+PartnerConfigurationsControllerTest#test_a_super_admin_can_reach_the_screen [test/controllers/partner_configurations_controller_test.rb:138]:
+Expected response to be a <2XX: success>, but was a <500: Internal Server Error>
+
+bin/rails test test/controllers/partner_configurations_controller_test.rb:131
+
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] FloorplatesControllerTest: test_the_meta_says_whether_the_property_is_a_Beans_map_and_carries_its_shared_background 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [cdd06a22-0299-4a8c-8516-63730f026ebc] method=GET path=/communities/286082541/floorplates.json format=json controller=FloorplatesController action=index status=200 allocations=56732 duration=124.50 view=0.44 db=66.97 
+[INFO] [RAILS] [34c552b4-9d44-4cbb-a518-bc4045fd3a78] method=GET path=/communities/286082541/floorplates.json format=json controller=FloorplatesController action=index status=200 allocations=10274 duration=32.67 view=0.27 db=7.81 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] FloorplatesControllerTest: test_a_unit_placed_on_the_floor_SVG_by_a_map_import_counts_as_plotted_on_the_floorplate_covering_its_floor 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [3a410ae2-bc53-41ac-a888-6ebf84e90d13] method=GET path=/communities/286082541/floorplates.json format=json controller=FloorplatesController action=index status=200 allocations=6581 duration=13.47 view=0.21 db=6.65 
+[INFO] [RAILS] [19508610-ae45-4688-9705-c6a992c30e68] method=GET path=/communities/286082541/floorplates.json format=json controller=FloorplatesController action=index status=200 allocations=7168 duration=18.47 view=0.33 db=6.19 
+[INFO] [RAILS] [66223128-387b-47aa-9676-5a312e202341] method=GET path=/communities/286082541/floorplates.json format=json controller=FloorplatesController action=index status=200 allocations=8513 duration=19.70 view=0.23 db=6.90 
+.[INFO] [RAILS] --------------------------------------------------- 
+[INFO] [RAILS] TourApi::TextTest: test_strip_html_gives_plain_text 
+[INFO] [RAILS] --------------------------------------------------- 
+.[INFO] [RAILS] ----------------------------------------------------------------- 
+[INFO] [RAILS] TourApi::TextTest: test_names_and_places_as_the_steps_phrase_them 
+[INFO] [RAILS] ----------------------------------------------------------------- 
+.[INFO] [RAILS] ----------------------------------------------------------- 
+[INFO] [RAILS] TourApi::TextTest: test_truthiness,_rounding_and_delimiters 
+[INFO] [RAILS] ----------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------- 
+[INFO] [RAILS] TourApi::TextTest: test_to_f_reads_the_leading_number_as_the_contract_did 
+[INFO] [RAILS] ------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------ 
+[INFO] [RAILS] TourApi::TextTest: test_timestamps_are_UTC_ISO_8601_with_fractions_only_when_present 
+[INFO] [RAILS] ------------------------------------------------------------------------------------ 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Connect::UploadUrlTest: test_a_property_without_any_raster_upload_still_finds_its_file_on_a_bucket_the_environment_knows 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------------------ 
+.[INFO] [RAILS] --------------------------------------------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Connect::UploadUrlTest: test_a_fog_store_is_asked_where_its_file_is;_file_storage_(development)_names_the_bucket_the_database_points_at_and_sends_nothing 
+[INFO] [RAILS] --------------------------------------------------------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Connect::UploadUrlTest: test_a_non-S3_URL_(a_CMS-host_path_in_development)_is_left_alone 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Connect::UploadUrlTest: test_known_buckets_reads_the_buckets_the_recent_raster_uploads_name,_one_per_bucket,_and_caches_them 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ----------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Connect::UploadUrlTest: test_s3_base_and_bucket_name_read_the_virtual-hosted,_regional_and_accelerate_forms 
+[INFO] [RAILS] ----------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Connect::UploadUrlTest: test_answers_are_remembered_per_URL_for_a_day;_a_failed_check_only_briefly 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Connect::UploadUrlTest: test_a_stored_key_missing_on_disk_is_read_from_the_family_bucket,_else_from_the_first_known_bucket 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ----------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Connect::UploadUrlTest: test_the_configured_bucket_is_kept,_with_no_HEAD,_when_the_database_names_no_other_bucket 
+[INFO] [RAILS] ----------------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Connect::UploadUrlTest: test_a_check_that_could_not_be_made_on_the_configured_URL_still_lets_a_known_copy_win 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Connect::UploadUrlTest: test_a_family_bucket_that_holds_the_file_replaces_the_configured_one_after_the_configured_URL_is_refused 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Connect::UploadUrlTest: test_the_configured_URL_stays_when_it_answers,_and_when_no_known_bucket_holds_the_file 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------ 
+[INFO] [RAILS] TourApi::EngineTest: test_concurrent_cold_requests_share_one_build 
+[INFO] [RAILS] ------------------------------------------------------------------ 
+.[INFO] [RAILS] ----------------------------------------------------------------------------------- 
+[INFO] [RAILS] TourApi::EngineTest: test_the_payload_is_remembered_per_base_URL_on_the_built_graph 
+[INFO] [RAILS] ----------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] TourApi::EngineTest: test_a_different_version_or_option_builds_again_and_drops_the_older_version 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+.[INFO] [RAILS] ---------------------------------------------------------------------------- 
+[INFO] [RAILS] TourApi::EngineTest: test_the_graph_is_built_once_per_version_and_remembered 
+[INFO] [RAILS] ---------------------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_detect_merges_onto_nearby_nodes,_skips_suppressed_geometry_and_keeps_new_proposals_pending 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_plotting_a_unit_writes_the_legacy_columns_and_the_typed_tour_stop_copy 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------------ 
+.[INFO] [RAILS] --------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_a_link_to_a_record_of_another_property_is_refused 
+[INFO] [RAILS] --------------------------------------------------------------------------------- 
+.[INFO] [RAILS] --------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_detect_may_only_add 
+[INFO] [RAILS] --------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_elevator_and_tour-start_pins_move_the_legacy_records 
+[INFO] [RAILS] ------------------------------------------------------------------------------------ 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_deleting_a_node_removes_it_from_every_next_points_and_writes_a_tombstone 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] --------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_a_node_of_another_level_cannot_be_addressed 
+[INFO] [RAILS] --------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_a_hand_re-creation_at_a_suppressed_geometry_clears_the_tombstone 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+.[INFO] [RAILS] --------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_moving_a_pending_node_confirms_it_and_mirrors_its_edges 
+[INFO] [RAILS] --------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_links_are_set,_detached_and_cleared 
+[INFO] [RAILS] ------------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_deleting_an_edge_removes_it_from_both_sides_and_writes_a_tombstone 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ----------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_svg-space_nodes_are_stored_but_stay_invisible_to_legacy_readers 
+[INFO] [RAILS] ----------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_a_failure_after_writes_rolls_everything_back 
+[INFO] [RAILS] ---------------------------------------------------------------------------- 
+.[INFO] [RAILS] --------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_adds_a_node_and_an_edge,_mirrors_the_adjacency_once_and_moves_the_version 
+[INFO] [RAILS] --------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_additional_stops_are_created_in_the_record_their_kind_belongs_to 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_a_stale_base_version_is_refused_before_anything_is_written 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------ 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_a_second_detect_run_with_the_same_proposals_adds_nothing 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_validation_errors_are_collected_and_nothing_is_written 
+[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_a_detect_run_is_replayed_by_request_id_and_never_applied_twice 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_invalid_stop_fields_are_refused_as_a_whole 
+[INFO] [RAILS] -------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Wayfinding::GraphSaveTest: test_unplotting_a_unit_removes_its_tour_stop_as_the_legacy_page_does_and_keeps_the_unit 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------------ 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] UnitsControllerTest: test_a_page_of_one_unit_by_id_answers_that_unit_alone,_with_its_paging_meta 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] [d2e62add-00db-4198-a978-bdea6331a68f] method=GET path=/communities/286082541/units.json format=json controller=UnitsController action=index status=200 allocations=11059 duration=23.51 view=0.31 db=8.67 unpermitted_params=["page", "ids", "community_id", "format", "community_id", "format"] 
+.[INFO] [RAILS] --------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] UnitsControllerTest: test_ids_stays_inside_the_property:_another_property's_unit_is_not_found 
+[INFO] [RAILS] --------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [82107a24-fc04-4164-b2b9-3191bb7f0f71] method=GET path=/communities/286082541/units.json format=json controller=UnitsController action=index status=200 allocations=7738 duration=13.53 view=0.13 db=6.07 unpermitted_params=["page", "ids", "community_id", "format", "community_id", "format"] 
+.[INFO] [RAILS] ----------------------------------------------------------------------- 
+[INFO] [RAILS] UnitsControllerTest: test_without_ids_the_page_is_the_listing_as_before 
+[INFO] [RAILS] ----------------------------------------------------------------------- 
+[INFO] [RAILS] [e204aa9d-b40a-4469-871d-562be1c31551] method=GET path=/communities/286082541/units.json format=json controller=UnitsController action=index status=200 allocations=9098 duration=16.20 view=0.34 db=7.95 unpermitted_params=["page", "community_id", "format", "community_id", "format"] 
+[INFO] [RAILS] [7df2a58c-7bf3-4009-be08-5ce6866f655f] method=GET path=/communities/286082541/units.json format=json controller=UnitsController action=index status=200 allocations=9682 duration=19.91 view=0.29 db=7.74 unpermitted_params=["page", "ids", "community_id", "format", "community_id", "format"] 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] AutomatePlottingControllerTest: test_shortest_path_without_a_route_answers_422_with_the_error_taxonomy 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] [e4c3ba5f-0fdd-4249-a976-955565503e42] method=GET path=/automate_plotting/shortest_path.json format=json controller=AutomatePlottingController action=shortest_path status=422 allocations=10999 duration=22.28 view=0.15 db=9.93 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] AutomatePlottingControllerTest: test_shortest_path_with_from_and_to_answers_the_route_envelope 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [ac538533-cbc1-4a51-99fb-27c6b3d85fd5] method=GET path=/automate_plotting/shortest_path.json format=json controller=AutomatePlottingController action=shortest_path status=200 allocations=10335 duration=18.37 view=0.20 db=8.29 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] AutomatePlottingControllerTest: test_the_map_JSON_carries_the_new_graph_keys,_versions_and_the_token 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [7849c8ea-a51b-469c-aa7f-d268ce98f4b2] method=GET path=/automate_plotting.json format=json controller=AutomatePlottingController action=index status=200 allocations=14278 duration=29.49 view=0.46 db=12.75 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+[INFO] [RAILS] AutomatePlottingControllerTest: test_shortest_path_without_from_keeps_the_legacy_shape 
+[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [c4342cbd-2203-4446-8791-d5c0496dffdb] method=GET path=/automate_plotting/shortest_path.json format=json controller=AutomatePlottingController action=shortest_path status=200 allocations=12015 duration=19.02 view=0.09 db=6.82 
+.[INFO] [RAILS] -------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::SelfTour::V1::WayfindingControllerTest: test_errors_use_the_shared_taxonomy 
+[INFO] [RAILS] -------------------------------------------------------------------------------- 
+[INFO] [RAILS] [87d9516c-2d25-41ff-8c8b-f97980a51633] method=GET path=/api/self_tour/v1/communities/286082541/wayfinding/route.json format=json controller=Api::SelfTour::V1::WayfindingController action=route status=422 allocations=15454 duration=35.71 view=0.17 db=18.95 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Api::SelfTour::V1::WayfindingControllerTest: test_without_a_token_the_legacy_refusal_is_answered 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] [6c2f135e-b71f-40c6-be21-7b2b5865ee3b] method=GET path=/api/self_tour/v1/communities/286082541/wayfinding.json format=json controller=Api::SelfTour::V1::WayfindingController action=show status=200 allocations=1419 duration=3.51 view=0.06 db=1.88 
+.[INFO] [RAILS] ----------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::SelfTour::V1::WayfindingControllerTest: test_the_graph_is_answered_with_an_ETag_and_nothing_is_written 
+[INFO] [RAILS] ----------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [2326a060-71dd-43f6-8328-e9fd72954811] method=GET path=/api/self_tour/v1/communities/286082541/wayfinding.json format=json controller=Api::SelfTour::V1::WayfindingController action=show status=200 allocations=13066 duration=44.28 view=1.52 db=11.16 
+[INFO] [RAILS] [9727ba72-a7d0-44b9-a9f3-92205d5229d9] method=GET path=/api/self_tour/v1/communities/286082541/wayfinding.json format=json controller=Api::SelfTour::V1::WayfindingController action=show status=304 allocations=5719 duration=19.66 view=0.00 db=7.73 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::SelfTour::V1::WayfindingControllerTest: test_a_property_without_the_tour_is_refused 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [ad99a49e-e68a-4d08-b26c-c5edec5b99aa] method=GET path=/api/self_tour/v1/communities/203999749/wayfinding.json format=json controller=Api::SelfTour::V1::WayfindingController action=show status=422 allocations=1807 duration=4.04 view=0.08 db=2.05 
+.[INFO] [RAILS] ----------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::SelfTour::V1::WayfindingControllerTest: test_a_route_and_the_tour_route_are_answered 
+[INFO] [RAILS] ----------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [3849e5d7-2101-4122-96aa-f67060d5538f] method=GET path=/api/self_tour/v1/communities/286082541/wayfinding/route.json format=json controller=Api::SelfTour::V1::WayfindingController action=route status=200 allocations=11152 duration=22.28 view=0.17 db=10.54 
+[INFO] [RAILS] [9f52d050-8941-407d-a2d3-1f15cc8c78bc] method=GET path=/api/self_tour/v1/communities/286082541/wayfinding/tour_route.json format=json controller=Api::SelfTour::V1::WayfindingController action=tour_route status=200 allocations=12189 duration=28.98 view=0.27 db=10.55 
+.[INFO] [RAILS] ---------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::SecurityTest: test_errors_never_leak_internals 
+[INFO] [RAILS] ---------------------------------------------------------------- 
+[ERROR] [RAILS] [6fa610d2-067b-484c-9c6c-172fcbf91bcf] [tour-api] internal_error ref=bef52373297d GET /api/tour/v1/properties/286082541/stops RuntimeError: SELECT secret FROM users
+/Users/zubairzulifqar/pynwheel-staging/test/controllers/api/tour_app/v1/security_test.rb:60:in `block (2 levels) in <class:SecurityTest>'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/minitest-5.25.2/lib/minitest/mock.rb:309:in `block in stub'
+/Users/zubairzulifqar/pynwheel-staging/app/controllers/api/tour_app/v1/stops_controller.rb:10:in `index'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/actionpack-7.2.2/lib/action_controller/metal/basic_implicit_render.rb:8:in `send_action'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/actionpack-7.2.2/lib/abstract_controller/base.rb:226:in `process_action'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/actionpack-7.2.2/lib/action_controller/metal/rendering.rb:193:in `process_action'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/actionpack-7.2.2/lib/abstract_controller/callbacks.rb:261:in `block in process_action'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/activesupport-7.2.2/lib/active_support/callbacks.rb:110:in `run_callbacks'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/actionpack-7.2.2/lib/abstract_controller/callbacks.rb:260:in `process_action'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/actionpack-7.2.2/lib/action_controller/metal/rescue.rb:27:in `process_action'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/actionpack-7.2.2/lib/action_controller/metal/instrumentation.rb:77:in `block in process_action'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/activesupport-7.2.2/lib/active_support/notifications.rb:210:in `block in instrument'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/activesupport-7.2.2/lib/active_support/notifications/instrumenter.rb:58:in `instrument'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/activesupport-7.2.2/lib/active_support/notifications.rb:210:in `instrument'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/actionpack-7.2.2/lib/action_controller/metal/instrumentation.rb:76:in `process_action'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/actionpack-7.2.2/lib/action_controller/metal/params_wrapper.rb:259:in `process_action'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/activerecord-7.2.2/lib/active_record/railties/controller_runtime.rb:39:in `process_action'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/actionpack-7.2.2/lib/abstract_controller/base.rb:163:in `process'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/actionview-7.2.2/lib/action_view/rendering.rb:40:in `process'
+/Users/zubairzulifqar/pynwheel-staging/gems/ruby/3.3.0/gems/actionpack-7.2.2/lib/action_controller/metal.rb:252:in `dispatch' 
+[INFO] [RAILS] [6fa610d2-067b-484c-9c6c-172fcbf91bcf] method=GET path=/api/tour/v1/properties/286082541/stops format=json controller=Api::TourApp::V1::StopsController action=index status=500 allocations=11852 duration=22.21 view=0.11 db=8.83 
+.[INFO] [RAILS] ----------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::SecurityTest: test_another_property_is_isolated 
+[INFO] [RAILS] ----------------------------------------------------------------- 
+[INFO] [RAILS] [4d4bb87e-51ec-468f-8a57-b7d67d2565c2] method=GET path=/api/tour/v1/properties/479438776/graph format=json controller=Api::TourApp::V1::GraphsController action=show status=200 allocations=9434 duration=18.49 view=0.08 db=7.52 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::SecurityTest: test_routing_against_a_property_without_the_tour_is_refused 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [ddab6eae-6e62-4c85-8410-e859bb744dbb] method=POST path=/api/tour/v1/properties/203999749/tour-route format=json controller=Api::TourApp::V1::RoutesController action=tour_route status=422 allocations=1484 duration=2.64 view=0.07 db=1.07 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::SecurityTest: test_property_ids_are_validated_before_anything_is_looked_up 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [72776822-bab3-4f98-bc02-21c8aaa1d035] method=GET path=/api/tour/v1/properties/0 format=json controller=Api::TourApp::V1::PropertiesController action=show status=422 allocations=573 duration=1.15 view=0.07 db=0.45 
+[INFO] [RAILS] [610d0b88-8ee3-4eae-8f15-35b6a5f008e4] method=GET path=/api/tour/v1/properties/abc format=json controller=Api::TourApp::V1::PropertiesController action=show status=422 allocations=512 duration=1.19 view=0.05 db=0.42 
+[INFO] [RAILS] [f7e843b7-1676-4a68-9409-1ed37e336805] method=GET path=/api/tour/v1/properties/424242/stops format=json controller=Api::TourApp::V1::StopsController action=index status=404 allocations=1032 duration=1.93 view=0.04 db=0.64 
+.[INFO] [RAILS] ----------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::SecurityTest: test_a_non_Super_Admin_reaches_no_property_endpoint 
+[INFO] [RAILS] ----------------------------------------------------------------------------------- 
+[INFO] [RAILS] [734dca68-ce42-4604-8792-91da62bda780] method=GET path=/api/tour/v1/properties/286082541 format=json controller=Api::TourApp::V1::PropertiesController action=show status=403 allocations=896 duration=1.56 view=0.05 db=0.56 
+[INFO] [RAILS] [85f422ab-b2fb-4dc9-85c4-5db7685960c9] method=GET path=/api/tour/v1/properties/286082541/stops format=json controller=Api::TourApp::V1::StopsController action=index status=403 allocations=723 duration=1.75 view=0.04 db=0.52 
+[INFO] [RAILS] [7c902a1b-ea96-43f9-9c25-e1b0aa07f207] method=GET path=/api/tour/v1/properties/286082541/map format=json controller=Api::TourApp::V1::MapsController action=show status=403 allocations=776 duration=1.77 view=0.05 db=0.51 
+[INFO] [RAILS] [98111a0a-1eee-4617-b21e-ebbcfe1affd0] method=GET path=/api/tour/v1/properties/286082541/graph format=json controller=Api::TourApp::V1::GraphsController action=show status=403 allocations=733 duration=1.69 view=0.04 db=0.50 
+[INFO] [RAILS] [1d93053f-3e47-481d-a7ea-91f17b54b554] method=GET path=/api/tour/v1/properties/286082541/map/levels/floorplate:129478876 format=json controller=Api::TourApp::V1::MapsController action=level status=403 allocations=723 duration=1.72 view=0.04 db=0.52 
+[INFO] [RAILS] [4a0a5cfa-7f27-40e1-9c01-98dd1eabdcc3] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=403 allocations=723 duration=1.70 view=0.03 db=0.49 
+[INFO] [RAILS] [1fbefb0e-29ac-48cf-a071-4f0c104ff446] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=403 allocations=723 duration=1.71 view=0.03 db=0.51 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::SecurityTest: test_a_stop_that_is_not_on_this_property's_list_is_rejected 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [564335f5-a82f-4e44-8b79-a529a421a8fe] method=POST path=/api/tour/v1/properties/286082541/tour-route format=json controller=Api::TourApp::V1::RoutesController action=tour_route status=422 allocations=13928 duration=27.49 view=0.10 db=11.41 
+[INFO] [RAILS] [d12fa8ca-79df-4610-8c7c-134ebcf68e12] method=POST path=/api/tour/v1/properties/286082541/tour-route format=json controller=Api::TourApp::V1::RoutesController action=tour_route status=422 allocations=13104 duration=31.08 view=0.09 db=9.50 
+[INFO] [RAILS] [93f69801-e20c-4f11-b5e9-7a022d002feb] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=422 allocations=5886 duration=17.56 view=0.06 db=5.33 
+.[INFO] [RAILS] --------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::SecurityTest: test_no_payload_carries_access_codes_or_password_hashes 
+[INFO] [RAILS] --------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [4a721bc4-349d-4aec-9664-45929908b6b6] method=GET path=/api/tour/v1/properties/286082541 format=json controller=Api::TourApp::V1::PropertiesController action=show status=200 allocations=13591 duration=28.65 view=0.14 db=9.45 
+[INFO] [RAILS] [7ddbfc36-19ff-465e-9a4e-a265165fa7f3] method=GET path=/api/tour/v1/properties/286082541/stops format=json controller=Api::TourApp::V1::StopsController action=index status=200 allocations=7804 duration=21.21 view=0.27 db=6.24 
+[INFO] [RAILS] [dc1d459d-b2b7-4b51-be87-0a92c8d85e16] method=GET path=/api/tour/v1/properties/286082541/map format=json controller=Api::TourApp::V1::MapsController action=show status=200 allocations=6026 duration=17.15 view=0.15 db=4.45 
+[INFO] [RAILS] [915d0807-51ab-4214-a39d-70b3263dab8d] method=GET path=/api/tour/v1/properties/286082541/graph format=json controller=Api::TourApp::V1::GraphsController action=show status=200 allocations=5574 duration=19.50 view=0.09 db=4.74 
+[INFO] [RAILS] [b1c06329-9836-47b8-b516-9d68b7c953f6] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=200 allocations=1159 duration=3.62 view=0.13 db=0.86 
+[INFO] [RAILS] [bed37eae-a7e8-43ae-8a52-217c0b16bba1] method=GET path=/api/tour/v1/auth/me format=json controller=Api::TourApp::V1::AuthController action=me status=200 allocations=570 duration=1.50 view=0.09 db=0.27 
+.[INFO] [RAILS] ------------------------------------------------------------------------------ 
+[INFO] [RAILS] TourSetup::SaveTest: test_unknown_stops_and_bad_durations_are_refused_together 
+[INFO] [RAILS] ------------------------------------------------------------------------------ 
+.[INFO] [RAILS] ----------------------------------------------------------------------------- 
+[INFO] [RAILS] TourSetup::SaveTest: test_deletes_an_elevator_record_and_its_stops_everywhere 
+[INFO] [RAILS] ----------------------------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------- 
+[INFO] [RAILS] TourSetup::SaveTest: test_adds,_removes,_hides,_orders_and_times_stops_in_one_save 
+[INFO] [RAILS] ---------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------- 
+[INFO] [RAILS] TourSetup::SaveTest: test_a_stale_version_is_refused 
+[INFO] [RAILS] ---------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+[INFO] [RAILS] TourSetup::SaveTest: test_adding_a_record_that_is_already_a_stop_does_not_duplicate_it 
+[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------ 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_the_login_body_is_validated 
+[INFO] [RAILS] ------------------------------------------------------------ 
+[INFO] [RAILS] [7f1b420f-8e30-4e89-96c2-8aec0c03f858] method=POST path=/api/tour/v1/auth/login format=json controller=Api::TourApp::V1::AuthController action=login status=422 allocations=186 duration=0.28 view=0.07 db=0.00 
+[INFO] [RAILS] [1cbf0988-1ab1-4f32-b1e4-7f1bce1333c2] method=POST path=/api/tour/v1/auth/login format=json controller=Api::TourApp::V1::AuthController action=login status=422 allocations=170 duration=0.15 view=0.04 db=0.00 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_anything_else_under_the_prefix_answers_the_API_envelope 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [a164dbf3-864b-4a60-88ea-2a07ae611111] method=GET path=/api/tour/v1/nothing format=json controller=Api::TourApp::V1::ErrorsController action=not_found status=404 allocations=191 duration=0.20 view=0.05 db=0.00 
+.[INFO] [RAILS] --------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_a_non_Super_Admin_token_is_forbidden 
+[INFO] [RAILS] --------------------------------------------------------------------- 
+[INFO] [RAILS] [7f9d1b40-ac8a-465b-89bf-ce139a7cf55e] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=403 allocations=721 duration=1.32 view=0.04 db=0.48 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_an_account_that_is_not_a_portal_user_is_refused_and_its_minted_token_revoked 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------- 
+[WARN] [RAILS] [85d444a9-90fc-4c8b-a1c8-b15687e98be0] [tour-api] login refused user_id=518081773 
+[INFO] [RAILS] [85d444a9-90fc-4c8b-a1c8-b15687e98be0] method=POST path=/api/tour/v1/auth/login format=json controller=Api::TourApp::V1::AuthController action=login status=403 allocations=5192 duration=15.10 view=0.08 db=2.53 
+.[INFO] [RAILS] --------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_a_malformed_Authorization_header_is_unauthorized 
+[INFO] [RAILS] --------------------------------------------------------------------------------- 
+[INFO] [RAILS] [b8f172ad-084a-4c60-a110-d8ba298bf791] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=401 allocations=154 duration=0.22 view=0.04 db=0.00 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_a_missing_token_answers_401_unauthorized_with_a_challenge 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] [e4c5a0a2-0f49-4721-b8cf-a917c6da9ed5] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=401 allocations=147 duration=0.24 view=0.06 db=0.00 
+.[INFO] [RAILS] ------------------------------------------------------ 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_health_needs_no_token 
+[INFO] [RAILS] ------------------------------------------------------ 
+[INFO] [RAILS] [8abb68c0-4e7f-4349-95e4-358dd7b1ec58] method=GET path=/api/tour/v1/health format=json controller=Api::TourApp::V1::HealthController action=show status=200 allocations=244 duration=0.46 view=0.06 db=0.15 
+.[INFO] [RAILS] ---------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_me_and_logout 
+[INFO] [RAILS] ---------------------------------------------- 
+[INFO] [RAILS] [33caa58a-f0f6-472a-8e49-f7dd9284dbc2] method=GET path=/api/tour/v1/auth/me format=json controller=Api::TourApp::V1::AuthController action=me status=200 allocations=504 duration=0.81 view=0.04 db=0.25 
+[INFO] [RAILS] [5dec33bb-3e6d-4a39-b8d2-caf3f85f8847] [tour-api] logout user_id=1015818117 revoked=true 
+[INFO] [RAILS] [5dec33bb-3e6d-4a39-b8d2-caf3f85f8847] method=POST path=/api/tour/v1/auth/logout format=json controller=Api::TourApp::V1::AuthController action=logout status=200 allocations=753 duration=2.60 view=0.07 db=0.92 
+[INFO] [RAILS] [54159f03-7dae-46f2-a6be-ba56f3fdef8a] method=GET path=/api/tour/v1/auth/me format=json controller=Api::TourApp::V1::AuthController action=me status=401 allocations=274 duration=0.51 view=0.05 db=0.11 
+.[INFO] [RAILS] ------------------------------------------------------------ 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_an_unknown_token_is_invalid 
+[INFO] [RAILS] ------------------------------------------------------------ 
+[INFO] [RAILS] [f14655ce-2e9b-4bac-b9a5-c96e9e8ea357] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=401 allocations=254 duration=0.44 view=0.04 db=0.17 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_a_wrong_password_or_an_unknown_account_is_refused 
+[INFO] [RAILS] ---------------------------------------------------------------------------------- 
+[INFO] [RAILS] [63d2d9d6-f99a-4f4e-a774-f68d5ce9afed] method=POST path=/api/tour/v1/auth/login format=json controller=Api::TourApp::V1::AuthController action=login status=401 allocations=676 duration=3.10 view=0.05 db=0.25 
+[INFO] [RAILS] [f1ff98ba-8d85-434e-b57c-ff614fffea99] method=POST path=/api/tour/v1/auth/login format=json controller=Api::TourApp::V1::AuthController action=login status=401 allocations=505 duration=0.81 view=0.04 db=0.25 
+.[INFO] [RAILS] ------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_a_token_without_a_user 
+[INFO] [RAILS] ------------------------------------------------------- 
+[INFO] [RAILS] [8d88d3c7-302d-4831-91a0-f69b9b8face5] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=401 allocations=278 duration=0.44 view=0.04 db=0.12 
+[INFO] [RAILS] [c8fc890b-a872-4823-96d8-a327f32f9890] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=401 allocations=459 duration=1.07 view=0.07 db=0.28 
+.[INFO] [RAILS] ------------------------------------------------ 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_a_revoked_token 
+[INFO] [RAILS] ------------------------------------------------ 
+[INFO] [RAILS] [55d0b902-1bc3-4710-ba7f-9b91af568f67] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=401 allocations=271 duration=0.63 view=0.06 db=0.17 
+.[INFO] [RAILS] ----------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_a_portal_user_who_is_not_a_Super_Admin_is_refused_as_not_super_admin 
+[INFO] [RAILS] ----------------------------------------------------------------------------------------------------- 
+[WARN] [RAILS] [bf95f322-d37d-4289-8666-bbc6dc27c9c2] [tour-api] login refused user_id=518081773 
+[INFO] [RAILS] [bf95f322-d37d-4289-8666-bbc6dc27c9c2] method=POST path=/api/tour/v1/auth/login format=json controller=Api::TourApp::V1::AuthController action=login status=403 allocations=1895 duration=5.49 view=0.08 db=1.53 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_a_Super_Admin_of_an_inactivated_company_is_inactive 
+[INFO] [RAILS] ------------------------------------------------------------------------------------ 
+[WARN] [RAILS] [d30cdd6f-03b1-4978-859c-9c809e3689bb] [tour-api] login refused user_id=1015818117 
+[INFO] [RAILS] [d30cdd6f-03b1-4978-859c-9c809e3689bb] method=POST path=/api/tour/v1/auth/login format=json controller=Api::TourApp::V1::AuthController action=login status=403 allocations=1886 duration=6.48 view=0.08 db=2.03 
+.[INFO] [RAILS] --------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_a_Super_Admin_signs_in_through_the_Doorkeeper_password_grant 
+[INFO] [RAILS] --------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [687ef9a6-7243-4342-b782-06dcef6c0d94] [tour-api] login ok user_id=1015818117 
+[INFO] [RAILS] [687ef9a6-7243-4342-b782-06dcef6c0d94] method=POST path=/api/tour/v1/auth/login format=json controller=Api::TourApp::V1::AuthController action=login status=200 allocations=1349 duration=4.82 view=0.08 db=1.32 
+.[INFO] [RAILS] ------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::AuthTest: test_an_expired_token 
+[INFO] [RAILS] ------------------------------------------------- 
+[INFO] [RAILS] [962e0284-116e-4bbb-9301-ba88e43d6f05] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=401 allocations=278 duration=0.92 view=0.08 db=0.20 
+.[INFO] [RAILS] -------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::PropertiesTest: test_the_detail_of_a_tour_property 
+[INFO] [RAILS] -------------------------------------------------------------------- 
+[INFO] [RAILS] [9d8410d2-87fe-45fa-aac4-c6e20a474542] method=GET path=/api/tour/v1/properties/286082541 format=json controller=Api::TourApp::V1::PropertiesController action=show status=200 allocations=13561 duration=27.41 view=0.12 db=10.56 
+.[INFO] [RAILS] -------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::PropertiesTest: test_the_detail_of_a_property_without_the_tour 
+[INFO] [RAILS] -------------------------------------------------------------------------------- 
+[INFO] [RAILS] [07541bb2-64b5-4165-989d-11ae40c2bc7f] method=GET path=/api/tour/v1/properties/203999749 format=json controller=Api::TourApp::V1::PropertiesController action=show status=200 allocations=1950 duration=4.30 view=0.10 db=1.64 
+.[INFO] [RAILS] ------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::PropertiesTest: test_nothing_is_written_by_the_read_endpoints 
+[INFO] [RAILS] ------------------------------------------------------------------------------- 
+[INFO] [RAILS] [be44dc17-052b-4049-a62f-e25e3ffec293] method=GET path=/api/tour/v1/properties/286082541 format=json controller=Api::TourApp::V1::PropertiesController action=show status=200 allocations=13550 duration=33.40 view=0.16 db=13.30 
+[INFO] [RAILS] [fa649844-d87f-44e9-8881-247daa393d11] method=GET path=/api/tour/v1/properties/286082541/stops format=json controller=Api::TourApp::V1::StopsController action=index status=200 allocations=7802 duration=24.46 view=0.38 db=7.87 
+[INFO] [RAILS] [74566b76-2a71-4e4e-918a-597891442182] method=GET path=/api/tour/v1/properties/286082541/graph format=json controller=Api::TourApp::V1::GraphsController action=show status=200 allocations=5858 duration=18.76 view=0.06 db=5.81 
+[INFO] [RAILS] [668c3164-935a-43f0-be6b-658623ba309a] method=POST path=/api/tour/v1/properties/286082541/tour-route format=json controller=Api::TourApp::V1::RoutesController action=tour_route status=200 allocations=9028 duration=25.59 view=0.96 db=7.88 
+.[INFO] [RAILS] -------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::PropertiesTest: test_the_property_list 
+[INFO] [RAILS] -------------------------------------------------------- 
+[INFO] [RAILS] [f38242d4-1d11-4bff-b3f2-a4df0c9a7b51] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=200 allocations=1088 duration=3.84 view=0.15 db=1.82 
+.[INFO] [RAILS] ----------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::PropertiesTest: test_the_list_filters_by_tour_enabled_and_q 
+[INFO] [RAILS] ----------------------------------------------------------------------------- 
+[INFO] [RAILS] [f5e9b8fe-621f-443f-ad13-bc1c585e4733] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=200 allocations=1027 duration=2.81 view=0.09 db=1.06 
+[INFO] [RAILS] [faf9c450-066b-4757-9efa-9a97d39afa55] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=200 allocations=629 duration=1.59 view=0.09 db=0.39 
+[INFO] [RAILS] [682b1f8f-79a5-46e1-bc27-dbcf6bcf04c4] method=GET path=/api/tour/v1/properties format=json controller=Api::TourApp::V1::PropertiesController action=index status=422 allocations=515 duration=1.16 view=0.06 db=0.30 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::PropertiesTest: test_a_property_without_the_tour_refuses_every_tour_endpoint 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [956b89da-6aae-4bf0-b2c8-23076e1d7975] method=GET path=/api/tour/v1/properties/203999749/stops format=json controller=Api::TourApp::V1::StopsController action=index status=422 allocations=1419 duration=2.56 view=0.08 db=0.53 
+[INFO] [RAILS] [15b5da9d-f3f8-4775-9b86-42971a3e0c69] method=GET path=/api/tour/v1/properties/203999749/map format=json controller=Api::TourApp::V1::MapsController action=show status=422 allocations=1423 duration=3.05 view=0.06 db=0.85 
+[INFO] [RAILS] [c6646bdc-3f83-4d58-ae5b-9b136a84a79e] method=GET path=/api/tour/v1/properties/203999749/graph format=json controller=Api::TourApp::V1::GraphsController action=show status=422 allocations=1423 duration=3.59 view=0.07 db=1.13 
+[INFO] [RAILS] [d417a4d0-2e11-4538-bc24-f5489881439b] method=GET path=/api/tour/v1/properties/203999749/map/levels/floorplate:1 format=json controller=Api::TourApp::V1::MapsController action=level status=422 allocations=1423 duration=3.66 view=0.06 db=1.23 
+[INFO] [RAILS] [dc5cec7b-fa85-40c1-a8d9-d024c510a193] method=POST path=/api/tour/v1/properties/203999749/route format=json controller=Api::TourApp::V1::RoutesController action=route status=422 allocations=1423 duration=3.39 view=0.06 db=1.06 
+[INFO] [RAILS] [09a7a48a-2c72-4535-bf04-cb32ecf99bf4] method=POST path=/api/tour/v1/properties/203999749/stops/distances format=json controller=Api::TourApp::V1::RoutesController action=distances status=422 allocations=1423 duration=3.17 view=0.04 db=1.03 
+.[INFO] [RAILS] ----------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::PropertiesTest: test_an_unknown_property_is_404 
+[INFO] [RAILS] ----------------------------------------------------------------- 
+[INFO] [RAILS] [bf87f4b9-5374-4273-ac05-60c64b9c5aea] method=GET path=/api/tour/v1/properties/999999 format=json controller=Api::TourApp::V1::PropertiesController action=show status=404 allocations=1029 duration=1.87 view=0.07 db=0.57 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Wayfinding::RouteServiceTest: test_routes_across_floors_through_the_elevator_with_legs_and_steps 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+.[INFO] [RAILS] --------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::RouteServiceTest: test_a_step-free_route_refuses_stairs_when_the_lift_is_not_accessible 
+[INFO] [RAILS] --------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] --------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::RouteServiceTest: test_an_explicit_link_is_honoured 
+[INFO] [RAILS] --------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::RouteServiceTest: test_two_single-floor_levels_are_joined_by_the_shared_elevator,_never_by_a_walk 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::RouteServiceTest: test_the_whole_tour_routes_start_to_stops_and_back 
+[INFO] [RAILS] -------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::RouteServiceTest: test_the_Tour_App_serializer_exposes_domain_concepts_without_access_codes 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Wayfinding::RouteServiceTest: test_a_blocker_cuts_the_corridor_and_the_error_says_so 
+[INFO] [RAILS] ------------------------------------------------------------------------------------ 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::RouteServiceTest: test_the_graph_attaches_stops_to_their_nearest_routable_node_unless_told_otherwise 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::RouteServiceTest: test_a_detached_stop_is_not_linked 
+[INFO] [RAILS] ---------------------------------------------------------------- 
+.[INFO] [RAILS] ----------------------------------------------------------------------------- 
+[INFO] [RAILS] Wayfinding::RouteServiceTest: test_unknown_and_identical_endpoints_are_errors 
+[INFO] [RAILS] ----------------------------------------------------------------------------- 
+.[INFO] [RAILS] --------------------------------------------------------- 
+[INFO] [RAILS] ElevatorTest: test_existing_rows_are_accessible_elevators 
+[INFO] [RAILS] --------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------- 
+[INFO] [RAILS] ElevatorTest: test_destroying_an_elevator_removes_its_stops_in_every_tour 
+[INFO] [RAILS] ------------------------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------------- 
+[INFO] [RAILS] ElevatorTest: test_kind_is_validated_and_stairs_are_stairs 
+[INFO] [RAILS] ---------------------------------------------------------- 
+.[INFO] [RAILS] --------------------------------------------------------------------- 
+[INFO] [RAILS] ElevatorTest: test_a_unit_stop_sharing_the_elevator_id_is_not_touched 
+[INFO] [RAILS] --------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------ 
+[INFO] [RAILS] HallwayTest: test_destroying_a_level_destroys_its_hallways_and_edge_rows 
+[INFO] [RAILS] ------------------------------------------------------------------------ 
+.[INFO] [RAILS] ----------------------------------------------------------- 
+[INFO] [RAILS] HallwayTest: test_linked_to?_reads_both_sides_and_edge_rows 
+[INFO] [RAILS] ----------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------- 
+[INFO] [RAILS] HallwayTest: test_validates_the_enumerations 
+[INFO] [RAILS] -------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------ 
+[INFO] [RAILS] HallwayTest: test_existing_rows_read_as_manual,_confirmed,_raster_and_routable 
+[INFO] [RAILS] ------------------------------------------------------------------------------ 
+.[INFO] [RAILS] ----------------------------------------------------------------- 
+[INFO] [RAILS] HallwayTest: test_routable_leaves_out_pending_and_svg-space_nodes 
+[INFO] [RAILS] ----------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] HallwayTest: test_dropping_an_adjacency_the_legacy_way_prunes_the_edge_row_that_decorated_it 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+[INFO] [RAILS] HallwayTest: test_a_node_created_through_the_legacy_association_inherits_its_community 
+[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] --------------------------------------------------------------------------- 
+[INFO] [RAILS] HallwayTest: test_a_pending_edge_row_survives_unrelated_next_points_changes 
+[INFO] [RAILS] --------------------------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------- 
+[INFO] [RAILS] HallwayTest: test_every_save_moves_the_level_version 
+[INFO] [RAILS] ---------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------- 
+[INFO] [RAILS] TourApi::AssetsTest: test_only_S3_and_this_host_are_read;_files_are_validated_and_cached 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [tour-api] svg fetch 61 bytes 1/a.svg 
+[WARN] [RAILS] [tour-api] svg fetch https://bucket.s3.amazonaws.com/uploads/x/b.svg -> 403 
+[INFO] [RAILS] [tour-api] svg fetch 7 bytes x/c.svg 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] TourApi::AssetsTest: test_view_box_of_reads_the_root_viewBox_or_the_width/height,_from_the_first_element_only 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] TourApi::AssetsTest: test_a_fetched_file_is_kept_on_disk_and_survives_a_cleared_memory_cache 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [tour-api] svg fetch 59 bytes 5/plan.svg 
+[INFO] [RAILS] [tour-api] svg disk 59 bytes 5/plan.svg 
+[INFO] [RAILS] [tour-api] svg fetch 7 bytes x/bad.svg 
+.[INFO] [RAILS] ------------------------------------------------------------------------- 
+[INFO] [RAILS] TourApi::AssetsTest: test_an_upload_this_host_serves_is_read_from_public/ 
+[INFO] [RAILS] ------------------------------------------------------------------------- 
+[INFO] [RAILS] [tour-api] svg fetch 59 bytes 999999/local.svg 
+.[INFO] [RAILS] --------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] HallwaysControllerTest: test_with_forgery_protection_on,_a_missing_token_is_a_403_csrf_and_the_map_token_passes 
+[INFO] [RAILS] --------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [4f2ad656-095f-421e-81ba-2f2899ae0acd] method=PUT path=/communities/286082541/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=403 allocations=1099 duration=2.30 view=0.11 db=0.70 
+[INFO] [RAILS] [a8f1ee66-0ecc-4ab1-a87f-2228774c01db] method=GET path=/automate_plotting.json format=json controller=AutomatePlottingController action=index status=200 allocations=8671 duration=21.36 view=0.59 db=7.79 
+[INFO] [RAILS] [09a52fd2-09e4-4ebf-8196-ba2e4cc4f535] method=PUT path=/communities/286082541/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=200 allocations=9128 duration=24.40 view=0.26 db=7.10 
+.[INFO] [RAILS] ------------------------------------------------------------------------------- 
+[INFO] [RAILS] HallwaysControllerTest: test_a_stale_version_answers_409_with_the_current_graph 
+[INFO] [RAILS] ------------------------------------------------------------------------------- 
+[INFO] [RAILS] [490c346a-bc5b-46ac-bb64-7c4401d5ec06] method=PUT path=/communities/286082541/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=409 allocations=3937 duration=7.58 view=0.19 db=3.22 
+.[INFO] [RAILS] ----------------------------------------------------------- 
+[INFO] [RAILS] HallwaysControllerTest: test_anonymous_requests_are_refused 
+[INFO] [RAILS] ----------------------------------------------------------- 
+[INFO] [RAILS] [35f40fca-a75b-4e2d-98f3-d593f530400b] method=PUT path=/communities/286082541/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=0 allocations=1029 duration=1.71 view=0.00 db=0.36 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] HallwaysControllerTest: test_a_foreign_floorplate_is_not_found,_never_a_cross-tenant_write 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] [ae3e4bc9-8bda-4649-b67d-0d4690360e80] method=PUT path=/communities/286082541/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=404 allocations=1482 duration=2.99 view=0.13 db=0.76 
+.[INFO] [RAILS] --------------------------------------------------------------------------- 
+[INFO] [RAILS] HallwaysControllerTest: test_a_replayed_detect_run_answers_the_first_result 
+[INFO] [RAILS] --------------------------------------------------------------------------- 
+[INFO] [RAILS] [8512bc95-086d-4d9c-bcd0-ad4f0b8d052e] method=PUT path=/communities/286082541/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=200 allocations=7539 duration=15.67 view=0.20 db=6.55 
+[INFO] [RAILS] [b39d21b2-6488-4ad1-97f9-da066760ab0e] method=PUT path=/communities/286082541/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=200 allocations=4792 duration=10.55 view=0.18 db=3.77 
+.[INFO] [RAILS] ------------------------------------------------------------- 
+[INFO] [RAILS] HallwaysControllerTest: test_an_unknown_property_is_not_found 
+[INFO] [RAILS] ------------------------------------------------------------- 
+[INFO] [RAILS] [076ee3b7-52aa-445a-b1a3-ccb080487326] method=PUT path=/communities/999999/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=404 allocations=1215 duration=2.91 view=0.18 db=0.60 
+.[INFO] [RAILS] --------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] HallwaysControllerTest: test_an_invalid_payload_answers_422_with_per-item_errors_and_writes_nothing 
+[INFO] [RAILS] --------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [a9a5575c-ce6d-44b9-a80e-c64c7b457d29] method=PUT path=/communities/286082541/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=422 allocations=2920 duration=6.57 view=0.14 db=1.92 
+.[INFO] [RAILS] --------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] HallwaysControllerTest: test_legacy_update_point,_connect_leaf_point,_save_selected_point_and_remove_point_still_work 
+[INFO] [RAILS] --------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [1fc0bb72-a3eb-486d-814f-9408918bb3d1] method=POST path=/update_hallways_point format=html controller=HallwaysController action=update_point status=200 allocations=2739 duration=8.44 view=0.70 db=2.45 
+[INFO] [RAILS] [622bfc71-702f-41e3-913f-0d4ed5e800bd] method=POST path=/connect_leaf_point format=html controller=HallwaysController action=connect_leaf_point status=200 allocations=3817 duration=11.65 view=0.73 db=3.84 
+[INFO] [RAILS] [397efa48-678d-4e6c-9c17-672ca6afe63b] method=POST path=/save_selected_point format=html controller=HallwaysController action=save_selected_point status=200 allocations=2747 duration=9.25 view=0.07 db=3.10 
+[INFO] [RAILS] [5066265f-4bb7-476b-adfd-c8c1782a5722] method=POST path=/delete_hallways_point format=html controller=HallwaysController action=remove_point status=200 allocations=7880 duration=25.40 view=0.62 db=8.09 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] HallwaysControllerTest: test_legacy_point_save_still_creates_and_chains_a_point_and_answers_the_level_list 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [541803af-8621-4de4-825e-391a99a08891] method=POST path=/save_hallways_point format=html controller=HallwaysController action=point_save status=200 allocations=3769 duration=11.21 view=0.75 db=3.60 
+.[INFO] [RAILS] ------------------------------------------------------------------------ 
+[INFO] [RAILS] HallwaysControllerTest: test_an_assigned_community_admin_saves_the_graph 
+[INFO] [RAILS] ------------------------------------------------------------------------ 
+[INFO] [RAILS] [3784afa8-c94f-47ce-bbf0-05dd5e259ba7] method=PUT path=/communities/286082541/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=200 allocations=8768 duration=30.68 view=0.38 db=11.89 
+.[INFO] [RAILS] ---------------------------------------------------------- 
+[INFO] [RAILS] HallwaysControllerTest: test_a_super_admin_saves_the_graph 
+[INFO] [RAILS] ---------------------------------------------------------- 
+[INFO] [RAILS] [0257c4f2-157c-41d3-8fc9-330a5c6cf10c] method=PUT path=/communities/286082541/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=200 allocations=8334 duration=19.77 view=0.27 db=7.08 
+.[INFO] [RAILS] --------------------------------------------------------------- 
+[INFO] [RAILS] HallwaysControllerTest: test_a_community_assistant_may_not_edit 
+[INFO] [RAILS] --------------------------------------------------------------- 
+[INFO] [RAILS] [32753460-18b8-435a-bf00-6c86ebc370c8] method=PUT path=/communities/286082541/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=403 allocations=1469 duration=2.70 view=0.10 db=0.83 
+.[INFO] [RAILS] ---------------------------------------------------------------------------- 
+[INFO] [RAILS] HallwaysControllerTest: test_a_company_admin_of_another_company_is_forbidden 
+[INFO] [RAILS] ---------------------------------------------------------------------------- 
+[INFO] [RAILS] [744962f6-eed1-4f3a-b113-ffbf1712ed49] method=PUT path=/communities/286082541/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=403 allocations=1679 duration=3.16 view=0.07 db=1.22 
+.[INFO] [RAILS] ---------------------------------------------------------------------------- 
+[INFO] [RAILS] HallwaysControllerTest: test_legacy_renders_hide_pending_and_svg-space_nodes 
+[INFO] [RAILS] ---------------------------------------------------------------------------- 
+[INFO] [RAILS] [77d417d1-0a1b-443c-80c9-0243800594e1] method=POST path=/save_selected_point format=html controller=HallwaysController action=save_selected_point status=200 allocations=2194 duration=10.26 view=0.21 db=2.40 
+[INFO] [RAILS] [8a157f0d-3115-4e00-859c-484cff90d844] method=POST path=/update_hallways_point format=html controller=HallwaysController action=update_point status=200 allocations=2364 duration=6.35 view=0.86 db=1.60 
+.[INFO] [RAILS] ----------------------------------------------------------------- 
+[INFO] [RAILS] HallwaysControllerTest: test_the_kill_switch_answers_404_disabled 
+[INFO] [RAILS] ----------------------------------------------------------------- 
+[INFO] [RAILS] [f5f8cffa-e90e-4446-9050-57e0b8ce770d] method=PUT path=/communities/286082541/wayfinding_graph.json format=json controller=HallwaysController action=save_graph status=404 allocations=1061 duration=1.87 view=0.09 db=0.52 
+.[INFO] [RAILS] -------------------------------------------------------------------- 
+[INFO] [RAILS] UserTest: test_map_edits_are_for_admin_roles_within_their_properties 
+[INFO] [RAILS] -------------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+[INFO] [RAILS] UserTest: test_a_company_admin_may_access_the_company_properties_and_the_assigned_ones 
+[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------ 
+[INFO] [RAILS] UserTest: test_a_super_admin_may_access_every_property 
+[INFO] [RAILS] ------------------------------------------------------ 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] UserTest: test_a_Dwelo_admin_may_access_assigned,_Dwelo-created_and_Dwelo-company_properties 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------------- 
+[INFO] [RAILS] UserTest: test_a_community_assistant_may_read_but_not_edit 
+[INFO] [RAILS] ---------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------- 
+[INFO] [RAILS] UserTest: test_everyone_else_may_access_only_the_assigned_properties 
+[INFO] [RAILS] -------------------------------------------------------------------- 
+.[INFO] [RAILS] ----------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::MapsTest: test_instructions_are_plain_text_everywhere 
+[INFO] [RAILS] ----------------------------------------------------------------------- 
+[INFO] [RAILS] [0aabc9c2-2bba-4d25-86ab-7d5303f4bfac] method=GET path=/api/tour/v1/properties/286082541/stops format=json controller=Api::TourApp::V1::StopsController action=index status=200 allocations=13355 duration=38.16 view=0.28 db=13.33 
+[INFO] [RAILS] [a9d77562-78d1-4bba-b48b-8bee324b9a53] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=200 allocations=5862 duration=17.34 view=0.42 db=4.58 
+[INFO] [RAILS] [ee73ac24-62c2-4406-9090-1af6b9db06aa] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=200 allocations=11832 duration=27.12 view=0.34 db=7.84 
+.[INFO] [RAILS] ------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::MapsTest: test_one_level_with_its_nodes_and_paths 
+[INFO] [RAILS] ------------------------------------------------------------------- 
+[INFO] [RAILS] [418f231f-ceb4-42d5-999d-20c308ab34f1] method=GET path=/api/tour/v1/properties/286082541/map/levels/floorplate:515826024 format=json controller=Api::TourApp::V1::MapsController action=level status=200 allocations=11452 duration=19.88 view=0.19 db=8.35 
+[INFO] [RAILS] [6bbb301d-de36-4807-8e65-f4e689930a85] method=GET path=/api/tour/v1/properties/286082541/map/levels/floorplate:77 format=json controller=Api::TourApp::V1::MapsController action=level status=404 allocations=5329 duration=14.62 view=0.07 db=4.85 
+.[INFO] [RAILS] ----------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::MapsTest: test_the_floor_SVG_is_served_validated_and_cached,_with_an_ETag_and_its_viewBox 
+[INFO] [RAILS] ----------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [f91ea048-02a7-4f49-bd64-0763299c4f22] [tour-api] svg fetch 218 bytes 515826024/b.svg 
+[INFO] [RAILS] [f91ea048-02a7-4f49-bd64-0763299c4f22] method=GET path=/api/tour/v1/properties/286082541/map/levels/floorplate:515826024/svg format=json controller=Api::TourApp::V1::MapsController action=svg status=200 allocations=11740 duration=21.94 view=1.57 db=8.17 
+[INFO] [RAILS] [0d3e5651-4833-46eb-9e88-eac1dfe04dfd] method=GET path=/api/tour/v1/properties/286082541/map/levels/floorplate:515826024/svg format=json controller=Api::TourApp::V1::MapsController action=svg status=304 allocations=5298 duration=15.38 view=0.00 db=5.50 
+.[INFO] [RAILS] --------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::MapsTest: test_the_map:_levels,_buildings_and_the_per-level_SVG_facts 
+[INFO] [RAILS] --------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [6dda9e9c-3175-442a-ab2e-7d749cb4b0ad] method=GET path=/api/tour/v1/properties/286082541/map format=json controller=Api::TourApp::V1::MapsController action=show status=200 allocations=11384 duration=21.43 view=0.19 db=9.80 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::MapsTest: test_the_graph_payload,_every_field_present,_with_its_ETag 
+[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [ec2019b3-f579-41a5-b73f-23a75c56c906] method=GET path=/api/tour/v1/properties/286082541/graph format=json controller=Api::TourApp::V1::GraphsController action=show status=200 allocations=11434 duration=19.71 view=0.07 db=8.10 
+[INFO] [RAILS] [91713439-4deb-4542-97d9-3b23271c5664] method=GET path=/api/tour/v1/properties/286082541/graph format=json controller=Api::TourApp::V1::GraphsController action=show status=304 allocations=5277 duration=13.63 view=0.00 db=3.78 
+[INFO] [RAILS] [1c62178c-4525-4119-805c-e030a9c6e218] method=GET path=/api/tour/v1/properties/286082541/graph format=json controller=Api::TourApp::V1::GraphsController action=show status=200 allocations=5305 duration=21.51 view=0.08 db=5.63 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::MapsTest: test_SVG_errors:_no_file,_an_invalid_file,_an_unknown_level,_no_token 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [54be879c-ba9c-4d97-8493-ae0300dadab3] method=GET path=/api/tour/v1/properties/286082541/map/levels/floorplate:129478876/svg format=json controller=Api::TourApp::V1::MapsController action=svg status=404 allocations=11200 duration=19.54 view=0.09 db=7.94 
+[INFO] [RAILS] [1da350c7-e954-421f-9757-4db4bb72e10a] [tour-api] svg fetch 15 bytes 599451145/bad.svg 
+[INFO] [RAILS] [1da350c7-e954-421f-9757-4db4bb72e10a] method=GET path=/api/tour/v1/properties/286082541/map/levels/floorplate:599451145/svg format=json controller=Api::TourApp::V1::MapsController action=svg status=422 allocations=5450 duration=14.47 view=0.08 db=4.61 
+[INFO] [RAILS] [8e3e4ffb-99a3-42c5-98a7-f84ac7398b3d] method=GET path=/api/tour/v1/properties/286082541/map/levels/floorplate:99/svg format=json controller=Api::TourApp::V1::MapsController action=svg status=404 allocations=5330 duration=14.61 view=0.07 db=4.76 
+[INFO] [RAILS] [04872ccc-2534-4d4f-b9cb-2a1f0001c1a9] method=GET path=/api/tour/v1/properties/286082541/map/levels/floorplate:515826024/svg format=json controller=Api::TourApp::V1::MapsController action=svg status=401 allocations=147 duration=0.23 view=0.04 db=0.00 
+[WARN] [RAILS] [56b6a147-4b26-40f0-9ac3-03595897d465] [tour-api] svg fetch https://bucket.s3-accelerate.amazonaws.com/uploads/floorplate/svg_image/129478876/missing.svg -> 400 
+[INFO] [RAILS] [56b6a147-4b26-40f0-9ac3-03595897d465] method=GET path=/api/tour/v1/properties/286082541/map/levels/floorplate:129478876/svg format=json controller=Api::TourApp::V1::MapsController action=svg status=502 allocations=12678 duration=1314.41 view=0.27 db=6.55 
+.[INFO] [RAILS] ------------------------------------------------------------------------------ 
+[INFO] [RAILS] Api::TourApp::V1::MapsTest: test_a_calibrated_transform_is_carried_when_stored 
+[INFO] [RAILS] ------------------------------------------------------------------------------ 
+[INFO] [RAILS] [3b6e0eb3-9e63-4ac9-9ea7-f65e62efb426] method=GET path=/api/tour/v1/properties/286082541/map format=json controller=Api::TourApp::V1::MapsController action=show status=200 allocations=11403 duration=43.11 view=0.16 db=9.91 
+[INFO] [RAILS] [249f4cb6-e9e8-4b1d-bc81-ddca1149bbe2] method=GET path=/api/tour/v1/properties/286082541/map format=json controller=Api::TourApp::V1::MapsController action=show status=200 allocations=11444 duration=27.87 view=0.15 db=8.30 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::StopsTest: test_groups_and_membership:_Show_in_Stops_List_on_and_off,_hidden_stops,_duplicates,_tour_order 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [6da90b05-0936-4c46-89e0-126c0c51b3ac] method=GET path=/api/tour/v1/properties/286082541/stops format=json controller=Api::TourApp::V1::StopsController action=index status=200 allocations=13352 duration=21.57 view=0.27 db=8.80 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Api::TourApp::V1::StopsTest: test_turning_Show_in_Stops_List_off_through_the_CMS_rule_removes_the_stop 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] [c3225460-d989-4e70-b679-342a294a392b] method=GET path=/api/tour/v1/properties/286082541/stops format=json controller=Api::TourApp::V1::StopsController action=index status=200 allocations=13081 duration=25.41 view=0.24 db=11.94 
+[INFO] [RAILS] [1a5e8ebc-8b5c-4f82-ae28-0bb824b1e282] method=GET path=/api/tour/v1/properties/286082541/stops format=json controller=Api::TourApp::V1::StopsController action=index status=200 allocations=13423 duration=30.85 view=0.25 db=10.98 
+.[INFO] [RAILS] --------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::StopsTest: test_the_stop_contract 
+[INFO] [RAILS] --------------------------------------------------- 
+[INFO] [RAILS] [90fdd774-db65-4594-8b8c-801b5d37dc09] method=GET path=/api/tour/v1/properties/286082541/stops format=json controller=Api::TourApp::V1::StopsController action=index status=200 allocations=13335 duration=24.48 view=0.28 db=9.54 
+[INFO] [RAILS] [ccc61b81-f38d-4c0b-ae84-e3137e46dfae] method=GET path=/api/tour/v1/properties/286082541/stops format=json controller=Api::TourApp::V1::StopsController action=index status=200 allocations=7802 duration=19.13 view=0.24 db=6.28 
+.[INFO] [RAILS] -------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::StopsTest: test_no_stops_without_a_main_tour 
+[INFO] [RAILS] -------------------------------------------------------------- 
+[INFO] [RAILS] [687a9a66-7791-4902-b3dd-63fe27b46ff1] method=GET path=/api/tour/v1/properties/286082541/stops format=json controller=Api::TourApp::V1::StopsController action=index status=200 allocations=11301 duration=20.96 view=0.13 db=9.32 
+.[INFO] [RAILS] -------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::StopsTest: test_a_stop_on_an_island_is_listed_but_not_routable 
+[INFO] [RAILS] -------------------------------------------------------------------------------- 
+[INFO] [RAILS] [fd194c52-fbd5-42cf-9e38-b310c1321ce0] method=GET path=/api/tour/v1/properties/286082541/stops format=json controller=Api::TourApp::V1::StopsController action=index status=200 allocations=13335 duration=25.06 view=0.27 db=11.45 
+.[INFO] [RAILS] ------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::StopsTest: test_an_unplotted_stop_has_no_location 
+[INFO] [RAILS] ------------------------------------------------------------------- 
+[INFO] [RAILS] [04c0c440-968c-4899-a6a0-c2944935fcac] method=GET path=/api/tour/v1/properties/286082541/stops format=json controller=Api::TourApp::V1::StopsController action=index status=200 allocations=13450 duration=25.81 view=0.33 db=11.24 
+.[INFO] [RAILS] ----------------------------------------------------------------------- 
+[INFO] [RAILS] ToursControllerTest: test_save_setup_applies_the_tour_setup_in_one_save 
+[INFO] [RAILS] ----------------------------------------------------------------------- 
+[INFO] [RAILS] [5190eb6f-6746-4851-bdd3-d89f98648826] method=PUT path=/communities/286082541/tours/save_setup.json format=json controller=ToursController action=save_setup status=200 allocations=9675 duration=24.04 view=0.24 db=9.06 
+.[INFO] [RAILS] -------------------------------------------------------------------------------- 
+[INFO] [RAILS] ToursControllerTest: test_stop_list_rejects_other_stop_types_and_foreign_records 
+[INFO] [RAILS] -------------------------------------------------------------------------------- 
+[INFO] [RAILS] [d248b216-4b4e-4bbe-8d67-6b1c0b8c2d27] method=PUT path=/communities/286082541/tours/stop_list.json format=json controller=ToursController action=stop_list status=422 allocations=1100 duration=1.76 view=0.09 db=0.40 
+[INFO] [RAILS] [e0944d4f-2d4e-4697-a877-be426b138772] method=PUT path=/communities/286082541/tours/stop_list.json format=json controller=ToursController action=stop_list status=404 allocations=2069 duration=3.64 view=0.06 db=0.83 
+.[INFO] [RAILS] --------------------------------------------------------------------------- 
+[INFO] [RAILS] ToursControllerTest: test_stop_list_on_a_property_without_the_tour_is_a_422 
+[INFO] [RAILS] --------------------------------------------------------------------------- 
+[INFO] [RAILS] [fc0d631e-f0d3-4a91-958c-90ce20fbad0b] method=PUT path=/communities/203999749/tours/stop_list.json format=json controller=ToursController action=stop_list status=422 allocations=1477 duration=2.19 view=0.07 db=0.63 
+.[INFO] [RAILS] ------------------------------------------------------------------- 
+[INFO] [RAILS] ToursControllerTest: test_save_setup_answers_409_on_a_stale_version 
+[INFO] [RAILS] ------------------------------------------------------------------- 
+[INFO] [RAILS] [ca57c0e0-ae71-460e-a53c-08e8147f8fdc] method=PUT path=/communities/286082541/tours/save_setup.json format=json controller=ToursController action=save_setup status=409 allocations=1895 duration=3.43 view=0.09 db=1.34 
+.[INFO] [RAILS] -------------------------------------------------------------------- 
+[INFO] [RAILS] ToursControllerTest: test_the_legacy_display_stop_toggle_still_works 
+[INFO] [RAILS] -------------------------------------------------------------------- 
+[INFO] [RAILS] [0ea8d33f-deed-462d-b40b-9161f37de9d2] method=POST path=/communities/286082541/tours/display_stop format=html controller=ToursController action=display_stop status=200 allocations=5552 duration=15.97 view=0.10 db=7.87 
+.[INFO] [RAILS] ------------------------------------------------------------------------ 
+[INFO] [RAILS] ToursControllerTest: test_stop_list_turns_a_unit_on_and_off_idempotently 
+[INFO] [RAILS] ------------------------------------------------------------------------ 
+[INFO] [RAILS] [662a6157-8463-43be-9d5c-973785287867] method=PUT path=/communities/286082541/tours/stop_list.json format=json controller=ToursController action=stop_list status=200 allocations=5875 duration=11.78 view=0.10 db=5.13 
+[INFO] [RAILS] [c8c60457-0bdd-4c03-ab28-50216c2f8492] method=PUT path=/communities/286082541/tours/stop_list.json format=json controller=ToursController action=stop_list status=200 allocations=4068 duration=7.88 view=0.08 db=2.43 
+[INFO] [RAILS] [8c9314a6-a44e-4343-bd4c-a4e395f473e2] method=PUT path=/communities/286082541/tours/stop_list.json format=json controller=ToursController action=stop_list status=200 allocations=7954 duration=19.57 view=0.12 db=6.21 
+.[INFO] [RAILS] ----------------------------------------------------------------------------------- 
+[INFO] [RAILS] ToursControllerTest: test_save_setup_is_refused_anonymously_and_for_read-only_roles 
+[INFO] [RAILS] ----------------------------------------------------------------------------------- 
+[INFO] [RAILS] [ee0ebbaf-af86-4994-9198-aa8f11d22f6f] method=PUT path=/communities/286082541/tours/save_setup.json format=json controller=ToursController action=save_setup status=0 allocations=1025 duration=1.46 view=0.00 db=0.41 
+[INFO] [RAILS] [f31d92be-a3dc-4326-858a-61a042e61333] method=PUT path=/communities/286082541/tours/save_setup.json format=json controller=ToursController action=save_setup status=403 allocations=1475 duration=2.99 view=0.09 db=0.61 
+.[INFO] [RAILS] -------------------------------------------------------------- 
+[INFO] [RAILS] SchedualToursControllerTest: test_should_destroy_schedual_tour 
+[INFO] [RAILS] -------------------------------------------------------------- 
+S[INFO] [RAILS] ------------------------------------------------ 
+[INFO] [RAILS] SchedualToursControllerTest: test_should_get_new 
+[INFO] [RAILS] ------------------------------------------------ 
+S[INFO] [RAILS] -------------------------------------------------- 
+[INFO] [RAILS] SchedualToursControllerTest: test_should_get_index 
+[INFO] [RAILS] -------------------------------------------------- 
+S[INFO] [RAILS] ------------------------------------------------------------- 
+[INFO] [RAILS] SchedualToursControllerTest: test_should_create_schedual_tour 
+[INFO] [RAILS] ------------------------------------------------------------- 
+S[INFO] [RAILS] ------------------------------------------------------------- 
+[INFO] [RAILS] SchedualToursControllerTest: test_should_update_schedual_tour 
+[INFO] [RAILS] ------------------------------------------------------------- 
+S[INFO] [RAILS] ----------------------------------------------------------- 
+[INFO] [RAILS] SchedualToursControllerTest: test_should_show_schedual_tour 
+[INFO] [RAILS] ----------------------------------------------------------- 
+S[INFO] [RAILS] ------------------------------------------------- 
+[INFO] [RAILS] SchedualToursControllerTest: test_should_get_edit 
+[INFO] [RAILS] ------------------------------------------------- 
+S[INFO] [RAILS] ---------------------------------------------------------------------------------- 
+[INFO] [RAILS] TourStops::MembershipTest: test_the_tour_version_moves_only_when_something_changed 
+[INFO] [RAILS] ---------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------- 
+[INFO] [RAILS] TourStops::MembershipTest: test_a_record_of_another_property_is_not_found 
+[INFO] [RAILS] ------------------------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] TourStops::MembershipTest: test_an_amenity_toggles_its_stop_and_the_form_flag_together,_nothing_else 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] TourStops::MembershipTest: test_turning_a_unit_on_creates_exactly_one_stop,_however_often_it_is_repeated 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] --------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] TourStops::MembershipTest: test_turning_a_unit_off_removes_the_stop_and_leaves_the_unit_alone 
+[INFO] [RAILS] --------------------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] TourStops::MembershipTest: test_a_hidden_stop_turned_on_becomes_visible_instead_of_a_second_stop 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------------ 
+.[INFO] [RAILS] ----------------------------------------------------------------------------- 
+[INFO] [RAILS] TourStops::MembershipTest: test_a_property_without_the_tour_cannot_have_stops 
+[INFO] [RAILS] ----------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::RoutingTest: test_a_destination_nothing_reaches_is_not_linked 
+[INFO] [RAILS] ------------------------------------------------------------------------------- 
+[INFO] [RAILS] [186ca2f7-e0de-4101-8127-bb41156a3499] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=422 allocations=10926 duration=19.94 view=0.09 db=8.98 
+.[INFO] [RAILS] ---------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::RoutingTest: test_invalid_endpoints_and_bodies 
+[INFO] [RAILS] ---------------------------------------------------------------- 
+[INFO] [RAILS] [0cf9c6d3-6e2f-4d49-9b76-6c7b9c559006] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=422 allocations=10904 duration=20.08 view=0.09 db=9.34 
+[INFO] [RAILS] [4ca52d53-91f2-4057-ad8b-ae413555bf24] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=422 allocations=5373 duration=15.48 view=0.05 db=5.32 
+[INFO] [RAILS] [51ce38de-065a-414f-978d-143df1b13629] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=422 allocations=1446 duration=2.60 view=0.05 db=0.86 
+[INFO] [RAILS] [e825edbc-fe2f-44f3-bda7-f81eeda222b5] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=422 allocations=1448 duration=2.58 view=0.04 db=0.82 
+[INFO] [RAILS] [fce660d8-e621-450e-a087-d6586c4df0eb] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=422 allocations=1449 duration=2.44 view=0.04 db=0.80 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] Api::TourApp::V1::RoutingTest: test_a_cross-building_route_goes_outdoors_between_the_gates 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------ 
+[INFO] [RAILS] [bde08051-8186-4657-8e22-dae3bc269e9c] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=200 allocations=11565 duration=20.05 view=0.29 db=9.57 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::RoutingTest: test_a_cross-floor_route_rides_the_elevator_and_tells_the_app_which_level_to_show 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [696251b0-e251-47f2-af42-45fd793e2b88] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=200 allocations=11706 duration=21.77 view=0.40 db=10.12 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::RoutingTest: test_the_tour_route_orders_the_chosen_stops_by_the_tour_rule_and_keeps_one_segment_per_stop 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [f59c4503-d764-4803-acc7-3f9e81e3489c] method=POST path=/api/tour/v1/properties/286082541/tour-route format=json controller=Api::TourApp::V1::RoutesController action=tour_route status=200 allocations=19186 duration=26.07 view=1.71 db=9.86 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::RoutingTest: test_a_stop_the_route_cannot_reach_is_skipped_with_a_warning 
+[INFO] [RAILS] ------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [f84d2bf2-7d52-406c-b288-e52cd5c7a7a7] method=POST path=/api/tour/v1/properties/286082541/tour-route format=json controller=Api::TourApp::V1::RoutesController action=tour_route status=200 allocations=14211 duration=29.39 view=0.38 db=10.93 
+.[INFO] [RAILS] ---------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::RoutingTest: test_a_step-free_route_leaves_the_inaccessible_stairs_out 
+[INFO] [RAILS] ---------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [45bc339d-4841-4035-b6a3-211a14fe2607] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=200 allocations=11710 duration=19.87 view=0.33 db=8.25 
+[INFO] [RAILS] [c705fb2a-eda4-49b3-aab7-e6118deffdd4] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=422 allocations=10966 duration=25.22 view=0.09 db=7.69 
+.[INFO] [RAILS] ----------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::RoutingTest: test_a_same-floor_route:_legs,_floors,_stages_and_the_step_texts 
+[INFO] [RAILS] ----------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [24a7d938-8d41-47ab-b36a-775899dae8a2] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=200 allocations=11401 duration=19.22 view=0.24 db=7.83 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::RoutingTest: test_stops_that_are_not_on_the_list_are_rejected_before_any_routing 
+[INFO] [RAILS] -------------------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [9ead58d2-fcca-4564-b7bc-aaa60618b1fd] method=POST path=/api/tour/v1/properties/286082541/tour-route format=json controller=Api::TourApp::V1::RoutesController action=tour_route status=422 allocations=13043 duration=21.75 view=0.09 db=9.00 
+[INFO] [RAILS] [cdc374ab-f717-43da-8975-44b12888fb93] method=POST path=/api/tour/v1/properties/286082541/tour-route format=json controller=Api::TourApp::V1::RoutesController action=tour_route status=422 allocations=1449 duration=2.45 view=0.06 db=0.57 
+.[INFO] [RAILS] ------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::RoutingTest: test_a_blocker_cuts_the_corridor_and_the_error_says_so 
+[INFO] [RAILS] ------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [1e20c48c-c549-4087-a9ec-36da60cadebd] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=422 allocations=17105 duration=29.89 view=0.10 db=10.30 
+[INFO] [RAILS] [a6104f8f-2f82-4fa0-b164-e25767774357] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=200 allocations=5846 duration=15.56 view=0.21 db=5.07 
+.[INFO] [RAILS] --------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::RoutingTest: test_a_connector_on_several_floors_needs_its_floor 
+[INFO] [RAILS] --------------------------------------------------------------------------------- 
+[INFO] [RAILS] [dc50d840-2611-4a6c-8604-70f56e82cd8b] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=422 allocations=10921 duration=19.89 view=0.08 db=8.08 
+.[INFO] [RAILS] ----------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::RoutingTest: test_distances_from_the_tour_start 
+[INFO] [RAILS] ----------------------------------------------------------------- 
+[INFO] [RAILS] [93ad3cc6-eef3-4655-8e13-cb8dedf925a3] method=POST path=/api/tour/v1/properties/286082541/stops/distances format=json controller=Api::TourApp::V1::RoutesController action=distances status=200 allocations=11303 duration=22.59 view=0.14 db=10.32 
+.[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+[INFO] [RAILS] Api::TourApp::V1::RoutingTest: test_the_stairs_are_taken_when_they_are_the_shorter_way 
+[INFO] [RAILS] -------------------------------------------------------------------------------------- 
+[INFO] [RAILS] [a14ff0aa-718f-4286-ba2a-9d3bd7400a55] method=POST path=/api/tour/v1/properties/286082541/route format=json controller=Api::TourApp::V1::RoutesController action=route status=200 allocations=11486 duration=22.87 view=0.28 db=10.23 
+.[INFO] [RAILS] --------------------------------------------------------------------------------- 
+[INFO] [RAILS] PartnerTest: test_the_masked_key_reveals_only_the_prefix_and_last_four_characters 
+[INFO] [RAILS] --------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------ 
+[INFO] [RAILS] PartnerTest: test_inactive_partners_are_excluded_from_the_registry 
+[INFO] [RAILS] ------------------------------------------------------------------ 
+.[INFO] [RAILS] --------------------------------------------- 
+[INFO] [RAILS] PartnerTest: test_key_is_normalized_to_a_slug 
+[INFO] [RAILS] --------------------------------------------- 
+.[INFO] [RAILS] --------------------------------------------------------- 
+[INFO] [RAILS] PartnerTest: test_an_unknown_reveal_token_returns_nothing 
+[INFO] [RAILS] --------------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------------------- 
+[INFO] [RAILS] PartnerTest: test_a_revoked_partner_cannot_authenticate_through_the_ENV_fallback 
+[INFO] [RAILS] -------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------------------------------------------- 
+[INFO] [RAILS] PartnerTest: test_an_issued_key_authenticates_and_a_tampered_one_does_not 
+[INFO] [RAILS] ------------------------------------------------------------------------- 
+.[INFO] [RAILS] ------------------------------------ 
+[INFO] [RAILS] PartnerTest: test_key_must_be_unique 
+[INFO] [RAILS] ------------------------------------ 
+.[INFO] [RAILS] ----------------------------------------------------------------------- 
+[INFO] [RAILS] PartnerTest: test_revoking_removes_the_credential_but_keeps_the_partner 
+[INFO] [RAILS] ----------------------------------------------------------------------- 
+.[INFO] [RAILS] --------------------------------------------------------------- 
+[INFO] [RAILS] PartnerTest: test_svg_only_is_data,_not_a_hardcoded_partner_key 
+[INFO] [RAILS] --------------------------------------------------------------- 
+.[INFO] [RAILS] ----------------------------------------------------------------------- 
+[INFO] [RAILS] PartnerTest: test_key_lifecycle_actions_are_recorded_in_the_audit_trail 
+[INFO] [RAILS] ----------------------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------- 
+[INFO] [RAILS] PartnerTest: test_a_new_partner_has_no_api_key 
+[INFO] [RAILS] ---------------------------------------------- 
+.[INFO] [RAILS] ----------------------------------- 
+[INFO] [RAILS] PartnerTest: test_label_is_required 
+[INFO] [RAILS] ----------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------------- 
+[INFO] [RAILS] PartnerTest: test_a_reveal_token_can_only_be_consumed_once 
+[INFO] [RAILS] ---------------------------------------------------------- 
+.[INFO] [RAILS] --------------------------------------------------------------------------------- 
+[INFO] [RAILS] PartnerTest: test_issuing_a_key_stores_only_a_digest_and_returns_a_one-time_token 
+[INFO] [RAILS] --------------------------------------------------------------------------------- 
+.[INFO] [RAILS] ---------------------------------------------------- 
+[INFO] [RAILS] PartnerTest: test_rotating_replaces_the_previous_key 
+[INFO] [RAILS] ---------------------------------------------------- 
+.[INFO] [RAILS] -------------------------------------------------------------------- 
+[INFO] [RAILS] PartnerTest: test_registry_returns_active_partners_in_position_order 
+[INFO] [RAILS] -------------------------------------------------------------------- 
+.
+
+Finished in 21.912922s, 9.5834 runs/s, 44.4943 assertions/s.
+210 runs, 975 assertions, 1 failures, 3 errors, 7 skips
+
+You have skipped tests. Run with --verbose for details.
+exit=1

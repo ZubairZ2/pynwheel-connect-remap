@@ -1,0 +1,10 @@
+
+Running 5 tests using 1 worker
+
+[1/5] [chrome] › tests/e2e/listingsAndInventory.spec.ts:110:7 › Listings and inventory (real data) › Inventory opens without the units listing; the Units tab reads one page at a time, and the page, size and toolbar are the request
+[2/5] [chrome] › tests/e2e/planDelivery.spec.ts:63:7 › Map & Plotting: floor SVG delivery (real data) › the plan-svg route answers gzipped with an ETag, and a matching If-None-Match with 304
+[3/5] [chrome] › tests/e2e/planDelivery.spec.ts:93:7 › Map & Plotting: floor SVG delivery (real data) › a floor that opens on its image does not download its SVG until the Floor SVG layer is picked
+[4/5] [chrome] › tests/e2e/planDelivery.spec.ts:117:7 › Map & Plotting: floor SVG delivery (real data) › a floor that opens on its SVG is preloaded by the page and requested once; a reload revalidates (304)
+[5/5] [chrome] › tests/e2e/planDelivery.spec.ts:144:7 › Map & Plotting: floor SVG delivery (real data) › Unit Detail opens on one unit read as a page of one
+  1 skipped
+  4 passed (33.2s)
