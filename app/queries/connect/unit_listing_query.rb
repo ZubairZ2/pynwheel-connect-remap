@@ -18,6 +18,7 @@ module Connect
   #   floor         floor numbers, or `none`
   #   state         plotted / unplotted / model / manual / noPhotos
   #   beds, baths   the floor plan's bedroom / bathroom counts
+  #   ids           unit ids (Unit Detail reads its one unit as a page of one)
   #
   # `today` (yyyy-mm-dd) is the day "available now" is measured against — the
   # CMS's own today unless the caller names the one it rendered with.
@@ -63,6 +64,7 @@ module Connect
     def scope
       @scope ||= begin
         relation = UnitFilterQuery.new(community, pass_through).results.includes(:door)
+        relation = apply_ids(relation)
         relation = apply_floorplan(relation)
         relation = apply_availability(relation)
         relation = apply_text_list(relation, :building, 'units.building')
@@ -119,6 +121,15 @@ module Connect
       # A filter takes one value or several (`building=A,B`, or `building[]=…`).
       def list(key)
         Array(params[key]).flat_map { |value| value.to_s.split(',') }.map(&:strip).reject(&:blank?).uniq
+      end
+
+      # Only the named units — still within the property's own scope: an id of
+      # another property's unit simply finds nothing.
+      def apply_ids(relation)
+        ids = list(:ids).select { |value| value.match?(/\A\d+\z/) }.map(&:to_i)
+        return relation if ids.empty?
+
+        relation.where(units: { id: ids })
       end
 
       def apply_floorplan(relation)

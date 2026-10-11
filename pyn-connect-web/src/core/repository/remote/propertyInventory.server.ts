@@ -10,6 +10,7 @@ import {
 } from '~/core/repository/parser/inventory.parser';
 import type { ApiResponse } from './api/base.api';
 import { fetchInventoryListing, fetchInventoryUnitsPage, type UnitListingRequest } from './api/inventory.api';
+import { rememberFloorplatesListing } from './planListing.server';
 
 export type InventoryLoad =
   | { status: 'found'; inventory: PropertyInventory }
@@ -64,6 +65,8 @@ export const loadPropertyInventory = async (
 
   const property = parseInventoryProperty(floorplates.body);
   if (!property || property.id !== id) return { status: 'failed' };
+  // The plan-svg route resolves a floor SVG's URL from this same listing; let it reuse this one for a minute.
+  rememberFloorplatesListing(cookie, id, floorplates);
 
   const plates = parseInventoryFloorplates(floorplates.body);
   const plans = parseInventoryFloorplans(floorplans.body);

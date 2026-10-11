@@ -2767,3 +2767,35 @@ no way to tell a Detect run's proposals from a user's own points.
 `pyn-connect-web/src/app/api/properties/[propId]/{map/save,tour-setup/save,stop-list}/route.ts`,
 `app/controllers/concerns/connect/writes_json.rb`, `app/services/wayfinding/graph_save.rb`;
 `map_plotting_backend_implementation.md`, PYN_CONNECT_PROGRESS.md §31, context.md §27.
+
+### October 11, 2026 — Infrastructure Update: delivering a large asset through the app, and what the server hands the browser
+
+**What changed:** the performance work of `performance-audit-report.md` (PYN_CONNECT_PROGRESS.md §37).
+
+- **A route handler that proxies a file is a cache in its own right.** The `plan-svg` route now answers
+  with a validator (an ETag from the level and the stored file name), `Cache-Control: private, no-cache`
+  and a gzipped body, and honours `If-None-Match` with a 304 before it touches the store. The hook's
+  fetch uses the default cache mode so the browser can revalidate; a `cache: 'no-store'` on the client
+  side silently discards everything a route's headers promise. Retry is the one request that goes past
+  every cache (`cache: 'reload'` + `fresh=1`).
+- **The server component starts the browser's first fetch.** `ReactDOM.preload(url, { as: 'fetch',
+  crossOrigin: 'anonymous' })` from the page's server render puts the first floor's SVG on the wire
+  before the JavaScript arrives; the client hook's fetch for the same URL consumes it. The decision of
+  which level and layer the page opens on lives in the generators (`generateMapLevels`, `activeSpace`),
+  so the server and the hook agree by construction.
+- **Resolved data a route needs again is remembered per session, not re-fetched.** `planListing.server.ts`
+  keeps the floorplates listing the page loader received, keyed by the hashed session cookie and the
+  property id, for a minute. Nothing user-scoped is ever cached under a key that does not include the user.
+- **Trim at the server → client boundary, not in the model.** `trimForMapScreen` empties the fields the map
+  screen never reads before the model is serialized into the page; the type stays, so no generator changes.
+  A screen that needs the full model (Tour Setup) keeps it.
+- **Load what the shown layer needs.** The hook reads a floor SVG only when the SVG layer is the one shown;
+  the Auto Plot wizard and Detect Hallways ask for what they need when they need it.
+- **Fonts belong to the origin.** `@font-face` over `public/fonts/` replaced the render-blocking Google
+  Fonts stylesheet in the root layout.
+
+**Reference:** `pyn-connect-web/src/app/api/properties/[propId]/plan-svg/route.ts`,
+`pyn-connect-web/src/core/repository/remote/planListing.server.ts`, `propertyMap.server.ts` (`trimForMapScreen`),
+`pyn-connect-web/src/app/(connect)/properties/[propId]/map/page.tsx` (`preloadFirstPlan`),
+`pyn-connect-web/src/core/hooks/usePropertyMap.ts` (`planRequest`, the "floor SVGs" effect);
+`performance-audit-report.md`, PYN_CONNECT_PROGRESS.md §37, context.md §32.

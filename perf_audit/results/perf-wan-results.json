@@ -1,0 +1,529 @@
+[
+  {
+    "case": "cypress",
+    "link": "local",
+    "fonts": "normal",
+    "editorVisibleMs": 1916,
+    "hydratedMs": 1929,
+    "planReadyMs": 7551,
+    "perf": {
+      "nav": {
+        "ttfb": 11,
+        "responseEnd": 255,
+        "dcl": 1404,
+        "transfer": 25615
+      },
+      "plan": [
+        {
+          "name": "/api/properties/8005/plan-svg?floorplate=4606",
+          "start": 1690,
+          "end": 7512,
+          "transfer": 291480
+        }
+      ],
+      "fonts": [
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;",
+          "start": 15,
+          "end": 1318,
+          "transfer": 1046
+        },
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&di",
+          "start": 257,
+          "end": 1347,
+          "transfer": 1061
+        }
+      ],
+      "scripts": {
+        "count": 23,
+        "transfer": 371277,
+        "lastEnd": 1448
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0,
+        "max": 0
+      }
+    }
+  },
+  {
+    "case": "cypress",
+    "link": "local",
+    "fonts": "delayed8s",
+    "editorVisibleMs": 9381,
+    "hydratedMs": 9392,
+    "planReadyMs": 12597,
+    "perf": {
+      "nav": {
+        "ttfb": 9,
+        "responseEnd": 280,
+        "dcl": 8960,
+        "transfer": 25620
+      },
+      "plan": [
+        {
+          "name": "/api/properties/8005/plan-svg?floorplate=4606",
+          "start": 9240,
+          "end": 12547,
+          "transfer": 291480
+        },
+        {
+          "name": "/api/properties/8005/plan-svg?background=1",
+          "start": 9240,
+          "end": 12220,
+          "transfer": 380832
+        }
+      ],
+      "fonts": [
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;",
+          "start": 14,
+          "end": 8880,
+          "transfer": 1046
+        },
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&di",
+          "start": 281,
+          "end": 8880,
+          "transfer": 1061
+        }
+      ],
+      "scripts": {
+        "count": 23,
+        "transfer": 371277,
+        "lastEnd": 9002
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0,
+        "max": 0
+      }
+    }
+  },
+  {
+    "case": "cypress",
+    "link": "wan",
+    "fonts": "normal",
+    "editorVisibleMs": 1616,
+    "hydratedMs": 2159,
+    "planReadyMs": 5821,
+    "perf": {
+      "nav": {
+        "ttfb": 9,
+        "responseEnd": 354,
+        "dcl": 964,
+        "transfer": 25618
+      },
+      "plan": [
+        {
+          "name": "/api/properties/8005/plan-svg?floorplate=4606",
+          "start": 2150,
+          "end": 5779,
+          "transfer": 291480
+        }
+      ],
+      "fonts": [
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;",
+          "start": 310,
+          "end": 935,
+          "transfer": 1046
+        },
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&di",
+          "start": 349,
+          "end": 938,
+          "transfer": 1061
+        }
+      ],
+      "scripts": {
+        "count": 23,
+        "transfer": 371277,
+        "lastEnd": 2657
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0,
+        "max": 0
+      }
+    }
+  },
+  {
+    "case": "cypress",
+    "link": "slowWan",
+    "fonts": "normal",
+    "editorVisibleMs": 1850,
+    "hydratedMs": 4610,
+    "planReadyMs": 9790,
+    "perf": {
+      "nav": {
+        "ttfb": 10,
+        "responseEnd": 640,
+        "dcl": 1514,
+        "transfer": 25617
+      },
+      "plan": [
+        {
+          "name": "/api/properties/8005/plan-svg?floorplate=4606",
+          "start": 4608,
+          "end": 9755,
+          "transfer": 291480
+        }
+      ],
+      "fonts": [
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;",
+          "start": 521,
+          "end": 1487,
+          "transfer": 1046
+        },
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&di",
+          "start": 625,
+          "end": 1494,
+          "transfer": 1061
+        }
+      ],
+      "scripts": {
+        "count": 23,
+        "transfer": 371277,
+        "lastEnd": 5102
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0,
+        "max": 0
+      }
+    }
+  },
+  {
+    "case": "jennifer3638",
+    "link": "local",
+    "fonts": "normal",
+    "editorVisibleMs": 1338,
+    "hydratedMs": 1352,
+    "planReadyMs": 8096,
+    "perf": {
+      "nav": {
+        "ttfb": 9,
+        "responseEnd": 288,
+        "dcl": 692,
+        "transfer": 32677
+      },
+      "plan": [
+        {
+          "name": "/api/properties/1412/plan-svg?floorplate=3638",
+          "start": 992,
+          "end": 8047,
+          "transfer": 1412369
+        }
+      ],
+      "fonts": [
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;",
+          "start": 14,
+          "end": 612,
+          "transfer": 1046
+        }
+      ],
+      "scripts": {
+        "count": 23,
+        "transfer": 371277,
+        "lastEnd": 728
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0,
+        "max": 0
+      }
+    }
+  },
+  {
+    "case": "jennifer3638",
+    "link": "local",
+    "fonts": "delayed8s",
+    "editorVisibleMs": 9391,
+    "hydratedMs": 9403,
+    "planReadyMs": 12636,
+    "perf": {
+      "nav": {
+        "ttfb": 16,
+        "responseEnd": 298,
+        "dcl": 8859,
+        "transfer": 32678
+      },
+      "plan": [
+        {
+          "name": "/api/properties/1412/plan-svg?floorplate=3638",
+          "start": 9156,
+          "end": 12586,
+          "transfer": 1412369
+        }
+      ],
+      "fonts": [
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;",
+          "start": 21,
+          "end": 8776,
+          "transfer": 1046
+        }
+      ],
+      "scripts": {
+        "count": 23,
+        "transfer": 371277,
+        "lastEnd": 8897
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0,
+        "max": 0
+      }
+    }
+  },
+  {
+    "case": "jennifer3638",
+    "link": "wan",
+    "fonts": "normal",
+    "editorVisibleMs": 1622,
+    "hydratedMs": 2156,
+    "planReadyMs": 9576,
+    "perf": {
+      "nav": {
+        "ttfb": 8,
+        "responseEnd": 367,
+        "dcl": 1180,
+        "transfer": 32671
+      },
+      "plan": [
+        {
+          "name": "/api/properties/1412/plan-svg?floorplate=3638",
+          "start": 2154,
+          "end": 9525,
+          "transfer": 1412369
+        }
+      ],
+      "fonts": [
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;",
+          "start": 311,
+          "end": 1134,
+          "transfer": 1046
+        }
+      ],
+      "scripts": {
+        "count": 23,
+        "transfer": 371277,
+        "lastEnd": 2618
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0,
+        "max": 0
+      }
+    }
+  },
+  {
+    "case": "jennifer3638",
+    "link": "slowWan",
+    "fonts": "normal",
+    "editorVisibleMs": 2329,
+    "hydratedMs": 4579,
+    "planReadyMs": 18557,
+    "perf": {
+      "nav": {
+        "ttfb": 12,
+        "responseEnd": 670,
+        "dcl": 2186,
+        "transfer": 32673
+      },
+      "plan": [
+        {
+          "name": "/api/properties/1412/plan-svg?floorplate=3638",
+          "start": 4579,
+          "end": 18515,
+          "transfer": 1412369
+        }
+      ],
+      "fonts": [
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;",
+          "start": 517,
+          "end": 2129,
+          "transfer": 1046
+        }
+      ],
+      "scripts": {
+        "count": 23,
+        "transfer": 371277,
+        "lastEnd": 5048
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0,
+        "max": 0
+      }
+    }
+  },
+  {
+    "case": "john",
+    "link": "local",
+    "fonts": "normal",
+    "editorVisibleMs": 1334,
+    "hydratedMs": 1347,
+    "planReadyMs": 13822,
+    "perf": {
+      "nav": {
+        "ttfb": 11,
+        "responseEnd": 359,
+        "dcl": 783,
+        "transfer": 57990
+      },
+      "plan": [
+        {
+          "name": "/api/properties/1411/plan-svg?floorplate=1867",
+          "start": 1106,
+          "end": 4902,
+          "transfer": 555588
+        }
+      ],
+      "fonts": [
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;",
+          "start": 15,
+          "end": 705,
+          "transfer": 1046
+        }
+      ],
+      "scripts": {
+        "count": 23,
+        "transfer": 371277,
+        "lastEnd": 823
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0,
+        "max": 0
+      }
+    }
+  },
+  {
+    "case": "john",
+    "link": "local",
+    "fonts": "delayed8s",
+    "editorVisibleMs": 9002,
+    "hydratedMs": 9018,
+    "planReadyMs": 9019,
+    "perf": {
+      "nav": {
+        "ttfb": 9,
+        "responseEnd": 451,
+        "dcl": 8619,
+        "transfer": 57993
+      },
+      "plan": [],
+      "fonts": [
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;",
+          "start": 14,
+          "end": 8545,
+          "transfer": 1046
+        }
+      ],
+      "scripts": {
+        "count": 23,
+        "transfer": 371277,
+        "lastEnd": 8659
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0,
+        "max": 0
+      }
+    }
+  },
+  {
+    "case": "john",
+    "link": "wan",
+    "fonts": "normal",
+    "editorVisibleMs": 3135,
+    "hydratedMs": 3147,
+    "planReadyMs": 13498,
+    "perf": {
+      "nav": {
+        "ttfb": 8,
+        "responseEnd": 420,
+        "dcl": 2396,
+        "transfer": 57988
+      },
+      "plan": [
+        {
+          "name": "/api/properties/1411/plan-svg?floorplate=1867",
+          "start": 2715,
+          "end": 8301,
+          "transfer": 555588
+        }
+      ],
+      "fonts": [
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;",
+          "start": 317,
+          "end": 2321,
+          "transfer": 1046
+        }
+      ],
+      "scripts": {
+        "count": 23,
+        "transfer": 371277,
+        "lastEnd": 3382
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0,
+        "max": 0
+      }
+    }
+  },
+  {
+    "case": "john",
+    "link": "slowWan",
+    "fonts": "normal",
+    "editorVisibleMs": 2330,
+    "hydratedMs": 5046,
+    "planReadyMs": 24577,
+    "perf": {
+      "nav": {
+        "ttfb": 8,
+        "responseEnd": 800,
+        "dcl": 1620,
+        "transfer": 57986
+      },
+      "plan": [
+        {
+          "name": "/api/properties/1411/plan-svg?floorplate=1867",
+          "start": 5044,
+          "end": 12710,
+          "transfer": 555588
+        }
+      ],
+      "fonts": [
+        {
+          "name": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;",
+          "start": 517,
+          "end": 1592,
+          "transfer": 1046
+        }
+      ],
+      "scripts": {
+        "count": 23,
+        "transfer": 371277,
+        "lastEnd": 5417
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0,
+        "max": 0
+      }
+    }
+  }
+]

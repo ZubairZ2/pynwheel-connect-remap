@@ -746,7 +746,7 @@ class UnitsController < ApplicationController
   def connect_listing_params
     params.permit(
       :page, :per_page, :today, :q, :min_price, :max_price, :min_sqft, :max_sqft, :sort, :dir,
-      :floorplan, :availability, :building, :floor, :state, :beds, :baths
+      :floorplan, :availability, :building, :floor, :state, :beds, :baths, :ids
     )
   end
 
