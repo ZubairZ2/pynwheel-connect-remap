@@ -5,7 +5,10 @@ function autoPlotUnits() {
   const filteredUnits = normalizeFeedUnits(mapped_units);
   const propertyId = getPropertyId(filteredUnits);
   const pointerData = processSvgForAutoPlotting(svgElement, filteredUnits);
-  savePointerData(pointerData, propertyId);
+  savePointerData(pointerData, propertyId).catch(error => {
+    $(".divLoading").addClass("hidden");
+    alert(error.message);
+  });
 }
 
 function getPropertyId(filteredUnits) {
@@ -294,6 +297,31 @@ function digitsOf(str) {
   return (String(str).match(/\d+/g) || []).map(d => String(parseInt(d, 10)));
 }
 
+// Units whose name carries a prefix the map label drops, e.g. "enclave-01201"
+// labelled "201". Only pairs that are unambiguous both ways are assigned, so two
+// buildings sharing a "201" label never get guessed. Returns the unmatched units.
+function matchByNumberSuffix(units, svgUnits, claimed, assign) {
+  const openSvg = svgUnits.filter(u => !claimed.has(u) && /^\d{3,}[A-Z]*$/.test(u.canonical));
+  const candidates = new Map();
+  const unitsPerSvg = new Map();
+
+  units.forEach(unit => {
+    const key = canonicalKey(unit.shortName);
+    const matches = openSvg.filter(s => key.length > s.canonical.length && key.endsWith(s.canonical));
+    candidates.set(unit, matches);
+    matches.forEach(s => unitsPerSvg.set(s, (unitsPerSvg.get(s) || 0) + 1));
+  });
+
+  return units.filter(unit => {
+    const matches = candidates.get(unit);
+    if (matches.length === 1 && unitsPerSvg.get(matches[0]) === 1) {
+      assign(unit, matches[0]);
+      return false;
+    }
+    return true;
+  });
+}
+
 function matchUnitsToSvg(units, svgUnits) {
   const pointerData = {};
   const claimed = new Set(); // each SVG polygon may be assigned to only one unit
@@ -329,6 +357,7 @@ function matchUnitsToSvg(units, svgUnits) {
       return true;
     });
   });
+  remaining = matchByNumberSuffix(remaining, svgUnits, claimed, assign);
 
   // Pass 2 — fuzzy fallback against unclaimed polygons only. When both names
   // carry numbers, the numbers must agree so "0205" can never land on "200".
@@ -381,6 +410,8 @@ async function savePointerData(pointerData, propertyId) {
   const filteredPointerData = Object.fromEntries(
     Object.entries(pointerData).filter(([_, v]) => v.id && v.id.trim() !== "")
   );
+  if (!Object.keys(filteredPointerData).length)
+    throw new Error("Auto Plot couldn't match any unit names to the labels on this map.");
 
   const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
   const response = await fetch(`/communities/${propertyId}/save_pointer_data`, {
