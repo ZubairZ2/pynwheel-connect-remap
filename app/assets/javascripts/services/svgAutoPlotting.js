@@ -298,16 +298,21 @@ function digitsOf(str) {
 }
 
 // Units whose name carries a prefix the map label drops, e.g. "enclave-01201"
-// labelled "201". Only pairs that are unambiguous both ways are assigned, so two
-// buildings sharing a "201" label never get guessed. Returns the unmatched units.
+// (building 01, unit 201) labelled "201", or "enclave-01050" labelled "050". Only
+// pairs that are unambiguous both ways are assigned, so two buildings sharing a
+// "201" label never get guessed. Returns the unmatched units.
 function matchByNumberSuffix(units, svgUnits, claimed, assign) {
-  const openSvg = svgUnits.filter(u => !claimed.has(u) && /^\d{3,}[A-Z]*$/.test(u.canonical));
+  const isUnitNumber = str => /^\d{3,}[A-Z]*$/.test(str);
+  const endsWithLabel = (name, label) => isUnitNumber(label) && name.length > label.length && name.endsWith(label);
+  const openSvg = svgUnits.filter(u => !claimed.has(u) && (isUnitNumber(u.canonical) || isUnitNumber(u.normalized)));
   const candidates = new Map();
   const unitsPerSvg = new Map();
 
   units.forEach(unit => {
     const key = canonicalKey(unit.shortName);
-    const matches = openSvg.filter(s => key.length > s.canonical.length && key.endsWith(s.canonical));
+    const matches = openSvg.filter(s =>
+      endsWithLabel(key, s.canonical) || endsWithLabel(unit.shortName, s.normalized)
+    );
     candidates.set(unit, matches);
     matches.forEach(s => unitsPerSvg.set(s, (unitsPerSvg.get(s) || 0) + 1));
   });
