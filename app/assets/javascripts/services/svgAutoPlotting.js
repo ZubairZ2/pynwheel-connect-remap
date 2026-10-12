@@ -277,37 +277,74 @@ function generateVariants(base, floor, building) {
   return Array.from(new Set(arr)); // dedupe and return
 }
 
+// Strips leading zeros from every digit run so "0207" == "207" and "A-0101" == "A101".
+function canonicalKey(str) {
+  return normalize(str).replace(/\d+/g, d => String(parseInt(d, 10)));
+}
+
+// Exact keys a unit may be labelled with on the SVG, in priority order.
+function exactKeysForUnit(unit) {
+  const short = unit.shortName;
+  const keys = [unit.baseName, short];
+  if (unit.building && short) keys.push(unit.building + short, short + unit.building);
+  return [...new Set(keys.filter(Boolean).map(canonicalKey))];
+}
+
+function digitsOf(str) {
+  return (String(str).match(/\d+/g) || []).map(d => String(parseInt(d, 10)));
+}
+
 function matchUnitsToSvg(units, svgUnits) {
   const pointerData = {};
+  const claimed = new Set(); // each SVG polygon may be assigned to only one unit
 
-  // Normalize all SVG units once
-  svgUnits = svgUnits.map(u => ({ ...u, normalized: normalize(u.normalized) }));
+  svgUnits = svgUnits
+    .map(u => ({ ...u, normalized: normalize(u.normalized) }))
+    .map(u => ({ ...u, canonical: canonicalKey(u.normalized) }));
 
-  units.forEach(unit => {
-    const base = normalize(unit.baseName);
-    const short = normalize(unit.shortName || "");
+  const assign = (unit, svgUnit) => {
+    claimed.add(svgUnit);
+    pointerData[unit.id] = formatPointerData(svgUnit);
+  };
 
-    // Step 1 — exact match on full normalized name
-    let match = svgUnits.find(u => u.normalized === base);
+  // Pass 1 — exact matching for every unit before any fuzzy guessing, so a
+  // fuzzy guess can never steal a polygon that another unit matches exactly.
+  const tiers = [
+    unit => [unit.baseName],
+    unit => [unit.shortName],
+    unit => exactKeysForUnit(unit)
+  ];
+  let remaining = units;
+  tiers.forEach((keysFor, tierIndex) => {
+    const field = tierIndex < 2 ? "normalized" : "canonical";
+    remaining = remaining.filter(unit => {
+      const keys = keysFor(unit).filter(Boolean);
+      for (const key of keys) {
+        const match = svgUnits.find(u => !claimed.has(u) && u[field] && u[field] === key);
+        if (match) {
+          assign(unit, match);
+          return false;
+        }
+      }
+      return true;
+    });
+  });
 
-    // Step 1b — exact match on short name (last dash/space-separated segment)
-    if (!match && short && short !== base) {
-      match = svgUnits.find(u => u.normalized === short);
-    }
-
-    if (match) {
-      pointerData[unit.id] = formatPointerData(match);
-      return;
-    }
-
-    // Step 2 — fallback to variant + similarity
+  // Pass 2 — fuzzy fallback against unclaimed polygons only. When both names
+  // carry numbers, the numbers must agree so "0205" can never land on "200".
+  remaining.forEach(unit => {
+    const unitDigits = digitsOf(unit.baseName);
     const variants = generateVariants(unit.baseName, unit.floor, unit.building);
-    if (short && short !== base) variants.unshift(short);
+    if (unit.shortName && unit.shortName !== unit.baseName) variants.unshift(unit.shortName);
 
     let bestMatch = null;
     let bestScore = 0;
 
     svgUnits.forEach(svgUnit => {
+      if (claimed.has(svgUnit) || !svgUnit.normalized) return;
+      const svgDigits = digitsOf(svgUnit.normalized);
+      if (unitDigits.length && svgDigits.length && !svgDigits.every(d => unitDigits.includes(d))) return;
+
       variants.forEach(variant => {
         const score = stringSimilarity(variant, svgUnit.normalized);
         if (score > bestScore) {
@@ -319,7 +356,9 @@ function matchUnitsToSvg(units, svgUnits) {
 
     const threshold = /\d/.test(unit.baseName) ? 0.55 : 0.6;
     if (bestMatch && bestScore >= threshold) {
-      pointerData[unit.id] = formatPointerData(bestMatch);
+      assign(unit, bestMatch);
+    } else {
+      console.warn("[autoPlot] No SVG match for unit", unit.id, unit.baseName);
     }
   });
 
