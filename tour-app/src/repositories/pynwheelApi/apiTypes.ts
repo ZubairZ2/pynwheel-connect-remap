@@ -113,6 +113,15 @@ export interface ApiGraph {
   tour: { id: number; start: string | null; starting_floor: number | null; building: string | null; building_order: string[]; version: number | null; stops: { tour_stop_id: number; node: string | null; stop_type: string | null; name: string | null; sort: number | null; visible: boolean; duration_minutes: number | null; on_map: boolean }[] } | null;
 }
 
+/** The smart lock a stop carries (`TourApi::Locks#describe`): the vendor, the igloohome account mode, how it opens, the mapped device, and whether this API can issue a door code for it. */
+export interface ApiStopLock {
+  provider: string;
+  mode: 'v1' | 'igloohome' | 'iglooworks' | string | null;
+  method: 'pin' | 'bluetooth' | null;
+  device_id: string | null;
+  supported: boolean;
+}
+
 export interface ApiStop {
   id: string;
   type: 'unit' | 'amenity';
@@ -132,6 +141,20 @@ export interface ApiStop {
   duration_minutes: number | null;
   unit: { bedrooms: number | null; bathrooms: number | null; square_feet: number | null; rent: number | null; available: boolean | null; model: boolean; floorplan_name: string | null } | null;
   amenity: { amenity_type: string | null; video_url: string | null; video_button_label: string | null } | null;
+  lock?: ApiStopLock | null;
+}
+
+/** `POST /properties/{id}/locks/pin`: an hourly igloohome door code for one stop (`TourApi::Locks#pin!`). */
+export interface ApiLockPinResponse {
+  success: true;
+  stop_id: string;
+  provider: string;
+  mode: string | null;
+  device_id: string | null;
+  access_name: string;
+  pin: string;
+  valid_from: string | null;
+  valid_until: string | null;
 }
 
 export interface ApiStopsResponse {

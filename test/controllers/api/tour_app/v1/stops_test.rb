@@ -35,7 +35,7 @@ class Api::TourApp::V1::StopsTest < ActionDispatch::IntegrationTest
 
   test 'the stop contract' do
     unit = all_stops(stops).find { |s| s['id'] == @u101 }
-    assert_equal %w[id type record_id tour_stop_id name description instruction building floor level_id floorplate_id location map_node_id routable sort duration_minutes unit amenity], unit.keys
+    assert_equal %w[id type record_id tour_stop_id name description instruction building floor level_id floorplate_id location map_node_id routable sort duration_minutes unit amenity lock], unit.keys
     assert_equal 'unit', unit['type']
     assert_equal @unit101.id, unit['record_id']
     assert_equal tour_stops(:unit_stop).id, unit['tour_stop_id'], 'the lowest tour_stops row, not the duplicate'
@@ -49,6 +49,7 @@ class Api::TourApp::V1::StopsTest < ActionDispatch::IntegrationTest
     assert_equal 4, unit['duration_minutes']
     assert_equal({ 'bedrooms' => 2.0, 'bathrooms' => 2.0, 'square_feet' => 850.0, 'rent' => 2400.0, 'available' => true, 'model' => false, 'floorplan_name' => 'A1' }, unit['unit'])
     assert_nil unit['amenity']
+    assert_nil unit['lock'], 'no lock provider on the unit or its door'
     gym = all_stops(stops).find { |s| s['id'] == @gym_key }
     assert_equal 'Past the mailroom.', gym['instruction'], 'plain text from the rich-text field'
     assert_equal 'Open 24 hours', gym['description']

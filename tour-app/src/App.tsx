@@ -125,6 +125,13 @@ const Shell = () => {
   const onWfView = useCallback((view: MapView) => dispatch({ type: 'wfView', view }), [dispatch]);
   const onWfSim = useCallback((sim: SimulationState) => dispatch({ type: 'wfSim', sim }), [dispatch]);
   const goTab = (tab: 'home' | 'search' | 'profile') => dispatch({ type: 'navigate', screen: tab });
+  // The current stop's smart-lock state: its door code, and the request in flight or failed for it.
+  const lockOf = (node: string) => ({
+    lockPin: state.lockPins[node] ?? null,
+    lockBusy: state.lockRequest?.node === node && state.lockRequest.status === 'loading',
+    lockError: state.lockRequest?.node === node && state.lockRequest.status === 'error' ? state.lockRequest.error : null,
+    onRequestPin: () => void actions.requestLockPin(node)
+  });
   const open = (overlay: Overlay) => dispatch({ type: 'openOverlay', overlay });
   const close = (overlay: Overlay) => dispatch({ type: 'closeOverlay', overlay });
   const has = (overlay: Overlay) => state.overlays.includes(overlay);
@@ -253,12 +260,13 @@ const Shell = () => {
         );
       case 'stopDetail':
         return stop ? (
-          <StopDetailScreen stop={stop} isLast={isLast} onItinerary={() => open('itinerary')} onClose={() => dispatch({ type: 'exitStop' })} onVideo={() => open('video')} onNote={() => dispatch({ type: 'openNote', node: stop.node })} onAi={() => actions.openAiChat('stop')} onNext={actions.nextStop} />
+          <StopDetailScreen stop={stop} {...lockOf(stop.node)} isLast={isLast} onItinerary={() => open('itinerary')} onClose={() => dispatch({ type: 'exitStop' })} onVideo={() => open('video')} onNote={() => dispatch({ type: 'openNote', node: stop.node })} onAi={() => actions.openAiChat('stop')} onNext={actions.nextStop} />
         ) : null;
       case 'unlockUnit':
         return stop ? (
           <UnlockUnitScreen
             stop={stop}
+            {...lockOf(stop.node)}
             isLast={isLast}
             drag={state.unlockDrag}
             unlocked={!!state.unlocked[stop.node]}

@@ -1477,6 +1477,62 @@
   color: var(--pw-primary);
 }
 
+/* The smart-lock door code (igloohome / Iglooworks): the code, its validity, how to use it. */
+.pw-lockcode {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 20px;
+}
+.pw-lockcode .pw-unlock__lock {
+  padding: 0 0 4px;
+}
+.pw-lockcode__pin {
+  padding: 18px 12px;
+  border-radius: var(--pw-r-16);
+  background: var(--pw-primary-light-10);
+  font: 800 38px/1.1 var(--pw-font-sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.16em;
+  color: var(--pw-primary);
+  text-align: center;
+  word-break: break-all;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.pw-lockcode__meta {
+  font: 600 13px var(--pw-font-sans);
+  color: var(--pw-text-muted);
+  text-align: center;
+}
+.pw-lockcode__how {
+  font: 500 13px/1.45 var(--pw-font-sans);
+  color: var(--pw-text-muted);
+  text-align: center;
+}
+.pw-lockcode__note {
+  padding: 14px 16px;
+  border-radius: var(--pw-r-10);
+  background: var(--pw-surface-2);
+  font: 500 13px/1.45 var(--pw-font-sans);
+  color: var(--pw-text-muted);
+}
+.pw-lockcode__retry {
+  padding: 8px;
+  border: 0;
+  background: none;
+  font: 700 13px var(--pw-font-sans);
+  color: var(--pw-primary);
+  text-align: center;
+  cursor: pointer;
+}
+.pw-lockcode__retry:disabled {
+  opacity: 0.5;
+}
+.pw-stop .pw-lockcode {
+  padding-bottom: 20px;
+}
+
 /* ───────── Tour complete / summary ───────── */
 .pw-complete {
   min-height: 100%;

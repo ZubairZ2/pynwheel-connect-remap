@@ -1,4 +1,4 @@
-import type { MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
+import type { LockPin, MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
 import type { Session } from '~/services/session';
 import { placesFromBundle } from '../places';
 import {
@@ -176,6 +176,11 @@ export class DummyTourRepository implements TourRepository {
       out[node] = { lengthPx: result.route.lengthPx, lengthFt: result.route.lengthFt, durationS: result.route.durationS, direction: up ? 'up' : down ? 'down' : 'level', unreachable: null };
     });
     return out;
+  }
+
+  async getStopLockPin(_node: string): Promise<LockPin> {
+    // The demo property has no smart locks (its units carry no `lock`), so the UI never asks; a caller that does gets the honest answer.
+    throw new FeatureUnavailableError('A door code');
   }
 
   async askConcierge(question: string, context: { stopName: string | null }): Promise<string> {

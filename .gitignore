@@ -84,3 +84,4 @@ latest.dump*
 .DS_Store
 *~
 .ruby-lsp/
+artifacts/

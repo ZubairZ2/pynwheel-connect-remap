@@ -1,7 +1,7 @@
-import type { Amenity, AmenityIcon, Building, GraphNode, MapLevel, Property, PropertyListing, Route, RouteLeg, RouteStage, RouteStep, TourRoute, TourStopPlace, Unit, WayfindingGraph } from '~/models';
+import type { Amenity, AmenityIcon, Building, GraphNode, LockPin, MapLevel, Property, PropertyListing, Route, RouteLeg, RouteStage, RouteStep, StopLock, TourRoute, TourStopPlace, Unit, WayfindingGraph } from '~/models';
 import type { StopKind } from '~/models';
 import type { PropertyBundle, StopDistance } from '../tourRepository';
-import type { ApiDistancesResponse, ApiGraph, ApiLeg, ApiLevel, ApiMapResponse, ApiNode, ApiPropertyDetail, ApiPropertySummary, ApiRoute, ApiRouteStep, ApiStop, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
+import type { ApiDistancesResponse, ApiGraph, ApiLeg, ApiLevel, ApiLockPinResponse, ApiMapResponse, ApiNode, ApiPropertyDetail, ApiPropertySummary, ApiRoute, ApiRouteStep, ApiStop, ApiStopLock, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
 
 /**
  * snake_case API JSON → the camelCase models the screens consume. The only
@@ -30,6 +30,20 @@ export const stripHtml = (v: unknown): string | null => {
     .trim();
   return text || null;
 };
+
+/** The stop's smart lock as the stops list reports it; null when the stop has none or the field is malformed. */
+export const parseLock = (l: ApiStopLock | null | undefined): StopLock | null => {
+  if (!l || typeof l !== 'object' || typeof l.provider !== 'string' || !l.provider) return null;
+  return {
+    provider: l.provider,
+    mode: l.mode === 'v1' || l.mode === 'igloohome' || l.mode === 'iglooworks' ? l.mode : null,
+    method: l.method === 'pin' || l.method === 'bluetooth' ? l.method : null,
+    deviceId: strOrNull(l.device_id),
+    supported: l.supported === true
+  };
+};
+
+export const parseLockPin = (body: ApiLockPinResponse, now = Date.now()): LockPin => ({ pin: str(body.pin), validFrom: strOrNull(body.valid_from), validUntil: strOrNull(body.valid_until), issuedAt: now });
 
 const points = (v: unknown): [number, number][] => list<unknown>(v).filter((p): p is [number, number] => Array.isArray(p) && p.length >= 2 && typeof p[0] === 'number' && typeof p[1] === 'number').map((p) => [p[0], p[1]]);
 
@@ -167,7 +181,8 @@ export const parseBundle = (detail: ApiPropertyDetail, graph: ApiGraph, stops: A
           polygon: null,
           showInStopsList: true,
           routable: !!s.routable,
-          floorplanName: strOrNull(s.unit?.floorplan_name)
+          floorplanName: strOrNull(s.unit?.floorplan_name),
+          lock: parseLock(s.lock)
         });
       } else {
         amenities.push({
@@ -184,7 +199,8 @@ export const parseBundle = (detail: ApiPropertyDetail, graph: ApiGraph, stops: A
           polygon: null,
           showInStopsList: true,
           routable: !!s.routable,
-          videoUrl: strOrNull(s.amenity?.video_url)
+          videoUrl: strOrNull(s.amenity?.video_url),
+          lock: parseLock(s.lock)
         });
       }
     })

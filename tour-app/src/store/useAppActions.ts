@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useRepository } from '~/repositories/repositoryContext';
 import { FeatureUnavailableError } from '~/repositories/tourRepository';
 import { success, tap } from '~/services/native';
@@ -12,6 +12,8 @@ import { bestMatchUnit, currentStop, markOf, selectedNodes, tourStopViews } from
 export const useAppActions = () => {
   const { state, dispatch, data } = useApp();
   const repository = useRepository();
+  // Door-code requests in flight, by stop: a second tap before the store re-renders must not start a second request.
+  const lockRequests = useRef(new Set<string>());
 
   return useMemo(() => {
     const bundle = data.bundle;
@@ -99,6 +101,27 @@ export const useAppActions = () => {
         const names = state.tourOrder.map((n) => tourStopViews(bundle).find((v) => v.node === n)?.name ?? n);
         dispatch({ type: 'nextStop', propertyName: bundle.property.name, names, date: `Today${mark}` });
         void tap();
+      },
+
+      /**
+       * A door code for a stop's smart lock, issued by the backend through the property's igloohome account (the
+       * legacy app's lock screen "get pin" flow). One request per stop at a time; an answer that arrives after the
+       * visitor switched property is dropped by the reducer.
+       */
+      requestLockPin: async (node: string) => {
+        if (!bundle || lockRequests.current.has(node)) return;
+        const propertyId = state.propertyId;
+        lockRequests.current.add(node);
+        dispatch({ type: 'lockPinStart', node });
+        try {
+          const pin = await repository.getStopLockPin(node);
+          dispatch({ type: 'lockPinReady', node, propertyId, pin });
+          void success();
+        } catch (error) {
+          dispatch({ type: 'lockPinFailed', node, propertyId, message: messageOf(error, 'The door code could not be issued. Please try again.') });
+        } finally {
+          lockRequests.current.delete(node);
+        }
       },
 
       findRoute: async () => {

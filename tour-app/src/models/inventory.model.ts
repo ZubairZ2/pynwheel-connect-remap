@@ -8,6 +8,30 @@ import type { StopKind } from './graph.model';
 
 export type AmenityIcon = 'dumbbell' | 'wave' | 'star' | 'briefcase' | 'dog' | 'yoga' | 'leaf' | 'coffee';
 
+/**
+ * The smart lock a unit or amenity carries (its door's lock when the door
+ * holds it), as the backend's stops list reports it. `supported` is true when
+ * the backend can issue a door code for it: an igloohome API or Iglooworks
+ * lock (PIN). igloohome v1, Latch and Zerv open over Bluetooth through native
+ * SDKs this app does not have; Dwelo, EdgeState and Manual are other flows.
+ */
+export interface StopLock {
+  provider: string;
+  mode: 'v1' | 'igloohome' | 'iglooworks' | null;
+  method: 'pin' | 'bluetooth' | null;
+  deviceId: string | null;
+  supported: boolean;
+}
+
+/** A door code the backend issued for a stop's lock: valid from the top of the property's current hour for three hours. */
+export interface LockPin {
+  pin: string;
+  validFrom: string | null;
+  validUntil: string | null;
+  /** When the app received it (ms since the epoch). */
+  issuedAt: number;
+}
+
 export interface Unit {
   id: number;
   /** `unit:ID` */
@@ -31,6 +55,8 @@ export interface Unit {
   /** Whether a route can reach it (plotted and joined to a path). */
   routable?: boolean;
   floorplanName?: string | null;
+  /** The unit's smart lock, when the CMS assigned one. */
+  lock?: StopLock | null;
 }
 
 export interface Amenity {
@@ -50,6 +76,7 @@ export interface Amenity {
   showInStopsList: boolean;
   routable?: boolean;
   videoUrl?: string | null;
+  lock?: StopLock | null;
 }
 
 /** An additional self-tour stop (entry, exit, elevator, stairs, ramp, door, blocker, leasing, restroom, mail, parking, waypoint). */

@@ -1,4 +1,4 @@
-import type { RouteResult, TourHistoryEntry, TourRoute } from '~/models';
+import type { LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
 import type { Overlay, Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
 
@@ -53,6 +53,15 @@ export interface AuthState {
   error: string | null;
 }
 
+/** The door-code request in flight (or the one that failed) for a stop; cleared once a code arrives. */
+export interface LockRequestState {
+  node: string;
+  /** The property the request was made for: an answer for another property is dropped. */
+  propertyId: number | null;
+  status: 'loading' | 'error';
+  error: string | null;
+}
+
 export interface AppState {
   screen: Screen;
   overlays: Overlay[];
@@ -74,6 +83,9 @@ export interface AppState {
   stopIndex: number;
   unlocked: Record<string, boolean>;
   unlockDrag: number;
+  /** Door codes issued for this tour, by stop node (kept until the next tour, property change or sign-out). */
+  lockPins: Record<string, LockPin>;
+  lockRequest: LockRequestState | null;
   notes: Record<string, string>;
   noteDraft: string;
   tourHistory: TourHistoryEntry[];
@@ -127,6 +139,8 @@ export const initialAppState = (): AppState => ({
   stopIndex: 0,
   unlocked: {},
   unlockDrag: 0,
+  lockPins: {},
+  lockRequest: null,
   notes: {},
   noteDraft: '',
   tourHistory: [],
@@ -158,6 +172,7 @@ export const PERSISTED_KEYS = [
   'tourMode',
   'stopIndex',
   'unlocked',
+  'lockPins',
   'notes',
   'tourHistory',
   'historyLoaded',
