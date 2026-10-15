@@ -31,13 +31,13 @@ This is an implementation and delivery task, not just an analysis or code-review
 The legacy React Native application is located at:
 
 ```text
-/Users/zubairzulifqar/Downloads/pyn-tour-old/
+/Users/zubairzulifqar/pynwheel-staging/pyn-tour-old/
 ```
 
 Its integration context is documented in:
 
 ```text
-/Users/zubairzulifqar/Downloads/pyn-tour-old/CONTEXT.md
+/Users/zubairzulifqar/pynwheel-staging/pyn-tour-old/CONTEXT.md
 ```
 
 Read `CONTEXT.md` completely and inspect the actual implementation files that it references.
@@ -614,7 +614,7 @@ The task is complete when all achievable criteria below have been verified:
 Start by understanding the current project documentation and the complete Igloo implementation in:
 
 ```text
-/Users/zubairzulifqar/Downloads/pyn-tour-old/
+/Users/zubairzulifqar/pynwheel-staging/pyn-tour-old/
 ```
 
 Then inspect the existing Capacitor app, map the implementation gaps, and integrate Igloo by reusing the established backend and business logic.

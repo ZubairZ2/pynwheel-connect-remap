@@ -1,7 +1,7 @@
 # Igloo smart locks in the Capacitor Tour App (October 16, 2026)
 
 Brief: `IGLOO_INTEGRATION_mobile_app.md`. Branch: `feature/igloo-integration-tour-app`. Legacy reference:
-`/Users/zubairzulifqar/Downloads/pyn-tour-old/` (its context file is `LEGACY_APP_CONTEXT.md` at the
+`/Users/zubairzulifqar/pynwheel-staging/pyn-tour-old/` (its context file is `LEGACY_APP_CONTEXT.md` at the
 repository root, a copy of `pyn-tour-old/CONTEXT.md`).
 
 The legacy Pynwheel Tour app's working Igloo integration — the Smart Keybox 3E was unlocked with it on
@@ -173,6 +173,33 @@ keybox and press the unlock key. For the legacy app Hazel's visiting hours are o
 coordinates sit at the tester's phone location in the development database, but the legacy `start_tour`
 leaves 1604 out of Hazel's tour (its legacy path data does not reach floor 16), so the legacy app keeps
 using Floor-Level (3539, unit 101).
+
+### Rebuilding the APKs (October 16, 2026; the legacy app now lives at `pyn-tour-old/` in this repository)
+
+Capacitor app (the deliverable above):
+
+```bash
+cd /Users/zubairzulifqar/pynwheel-staging/tour-app
+cat .env.production.local            # VITE_TOUR_API_URL=http://192.168.8.100:3000 (git-ignored; set it to the CMS the phone can reach)
+export JAVA_HOME=$HOME/Library/Java/JavaVirtualMachines/jbr-21.0.11/Contents/Home ANDROID_HOME=$HOME/Library/Android/sdk
+rm -rf dist android/app/build
+npm run build && npx cap sync android && (cd android && ./gradlew assembleDebug)
+cp android/app/build/outputs/apk/debug/app-debug.apk ../artifacts/pynwheel-tour-igloo-test.apk
+```
+
+Legacy app (React Native, `pyn-tour-old/`; `src/Library/ServerCalls/ServerConfig.js` holds the CMS URL):
+
+```bash
+cd /Users/zubairzulifqar/pynwheel-staging/pyn-tour-old
+export PATH=/opt/homebrew/bin:$PATH ANDROID_HOME=$HOME/Library/Android/sdk JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
+rm -rf android/app/build android/app/src/main/assets/index.android.bundle
+yarn apk:debug
+# → android/app/build/outputs/apk/selftour/debug/app-selftour-debug.apk
+```
+
+After any `yarn install` in the legacy app, re-apply the one-line Groovy fix in
+`node_modules/@react-native-community/cli-platform-android/native_modules.gradle` (line 121: drop the `[]`
+after `ArrayList<HashMap<String, String>>`), or the build fails with "argument type mismatch".
 
 ## G. Documentation updated
 
