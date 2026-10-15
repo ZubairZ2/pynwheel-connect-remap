@@ -5,7 +5,10 @@ function autoPlotUnits() {
   const filteredUnits = normalizeFeedUnits(mapped_units);
   const propertyId = getPropertyId(filteredUnits);
   const pointerData = processSvgForAutoPlotting(svgElement, filteredUnits);
-  savePointerData(pointerData, propertyId);
+  savePointerData(pointerData, propertyId).catch(error => {
+    $(".divLoading").addClass("hidden");
+    alert(error.message);
+  });
 }
 
 function getPropertyId(filteredUnits) {
@@ -277,37 +280,105 @@ function generateVariants(base, floor, building) {
   return Array.from(new Set(arr)); // dedupe and return
 }
 
-function matchUnitsToSvg(units, svgUnits) {
-  const pointerData = {};
+// Strips leading zeros from every digit run so "0207" == "207" and "A-0101" == "A101".
+function canonicalKey(str) {
+  return normalize(str).replace(/\d+/g, d => String(parseInt(d, 10)));
+}
 
-  // Normalize all SVG units once
-  svgUnits = svgUnits.map(u => ({ ...u, normalized: normalize(u.normalized) }));
+// Exact keys a unit may be labelled with on the SVG, in priority order.
+function exactKeysForUnit(unit) {
+  const short = unit.shortName;
+  const keys = [unit.baseName, short];
+  if (unit.building && short) keys.push(unit.building + short, short + unit.building);
+  return [...new Set(keys.filter(Boolean).map(canonicalKey))];
+}
+
+function digitsOf(str) {
+  return (String(str).match(/\d+/g) || []).map(d => String(parseInt(d, 10)));
+}
+
+// Units whose name carries a prefix the map label drops, e.g. "enclave-01201"
+// (building 01, unit 201) labelled "201", or "enclave-01050" labelled "050". Only
+// pairs that are unambiguous both ways are assigned, so two buildings sharing a
+// "201" label never get guessed. Returns the unmatched units.
+function matchByNumberSuffix(units, svgUnits, claimed, assign) {
+  const isUnitNumber = str => /^\d{3,}[A-Z]*$/.test(str);
+  const endsWithLabel = (name, label) => isUnitNumber(label) && name.length > label.length && name.endsWith(label);
+  const openSvg = svgUnits.filter(u => !claimed.has(u) && (isUnitNumber(u.canonical) || isUnitNumber(u.normalized)));
+  const candidates = new Map();
+  const unitsPerSvg = new Map();
 
   units.forEach(unit => {
-    const base = normalize(unit.baseName);
-    const short = normalize(unit.shortName || "");
+    const key = canonicalKey(unit.shortName);
+    const matches = openSvg.filter(s =>
+      endsWithLabel(key, s.canonical) || endsWithLabel(unit.shortName, s.normalized)
+    );
+    candidates.set(unit, matches);
+    matches.forEach(s => unitsPerSvg.set(s, (unitsPerSvg.get(s) || 0) + 1));
+  });
 
-    // Step 1 — exact match on full normalized name
-    let match = svgUnits.find(u => u.normalized === base);
-
-    // Step 1b — exact match on short name (last dash/space-separated segment)
-    if (!match && short && short !== base) {
-      match = svgUnits.find(u => u.normalized === short);
+  return units.filter(unit => {
+    const matches = candidates.get(unit);
+    if (matches.length === 1 && unitsPerSvg.get(matches[0]) === 1) {
+      assign(unit, matches[0]);
+      return false;
     }
+    return true;
+  });
+}
 
-    if (match) {
-      pointerData[unit.id] = formatPointerData(match);
-      return;
-    }
+function matchUnitsToSvg(units, svgUnits) {
+  const pointerData = {};
+  const claimed = new Set(); // each SVG polygon may be assigned to only one unit
 
-    // Step 2 — fallback to variant + similarity
+  svgUnits = svgUnits
+    .map(u => ({ ...u, normalized: normalize(u.normalized) }))
+    .map(u => ({ ...u, canonical: canonicalKey(u.normalized) }));
+
+  const assign = (unit, svgUnit) => {
+    claimed.add(svgUnit);
+    pointerData[unit.id] = formatPointerData(svgUnit);
+  };
+
+  // Pass 1 — exact matching for every unit before any fuzzy guessing, so a
+  // fuzzy guess can never steal a polygon that another unit matches exactly.
+  const tiers = [
+    unit => [unit.baseName],
+    unit => [unit.shortName],
+    unit => exactKeysForUnit(unit)
+  ];
+  let remaining = units;
+  tiers.forEach((keysFor, tierIndex) => {
+    const field = tierIndex < 2 ? "normalized" : "canonical";
+    remaining = remaining.filter(unit => {
+      const keys = keysFor(unit).filter(Boolean);
+      for (const key of keys) {
+        const match = svgUnits.find(u => !claimed.has(u) && u[field] && u[field] === key);
+        if (match) {
+          assign(unit, match);
+          return false;
+        }
+      }
+      return true;
+    });
+  });
+  remaining = matchByNumberSuffix(remaining, svgUnits, claimed, assign);
+
+  // Pass 2 — fuzzy fallback against unclaimed polygons only. When both names
+  // carry numbers, the numbers must agree so "0205" can never land on "200".
+  remaining.forEach(unit => {
+    const unitDigits = digitsOf(unit.baseName);
     const variants = generateVariants(unit.baseName, unit.floor, unit.building);
-    if (short && short !== base) variants.unshift(short);
+    if (unit.shortName && unit.shortName !== unit.baseName) variants.unshift(unit.shortName);
 
     let bestMatch = null;
     let bestScore = 0;
 
     svgUnits.forEach(svgUnit => {
+      if (claimed.has(svgUnit) || !svgUnit.normalized) return;
+      const svgDigits = digitsOf(svgUnit.normalized);
+      if (unitDigits.length && svgDigits.length && !svgDigits.every(d => unitDigits.includes(d))) return;
+
       variants.forEach(variant => {
         const score = stringSimilarity(variant, svgUnit.normalized);
         if (score > bestScore) {
@@ -319,7 +390,9 @@ function matchUnitsToSvg(units, svgUnits) {
 
     const threshold = /\d/.test(unit.baseName) ? 0.55 : 0.6;
     if (bestMatch && bestScore >= threshold) {
-      pointerData[unit.id] = formatPointerData(bestMatch);
+      assign(unit, bestMatch);
+    } else {
+      console.warn("[autoPlot] No SVG match for unit", unit.id, unit.baseName);
     }
   });
 
@@ -342,6 +415,8 @@ async function savePointerData(pointerData, propertyId) {
   const filteredPointerData = Object.fromEntries(
     Object.entries(pointerData).filter(([_, v]) => v.id && v.id.trim() !== "")
   );
+  if (!Object.keys(filteredPointerData).length)
+    throw new Error("Auto Plot couldn't match any unit names to the labels on this map.");
 
   const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
   const response = await fetch(`/communities/${propertyId}/save_pointer_data`, {
