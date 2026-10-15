@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ApiGraph, ApiPropertyDetail, ApiRoute, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
-import { amenityIcon, floorLabelOf, parseBundle, parseDistances, parseRoute, parseTourRoute } from './parsers';
+import { amenityIcon, floorLabelOf, parseBundle, parseDistances, parseLock, parseLockPin, parseRoute, parseTourRoute } from './parsers';
 
 const graph: ApiGraph = {
   success: true,
@@ -36,7 +36,7 @@ const stops: ApiStopsResponse = {
   start_node: 'tour_start:7',
   groups: [
     { key: 'amenities', label: 'Amenities', stops: [{ id: 'amenity:11', type: 'amenity', record_id: 11, tour_stop_id: 3, name: 'Gym', description: 'Open 6-10', instruction: 'Past the mailroom', building: 'A', floor: 1, level_id: 'floorplate:10', floorplate_id: 10, location: { x: 120, y: 140 }, map_node_id: 'amenity:11', routable: true, sort: 1, duration_minutes: 3, unit: null, amenity: { amenity_type: 'Fitness', video_url: null, video_button_label: null } }] },
-    { key: 'floorplans', label: 'Floorplans', stops: [{ id: 'unit:101', type: 'unit', record_id: 101, tour_stop_id: 1, name: '101', description: null, instruction: 'Turn left', building: 'A', floor: 1, level_id: 'floorplate:10', floorplate_id: 10, location: { x: 320, y: 60 }, map_node_id: 'unit:101', routable: true, sort: 1, duration_minutes: 4, unit: { bedrooms: 2, bathrooms: 2, square_feet: 850, rent: 2400, available: true, model: false, floorplan_name: 'A1' }, amenity: null }] }
+    { key: 'floorplans', label: 'Floorplans', stops: [{ id: 'unit:101', type: 'unit', record_id: 101, tour_stop_id: 1, name: '101', description: null, instruction: 'Turn left', building: 'A', floor: 1, level_id: 'floorplate:10', floorplate_id: 10, location: { x: 320, y: 60 }, map_node_id: 'unit:101', routable: true, sort: 1, duration_minutes: 4, unit: { bedrooms: 2, bathrooms: 2, square_feet: 850, rent: 2400, available: true, model: false, floorplan_name: 'A1' }, amenity: null, lock: { provider: 'Igloohome', mode: 'igloohome', method: 'pin', device_id: 'SK3E14001756', supported: true } }] }
   ],
   total: 2
 };
@@ -114,5 +114,27 @@ describe('API parsers', () => {
     expect(floorLabelOf([], 'floorplate:99', 3)).toBe('Floor 3');
     expect(amenityIcon('Resident Lounge', null)).toBe('coffee');
     expect(amenityIcon('Something', 'Other')).toBe('star');
+  });
+});
+
+describe('smart locks', () => {
+  it('a unit carries the lock the stops list reports; a stop without one has null', () => {
+    const bundle = parseBundle(detail, graph, stops, 'hero.jpg');
+    expect(bundle.units[0].lock).toEqual({ provider: 'Igloohome', mode: 'igloohome', method: 'pin', deviceId: 'SK3E14001756', supported: true });
+    expect(bundle.amenities[0].lock).toBeNull();
+  });
+
+  it('parseLock keeps only the modes and methods the backend defines, and never invents support', () => {
+    expect(parseLock(null)).toBeNull();
+    expect(parseLock(undefined)).toBeNull();
+    expect(parseLock({ provider: '', mode: null, method: null, device_id: null, supported: true })).toBeNull();
+    expect(parseLock({ provider: 'Latch', mode: null, method: 'bluetooth', device_id: null, supported: false })).toEqual({ provider: 'Latch', mode: null, method: 'bluetooth', deviceId: null, supported: false });
+    expect(parseLock({ provider: 'Igloohome', mode: 'v1', method: 'bluetooth', device_id: 'IGB1', supported: false })).toEqual({ provider: 'Igloohome', mode: 'v1', method: 'bluetooth', deviceId: 'IGB1', supported: false });
+    expect(parseLock({ provider: 'Igloohome', mode: 'future', method: 'nfc' as 'pin', device_id: 'X', supported: 'yes' as unknown as boolean })).toEqual({ provider: 'Igloohome', mode: null, method: null, deviceId: 'X', supported: false });
+  });
+
+  it('parseLockPin keeps the code and its window', () => {
+    const pin = parseLockPin({ success: true, stop_id: 'unit:101', provider: 'Igloohome', mode: 'igloohome', device_id: 'SK3E14001756', access_name: '101', pin: '221673337', valid_from: '2026-10-16T14:00:00+05:00', valid_until: '2026-10-16T17:00:00+05:00' }, 1000);
+    expect(pin).toEqual({ pin: '221673337', validFrom: '2026-10-16T14:00:00+05:00', validUntil: '2026-10-16T17:00:00+05:00', issuedAt: 1000 });
   });
 });

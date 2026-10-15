@@ -1,4 +1,4 @@
-import type { Amenity, Place, Unit } from '~/models';
+import type { Amenity, Place, StopLock, Unit } from '~/models';
 import type { PropertyBundle, StopDistance } from '~/repositories/tourRepository';
 import type { AppState } from './appState';
 
@@ -24,6 +24,8 @@ export interface TourStopView {
   unit: Unit | null;
   amenity: Amenity | null;
   arPin: { top: string; left: string } | null;
+  /** The stop's smart lock, when the CMS assigned one (null on demo data and on stops without a lock). */
+  lock: StopLock | null;
 }
 
 const ordinal = (n: number): string => {
@@ -65,7 +67,8 @@ export const tourStopViews = (bundle: PropertyBundle): TourStopView[] => {
         duration: dwell.get(a.node) ?? 3,
         unit: null,
         amenity: a,
-        arPin: bundle.arPins[a.node] ?? null
+        arPin: bundle.arPins[a.node] ?? null,
+        lock: a.lock ?? null
       })
     );
   bundle.units
@@ -81,7 +84,8 @@ export const tourStopViews = (bundle: PropertyBundle): TourStopView[] => {
         duration: dwell.get(u.node) ?? 4,
         unit: u,
         amenity: null,
-        arPin: bundle.arPins[u.node] ?? null
+        arPin: bundle.arPins[u.node] ?? null,
+        lock: u.lock ?? null
       })
     );
   return views;

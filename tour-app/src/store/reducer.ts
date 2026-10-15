@@ -1,4 +1,4 @@
-import type { RouteResult, TourHistoryEntry, TourRoute } from '~/models';
+import type { LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
 import { backScreenOf, topOverlay, type Overlay, type Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
 import { initialAppState, initialGuided, initialWayfinding, type AiMessage, type AppState, type MapView, type PersistedState, type TourMode } from './appState';
@@ -45,6 +45,10 @@ export type Action =
   | { type: 'exitStop' }
   | { type: 'unlockDrag'; pct: number }
   | { type: 'unlockRelease'; node: string }
+  | { type: 'lockPinStart'; node: string }
+  | { type: 'lockPinReady'; node: string; propertyId: number | null; pin: LockPin }
+  | { type: 'lockPinFailed'; node: string; propertyId: number | null; message: string }
+  | { type: 'lockPinDismiss' }
   | { type: 'openNote'; node: string }
   | { type: 'setNoteDraft'; value: string }
   | { type: 'saveNote'; node: string }
@@ -105,6 +109,8 @@ export const reducer = (state: AppState, action: Action): AppState => {
       next.guided = { ...next.guided, status: next.guided.tour ? 'ready' : 'idle', sim: { ...next.guided.sim, status: next.guided.sim.status === 'playing' ? 'paused' : next.guided.sim.status } };
       next.overlays = [];
       next.toast = null;
+      next.lockRequest = null;
+      next.lockPins = next.lockPins ?? {};
       return next;
     }
     case 'navigate':
@@ -145,7 +151,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'selectProperty':
       if (state.propertyId === action.propertyId) return { ...state, screen: 'home', overlays: [], searchQuery: '' };
       // A new property: every tour, route and selection belonged to the old one.
-      return { ...state, propertyId: action.propertyId, screen: 'home', overlays: [], searchQuery: '', selected: {}, tourOrder: [], stopIndex: 0, unlocked: {}, unlockDrag: 0, notes: {}, guided: initialGuided(), wayfinding: initialWayfinding(), floorByLevel: {} };
+      return { ...state, propertyId: action.propertyId, screen: 'home', overlays: [], searchQuery: '', selected: {}, tourOrder: [], stopIndex: 0, unlocked: {}, unlockDrag: 0, lockPins: {}, lockRequest: null, notes: {}, guided: initialGuided(), wayfinding: initialWayfinding(), floorByLevel: {} };
     case 'sessionExpired':
       return { ...initialAppState(), screen: 'login', signedIn: false, email: state.email, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, toast: action.message };
     case 'signOut':
@@ -165,7 +171,8 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, tourMode: action.mode, guided: { ...state.guided, status: 'calculating', error: null } };
     case 'tourReady': {
       const guided = { status: 'ready' as const, tour: action.tour, error: null, view: firstView(action.tour), sim: initialSimulationState('stop') };
-      return { ...state, tourMode: action.mode, tourOrder: action.order, stopIndex: 0, unlocked: {}, screen: action.mode === 'ar' ? 'arLive' : 'guided', overlays: [], guided };
+      // A new tour means new door codes, as the legacy app regenerated its lock accesses on every tour start.
+      return { ...state, tourMode: action.mode, tourOrder: action.order, stopIndex: 0, unlocked: {}, lockPins: {}, lockRequest: null, screen: action.mode === 'ar' ? 'arLive' : 'guided', overlays: [], guided };
     }
     case 'tourFailed':
       return { ...state, guided: { ...state.guided, status: 'error', error: action.message } };
@@ -209,6 +216,16 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, unlockDrag: Math.max(0, Math.min(100, action.pct)) };
     case 'unlockRelease':
       return state.unlockDrag >= 85 ? { ...state, unlockDrag: 100, unlocked: { ...state.unlocked, [action.node]: true } } : { ...state, unlockDrag: 0 };
+    case 'lockPinStart':
+      return { ...state, lockRequest: { node: action.node, propertyId: state.propertyId, status: 'loading', error: null } };
+    case 'lockPinReady':
+      if (action.propertyId !== state.propertyId) return state; // issued for a property the visitor has since left
+      return { ...state, lockPins: { ...state.lockPins, [action.node]: action.pin }, unlocked: { ...state.unlocked, [action.node]: true }, lockRequest: null };
+    case 'lockPinFailed':
+      if (action.propertyId !== state.propertyId) return state;
+      return { ...state, lockRequest: { node: action.node, propertyId: action.propertyId, status: 'error', error: action.message } };
+    case 'lockPinDismiss':
+      return { ...state, lockRequest: null };
     case 'openNote':
       return { ...state, overlays: [...without(state.overlays, 'note'), 'note'], noteDraft: state.notes[action.node] ?? '' };
     case 'setNoteDraft':
@@ -313,7 +330,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'leaveTour':
       return { ...state, screen: 'home', overlays: [], unlockDrag: 0 };
     case 'resetTour':
-      return { ...state, screen: 'home', overlays: [], selected: {}, tourOrder: [], stopIndex: 0, unlocked: {}, unlockDrag: 0, guided: initialGuided() };
+      return { ...state, screen: 'home', overlays: [], selected: {}, tourOrder: [], stopIndex: 0, unlocked: {}, unlockDrag: 0, lockPins: {}, lockRequest: null, guided: initialGuided() };
     default:
       return state;
   }

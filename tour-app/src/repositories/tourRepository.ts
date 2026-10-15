@@ -4,6 +4,7 @@ import type {
   ConciergeAnswer,
   HelpItem,
   Listing,
+  LockPin,
   MapLevel,
   OnboardingSlide,
   Place,
@@ -126,6 +127,12 @@ export interface TourRepository {
   getTourRoute(stopNodes: string[] | null, options?: RouteOptions): Promise<TourRouteResult>;
   /** Distance from the tour start to each of the given stops (one call, so the stop lists can show "45 ft"). */
   getStopDistances(nodes: string[]): Promise<Record<string, StopDistance>>;
+  /**
+   * A door code for a stop whose smart lock the backend can open (an igloohome API or Iglooworks lock), issued by the
+   * property's own vendor account exactly as the legacy Pynwheel Tour app had it. Rejects with the API's reason
+   * (`no_lock`, `lock_unsupported`, `locks_disabled`, `lock_unavailable`, `invalid_stop`) or a network error.
+   */
+  getStopLockPin(node: string): Promise<LockPin>;
   askConcierge(question: string, context: { stopName: string | null }): Promise<string>;
   requestBooking(request: BookingRequest): Promise<{ id: string }>;
   startApplication(unitNode: string): Promise<{ id: string }>;

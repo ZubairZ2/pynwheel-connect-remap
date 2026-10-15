@@ -2,11 +2,21 @@ import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { ScreenHeader } from '~/components/chrome';
 import { Icon } from '~/components/Icon';
 import { Button, IconButton, Pill } from '~/components/ui';
+import type { LockPin } from '~/models';
 import { success, tap } from '~/services/native';
 import type { TourStopView } from '~/store/selectors';
+import { LockAccessCard } from './LockAccess';
 import { LightShell } from './shared';
 
-interface StopDetailProps {
+/** The smart-lock state of the stop on screen (the store's door code and request for this stop). */
+export interface StopLockProps {
+  lockPin: LockPin | null;
+  lockBusy: boolean;
+  lockError: string | null;
+  onRequestPin: () => void;
+}
+
+interface StopDetailProps extends StopLockProps {
   stop: TourStopView;
   onItinerary: () => void;
   onClose: () => void;
@@ -17,8 +27,8 @@ interface StopDetailProps {
   isLast: boolean;
 }
 
-/** An amenity stop: video, notes, the concierge, "Next Stop". */
-export const StopDetailScreen = ({ stop, onItinerary, onClose, onVideo, onNote, onAi, onNext, isLast }: StopDetailProps) => (
+/** An amenity stop: its smart lock's door code when it has one, video, notes, the concierge, "Next Stop". */
+export const StopDetailScreen = ({ stop, lockPin, lockBusy, lockError, onRequestPin, onItinerary, onClose, onVideo, onNote, onAi, onNext, isLast }: StopDetailProps) => (
   <LightShell>
     <ScreenHeader layout="split" left={<IconButton icon="list" label="Itinerary" onClick={onItinerary} />} right={<IconButton icon="close" label="Close" onClick={onClose} />} />
     <div className="pw-stop">
@@ -36,6 +46,7 @@ export const StopDetailScreen = ({ stop, onItinerary, onClose, onVideo, onNote, 
           {stop.amenity.hours ? <span> · {stop.amenity.hours} *</span> : null}
         </div>
       ) : null}
+      {stop.lock ? <LockAccessCard lock={stop.lock} pin={lockPin} busy={lockBusy} error={lockError} onRequest={onRequestPin} /> : null}
       <div className="pw-stop__actions">
         <button type="button" className="pw-stop__action" onClick={onVideo}>
           <span className="pw-stop__actionicon pw-stop__actionicon--dark">
@@ -66,7 +77,7 @@ export const StopDetailScreen = ({ stop, onItinerary, onClose, onVideo, onNote, 
   </LightShell>
 );
 
-interface UnlockProps {
+interface UnlockProps extends StopLockProps {
   stop: TourStopView;
   drag: number;
   unlocked: boolean;
@@ -78,8 +89,14 @@ interface UnlockProps {
   isLast: boolean;
 }
 
-/** A unit stop: slide the 56 px thumb across the 64 px track; past 85% the smart lock opens. */
-export const UnlockUnitScreen = ({ stop, drag, unlocked, onDrag, onRelease, onItinerary, onClose, onNext, isLast }: UnlockProps) => {
+/**
+ * A unit stop. With a smart lock assigned in the CMS, the lock card: the
+ * door code the backend issues (igloohome / Iglooworks), or why the lock
+ * cannot be opened from this app; "Next Stop" stays available, as the
+ * legacy app's CONTINUE did. Without one, the reference's slider: slide the
+ * 56 px thumb across the 64 px track; past 85% the (demo) lock opens.
+ */
+export const UnlockUnitScreen = ({ stop, lockPin, lockBusy, lockError, onRequestPin, drag, unlocked, onDrag, onRelease, onItinerary, onClose, onNext, isLast }: UnlockProps) => {
   const track = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState<{ startX: number; startPct: number } | null>(null);
   const THUMB = 56;
@@ -105,6 +122,26 @@ export const UnlockUnitScreen = ({ stop, drag, unlocked, onDrag, onRelease, onIt
     if (drag >= 85) void success();
     onRelease();
   };
+
+  if (stop.lock) {
+    return (
+      <LightShell>
+        <ScreenHeader layout="split" left={<IconButton icon="list" label="Itinerary" onClick={onItinerary} />} right={<IconButton icon="close" label="Close" onClick={onClose} />} />
+        <div className="pw-stop">
+          <div className="pw-stop__pill">
+            <Pill>Unit</Pill>
+          </div>
+          <div className="pw-stop__name">Unlock {stop.name}</div>
+          <LockAccessCard lock={stop.lock} pin={lockPin} busy={lockBusy} error={lockError} onRequest={onRequestPin} />
+          <div className="pw-stop__next">
+            <Button onClick={onNext} variant={lockPin ? 'primary' : 'secondary'}>
+              {isLast ? 'Finish Tour' : 'Next Stop'}
+            </Button>
+          </div>
+        </div>
+      </LightShell>
+    );
+  }
 
   return (
     <LightShell>
