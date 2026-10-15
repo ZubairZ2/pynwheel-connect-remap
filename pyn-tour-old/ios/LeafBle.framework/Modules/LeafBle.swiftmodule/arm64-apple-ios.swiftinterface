@@ -1,0 +1,93 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.2.4 (swiftlang-1103.0.32.9 clang-1103.0.32.53)
+// swift-module-flags: -target arm64-apple-ios9.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name LeafBle
+import CoreBluetooth
+import Foundation
+@_exported import LeafBle
+import Swift
+import UIKit
+public struct WlReader {
+  public static let BLE_CRED_SVC_UUID: CoreBluetooth.CBUUID
+  public static let DATA_TRANSFER_CHRC_UUID: CoreBluetooth.CBUUID
+  public static let CHRC_UPDATE_NTF_DESCR_UUID: CoreBluetooth.CBUUID
+}
+public protocol WlBluetoothEventDelegate : AnyObject {
+  func bleOn()
+  func bleOff()
+  func scanning()
+  func stopped()
+  func closestDevice(peripheral: CoreBluetooth.CBPeripheral, rUid: [Swift.UInt8], rssi: Swift.Int)
+  func closestDevice(peripheral: CoreBluetooth.CBPeripheral, rUid: [Swift.UInt8], txPowerLevel: Swift.Int8?, rssi: Swift.Int)
+  func batchDeviceResults(allResults: [LeafBle.PeripheralResult])
+  func newDeviceFound(peripheral: CoreBluetooth.CBPeripheral, rUid: [Swift.UInt8], txPowerLevel: Swift.Int8?, rssi: Swift.Int)
+  func updateKnownDevice(peripheral: CoreBluetooth.CBPeripheral, rUid: [Swift.UInt8], txPowerLevel: Swift.Int8?, rssi: Swift.Int)
+  func removeKnownDevice(periph: CoreBluetooth.CBPeripheral)
+  func connecting()
+  func connected()
+  func notification(packet: [Swift.UInt8])
+  func rssiRead(rssi: Swift.Int)
+  func disconnected()
+  func error(error: Swift.Error?)
+  func unsupported()
+  func operationRestored()
+}
+extension WlBluetoothEventDelegate {
+  public func closestDevice(peripheral: CoreBluetooth.CBPeripheral, rUid: [Swift.UInt8], rssi: Swift.Int)
+  public func closestDevice(peripheral: CoreBluetooth.CBPeripheral, rUid: [Swift.UInt8], txPowerLevel: Swift.Int8?, rssi: Swift.Int)
+  public func batchDeviceResults(allResults: [LeafBle.PeripheralResult])
+  public func newDeviceFound(peripheral: CoreBluetooth.CBPeripheral, rUid: [Swift.UInt8], txPowerLevel: Swift.Int8?, rssi: Swift.Int)
+  public func updateKnownDevice(peripheral: CoreBluetooth.CBPeripheral, rUid: [Swift.UInt8], txPowerLevel: Swift.Int8?, rssi: Swift.Int)
+  public func removeKnownDevice(periph: CoreBluetooth.CBPeripheral)
+  public func operationRestored()
+}
+@_hasMissingDesignatedInitializers public class WlBluetoothController {
+  public static let shared: LeafBle.WlBluetoothController
+  public var filterNames: [Swift.String]
+  weak public var delegate: LeafBle.WlBluetoothEventDelegate?
+  public func bind()
+  public func unbind()
+  public func startFinding() -> Swift.Bool
+  public func stopFinding()
+  public func connect(_ reader: CoreBluetooth.CBPeripheral)
+  public func disconnect()
+  public func writePacket(_ packet: [Swift.UInt8])
+  public func readRssi()
+  public func addToAntiPassback()
+  @objc deinit
+}
+public struct WlTransaction {
+  public static func start(credential: LeafBle.WlMobileCredential, reset: Swift.Bool)
+  public static func getNextPacket() -> (status: LeafBle.WlStatus, packet: [Swift.UInt8])
+  public static func handlePacket(_ packet: [Swift.UInt8]) -> LeafBle.WlStatus
+  public static func getTransactionCertificate() -> [Swift.UInt8]
+  public static func getMetadata() -> [Swift.UInt8]
+}
+extension Array {
+  public init(reserveCapacity: Swift.Int)
+}
+extension Array where Element == Swift.UInt8 {
+  public init(hex: Swift.String)
+  public func toHexString() -> Swift.String
+}
+public enum WlStatus : Swift.UInt32 {
+  case ok
+  case failed
+  case authenticated
+  case complete
+  case unknown
+  public typealias RawValue = Swift.UInt32
+  public init?(rawValue: Swift.UInt32)
+  public var rawValue: Swift.UInt32 {
+    get
+  }
+}
+public enum WlError : Swift.Error {
+  case bleError(Swift.String)
+}
+public typealias WlMobileCredential = (payload: [Swift.UInt8], key: [Swift.UInt8], uid: [Swift.UInt8])
+public let WlLibVersionString: Swift.String
+public let WlLibVersion: Swift.Double
+public typealias PeripheralResult = (periph: CoreBluetooth.CBPeripheral, rUid: [Swift.UInt8]?, txPowerLevel: Swift.Int8?, rssi: Swift.Int, timestamp: Swift.Double)
+extension LeafBle.WlStatus : Swift.Equatable {}
+extension LeafBle.WlStatus : Swift.Hashable {}
+extension LeafBle.WlStatus : Swift.RawRepresentable {}

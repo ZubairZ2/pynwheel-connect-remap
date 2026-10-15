@@ -1,0 +1,198 @@
+diff --git a/node_modules/react-native-country-picker-modal/lib/CountryList.js b/node_modules/react-native-country-picker-modal/lib/CountryList.js
+index 8816018..025bc4f 100644
+--- a/node_modules/react-native-country-picker-modal/lib/CountryList.js
++++ b/node_modules/react-native-country-picker-modal/lib/CountryList.js
+@@ -82,7 +82,8 @@ const ItemSeparatorComponent = () => {
+ };
+ const { height } = Dimensions.get('window');
+ export const CountryList = (props) => {
+-    const { data, withAlphaFilter, withEmoji, withFlag, withCallingCode, withCurrency, onSelect, filter, flatListProps, filterFocus, } = props;
++    const { data: rawData, withAlphaFilter, withEmoji, withFlag, withCallingCode, withCurrency, onSelect, filter, flatListProps, filterFocus, } = props;
++    const data = rawData || [];
+     const flatListRef = useRef(null);
+     const [letter, setLetter] = useState('');
+     const { itemHeight, backgroundColor } = useTheme();
+diff --git a/node_modules/react-native-country-picker-modal/lib/CountryPicker.js b/node_modules/react-native-country-picker-modal/lib/CountryPicker.js
+index c4ba18e..f17a703 100644
+--- a/node_modules/react-native-country-picker-modal/lib/CountryPicker.js
++++ b/node_modules/react-native-country-picker-modal/lib/CountryPicker.js
+@@ -20,23 +20,23 @@ export const CountryPicker = (props) => {
+     const { visible, filter, countries, filterFocus } = state;
+     useEffect(() => {
+         if (state.visible !== props.visible) {
+-            setState({ ...state, visible: props.visible || false });
++            setState(prev => ({ ...prev, visible: props.visible || false }));
+         }
+     }, [props.visible]);
+     const onOpen = () => {
+-        setState({ ...state, visible: true });
++        setState(prev => ({ ...prev, visible: true }));
+         if (handleOpen) {
+             handleOpen();
+         }
+     };
+     const onClose = () => {
+-        setState({ ...state, filter: '', visible: false });
++        setState(prev => ({ ...prev, filter: '', visible: false }));
+         if (handleClose) {
+             handleClose();
+         }
+     };
+-    const setFilter = (filter) => setState({ ...state, filter });
+-    const setCountries = (countries) => setState({ ...state, countries });
++    const setFilter = (filter) => setState(prev => ({ ...prev, filter }));
++    const setCountries = (countries) => setState(prev => ({ ...prev, countries }));
+     const onSelectClose = (country) => {
+         onSelect(country);
+         onClose();
+diff --git a/node_modules/react-native-country-picker-modal/lib/CountryService.js b/node_modules/react-native-country-picker-modal/lib/CountryService.js
+index b559945..62b76d9 100644
+--- a/node_modules/react-native-country-picker-modal/lib/CountryService.js
++++ b/node_modules/react-native-country-picker-modal/lib/CountryService.js
+@@ -6,52 +6,31 @@ const localData = {
+     imageCountries: undefined,
+ };
+ export const loadDataAsync = ((data) => (dataType = FlagType.EMOJI) => {
+-    return new Promise((resolve, reject) => {
+-        switch (dataType) {
+-            case FlagType.FLAT:
+-                if (!data.imageCountries) {
+-                    fetch(imageJsonUrl)
+-                        .then((response) => response.json())
+-                        .then((remoteData) => {
+-                        data.imageCountries = remoteData;
+-                        resolve(data.imageCountries);
+-                    })
+-                        .catch(reject);
+-                }
+-                else {
+-                    resolve(data.imageCountries);
+-                }
+-                break;
+-            default:
+-                if (!data.emojiCountries) {
+-                    data.emojiCountries = require('./assets/data/countries-emoji.json');
+-                    resolve(data.emojiCountries);
+-                }
+-                else {
+-                    resolve(data.emojiCountries);
+-                }
+-                break;
++    return new Promise((resolve) => {
++        if (!data.emojiCountries) {
++            data.emojiCountries = require('./assets/data/countries-emoji.json');
+         }
++        resolve(data.emojiCountries);
+     });
+ })(localData);
+ export const getEmojiFlagAsync = async (countryCode = 'FR') => {
+     const countries = await loadDataAsync();
+-    if (!countries) {
+-        throw new Error('Unable to find emoji because emojiCountries is undefined');
++    if (!countries || !countries[countryCode]) {
++        return '';
+     }
+     return countries[countryCode].flag;
+ };
+ export const getImageFlagAsync = async (countryCode = 'FR') => {
+     const countries = await loadDataAsync(FlagType.FLAT);
+-    if (!countries) {
+-        throw new Error('Unable to find image because imageCountries is undefined');
++    if (!countries || !countries[countryCode]) {
++        return '';
+     }
+     return countries[countryCode].flag;
+ };
+ export const getCountryNameAsync = async (countryCode = 'FR', translation = 'common') => {
+     const countries = await loadDataAsync();
+-    if (!countries) {
+-        throw new Error('Unable to find image because imageCountries is undefined');
++    if (!countries || !countries[countryCode]) {
++        return '';
+     }
+     return countries[countryCode].name
+         ? countries[countryCode].name[translation]
+@@ -59,15 +38,15 @@ export const getCountryNameAsync = async (countryCode = 'FR', translation = 'com
+ };
+ export const getCountryCallingCodeAsync = async (countryCode) => {
+     const countries = await loadDataAsync();
+-    if (!countries) {
+-        throw new Error('Unable to find image because imageCountries is undefined');
++    if (!countries || !countries[countryCode]) {
++        return '';
+     }
+     return countries[countryCode].callingCode[0];
+ };
+ export const getCountryCurrencyAsync = async (countryCode) => {
+     const countries = await loadDataAsync();
+-    if (!countries) {
+-        throw new Error('Unable to find image because imageCountries is undefined');
++    if (!countries || !countries[countryCode]) {
++        return '';
+     }
+     return countries[countryCode].currency[0];
+ };
+@@ -147,6 +126,7 @@ export const search = (filter = '', data = [], options = DEFAULT_FUSE_OPTION) =>
+ };
+ const uniq = (arr) => Array.from(new Set(arr));
+ export const getLetters = (countries) => {
++    if (!countries || !Array.isArray(countries)) return [];
+     return uniq(countries
+         .map((country) => country.name.substr(0, 1).toLocaleUpperCase())
+         .sort((l1, l2) => l1.localeCompare(l2)));
+@@ -157,4 +137,3 @@ export const getCountryInfoAsync = async ({ countryCode, translation, }) => {
+     const callingCode = await getCountryCallingCodeAsync(countryCode);
+     return { countryName, currency, callingCode };
+ };
+-//# sourceMappingURL=CountryService.js.map
+\ No newline at end of file
+diff --git a/node_modules/react-native-country-picker-modal/lib/Emoji.js b/node_modules/react-native-country-picker-modal/lib/Emoji.js
+index 25542bf..134e398 100644
+--- a/node_modules/react-native-country-picker-modal/lib/Emoji.js
++++ b/node_modules/react-native-country-picker-modal/lib/Emoji.js
+@@ -2,8 +2,11 @@ import React, { memo } from 'react';
+ import { Text } from 'react-native';
+ import nodeEmoji from 'node-emoji';
+ const Emoji = memo(({ name }) => {
++    if (!name || typeof name !== 'string') {
++        return React.createElement(Text, { allowFontScaling: false }, '');
++    }
+     const emoji = nodeEmoji.get(name);
+-    return React.createElement(Text, { allowFontScaling: false }, emoji);
++    return React.createElement(Text, { allowFontScaling: false }, emoji || name);
+ });
+ export { Emoji };
+ //# sourceMappingURL=Emoji.js.map
+\ No newline at end of file
+diff --git a/node_modules/react-native-country-picker-modal/lib/Flag.js b/node_modules/react-native-country-picker-modal/lib/Flag.js
+index b974950..ff345b1 100644
+--- a/node_modules/react-native-country-picker-modal/lib/Flag.js
++++ b/node_modules/react-native-country-picker-modal/lib/Flag.js
+@@ -26,11 +26,17 @@ const styles = StyleSheet.create({
+     },
+ });
+ const ImageFlag = memo(({ countryCode, flagSize }) => {
+-    const { getImageFlagAsync } = useContext();
++    const { getImageFlagAsync, getEmojiFlagAsync } = useContext();
+     const asyncResult = useAsync(getImageFlagAsync, [countryCode]);
++    const emojiFallback = useAsync(getEmojiFlagAsync, [countryCode]);
+     if (asyncResult.loading) {
+         return React.createElement(ActivityIndicator, { size: 'small' });
+     }
++    if (!asyncResult.result || asyncResult.error) {
++        // Fallback to emoji flag when image is unavailable
++        return React.createElement(Text, { style: [styles.emojiFlag, { fontSize: flagSize || 20 }], allowFontScaling: false },
++            React.createElement(Emoji, { name: emojiFallback.result || '' }));
++    }
+     return (React.createElement(Image, { resizeMode: 'contain', style: [
+             styles.imageFlag,
+             { borderColor: 'transparent', height: flagSize },
+@@ -45,7 +51,7 @@ const EmojiFlag = memo(({ countryCode, flagSize }) => {
+     return (React.createElement(Text, { style: [styles.emojiFlag, { fontSize: flagSize }], allowFontScaling: false },
+         React.createElement(Emoji, Object.assign({}, { name: asyncResult.result }))));
+ });
+-export const Flag = ({ countryCode, withEmoji, withFlagButton, flagSize, }) => withFlagButton ? (React.createElement(View, { style: styles.container }, withEmoji ? (React.createElement(EmojiFlag, Object.assign({}, { countryCode, flagSize }))) : (React.createElement(ImageFlag, Object.assign({}, { countryCode, flagSize }))))) : null;
++export const Flag = ({ countryCode, withEmoji, withFlagButton, flagSize, }) => withFlagButton ? (React.createElement(View, { style: styles.container }, React.createElement(EmojiFlag, Object.assign({}, { countryCode, flagSize })))) : null;
+ Flag.defaultProps = {
+     withEmoji: true,
+     withFlagButton: true,

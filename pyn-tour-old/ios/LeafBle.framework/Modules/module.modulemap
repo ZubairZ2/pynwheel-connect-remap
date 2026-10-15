@@ -1,0 +1,11 @@
+framework module LeafBle {
+  umbrella header "LeafBle.h"
+
+  export *
+  module * { export * }
+}
+
+module LeafBle.Swift {
+    header "LeafBle-Swift.h"
+    requires objc
+}

@@ -25,6 +25,7 @@ Both apps share the **same Rails backend** (`pynwheel-staging/`, "Pynwheel Conne
 | `src/Utils/`, `src/Components/`, `src/assest/` | Helpers, shared components, images/fonts/json (`R.js` is the asset registry). |
 | `android/` | Gradle 7.6.4, AGP 7.4.2, compileSdk 34, targetSdk 35, minSdk 26. Flavours `selftour` (Pynwheel Tour, `com.pynwheel.selftour`) and `lincolnselftour` (white-label "Lincoln"). Native modules in `app/src/main/java/com/pynwheel/selftour/{igloo,latch}` and `ZervModule.java`; vendored SDKs in `android/libs/*.aar` and `android/leafble/`. |
 | `ios/` | `SelfTour.xcworkspace`, targets SelfTour and Lincoln. Swift bridges `IglooModule.swift`, `LatchModule.swift`, `ZervModule.swift`; frameworks `IgloohomeSDK.xcframework`, `LeafBle.framework`, `Zerv_SDK_Library.framework`. |
+| `ios/Zerv_SDK_Library.framework/` | **Not in git** (its binary embeds Zerv's own AWS credentials, which GitHub push protection rejects); copy it in from the original clone before building the iOS target. The release signing key `android/app/selftour-key.keystore` is likewise kept local. |
 | `patches/` | `patch-package` patches (RN 0.63, camera, video, netinfo, orientation, country picker, node-emoji). Applied on `yarn install`. |
 | `.env`, `.env.pynwheel`, `.env.lincoln` | `react-native-config`. `ENV=pynwheel` or `lincoln` picks the flavour's endpoints. Contains committed Google API keys — do not copy them anywhere. |
 | `IglooTest.js`, `Pynwheel_Invoice.html`, `.scannerwork/` | Leftovers, not part of the app. |

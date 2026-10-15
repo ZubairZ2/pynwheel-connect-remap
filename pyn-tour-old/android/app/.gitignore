@@ -1,0 +1,3 @@
+# The release signing key stays local; copy selftour-key.keystore here before building.
+# (This file outranks the `!*.keystore` exception in ../../.gitignore.)
+selftour-key.keystore

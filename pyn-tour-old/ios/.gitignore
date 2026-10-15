@@ -1,0 +1,3 @@
+# Vendor SDK binary with Zerv's own AWS credentials embedded (GitHub push protection rejects it);
+# keep the framework local and copy it in before building the iOS target.
+Zerv_SDK_Library.framework/

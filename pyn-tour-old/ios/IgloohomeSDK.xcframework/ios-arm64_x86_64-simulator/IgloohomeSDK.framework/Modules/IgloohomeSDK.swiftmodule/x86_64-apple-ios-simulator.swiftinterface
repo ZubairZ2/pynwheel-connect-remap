@@ -1,0 +1,704 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.6.1 (swiftlang-5.6.0.323.66 clang-1316.0.20.12)
+// swift-module-flags: -target x86_64-apple-ios11.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -Onone -module-name IgloohomeSDK
+import CommonCrypto
+import CoreBluetooth
+import CoreLocation
+import Foundation
+@_exported import IgloohomeSDK
+import IgloohomeSDK.IgloohomeSDK_Private
+import LocalAuthentication
+import RxBluetoothKit
+import RxSwift
+import Security
+import Swift
+import _Concurrency
+import iOSDFULibrary
+@_hasMissingDesignatedInitializers public class LockRssiList {
+  public var lockRssiList: [(bluetooth_name: Swift.String, rssi: Swift.Int)]
+  @objc deinit
+}
+@objc @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers public class QuickUnlockManager : ObjectiveC.NSObject {
+  public static var shared: IgloohomeSDK.QuickUnlockManager
+  public static var delegate: IgloohomeSDK.QuickUnlockDelegate? {
+    get
+    set
+  }
+  public func execActivateQuickUnlock(lock: IgloohomeSDK.IglooLock, key: Swift.String, referenceId: Swift.String) -> RxSwift.Completable
+  public func execDeactivateQuickUnlock(lock: IgloohomeSDK.IglooLock) -> RxSwift.Completable
+  public func execDeactivateQuickUnlock(lockName: Swift.String) -> RxSwift.Completable
+  public func execDeactivateAllQuickUnlock() -> RxSwift.Completable
+  public static func start(with delegate: IgloohomeSDK.QuickUnlockDelegate, associatedLocks: [Swift.String], referenceIds: [Swift.String])
+  public static func stop()
+  public func setToHome(for lock: IgloohomeSDK.IglooLock)
+  public func getDistanceFromHome(to loc: CoreLocation.CLLocation) -> Swift.Double?
+  public func setHomeLocation(_ location: CoreLocation.CLLocation) throws
+  public func getHomeLocation(_ lockName: Swift.String) -> CoreLocation.CLLocation?
+  public func calibrateRSSI(lock: IgloohomeSDK.IglooLock, duration: Swift.Int = 5) -> RxSwift.Single<[Swift.Int]>
+  public static func getLocksWithAutoUnlockActivated() -> [(lockName: Swift.String, referenceId: Swift.String)]
+  public func mockLocationUpdate(location: CoreLocation.CLLocation)
+  @objc deinit
+}
+extension IgloohomeSDK.QuickUnlockManager : CoreLocation.CLLocationManagerDelegate {
+  @objc dynamic public func locationManager(_ manager: CoreLocation.CLLocationManager, didChangeAuthorization status: CoreLocation.CLAuthorizationStatus)
+  @objc dynamic public func locationManager(_ manager: CoreLocation.CLLocationManager, didUpdateLocations locations: [CoreLocation.CLLocation])
+  @objc dynamic public func locationManager(_ manager: CoreLocation.CLLocationManager, didVisit visit: CoreLocation.CLVisit)
+  @objc dynamic public func locationManager(_ manager: CoreLocation.CLLocationManager, didFailWithError error: Swift.Error)
+  @objc dynamic public func locationManagerDidPauseLocationUpdates(_ manager: CoreLocation.CLLocationManager)
+}
+public protocol QuickUnlockDelegate {
+  func getCentralManager() -> RxBluetoothKit.CentralManager
+  func getIglooKey(for referenceId: Swift.String) -> Swift.String
+  func getHomeRadius(for lockName: Swift.String) -> Swift.Double
+  func didChangeAuthorization(status: CoreLocation.CLAuthorizationStatus)
+  func didUpdateLocation(_ location: CoreLocation.CLLocation)
+  func didFailUpdateLocation(withError error: Swift.Error)
+  func didChangeInLocationUpdates(_ started: Swift.Bool)
+  func didLeftHouse(for lockName: Swift.String, distance: Swift.Double)
+  func didChangeLockConnection(for lock: IgloohomeSDK.IglooLock, connectionStatus: Swift.Bool)
+  func didUpdateRSSI(for lock: IgloohomeSDK.IglooLock, rawRssi: Swift.Int?, smoothened: Swift.Double?, backgroundTimeLeft: Swift.Double)
+  func didFailToConnect(for lock: IgloohomeSDK.IglooLock?, withError error: Swift.Error)
+  func didQuickUnlock(for lock: IgloohomeSDK.IglooLock)
+  func didDetermineState(for lockName: Swift.String, atHome: Swift.Bool, distance: Swift.Double, location: CoreLocation.CLLocation)
+  func getLockToUnlock(_ cachedLock: IgloohomeSDK.IglooLock) -> RxSwift.Single<IgloohomeSDK.IglooLock>
+}
+extension IgloohomeSDK.QuickUnlockDelegate {
+  public func getHomeRadius(for lockName: Swift.String) -> Swift.Double
+  public func didChangeAuthorization(status: CoreLocation.CLAuthorizationStatus)
+  public func didUpdateLocation(_ location: CoreLocation.CLLocation)
+  public func didChangeInLocationUpdates(_ started: Swift.Bool)
+  public func didFailUpdateLocation(withError error: Swift.Error)
+  public func didLeftHouse(for lockName: Swift.String, distance: Swift.Double)
+  public func didChangeLockConnection(for lock: IgloohomeSDK.IglooLock, connectionStatus: Swift.Bool)
+  public func didUpdateRSSI(for lock: IgloohomeSDK.IglooLock, rawRssi: Swift.Int?, smoothened: Swift.Double?, backgroundTimeLeft: Swift.Double)
+  public func didFailToConnect(for lock: IgloohomeSDK.IglooLock?, withError error: Swift.Error)
+  public func didQuickUnlock(for lock: IgloohomeSDK.IglooLock)
+  public func didDetermineState(for lockName: Swift.String, atHome: Swift.Bool, distance: Swift.Double, location: CoreLocation.CLLocation)
+  public func getLockToUnlock(_ cachedLock: IgloohomeSDK.IglooLock) -> RxSwift.Single<IgloohomeSDK.IglooLock>
+}
+public struct FingerprintScanResult : Swift.Encodable {
+  public let scansRemaining: Swift.Int
+  public let readError: Swift.Bool?
+  public let uid: Swift.Int?
+  public init(scansRemaining: Swift.Int, readError: Swift.Bool?, uid: Swift.Int?)
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public enum CylinderType : Swift.Int {
+  case SINGLE_LOCK
+  case DOUBLE_LOCK
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum ApiError : Swift.Error {
+  case DecodingError(Swift.String?)
+  case CommandDeliveryError(Swift.String?)
+  case BluetoothError(Swift.String?)
+  case ConnectionError(Swift.String?)
+  case InvalidInputError(Swift.String?)
+  case InvalidKeyError(Swift.String?)
+  case UnsupportedOperationError(Swift.String?)
+  case InvalidKeyException(Swift.String?)
+  case LockInvalidStateError(Swift.String?)
+  case LockLowPowerError(Swift.String?)
+  case InvalidStateError(Swift.String?)
+  case LockGenericFailureError(Swift.String?)
+  case LockOperationInProgressError(Swift.String?)
+  case LockPinNotFoundError(Swift.String?)
+  case LockInvalidMasterPinLengthError(Swift.String?)
+  case LockInvalidCustomPinLengthError(Swift.String?)
+  case LockInvalidVolumeError(Swift.String?)
+  case LockInvalidPinKeyLengthError(Swift.String?)
+  case LockExpiredEKeyError(Swift.String?)
+  case LockPinOccupiedError(Swift.String?)
+  case LockBlacklistGuestKeyNotFoundError(Swift.String?)
+  case GenericNotFoundError(Swift.String?)
+  case LockStorageError(Swift.String?)
+  case LockReadError(Swift.String?)
+  case LockTimeoutError(Swift.String?)
+  case LockMaxAttemptError(Swift.String?)
+  case CRCFailure(Swift.String?)
+  case InvalidConnectionHandler(Swift.String?)
+  case FileIdInvalid
+  case FileSizeInvalid
+  case FileCrcInvalid
+  case FileDataInvalid
+  case PackSizeInvalid
+  case PackIndexInvalid
+  case BluetoothProfile(IgloohomeSDK.BluetoothProfileError?)
+  case Scan(IgloohomeSDK.ScanError?)
+}
+extension IgloohomeSDK.ApiError : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+public enum BluetoothProfileError : Swift.Int {
+  case OnCreateConnection
+  case OnCurrentConnection
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum ScanError : Swift.Int {
+  case ScannerDestroyed
+  case ScanInProgress
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum FileTransferControlMessage : Swift.Int {
+  case START
+  case CONTINUE
+  case CANCEL
+  case END
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum LockType : Swift.Int, Swift.Equatable {
+  case LOCK_BOX
+  case DEADBOLT
+  case LATCH
+  case MORTISE
+  case PADLOCK
+  case MODULE
+  case SWING_HANDLE
+  case RIMLOCK
+  case NB_DEADBOLT
+  case FOB
+  case BRIDGE
+  case EU_RETROFIT
+  case KEYPAD
+  case NB_PADLOCK
+  case LOCKBOX_ENTERPRISE
+  case PADLOCK_ENTERPRISE
+  @available(*, deprecated, message: "Lock type has to be explicitly defined")
+  case UNKNOWN
+  public func description() -> Swift.String
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public protocol LockNotification {
+}
+public enum TemperatureState : Swift.Int {
+  case LOW
+  case NORMAL
+  case HIGH
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum CsrGenerateResult : Swift.Int {
+  case SUCCESS
+  case FAILURE
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum ModeType : Swift.Int {
+  case POWER
+  case SCHEDULING
+  case NIGHT
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum DfuError : Swift.Error {
+  case DfuPackageError(Swift.Int?)
+  case DfuStateNotReadyError
+  case DfuConnectionError
+  case DfuLibraryError(Swift.Int?)
+}
+public class DfuPackage {
+  public init(payloadData: Foundation.Data, checksumData: Foundation.Data) throws
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class DfuProgress {
+  public var progress: Swift.Int?
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class ScannedLockStatus {
+  @objc deinit
+}
+public struct StatusNotification : IgloohomeSDK.LockNotification {
+  public let woken: Swift.Bool?
+  public let lockOpen: Swift.Int?
+  public let hasLogs: Swift.Int?
+  public let doorOpen: Swift.Int?
+  @available(*, deprecated, message: "replaced by lockOpen")
+  public let lock_open: Swift.Bool?
+  @available(*, deprecated, message: "replaced by hasLogs")
+  public let has_logs: Swift.Bool?
+}
+@_hasMissingDesignatedInitializers public class CrashlyticsLogger {
+  public static var listener: ((Swift.String) -> ())?
+  public static func registerListener(_ block: @escaping (Swift.String) -> ())
+  @objc deinit
+}
+@objc @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers public class DfuManager : ObjectiveC.NSObject {
+  public static let shared: IgloohomeSDK.DfuManager
+  public func checkStateDfuReady(lock: IgloohomeSDK.IglooLock, key: Any) -> RxSwift.Completable
+  public func executeDfu(lock: IgloohomeSDK.IglooLock, key: Any, dfuPackage: IgloohomeSDK.DfuPackage) -> RxSwift.Observable<IgloohomeSDK.DfuProgress>
+  public func abortDfu() -> Swift.Bool
+  public func getFirmwareVersion(lock: IgloohomeSDK.IglooLock, key: Any) -> RxSwift.Single<Swift.String>
+  public func getBluetoothAdvertisementData(lock: IgloohomeSDK.IglooLock) -> Swift.String
+  @objc deinit
+}
+public enum LockingDirection : Swift.Int {
+  case LEFT_HANDED
+  case RIGHT_HANDED
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public struct ActivityLog {
+  public var lockName: Swift.String
+  public let log: Swift.String
+}
+public struct DaylightSavings : Swift.Codable {
+  public var year: Swift.Int
+  public var start_date: Swift.Int
+  public var end_date: Swift.Int
+  public var offset: Swift.Int
+  public init(year: Swift.Int, start_date: Swift.Int, end_date: Swift.Int, offset: Swift.Int)
+  public func encode(to encoder: Swift.Encoder) throws
+  public init(from decoder: Swift.Decoder) throws
+}
+public enum ExternalPowerState : Swift.Int {
+  case UNPOWERED
+  case POWERED
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public struct PowerState : Swift.Codable {
+  public var batteryLevel: Swift.Int?
+  public var externalPowerState: Swift.Int?
+  public var batteryInstalled: Swift.Bool?
+  public func encode(to encoder: Swift.Encoder) throws
+  public init(from decoder: Swift.Decoder) throws
+}
+@objc @_hasMissingDesignatedInitializers public class IglooLock : ObjectiveC.NSObject {
+  public var name: Swift.String
+  public var identifier: Swift.String
+  public var pairedStatus: Swift.Bool
+  @available(*, deprecated)
+  public var pairingMode: Swift.Bool
+  public var active: Swift.Bool
+  public var rssi: Swift.Int
+  public var hasActivityLogs: Swift.Bool?
+  public var protocolMajorVersion: Swift.Int!
+  public var protocolMinorVersion: Swift.Int!
+  public var lockType: IgloohomeSDK.LockType!
+  public var lockVersion: Swift.Int!
+  public var dfuRevisionNumber: Swift.Int!
+  public var vendorId: Swift.Int!
+  public var isModule: Swift.Bool?
+  public func getCBPeripheral() -> CoreBluetooth.CBPeripheral
+  @available(*, deprecated, message: "Use connectByStringKey that returns Completable instead. For connection before pairing, use connectForPairing.")
+  public func connectByStringKey(_ key: Swift.String? = nil) -> RxSwift.Observable<IgloohomeSDK.IglooLock>
+  public func connectForPairing() -> RxSwift.Completable
+  public func connectByStringKey(_ key: Swift.String) -> RxSwift.Completable
+  public func disconnect() -> RxSwift.Completable
+  public func observeConnectionState() -> RxSwift.Observable<IgloohomeSDK.ConnectionState>
+  public func isConnected() -> Swift.Bool
+  public func pair(masterPin: Swift.String?, pinKey: Foundation.Data?, password: Foundation.Data?, gmtOffset: Swift.Int?, dst: [IgloohomeSDK.DaylightSavings]? = nil) -> RxSwift.Single<Swift.String>
+  public func pair(prePairingData: Swift.String, timezone: Foundation.TimeZone) -> RxSwift.Single<Swift.String>
+  public func pairingCommit(currentTimeInSeconds: Swift.Int) -> RxSwift.Completable
+  public func unpair(force: Swift.Bool? = nil, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func getPowerState(operationId: Swift.Int?) -> RxSwift.Single<IgloohomeSDK.PowerState>
+  @available(*, deprecated, message: "replaced by getPowerState")
+  public func getBatteryLevel(operationId: Swift.Int? = nil) -> RxSwift.Single<Swift.Int>
+  public func isLockOpen(operationId: Swift.Int? = nil) -> RxSwift.Single<Swift.Bool>
+  public func setVolume(volume: Swift.Int, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func setCommonSettings(level: Swift.Int? = nil, downlightEnabled: Swift.Bool? = nil, lockingDirection: IgloohomeSDK.LockingDirection? = nil, cylinderConfig: IgloohomeSDK.CylinderType? = nil, unlockHoldEnabled: Swift.Bool? = nil, tamperDetectionEnabled: Swift.Bool? = nil, ble_tx_power: Swift.Int? = nil, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public static let PIN_KEY_SIZE: Swift.Int
+  public func resetPins(pinKey: Foundation.Data? = nil, gmtOffset: Swift.Int? = nil, daylightSavings: [IgloohomeSDK.DaylightSavings]? = nil, operationId: Swift.Int? = nil) -> RxSwift.Single<Swift.String>
+  public func setMaxIncorrectPinRequest(maxIncorrectPins: Swift.Int?, incorrectPinLockoutOn: Swift.Bool?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func createPin(newPin: Swift.String, startDate: Swift.Int?, endDate: Swift.Int?, pinType: IgloohomeSDK.PinType?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func editPin(oldPin: Swift.String, newPin: Swift.String?, startDate: Swift.Int?, endDate: Swift.Int?, pinType: IgloohomeSDK.PinType?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func deletePin(pin: Swift.String, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func setMasterPin(masterPin: Swift.String, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func getLogs(timeInSeconds: Swift.Int?) -> RxSwift.Single<(IgloohomeSDK.ActivityLog, Swift.Bool)>
+  public func lock(timeInSeconds: Swift.Int?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func unlock(timestamp: Swift.Int?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func enableAutoUnlock(enable: Swift.Bool?, rssiMin: Swift.Int?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func setAutoRelock(sensorAutoRelockSeconds: Swift.Int?, enable: Swift.Bool?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func setRelockAlarm(seconds: Swift.Int?, enable: Swift.Bool?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func blacklistGuestKey(keyId: Swift.Int, startDate: Swift.Int?, endDate: Swift.Int?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func unblacklistGuestKey(keyId: Swift.Int, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func setTime(timeInSeconds: Swift.Int, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func getTime(operationId: Swift.Int? = nil) -> RxSwift.Single<Swift.Int>
+  public func setDaylightSavings(dst: [IgloohomeSDK.DaylightSavings], operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func addCards(duration: Swift.Int?, cardUids: Swift.Array<Foundation.Data>?, operationId: Swift.Int?) -> RxSwift.Completable
+  @available(*, deprecated, message: "replaced by addCards")
+  public func enableCardRegistration(durationInSeconds: Swift.Int, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func deleteCards(duration: Swift.Int?, operationId: Swift.Int?) -> RxSwift.Completable
+  @available(*, deprecated, message: "replaced by deleteCards")
+  public func enableCardDeregistration(durationInSeconds: Swift.Int, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func deregisterCard(cardUid: Foundation.Data, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func addFingerprintObserveScanResult(tries: Swift.Int?, timeoutSeconds: Swift.Int?) -> RxSwift.Observable<IgloohomeSDK.FingerprintScanResult>
+  public func addFingerprint(tries: Swift.Int?, timeoutSeconds: Swift.Int?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func deleteFingerprintByUid(uid: Swift.Int?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func getLockStatus(operationId: Swift.Int? = nil) -> RxSwift.Single<IgloohomeSDK.LockStatus>
+  public func setNbRegistration(cellApn: Swift.String?, cellDns: Swift.String?, cellNetworkType: IgloohomeSDK.NbNetworkType?, cellNetworkBand: Swift.Int?, enablePowerSavingMode: Swift.Bool?, powerSavingModeActiveTimer: Swift.Int?, powerSavingModeTau: Swift.Int?, mqttTopic: Swift.String?, mqttUrl: Swift.String?, mqttPort: Swift.String?, cellNetworkBands: Foundation.Data?, operationId: Swift.Int?) -> RxSwift.Completable
+  public func setNbConfig(heartbeatIntervalMins: Swift.Int?, activityLogsSyncIntervalMins: Swift.Int?, cellApn: Swift.String?, cellNetworkType: IgloohomeSDK.NbNetworkType?, cellNetworkBands: Foundation.Data?, operationId: Swift.Int?) -> RxSwift.Completable
+  public func generatePrKeyCSR(operationId: Swift.Int?) -> RxSwift.Completable
+  public func getNbStatus(operationId: Swift.Int?) -> RxSwift.Single<IgloohomeSDK.NbStatusResponse>
+  public func sendFile(ctrlMsg: IgloohomeSDK.FileTransferControlMessage?, fileId: IgloohomeSDK.FileId?, fileSize: Swift.Int?, fileCrc: Swift.Int?, packIndex: Swift.Int?, fileData: Foundation.Data?, operationId: Swift.Int?) -> RxSwift.Single<IgloohomeSDK.FilePacket>
+  public func sendFile(fileId: IgloohomeSDK.FileId?, fileData: Foundation.Data?) -> RxSwift.Completable
+  public func getFile(ctrlMsg: IgloohomeSDK.FileTransferControlMessage?, fileId: IgloohomeSDK.FileId?, packIndex: Swift.Int?, operationId: Swift.Int?) -> RxSwift.Single<IgloohomeSDK.FilePacket>
+  public func getFile(fileId: IgloohomeSDK.FileId?) -> RxSwift.Single<Foundation.Data>
+  public func getFirmwareVersion(operationId: Swift.Int? = nil) -> RxSwift.Single<Foundation.Data>
+  public func addLock(lockName: Swift.String?, lockGuestKey: Swift.String?, verifyLock: Swift.Bool?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func addLockObserveResult(lockName: Swift.String?, lockGuestKey: Swift.String?, operationId: Swift.Int? = nil) -> RxSwift.Single<IgloohomeSDK.VerifyLock>
+  public func deleteLock(lockId: Swift.String?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func setWifiConfig(ssid: Swift.String?, networkPassword: Swift.String?, mqttUrl: Swift.String?, mqttPort: Swift.Int?, certUrl: Swift.String?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func calibrate(type: IgloohomeSDK.CalibrateType?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func calibrateObserveResult(type: IgloohomeSDK.CalibrateType?, operationId: Swift.Int? = nil) -> RxSwift.Single<IgloohomeSDK.CalibrateResult>
+  public func setMode(type: IgloohomeSDK.ModeType, enable: Swift.Bool, startTime: Swift.Int?, endTime: Swift.Int?, weekdayMask: Swift.Int?, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func debugRequest(data: Foundation.Data?, operationId: Swift.Int?) -> RxSwift.Single<Foundation.Data?>
+  public func enableDFU(enable: Swift.Bool, operationId: Swift.Int? = nil) -> RxSwift.Completable
+  public func lockNotifications() -> RxSwift.Observable<IgloohomeSDK.LockNotification>
+  @objc deinit
+}
+public struct WifiStatus : IgloohomeSDK.LockNotification {
+  public let wifiNetworkStatus: Swift.Int?
+}
+public struct CardAdded : IgloohomeSDK.LockNotification {
+  public let cardUid: Foundation.Data?
+}
+public struct CardDeleted : IgloohomeSDK.LockNotification {
+  public let cardUid: Foundation.Data?
+}
+@available(*, deprecated, message: "replaced by CardAdded")
+public struct CardRegisteredNotification : IgloohomeSDK.LockNotification {
+  public let cardUid: Foundation.Data?
+}
+@available(*, deprecated, message: "replaced by CardDeleted")
+public struct CardDeregisteredNotification : IgloohomeSDK.LockNotification {
+  public let cardUid: Foundation.Data?
+}
+public enum WifiNetworkStatus : Swift.Int {
+  case CONNECTED
+  case CONNECTING
+  case DISCONNECTED
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum NbSimCardStatus : Swift.Int {
+  case NOT_DETECTED
+  case DETECTED
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+extension Foundation.Data {
+  public var sha256: Swift.String {
+    get
+  }
+}
+extension Foundation.Data {
+  public func hexEncodedString() -> Swift.String
+}
+public struct NbStatus : IgloohomeSDK.LockNotification {
+  public let nbNetworkStatus: Swift.Int?
+  public let csrGenResult: Swift.Int?
+  public let certConfigResult: Swift.Int?
+}
+public enum NbNetworkType : Swift.Int {
+  case NB_IOT
+  case CAT_M1
+  case NB_IOT_AND_CAT_M1
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum WiFiNetworkBandType : Swift.Int {
+  case _2_4G
+  case _5G
+  case _60G
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum CalibrateType : Swift.Int {
+  case OPEN_POSITION
+  case CLOSE_POSITION
+  case CYLINDER
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum PinType : Swift.Int {
+  case ONETIME
+  case PERMANENT
+  case WEEKLY
+  case DURATION
+  case MONTHLY
+  case WEEKDAY
+  case WEEKEND
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum NbNetworkStatus : Swift.Int {
+  case MQTTS_CONNECTED
+  case MQTTS_CONNECTION_FAILURE
+  case MODULE_MISSING
+  case NET_CONNECTING
+  case MODULE_TURN_ON
+  case MODULE_ON
+  case MODULE_RESTARTING
+  case MODULE_TURN_OFF
+  case MODULE_PSM
+  case MODULE_OFF
+  case NET_CONNECTED
+  case NET_CONNECTION_FAILED
+  case MQTTS_CONNECTING
+  case BIP_CHECK
+  case BIP_CHECK_TIMEOUT
+  case BIP_PROCESS
+  case BIP_PROCESS_TIMEOUT
+  case BIP_PROCESS_SUCCESS
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public class FilePacket {
+  final public let fileSize: Swift.Int?
+  final public let fileCrc: Swift.Int?
+  final public let packIndex: Swift.Int?
+  final public let packSize: Swift.Int?
+  final public let fileData: [Swift.UInt8]?
+  public init(fileSize: Swift.Int?, fileCrc: Swift.Int?, packIndex: Swift.Int?, packSize: Swift.Int?, fileData: [Swift.UInt8]?)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class ManufacturerData {
+  final public let protocolMajorVersion: Swift.Int
+  final public let protocolMinorVersion: Swift.Int
+  public var isModule: Swift.Bool?
+  public var lockType: IgloohomeSDK.LockType!
+  final public let lockVersion: Swift.Int
+  final public let dfuRevisionNumber: Swift.Int
+  final public let vendorId: Swift.Int
+  final public let lockStatus: IgloohomeSDK.ScannedLockStatus
+  final public let advertisementData: Foundation.Data
+  @objc deinit
+}
+public enum ConnectionState : Swift.String {
+  case CONNECTED
+  case CONNECTING
+  case DISCONNECTED
+  case ERROR
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct Calibrated : IgloohomeSDK.LockNotification {
+  public let result: Swift.Int?
+}
+@_hasMissingDesignatedInitializers public class NbStatusResponse {
+  final public let imei: Swift.String
+  final public let iccid: Swift.String?
+  final public let imsi: Swift.String?
+  final public let moduleFwVersion: Swift.String?
+  final public let networkProvider: Swift.String?
+  final public let roaming: Swift.Bool?
+  final public let networkType: IgloohomeSDK.NbNetworkType?
+  final public let freqBand: Swift.Int?
+  final public let rsrp: Swift.Int?
+  final public let rssi: Swift.Int?
+  final public let rsrq: Swift.Int?
+  final public let sinr: Swift.Int?
+  final public let plmn: Swift.String?
+  final public let tac: Swift.String?
+  final public let cellId: Swift.String?
+  @objc deinit
+}
+public class BleManager {
+  public static func setCompatMode(enabled: Swift.Bool)
+  public static func initialize()
+  public static func close()
+  public init(queue: Dispatch.DispatchQueue = .main, options: [Swift.String : Swift.AnyObject]? = nil, onWillRestoreCentralManagerState: RxBluetoothKit.OnWillRestoreCentralManagerState? = nil)
+  public func scan(options: [Swift.String : Swift.AnyObject]?) -> RxSwift.Observable<IgloohomeSDK.IglooLock>
+  public func backgroundScan(options: [Swift.String : Swift.AnyObject]?) -> RxSwift.Observable<IgloohomeSDK.IglooLock>
+  public func getSdkVersion() -> Swift.String
+  public func getCentralManager() -> RxBluetoothKit.CentralManager
+  @objc deinit
+}
+public enum CertConfigurationResult : Swift.Int {
+  case SUCCESS
+  case GENERIC_FAILURE
+  case MODULE_FAULT
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum FileId : Swift.Int {
+  case CSR
+  case CERT
+  case CA
+  case LOG
+  case VALUE4
+  case VALUE5
+  case VALUE6
+  case VALUE7
+  case VALUE8
+  case VALUE9
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public struct FingerprintAdded : IgloohomeSDK.LockNotification {
+  public let fingerprintUid: Swift.Int?
+  public let result: Swift.Int?
+}
+@_hasMissingDesignatedInitializers public class LockStatus {
+  final public let result: Swift.Int?
+  final public let lockOpen: Swift.Bool?
+  final public let nbNetworkStatus: Swift.Int?
+  final public let wifiNetworkStatus: Swift.Int?
+  final public let doorOpen: Swift.Int?
+  final public let nbNetworkSimcardStatus: Swift.Int?
+  final public let nbNetworkLastConnectedTime: Swift.Int?
+  final public let nbNetworkApn: Swift.String?
+  final public let nbNetworkRsrp: Swift.Int?
+  final public let nbNetworkRssi: Swift.Int?
+  final public let nbNetworkRsrq: Swift.Int?
+  final public let nbNetworkSinr: Swift.Int?
+  final public let nbNetworkImsi: Swift.String?
+  final public let nbNetworkCellId: Swift.String?
+  final public let nbNetworkBand: Swift.Int?
+  final public let wifiNetworkSsid: [Swift.UInt8]?
+  final public let wifiNetworkIpaddr: [Swift.UInt8]?
+  final public let wifiNetworkDns: [Swift.UInt8]?
+  final public let wifiNetworkChannel: Swift.Int?
+  final public let wifiNetworkBand: IgloohomeSDK.WiFiNetworkBandType?
+  final public let wifiNetworkRssi: Swift.Int?
+  final public let pinsMaxCapacity: Swift.Int?
+  final public let pinsCurrentActive: Swift.Int?
+  final public let internalStorageFree: Swift.Int?
+  final public let internalStorageUsed: Swift.Int?
+  final public let lastHeartbeatAttempt: Swift.Int?
+  final public let lockRssiList: IgloohomeSDK.LockRssiList?
+  final public let locksMaxCapacity: Swift.Int?
+  final public let locksCurrentAdded: Swift.Int?
+  final public let hasLogs: Swift.Int?
+  @objc deinit
+}
+public struct CalibrateResult : Swift.Encodable {
+  public let result: Swift.Int?
+  public let success: Swift.Bool?
+  public let singleLock: Swift.Bool?
+  public let doubleLock: Swift.Bool?
+  public init(result: Swift.Int?, success: Swift.Bool?, singleLock: Swift.Bool?, doubleLock: Swift.Bool?)
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public struct VerifyLock : IgloohomeSDK.LockNotification {
+  public let result: Swift.Int?
+  public let lockId: [Swift.UInt8]?
+  public let lockRssi: Swift.Int?
+}
+extension IgloohomeSDK.CylinderType : Swift.Equatable {}
+extension IgloohomeSDK.CylinderType : Swift.Hashable {}
+extension IgloohomeSDK.CylinderType : Swift.RawRepresentable {}
+extension IgloohomeSDK.BluetoothProfileError : Swift.Equatable {}
+extension IgloohomeSDK.BluetoothProfileError : Swift.Hashable {}
+extension IgloohomeSDK.BluetoothProfileError : Swift.RawRepresentable {}
+extension IgloohomeSDK.ScanError : Swift.Equatable {}
+extension IgloohomeSDK.ScanError : Swift.Hashable {}
+extension IgloohomeSDK.ScanError : Swift.RawRepresentable {}
+extension IgloohomeSDK.FileTransferControlMessage : Swift.Equatable {}
+extension IgloohomeSDK.FileTransferControlMessage : Swift.Hashable {}
+extension IgloohomeSDK.FileTransferControlMessage : Swift.RawRepresentable {}
+extension IgloohomeSDK.LockType : Swift.Hashable {}
+extension IgloohomeSDK.LockType : Swift.RawRepresentable {}
+extension IgloohomeSDK.TemperatureState : Swift.Equatable {}
+extension IgloohomeSDK.TemperatureState : Swift.Hashable {}
+extension IgloohomeSDK.TemperatureState : Swift.RawRepresentable {}
+extension IgloohomeSDK.CsrGenerateResult : Swift.Equatable {}
+extension IgloohomeSDK.CsrGenerateResult : Swift.Hashable {}
+extension IgloohomeSDK.CsrGenerateResult : Swift.RawRepresentable {}
+extension IgloohomeSDK.ModeType : Swift.Equatable {}
+extension IgloohomeSDK.ModeType : Swift.Hashable {}
+extension IgloohomeSDK.ModeType : Swift.RawRepresentable {}
+extension IgloohomeSDK.LockingDirection : Swift.Equatable {}
+extension IgloohomeSDK.LockingDirection : Swift.Hashable {}
+extension IgloohomeSDK.LockingDirection : Swift.RawRepresentable {}
+extension IgloohomeSDK.ExternalPowerState : Swift.Equatable {}
+extension IgloohomeSDK.ExternalPowerState : Swift.Hashable {}
+extension IgloohomeSDK.ExternalPowerState : Swift.RawRepresentable {}
+extension IgloohomeSDK.WifiNetworkStatus : Swift.Equatable {}
+extension IgloohomeSDK.WifiNetworkStatus : Swift.Hashable {}
+extension IgloohomeSDK.WifiNetworkStatus : Swift.RawRepresentable {}
+extension IgloohomeSDK.NbSimCardStatus : Swift.Equatable {}
+extension IgloohomeSDK.NbSimCardStatus : Swift.Hashable {}
+extension IgloohomeSDK.NbSimCardStatus : Swift.RawRepresentable {}
+extension IgloohomeSDK.NbNetworkType : Swift.Equatable {}
+extension IgloohomeSDK.NbNetworkType : Swift.Hashable {}
+extension IgloohomeSDK.NbNetworkType : Swift.RawRepresentable {}
+extension IgloohomeSDK.WiFiNetworkBandType : Swift.Equatable {}
+extension IgloohomeSDK.WiFiNetworkBandType : Swift.Hashable {}
+extension IgloohomeSDK.WiFiNetworkBandType : Swift.RawRepresentable {}
+extension IgloohomeSDK.CalibrateType : Swift.Equatable {}
+extension IgloohomeSDK.CalibrateType : Swift.Hashable {}
+extension IgloohomeSDK.CalibrateType : Swift.RawRepresentable {}
+extension IgloohomeSDK.PinType : Swift.Equatable {}
+extension IgloohomeSDK.PinType : Swift.Hashable {}
+extension IgloohomeSDK.PinType : Swift.RawRepresentable {}
+extension IgloohomeSDK.NbNetworkStatus : Swift.Equatable {}
+extension IgloohomeSDK.NbNetworkStatus : Swift.Hashable {}
+extension IgloohomeSDK.NbNetworkStatus : Swift.RawRepresentable {}
+extension IgloohomeSDK.ConnectionState : Swift.Equatable {}
+extension IgloohomeSDK.ConnectionState : Swift.Hashable {}
+extension IgloohomeSDK.ConnectionState : Swift.RawRepresentable {}
+extension IgloohomeSDK.CertConfigurationResult : Swift.Equatable {}
+extension IgloohomeSDK.CertConfigurationResult : Swift.Hashable {}
+extension IgloohomeSDK.CertConfigurationResult : Swift.RawRepresentable {}
+extension IgloohomeSDK.FileId : Swift.Equatable {}
+extension IgloohomeSDK.FileId : Swift.Hashable {}
+extension IgloohomeSDK.FileId : Swift.RawRepresentable {}

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.pynwheel.LincolnAppStore</string>
+	</array>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>FirebaseCrashlyticsCollectionEnabled</key>
+	<true/>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Our app does not request this permission or utilize this functionality but it is included in our info.plist since our app utilizes the react-native-permissions library, which references this permission in its code.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Bluetooth Peripheral services are used to communicate with Bluetooth readers to open doors or login to services when you present your device.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>App would like to access your camera to upload your picture for authentication. Your photos wont be shared without your permission.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Location services are used to find and sense the distance from door readers and computers as you approach them. If you enable the leashing option then background services are not required. Location service are also used to enforce geographic fencing rules. If you do not allow location services then some organization resources may not be available to you. Refer to the privacy menu for the location events requested by your organization</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Location services are used to find and sense the distance from door readers and computers as you approach them. If you enable the leashing option then background services are not required. Location service are also used to enforce geographic fencing rules. If you do not allow location services then some organization resources may not be available to you. Refer to the privacy menu for the location events requested by your organization</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Location services are used to find and sense the distance from door readers and computers as you approach them. If you enable the leashing option then background services are not required. Location service are also used to enforce geographic fencing rules. If you do not allow location services then some organization resources may not be available to you. Refer to the privacy menu for the location events requested by your organization</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>App would like to access your camera to upload your picture for authentication. Your photos wont be shared without your permission.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>App would like to access your camera to upload your picture for authentication. Your photos wont be shared without your permission.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This identifier will be used to collect crashlytics reports</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Gotham-Bold.otf</string>
+		<string>Gotham-Light.otf</string>
+		<string>GothamBold.ttf</string>
+		<string>GothamLight.ttf</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+		<string>bluetooth-peripheral</string>
+		<string>location</string>
+		<string>processing</string>
+	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+</dict>
+</plist>
