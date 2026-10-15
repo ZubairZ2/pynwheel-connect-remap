@@ -9,7 +9,8 @@ module TourApi
   # "Show in Stops List" column (`breezway_lock_visible`). Duplicate rows for
   # one record collapse to one stop (the lowest `tour_stops.id`); nothing is
   # inferred from plotting. Each stop carries its map node, location and
-  # whether a route can reach it, from the built graph.
+  # whether a route can reach it, from the built graph, and its smart lock
+  # (`lock`, see TourApi::Locks) when the CMS assigned one.
   module Stops
     VISIBLE = 'tour_stops.display_stop IS DISTINCT FROM FALSE'
 
@@ -21,8 +22,9 @@ module TourApi
       amenities = []
       units = []
       if tour_id
-        amenity_rows(community, tour_id).each { |ts, amenity| amenities << amenity_stop(graph, ts, amenity) }
-        unit_rows(community, tour_id).each { |ts, unit, floorplan| units << unit_stop(graph, ts, unit, floorplan) }
+        locks = Locks.index(community)
+        amenity_rows(community, tour_id).each { |ts, amenity| amenities << amenity_stop(graph, ts, amenity, locks) }
+        unit_rows(community, tour_id).each { |ts, unit, floorplan| units << unit_stop(graph, ts, unit, floorplan, locks) }
       end
       # Tour order: the rule the routes use (building order, floor, Tour Setup sort, id).
       building_index = graph.buildings.each_with_index.to_h
@@ -51,7 +53,7 @@ module TourApi
     def unit_rows(community, tour_id)
       first_stop = {}
       TourStop.where(tour_id: tour_id, stop_type: 'unit').where(VISIBLE).order(:id).each { |ts| first_stop[ts.stop_id] ||= ts }
-      units = Unit.where(community_id: community.id, id: first_stop.keys).index_by(&:id)
+      units = Unit.where(community_id: community.id, id: first_stop.keys).includes(:door).index_by(&:id)
       provider_ids = units.values.map(&:floorplan_id).compact.uniq
       floorplans = if provider_ids.empty?
                      {}
@@ -82,7 +84,7 @@ module TourApi
       [node.level_key, { x: node.x, y: node.y }, routable]
     end
 
-    def amenity_stop(graph, ts, amenity)
+    def amenity_stop(graph, ts, amenity, locks = nil)
       key = "amenity:#{amenity.id}"
       level_id, location, routable = node_facts(graph, key)
       {
@@ -94,11 +96,12 @@ module TourApi
         location: location, map_node_id: level_id ? key : nil, routable: routable, sort: ts.sort, duration_minutes: ts.duration_minutes,
         unit: nil,
         amenity: { amenity_type: Text.presence(amenity.amenity_type), video_url: Text.presence(amenity.video_link),
-                   video_button_label: Text.presence(amenity.video_link_button_label) }
+                   video_button_label: Text.presence(amenity.video_link_button_label) },
+        lock: locks ? Locks.describe(locks, amenity) : nil
       }
     end
 
-    def unit_stop(graph, ts, unit, floorplan)
+    def unit_stop(graph, ts, unit, floorplan, locks = nil)
       key = "unit:#{unit.id}"
       level_id, location, routable = node_facts(graph, key)
       square_feet = if Text.truthy?(unit.square_feet)
@@ -121,7 +124,8 @@ module TourApi
           model: unit.modal_unit ? true : false,
           floorplan_name: floorplan ? Text.presence(floorplan.name) : nil
         },
-        amenity: nil
+        amenity: nil,
+        lock: locks ? Locks.describe(locks, unit) : nil
       }
     end
 

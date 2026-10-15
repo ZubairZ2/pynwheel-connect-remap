@@ -1071,6 +1071,7 @@ Rails.application.routes.draw do
     post 'properties/:property_id/route', to: 'routes#route'
     post 'properties/:property_id/tour-route', to: 'routes#tour_route'
     post 'properties/:property_id/stops/distances', to: 'routes#distances'
+    post 'properties/:property_id/locks/pin', to: 'locks#pin'
     match '*unmatched', to: 'errors#not_found', via: :all
   end
 
