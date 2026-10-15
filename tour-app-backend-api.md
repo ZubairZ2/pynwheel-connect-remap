@@ -689,3 +689,24 @@ server is 2.2–2.6 s (once per deployment now). Hazel, Jennifer Demo FP, Hazel 
 Community 12345, Sofia and Madera: 23–76 ms warm. `GET /properties` is 867 KB there (4,832 rows,
 475 ms uncached / 92 ms cached). `script/tour_api_measure.rb` accepts `TOUR_API_TOKEN`. The only
 write was a two-hour token for the owner's account, revoked afterwards.
+
+## 16. Smart locks: the stops' `lock` and `POST /properties/{id}/locks/pin` (October 16, 2026)
+
+Report: `tour-app-igloo-integration.md`. The legacy app's Igloo integration (`Api::SelfTour::V1`
+`start_tour` lock fields + `igloohome_accounts#get_pin_code`) is keyed to a TourUser JWT, which this API's
+visitor (a CMS Super Admin with a Doorkeeper bearer) does not have, so the same services are reached through
+two additive pieces of this contract; the legacy namespaces are untouched.
+
+| Method · Path | Purpose | Auth | Request | Response | Source | Errors |
+|---|---|---|---|---|---|---|
+| `GET /api/tour/v1/properties/{id}/stops` | each stop now ends with `lock` | bearer, tour on | — | `lock: null \| {provider, mode: "v1" \| "igloohome" \| "iglooworks" \| null, method: "pin" \| "bluetooth" \| null, device_id, supported}` | `TourApi::Locks#describe`: the record's door when the door holds the provider, else the record (the `MapLocksJob` rule); `igloohome_locks` of the property's account; `supported` = Igloohome in `igloohome` / `iglooworks` mode with a mapped device and `enable_locks` | as before |
+| `POST /api/tour/v1/properties/{id}/locks/pin` | a door code for one stop | bearer, tour on | `{stop_id}` (a stop on the stops list) | `{success, stop_id, provider, mode, device_id, access_name, pin, valid_from, valid_until}` | `TourApi::Locks#pin!` → `IgloohomeLockService#generate_hourly_pin` / `IgloohomeIglooworksService#generate_hourly_pin`: hourly algoPIN from the top of the property's current hour for 3 h, named after the lock's stop (the legacy request) | 422 `invalid_stop` · `no_lock` · `locks_disabled` · `lock_unsupported` · `validation_error`; 502 `lock_unavailable` (vendor refused / no pin / unreachable; the log has property, stop, mode, status only) |
+
+One addition to the legacy behaviour, in `TourApi::Locks#igloohome_pin`: `IgloohomeLockService` sets
+`is_authorized_with_pynwheel` when it stores a token, after which a client-credentials account never renews
+(`is_client_auth` is false; `DAILY_EXPIRY` is fixed at class load). A vendor 401 on an account with a client id
+and secret gets one fresh client-credentials token (stored as the service stores it) and one retry.
+
+Tests: `test/controllers/api/tour_app/v1/locks_test.rb` (12) — the whole `api/tour_app/v1` + `services/tour_api`
+suite is 81 runs, 585 assertions, 0 failures. The vendor is answered by a stub of `HTTParty.post` (token +
+PIN); the URLs, headers and bodies asserted are the ones the legacy services send.

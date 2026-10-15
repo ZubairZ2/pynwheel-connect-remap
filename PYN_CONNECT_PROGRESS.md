@@ -2324,3 +2324,29 @@ The dual-map verification of October 10 (`svg_map_qa/scripts/verify.mjs`, 31 che
 - Connect: `tsc --noEmit` clean; `next build` clean (map route 49.6 kB, shared 102 kB, unchanged). New `tests/e2e/planDelivery.spec.ts` (gzip + ETag + 304 + `fresh=1`; an image-first floor requests no SVG until Floor SVG is picked; an SVG-first floor is preloaded, requested once, 304 on reload; Unit Detail on one unit). Playwright results on the development pair: see the end of this section.
 
 **Playwright results (development pair: CMS :3100 on `pynwheel_development`, Connect production build on :3005, minted super-admin session; the logs were in the since-removed `perf_audit/` folder).** Parallel run of `planDelivery`, `hallways`, `wayfindingLogic`, `listingsAndInventory`, `mapCanvas`, `mapPlotting`, `wayfinding`, `hazel` with two workers: **85 passed, 10 failed, 1 skipped** in 8.7 min. The ten: three `hallways.spec.ts` POC-parity tests whose fixture folder is not on this Mac (ENOENT, pre-existing, §36); Hazel's stale "Boardroom · In Stops List" expectation (the development dump, §36); four floor-SVG tests of property 1468 (`hazel.spec.ts:484`, `mapCanvas.spec.ts:336` and `:463`, `mapPlotting.spec.ts:73`) that timed out on the 2.6 MB file from S3 under the two-worker load and **pass one at a time (4/4 in 47 s)**; `listingsAndInventory.spec.ts:110`, broken by the Units-tab page memory (reverted, above) and **passing again on the rebuilt copy**; and the new `planDelivery.spec.ts:93`, which looked for a "Floor image" button where the switch says "Background image" (spec fixed). Final serial run of `listingsAndInventory.spec.ts:110` + `planDelivery.spec.ts`: **4 passed, 1 skipped** (the preload assertion needs a floor that opens on its SVG, which 1468 does not have in this dump; the preload itself is verified on the clone with Cypress Terra: two `<link rel="preload" as="fetch">` in the document, the SVG requested at 534 ms, one request per file). Not run here: `amenities`, `tourSetup`, `interactions`, `routes`, `screens`, `listingSearch` (untouched code paths).
+
+## 38. Tour App: Igloo smart locks from the legacy app, Android test APK (October 16, 2026)
+
+Brief `IGLOO_INTEGRATION_mobile_app.md`; report `tour-app-igloo-integration.md`; branch
+`feature/igloo-integration-tour-app`. After the legacy Pynwheel Tour app (`pyn-tour-old`, context in
+`LEGACY_APP_CONTEXT.md`) had been built on this Mac and had opened the tester's igloohome Smart Keybox 3E
+with a code from the CMS's igloohome account (October 15), the same integration was brought to the Capacitor
+app: the stops list reports each stop's lock, `POST /api/tour/v1/properties/:id/locks/pin` issues the legacy
+hourly algoPIN through `IgloohomeLockService` / `IgloohomeIglooworksService`, and the app's unit / amenity
+screens show the code in the existing theme. Bluetooth locks (igloohome v1, Latch, Zerv) are reported as
+unsupported.
+
+- Rails: `app/services/tour_api/locks.rb`, `locks_controller.rb`, one route, `lock` on the stops payload; 12 new
+  tests; the Tour App API suite is 81 runs / 585 assertions / 0 failures. One legacy quirk worked around:
+  `IgloohomeLockService` never renews a client-credentials token after the first one (section 16 of
+  `tour-app-backend-api.md`).
+- App: 13 files, `LockAccess.tsx` new, three test files (39 vitest tests), typecheck / build clean.
+- Verified end to end in the browser against the local CMS on staging-Floorplates (3137) and then on **Hazel
+  (1618)**, the owner's chosen test property: real codes from the igloohome API, restore after reload, renewal,
+  vendor refusal with recovery, unsupported Latch stop.
+- `artifacts/pynwheel-tour-igloo-test.apk`: debug, `com.pynwheel.tour`, API `http://192.168.8.100:3000`
+  (`rails-cms-lan`); built and inspected, not run on a device.
+- Development data touched (dev DB only): Hazel's igloohome account switched to the igloohome API mode with the
+  owner's client, the keybox on Hazel's unit 1604 (door), Hazel's hours and coordinates opened for the legacy app;
+  Floor-Level (3539) keeps the keybox on unit 101 for the legacy app (hours / coordinates adjusted on Oct 15); the
+  interim staging-Floorplates setup was removed.

@@ -46,3 +46,10 @@ npm run assets       # regenerate icons + splash from assets/logo.png (@capacito
 `*` on any value = dummy / demo data, not read from the Pynwheel backend. It all lives in
 `src/dummy/` (`floorplans.dummy.ts` is the property, `content.dummy.ts` the rest) and reaches the
 UI only through `DummyTourRepository`.
+
+## Smart locks (October 2026)
+
+A stop whose unit or amenity carries an igloohome API or Iglooworks lock in the CMS shows a **Get Door Code**
+card instead of the demo slider; the code comes from `POST /api/tour/v1/properties/{id}/locks/pin` (the
+legacy app's hourly algoPIN request, issued by the property's own vendor account on the server). Bluetooth
+locks (igloohome v1, Latch, Zerv) are shown as unsupported. See `../tour-app-igloo-integration.md`.

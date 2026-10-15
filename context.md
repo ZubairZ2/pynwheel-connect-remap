@@ -1112,3 +1112,35 @@ Added on branch `performance/nextjs-data-loading-optimization` (PYN_CONNECT_PROG
 - **Unit Detail** reads the inventory without units plus one unit through the paged listing (`units.json?page=1&per_page=1&ids=`; `Connect::UnitListingQuery#apply_ids`, whitelisted integers, inside the property's scope), with `unitsLoaded: false` so counts come from the floorplates meta. There is still no `units#show`.
 - **Fonts:** Manrope and Inter are `@font-face` rules at the top of `globals.css` over `public/fonts/*.woff2` (OFL, the latin and latin-ext subsets); no request to Google Fonts remains. The Beans Inter labels inside floor SVGs match the `font-family: 'Inter'` rule.
 - **Measuring:** the audit's measurement scripts were removed from the repository on request; measure with Playwright open-sequence scripts against the clone pair (`rails-perf-audit` :3100, `connect-perf` :3005 from a `next build` copy); `tests/e2e/planDelivery.spec.ts` asserts the delivery contract on the development pair.
+
+## 33. Igloo smart locks in the Tour App — implementation knowledge (October 16, 2026)
+
+Branch `feature/igloo-integration-tour-app` (PYN_CONNECT_PROGRESS.md §38; report `tour-app-igloo-integration.md`;
+legacy reference `LEGACY_APP_CONTEXT.md`).
+
+- **Where a lock lives**: `igloohome_locks(stop_type, stop_id)` under the property's `igloohomes` row; the CMS maps
+  it onto the unit's **door** when the unit has one (`doors.lock_provider`), else onto the unit / amenity.
+  `TourApi::Locks#target_of` follows the same rule; a stop's `access_name` is that record's `name` (a door's own
+  name, e.g. `1-1101 (door 1)`).
+- **The request is the legacy one**: hourly algoPIN, `startDate` = top of the current hour in
+  `community.get_time_zone`, `endDate` = +3 h, `variance` 1. igloohome mode → `IgloohomeLockService` (OAuth
+  client credentials of the property's own developer client, `api.igloodeveloper.co/igloohome`); iglooworks →
+  `IgloohomeIglooworksService` (API key + department). Both are reached only from the server; the APK holds
+  the API URL and nothing else.
+- **Legacy quirk**: after the first stored token `is_authorized_with_pynwheel` blocks `is_client_auth`, so the
+  service never renews; `TourApi::Locks#igloohome_pin` renews once on a 401. The legacy `generate_locks_accesses`
+  path still has the quirk.
+- **Which properties work in the new app**: the stop must be routable in the wayfinding graph. Floor-Level
+  (3539) is plotted only with legacy `path_points`, so its stops are `routable: false` and the Capacitor app never
+  arrives there. **Hazel (1618)** is the test property: fully routable, the keybox on unit 1604's door; Hazel's own
+  four keyboxes (v1 rows on 3007 / 2907 / 1508 / 1506) stay in the table and answer `lock_unavailable` under the
+  tester's account. The legacy `start_tour` omits 1604 (floor 16 outside its path data), so the legacy app still
+  uses Floor-Level.
+- **App state**: `lockPins` (persisted per stop, cleared on a new tour / other property / sign-out),
+  `lockRequest` (never persisted); `requestLockPin` guards double taps with a ref and drops answers for a
+  property the visitor left.
+- **Testing recipe**: `rails-cms-lan` (:3000, `-b 0.0.0.0`, `API_ACCESS=true`), Vite `tour-app-igloo` (:3013 →
+  :3000), the dev-only Super Admin `tour-api-verify@pynwheel.local` (password reset per session with `rails
+  runner`, exported to the process), LAN APK via `tour-app/.env.production.local`
+  (`VITE_TOUR_API_URL=http://192.168.8.100:3000`) → `npm run build && npx cap sync android && ./gradlew
+  assembleDebug` with JDK 21 (`~/Library/Java/JavaVirtualMachines/jbr-21.0.11`).

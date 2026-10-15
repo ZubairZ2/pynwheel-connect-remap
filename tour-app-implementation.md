@@ -401,3 +401,26 @@ and `selectedNodes` only sends stops on the current list), and the picker render
 production properties (now capped at 120 rows with a "Showing 120 of N" footer, the current property
 pinned first, the filter behind `useDeferredValue`: 851 DOM nodes instead of 33,640, 78 ms per
 keystroke instead of 163 ms on this Mac). Report: `tour-app-final-qa-report.md`, "Production-DB run".
+
+## 17. Igloo smart locks: the legacy app's door-code flow in the unlock screen (October 16, 2026)
+
+Brief `IGLOO_INTEGRATION_mobile_app.md`; report `tour-app-igloo-integration.md`; branch
+`feature/igloo-integration-tour-app`. The legacy Pynwheel Tour app (`/Users/zubairzulifqar/Downloads/pyn-tour-old`,
+context in `LEGACY_APP_CONTEXT.md`) opened the tester's igloohome Smart Keybox 3E with a code issued by the
+CMS's igloohome account on October 15; the same flow now runs in this app.
+
+| Area | Change |
+|---|---|
+| `src/repositories/pynwheelApi/apiTypes.ts`, `parsers.ts`, `src/models/inventory.model.ts` | every stop of `GET /properties/{id}/stops` carries `lock` (`StopLock`: provider, igloohome mode `v1` / `igloohome` / `iglooworks`, `pin` / `bluetooth`, device id, `supported`); `parseLock` is defensive, `parseLockPin` keeps the code and its validity window |
+| `src/repositories/tourRepository.ts`, `pynwheelApi/pynwheelApiTourRepository.ts`, `dummy/dummyTourRepository.ts` | `getStopLockPin(node)` → `POST /properties/{id}/locks/pin` through the one `ApiClient`; the API's reasons (`no_lock`, `lock_unsupported`, `locks_disabled`, `lock_unavailable`, `invalid_stop`) reach the screen as `ApiError`; the demo provider has no locks |
+| `src/store/appState.ts`, `reducer.ts`, `selectors.ts`, `useAppActions.ts`, `AppProvider.tsx` | `lockPins` (persisted, by stop) and `lockRequest` (in flight / failed, never persisted); `requestLockPin` with a per-stop in-flight guard; a code marks the stop unlocked; an answer for a property the visitor left is dropped; codes clear on a new tour, another property, sign-out, session expiry |
+| `src/screens/LockAccess.tsx` (new), `StopScreens.tsx`, `App.tsx`, `styles/screens.css` | the lock card in the existing unit screen (instead of the demo slider, **only for stops with a lock**) and in the amenity screen: Get Door Code → the code, "Valid until h:mm", the keypad instruction, "Not working? Get a new code" (the legacy Retry), expired / error states; unsupported locks (igloohome v1, Latch, Zerv, Dwelo, EdgeState, Manual) say so; "Next Stop" stays available |
+| Tests | `parsers.test.ts` (+3), `store/lockPins.test.ts` (5), `repositories/pynwheelApi/lockPin.test.ts` (5): 39 vitest tests, typecheck and build clean |
+
+Verified in the browser against the local CMS (Vite `tour-app-igloo` :3013 → Rails `rails-cms-lan` :3000) first on
+staging-Floorplates (3137) and then on the owner's chosen test property **Hazel (1618, the keybox on unit 1604's
+door)**: code issued by the real igloohome API, kept across
+leaving the screen and a reload, renewed on demand, a vendor refusal shown with the previous code kept, a Latch
+unit shown as unsupported, sign-out / sign-in. Android: `artifacts/pynwheel-tour-igloo-test.apk` (debug,
+`com.pynwheel.tour`, API `http://192.168.8.100:3000` from `.env.production.local`) built and inspected, **not run
+on a device** (none connected). Bluetooth locks are out of scope: no native SDK plugin exists in this app.
