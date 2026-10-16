@@ -11,14 +11,16 @@ interface Props {
   action?: ReactNode;
   children?: ReactNode;
   className?: string;
+  /** An anchor id, so a link such as "#prop-billing" can scroll to the card. */
+  id?: string;
 }
 
 /**
  * The design's detail-page panel: a white card with a title, an optional
  * subtitle and icon, and an action slot, then its body.
  */
-export const DetailSection = ({ title, subtitle, icon, action, children, className }: Props) => (
-  <section className={`bo-section${className ? ` ${className}` : ''}`}>
+export const DetailSection = ({ title, subtitle, icon, action, children, className, id }: Props) => (
+  <section id={id} className={`bo-section${className ? ` ${className}` : ''}`}>
     <div className="bo-section__head">
       {icon && (
         <span className="bo-section__icon" aria-hidden="true">

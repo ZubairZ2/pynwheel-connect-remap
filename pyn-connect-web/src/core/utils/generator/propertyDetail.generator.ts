@@ -1,10 +1,11 @@
 import { CORE_STRINGS } from '~/config/app/strings';
 import {
-  CONNECT_ROUTES,
   brandingRoute,
   contentRoute,
   mapEditorRoute,
+  productSetupRoute,
   propIntegrationsRoute,
+  propPricingCalcRoute,
   propPricingRoute,
   tourContentRoute,
   tourSetupRoute
@@ -76,6 +77,25 @@ export interface ProductCard {
   metric: string;
   enabled: boolean;
   stateLabel: string;
+  /** The design's Embed button (Maps only): opens the Embed Map dialog. */
+  embed: boolean;
+}
+
+/** One entry of the "Manage This Property" grid: a screen, with a one-line description. */
+export interface ManageItem {
+  id: string;
+  label: string;
+  sub: string;
+  icon: string;
+  href: string;
+  /** Dimmed when the product the screen configures is off. */
+  dim: boolean;
+}
+
+export interface ManageGroup {
+  id: 'data' | 'setup' | 'brand';
+  title: string;
+  items: ManageItem[];
 }
 
 export interface InventoryCard {
@@ -204,15 +224,52 @@ export const generatePropertyHeader = (property: PropertyDetail): DetailHeader =
   };
 };
 
-/** "Manage This Property": the same four screens as the listing's Go To buttons. */
-export const generateManageLinks = (property: PropertyDetail): DetailLink[] => {
+/**
+ * "Manage This Property" (Back Office design, Oct 13, 2026): three groups of
+ * screens. The product-setup entries dim when their product is off, as in the
+ * design; they still open, since the settings are shown read-only either way.
+ */
+export const generateManageGroups = (property: PropertyDetail): ManageGroup[] => {
   const id = String(property.id);
+  const M = CORE_STRINGS.manage;
+  const on = property.products;
+  const item = (key: keyof typeof M.items & string, icon: string, href: string, dim = false): ManageItem => ({
+    id: key,
+    label: t(M.items[key]),
+    sub: t(M.items[`${key}Sub` as keyof typeof M.items]),
+    icon,
+    href,
+    dim
+  });
 
   return [
-    { id: 'inventory', label: t(CORE_STRINGS.properties.goTo.inventory), href: tourContentRoute(id) },
-    { id: 'map', label: t(CORE_STRINGS.properties.goTo.map), href: mapEditorRoute(id) },
-    { id: 'integrations', label: t(CORE_STRINGS.properties.goTo.integrations), href: propIntegrationsRoute(id) },
-    { id: 'branding', label: t(CORE_STRINGS.properties.goTo.branding), href: brandingRoute(id) }
+    {
+      id: 'data',
+      title: t(M.groups.propertyData),
+      items: [
+        item('inventory', 'bed', tourContentRoute(id)),
+        item('map', 'map', mapEditorRoute(id)),
+        item('integrations', 'integrations', propIntegrationsRoute(id))
+      ]
+    },
+    {
+      id: 'setup',
+      title: t(M.groups.productSetup),
+      items: [
+        item('tourSetup', 'pin', tourSetupRoute(id), !on.tour),
+        item('touchSetup', 'grid', productSetupRoute(id, 'touch'), !on.touch),
+        item('mapSetup', 'cube', productSetupRoute(id, 'maps'), !on.maps)
+      ]
+    },
+    {
+      id: 'brand',
+      title: t(M.groups.brandBilling),
+      items: [
+        item('branding', 'palette', brandingRoute(id)),
+        item('pricingCalc', 'calc', propPricingCalcRoute(id)),
+        item('billing', 'billing', '#prop-billing')
+      ]
+    }
   ];
 };
 
@@ -397,7 +454,8 @@ export const generateProductCards = (property: PropertyDetail): ProductCard[] =>
       icon: product.icon,
       metric: productMetric(product.id, property),
       enabled,
-      stateLabel: t(enabled ? S.products.enabled : S.products.notEnabled)
+      stateLabel: t(enabled ? S.products.enabled : S.products.notEnabled),
+      embed: product.id === 'maps'
     };
   });
 
@@ -601,19 +659,16 @@ export const generateConfigCards = (property: PropertyDetail): ConfigCard[] => {
           id: 'tour',
           title: '',
           rows: [
+            // The design's Entry QR Codes row. The codes are not in communities#edit.json; the legacy CMS manages them.
+            value(CORE_STRINGS.prodSetup.entryQr, t(CORE_STRINGS.prodSetup.entryQrValue)),
             toggle(S.config.idVerification, tour.visualIdVerification),
             toggle(S.config.enableLocks, tour.enableLocks),
             toggle(S.config.autoWayfinding, tour.autoWayfinding)
           ]
         }
       ],
-      // The tour's screens are offered only while the property has the tour, as the legacy menu shows Tour Setup only then.
-      links: on.tour
-        ? [
-            { id: 'tourSetup', label: t(S.config.tourSetup), href: tourSetupRoute(id) },
-            { id: 'scheduling', label: t(S.config.tourScheduling), href: CONNECT_ROUTES.scheduling }
-          ]
-        : []
+      // The Tours page is offered only while the property has the tour, as the legacy menu shows Tour Setup only then.
+      links: on.tour ? [{ id: 'tourSetup', label: t(S.config.tourSetup), href: tourSetupRoute(id) }] : []
     },
     {
       id: 'maps',

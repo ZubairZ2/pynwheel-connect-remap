@@ -9,9 +9,9 @@ import { APP_ROUTES } from '~/config/app/urls';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { DemoMark } from '~/core/components/atoms/DemoMark';
 import { SignOutIcon } from '~/core/components/atoms/Icons';
+import { ProfileMenu } from '~/core/components/organisms/ProfileMenu';
 import { i18n } from '~/resources/i18n';
 import { useCurrentUser } from '~/core/session/CurrentUserProvider';
-import { initials } from '~/core/utils/connect/format';
 import { demoActions } from '~/core/store/demo/demo.slice';
 import { useAppDispatch, useAppSelector } from '~/core/store/hooks';
 import {
@@ -28,8 +28,8 @@ interface Props {
 
 /**
  * The design's top bar: page title, omni-search over the demo data, environment
- * chip, the audit-log bell, the signed-in user and sign out. Shared by every
- * screen, old and new.
+ * chip, the audit-log bell, the signed-in user's profile menu and sign out.
+ * Shared by every screen, old and new.
  */
 export const Navbar = ({ title, demo = false }: Props) => {
   const dispatch = useAppDispatch();
@@ -151,15 +151,7 @@ export const Navbar = ({ title, demo = false }: Props) => {
         <DemoMark />
       </button>
 
-      <div className="bo-topbar__user" data-testid="topbar-user">
-        <span className="bo-avatar" aria-hidden="true">
-          {initials(currentUser?.name ?? 'Pynwheel')}
-        </span>
-        <div className="bo-topbar__usertext">
-          <div className="bo-topbar__username">{currentUser?.name ?? '—'}</div>
-          <div className="bo-topbar__role">{currentUser?.role ?? ''}</div>
-        </div>
-      </div>
+      <ProfileMenu user={currentUser} onSignOut={() => void signOut()} signingOut={signingOut} />
 
       <button
         type="button"

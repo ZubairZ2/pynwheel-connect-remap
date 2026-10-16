@@ -37,11 +37,11 @@ import { computeStopRoute } from '~/core/utils/wayfinding/stopRoute';
  * gating, photos and banks, and the route preview live in `TourLocalState`
  * until the page reloads. No action sends a request.
  */
-export const useTourSetup = (map: PropertyMap) => {
+export const useTourSetup = (map: PropertyMap, initialTab: TourTab = 'overview') => {
   const dispatch = useAppDispatch();
   const levels = useMemo(() => generateMapLevels(map), [map]);
   const graphs = useMemo(() => tourGraphs(map, levels), [map, levels]);
-  const [state, setState] = useState<TourLocalState>(() => initialTourState(map));
+  const [state, setState] = useState<TourLocalState>(() => initialTourState(map, initialTab));
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   // After a save the page re-reads the tour; the local state restarts from it once it arrives.
@@ -49,7 +49,7 @@ export const useTourSetup = (map: PropertyMap) => {
   useEffect(() => {
     if (!resetOnNextMap.current) return;
     resetOnNextMap.current = false;
-    setState(initialTourState(map));
+    setState((current) => initialTourState(map, current.tab));
   }, [map]);
 
   const toast = useCallback((message: string) => dispatch(demoActions.showToast(message)), [dispatch]);

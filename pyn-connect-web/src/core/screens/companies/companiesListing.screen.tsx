@@ -2,6 +2,7 @@
 
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
+import { AddRecordButton } from '~/core/components/molecules/AddRecordButton';
 import { MultiFilter } from '~/core/components/molecules/MultiFilter';
 import { SearchField } from '~/core/components/molecules/SearchField';
 import { Pagination } from '~/core/components/organisms/Pagination';
@@ -88,6 +89,11 @@ export const CompaniesListingScreen = ({ initial, params, error }: Props) => {
             selected={selection.properties}
             onToggle={(id) => toggleFilter('properties', id)}
             onClear={() => clearFilter('properties')}
+          />
+          <span className="bo-toolbar__spacer" />
+          <AddRecordButton
+            label={i18n.t(CORE_STRINGS.listingActions.addCompany)}
+            explanation={i18n.t(CORE_STRINGS.listingActions.unavailableCompany)}
           />
         </>
       }

@@ -164,15 +164,38 @@ test.describe('toggles write through to the store', () => {
     await expect(page.getByRole('alertdialog')).toContainText('Revoke Dog Park access?');
   });
 
-  test('a lock vendor can be connected and tested', async ({ page }) => {
+  test('the Integrations Hub points lock access at the Tours page (Back Office design, Oct 2026)', async ({ page }) => {
     await open(page, 'integrations');
-    await page.getByRole('button', { name: 'Connect' }).first().click();
+    const link = page.getByRole('link', { name: 'Open Access for this property' });
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute('href', /\/properties\/[^/]+\/tour-setup\?tab=elevators$/);
+    // The lock-vendor grid moved there; only the CRM / feed vendor cards keep a Connect button here.
+    await expect(page.getByText('Locks / Physical Access')).toBeVisible();
+    await expect(page.getByText('Import Locks')).toHaveCount(0);
+  });
+});
 
-    // Latch is already the live provider here, so this is a switch.
-    const dialog = page.getByRole('alertdialog');
-    await expect(dialog).toContainText('Switch Provider');
-    await dialog.getByRole('button', { name: 'Switch Provider' }).click();
-    await expect(page.getByRole('status')).toContainText('is now the lock provider');
+test.describe('the launch board', () => {
+  test('opens a launch, moves it a stage and hands it off, all locally', async ({ page }) => {
+    await open(page, 'launchBoard');
+    await expect(page.getByText('14 launches across 7 stages')).toBeVisible();
+
+    await page.getByRole('button', { name: /^The Wharf at Riverside/ }).click();
+    const drawer = page.getByTestId('launch-drawer');
+    await expect(drawer).toContainText('Order Received');
+    await drawer.getByRole('button', { name: /^Move to Payment Received/ }).click();
+    await expect(page.getByRole('status')).toContainText('moved to Payment Received');
+    await expect(drawer).toContainText('Payment Received · Invoice paid or PO on file');
+
+    await drawer.getByRole('button', { name: 'Bug' }).click();
+    await drawer.getByPlaceholder('What needs doing').fill('Kiosk does not boot');
+    await drawer.getByRole('button', { name: 'Assign' }).click();
+    await expect(drawer).toContainText('Kiosk does not boot');
+    await expect(page.getByRole('status')).toContainText('nothing is saved');
+
+    await drawer.getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('button', { name: 'List' }).click();
+    await expect(page.getByRole('row').filter({ hasText: 'The Wharf at Riverside' }).getByRole('combobox').first()).toHaveValue('payment');
   });
 });
 

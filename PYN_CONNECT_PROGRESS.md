@@ -1,6 +1,6 @@
 # Pynwheel Connect: progress and handoff
 
-**Last updated:** September 24, 2026
+**Last updated:** October 17, 2026 (§40)
 **Read this first in a new session.** For what the repository itself is (Rails stack, models, roles, integrations), see [context.md](context.md).
 
 This is the single progress document. It merges the original phase 1/2 handoff with the Sep 23 summary (formerly `progress.md`, now removed), and it is current through **phase 2d** (§15, revised in §16).
@@ -30,6 +30,7 @@ This is the single progress document. It merges the original phase 1/2 handoff w
 | **2m**: Map & Plotting — Wayfinding mode, Plot on Map, Additional Stops | `Feature_wayfinding.md`, Oct 1 | `feature/wayfinding_plot_on_map` → `main`, **PR #16** (merged Oct 2) | ✅ (§26) |
 | **2n**: Map & Plotting — Detect Hallways, the POC's editing, A* routing | `POC_auto_plot_impmemnted.md`, Oct 1 | `feature/wayfinding_detect_hallways_auto_connect` → `main`, **PR #15** (merged Oct 2) | ✅ (§27) |
 | **2o**: Map & Plotting — stored hallways kept by Detect, Auto-Connect folded in, editable bridges, hollow markers; favicon, top-bar profile | `POC_auto_plot_impmemnted_issues.md`, Oct 2 | `improvement/wayfinding_hallway_persistence_markers` → `main`, **PR #17** (merged Oct 2) | ✅ (§28); final pre-production run on `main` at the end of §28 |
+| **2p**: The Oct 13 Back Office design — nav groups, Launch Board, profile menu, Manage grid, Product Setup, Tours page, property-scoped pages | `new_app_design_17_oct.md`, Oct 17 | `feature/new-cms-design-oct-17` (uncommitted) | ✅ Frontend only (§40) |
 | **3**: Replace demo data with real Rails data | *brief not written yet* | — | ⏭ Next (§11) |
 
 **`main` holds everything above** (PRs #1–#17 merged; phases 2f–2j are §18–§23, merged through PRs #5–#12). As of October 2, 2026, local `main` (`1357822ec`) equals `origin/main`, and its tree is identical to the phase 2o commit `8ee78da06`. Every feature branch listed in `git branch --merged` is in.
@@ -2369,3 +2370,75 @@ The app's lock card gained the Bluetooth branch; the v2 / v3 door-code flow is u
   account (the partner API answered 404), so a hardware test needs an enrolled lock (Hazel's own four are) and a phone.
 - iOS: plugin source and `Package.swift` written; the SDK's SPM dependencies (igloohome's RxBluetoothKit fork,
   the Nordic DFU library's module name) remain to be proven; the iOS build answers `unavailable` until then.
+
+## 40. Connect: the October 13 Back Office design — navigation, Launch Board, Product Setup, Tours page (October 17, 2026)
+
+Brief `new_app_design_17_oct.md`; design "Pynwheel Admin - Back Office.dc.html" (Claude Design project
+`13d18a36-ed41-492e-b118-e69e26e4636a`, Oct 13 version, with `TourModule.dc.html`, `TOURS-REDESIGN.md` and
+`HANDOFF-PROMPT.md`); branch `feature/new-cms-design-oct-17` from `main` (`9e60091e4`). **Frontend only:** no Rails,
+API, serializer, route or schema change; the diff is confined to `pyn-connect-web/` plus these docs. Nothing is
+committed or pushed (the brief leaves that to the repository's workflow: branch + PR, never to `main`).
+
+### What the design changed, and what was done
+
+| Design | Implementation | Data |
+|---|---|---|
+| Sidebar groups Overview / Portfolio / Product Tools / Account / Support; new **Launch Board** item; Tours, Integrations, Pricing Calculator, Favorites, Resident Access, Live Chat leave the sidebar and become property pages | `navigation.generator.ts`, `connectRoutes.ts` (`launchBoard`, `prodSetup` screen ids; `propToursRoute`, `productSetupRoute`, `propIntegrationsRoute` → `/properties/:id/integrations`, `propPricingCalcRoute`, `propFavoritesRoute`, `propResidentAccessRoute`, `propLiveChatRoute`; `NAV_GROUP` → `properties` for the property pages; `TITLES.scheduling` = "Tours"). The old top-level URLs still resolve for bookmarks | — |
+| Top bar: profile pill with a dropdown (My Profile … Help & Support, Sign Out) | `ProfileMenu.tsx` + `profileMenu.generator.ts`; the sign-out icon button stays. Name, email and role are the signed-in user's; Help & Support opens `/help`; the other five items toast "… isn't available in Connect yet" (the CMS has no account pages Connect can open) | **Real** user, honest no-ops |
+| Companies / Properties: **Add Company** / **Add Property** primary buttons | `AddRecordButton.tsx`: opens a dialog saying records are created in the legacy CMS; nothing is created | Honest no-op |
+| Property Detail: **Manage This Property** becomes a 3-group grid (Property data / Product setup / Brand, pricing & billing) with icon tiles, descriptions and chevrons; the Maps product row gets **Embed**; Tour card gets an Entry QR Codes row and keeps one action (Tour Setup) | `generateManageGroups`, `ManageGrid`, `EmbedMapDialog` in `propertyDetail.screen.tsx`; `ConfigCardView` moved to `molecules/ConfigCard.tsx`; `#prop-config` / `#prop-billing` anchors | **Real** (communities#edit.json). The Embed dialog says the map URLs are not exposed to Connect and disables Copy / Open. Entry QR Codes shows "Managed in the legacy CMS" |
+| **Product Setup** page (`prodSetup`): breadcrumb, 42px tile header, Tour / Touch / Map segmented switcher, tool cards, the product's configuration card | `/properties/:id/setup/touch` and `/setup/maps` (`/setup/tour` → Tours); `productSetup.generator.ts`, `screens/properties/productSetup.screen.tsx`, shared `SetupSwitcher` and `ToolCards` molecules; demo slugs get `screens/connect/properties/productSetup.screen.tsx` (switcher + tools + a link to the demo property page) | **Real** for numeric ids (same read as Property Detail); demo frame for slugs |
+| **Tours** page (Tour Module): header pills, the setup switcher, tabs Overview · Stops · Locks · Visitors · Live Chat · Settings | The real Tour Setup screen now opens on **Overview** (`?tab=` picks any tab) with a 6-step setup checklist (Build the route, Plot every stop, Set the start points, Gate the elevators, Connect locks, Publish), 4 KPIs, a Needs-attention list (unplotted stops → Map & Plotting) and the On-site card; the real **Tour Stops**, **Elevators & Locks** and **Routing** tabs are unchanged; **Visitors** lists the demo bookings; **Live Chat** links to the property's Live Chat page; **Settings** is the design's rail (Route & navigation = real wayfinding / SVG / auto-zoom / default floor / route colour from the graph read; Scheduling = demo hours and tour types; Booking & CRM, Access & security, Tour experience, Messages = "Not available in Connect yet") | **Real** checklist / KPIs / attention / navigation settings; **demo** Visitors and Scheduling, marked; publish and live sessions stated as unavailable |
+| Integrations becomes property-scoped; Locks / Physical Access points at Tours → Locks | `/properties/:id/integrations` through `PropertyScopedDemoPage` + `PropertyPageFrame` (breadcrumb Properties / {property} / Integrations Hub); the lock-vendor grid is replaced by a pointer card with **Open Access for this property** → `tour-setup?tab=elevators`; the Latch key grants, CRM / feed cards and Access Log stay | **Demo** screen; a real community gets its real name in the breadcrumb, the demo property picker and a note that the data below is not this property's yet |
+| Pricing Calculator, Favorites & eBrochure, Resident Access, Live Chat as property pages | `/properties/:id/{pricing-calculator,favorites,resident-access,live-chat}`, same frame; demo slugs select the demo property, real ids get the note | **Demo** screens, unchanged inside |
+| **Launch Board** (new): 4 stat tiles, filter card (search, Company, product chips, priority, Overdue pill, team avatars, Board / List), 7 stage columns with draggable cards, list view, 460px drawer (stage buttons, checklist + "Move to …", stage owner, hand-offs, assignee / priority / due, products, notes, history) | `/launch-board`; `launchBoard.data.ts`, `data/mock/launchBoard.mock.ts` (LB_STAGES with SLA / owner / checks, LB_TEAM, 14 cards), `launchBoard.generator.ts` (pure), `useLaunchBoard.ts` (React local state), `launchBoard.screen.tsx`, `.bo-lb*` CSS | **Demo**, isolated fixture. Every move, tick, hand-off and note is local; the toasts say "demo board, nothing is saved" |
+
+Kept as-is because they already matched the design (verified against the markup): Sign In, Dashboard, Companies and
+Properties tables, Company detail / Regions / Groups, Map & Plotting, Inventory tabs, Unit detail, Branding, Content,
+Analytics, Reports, Users, AI Services, Billing, Audit, Help, SVG Optimizer, Partner Configuration, every modal.
+
+### Deliberate deviations and gaps
+
+- **Lifecycle stays five stages.** The design's seven (Order Received … Orientation) have no columns in the CMS; the
+  real Property Detail keeps the five recorded milestones. The seven-stage model lives only on the demo Launch Board.
+- **Tours tabs are seven, not six:** the design's "Stops" tab folds the route list, the map preview and the locks
+  drawer into one; the real screen keeps Tour Stops, Elevators & Locks and Routing as separate tabs because that is
+  how the data and the Oct 4 save payload are shaped.
+- **Published / Not published pill** is not shown on the Tours header: the map read has no publish flag (the listing
+  row's `tourPublished` is not in the graph payload).
+- **Embed Map, Entry QR codes, visitor bookings, live sessions, scheduling settings, lock providers for real
+  properties, publishing from Connect**: all stated as unavailable or demo in the UI, never faked.
+- **Drag and drop** on the Launch Board uses native HTML5 drag events; keyboard users move a card from the drawer's
+  stage buttons or the list view's stage select.
+
+### Files
+
+New: `src/app/(connect)/launch-board/page.tsx`, `src/app/(connect)/properties/[propId]/{setup/[product],integrations,pricing-calculator,favorites,resident-access,live-chat}/page.tsx`,
+`components/connect/PropertyPageFrame.tsx`, `components/molecules/{AddRecordButton,ConfigCard,SetupSwitcher,ToolCards}.tsx`,
+`components/organisms/ProfileMenu.tsx`, `hooks/connect/useLaunchBoard.ts`, `models/data/connect/launchBoard.data.ts`,
+`repository/remote/propertyCrumb.server.ts`, `screens/connect/launchBoard/launchBoard.screen.tsx`,
+`screens/connect/properties/productSetup.screen.tsx`, `screens/properties/productSetup.screen.tsx`,
+`screens/properties/tour/tourModuleTabs.tsx`, `templates/PropertyScopedDemoPage.tsx`,
+`utils/generator/{connect/launchBoard,productSetup,profileMenu,tour/tourModule}.generator.ts`, `data/mock/launchBoard.mock.ts`.
+Changed: `connectRoutes.ts`, `strings.ts`, `i18n/index.ts`, `globals.css`, `navigation.generator.ts`, `Navbar.tsx`,
+`DetailSection.tsx` (`id`), `usePropertyDetail.ts`, `propertyDetail.generator.ts`, `propertyDetail.screen.tsx`,
+`companiesListing.screen.tsx`, `propertiesListing.screen.tsx`, `integrations.screen.tsx`, `useTourSetup.ts`
+(`initialTab`), `tourSetup.generator.ts` (`TourTab`), `tourSetup.screen.tsx`, the tour-setup page (`?tab=`),
+`screen-harness` (`launchBoard`), `tests/e2e/{routes,screens,interactions,tourSetup}.spec.ts`.
+
+### Tests and verification
+
+- `tsc --noEmit` clean; `next build` clean (new routes: `/launch-board`, `/properties/[propId]/setup/[product]`, the
+  five property pages).
+- Playwright against an isolated pair (CMS :3100 on `pynwheel_development`, this branch's `next dev` on :3005,
+  minted super-admin session; the user's puma on :3000 was not touched): `routes`, `screens`, `interactions`,
+  `tourSetup`, `listingSearch`, `listingsAndInventory` → **105 passed** after two spec updates (the Launch Board
+  marker; the lock-vendor interaction test replaced by the pointer-card test and a new Launch Board test:
+  open → move a stage → hand off a bug → list view). The real-data `tourSetup.spec` now asserts the Overview first
+  and still ends on "only GETs".
+- Screenshot pass (headless Chrome, 1440×960 and 900 px wide) over 25 states: dashboard with the profile menu,
+  Launch Board (board, drawer, list), Companies with the Add Company dialog, Properties, Property Detail 2934 with
+  the Embed dialog, Touch / Map Setup, Tours (overview, stops, locks, visitors, settings, `?tab=elevators`),
+  Integrations for a real and a demo property, Live Chat, demo Touch Setup. **0 page errors, 0 console errors,
+  0 non-GET requests.** Compared by eye against the design markup: spacing, tiles, chips, pills and the segmented
+  control match; the two deviations above are the only structural differences.

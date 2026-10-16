@@ -2118,5 +2118,203 @@ export const CORE_STRINGS = {
       subtitle: 'unitDetail.terms.subtitle',
       empty: 'unitDetail.terms.empty'
     }
+  },
+  /* The Back Office design of October 13, 2026 (new_app_design_17_oct.md). */
+  profileMenu: {
+    label: 'profileMenu.label',
+    myProfile: 'profileMenu.myProfile',
+    myProfileSub: 'profileMenu.myProfileSub',
+    accountSettings: 'profileMenu.accountSettings',
+    accountSettingsSub: 'profileMenu.accountSettingsSub',
+    security: 'profileMenu.security',
+    securitySub: 'profileMenu.securitySub',
+    notifications: 'profileMenu.notifications',
+    notificationsSub: 'profileMenu.notificationsSub',
+    sessions: 'profileMenu.sessions',
+    sessionsSub: 'profileMenu.sessionsSub',
+    help: 'profileMenu.help',
+    helpSub: 'profileMenu.helpSub',
+    unavailable: 'profileMenu.unavailable'
+  },
+  listingActions: {
+    addCompany: 'listingActions.addCompany',
+    addProperty: 'listingActions.addProperty',
+    unavailableTitle: 'listingActions.unavailableTitle',
+    unavailableCompany: 'listingActions.unavailableCompany',
+    unavailableProperty: 'listingActions.unavailableProperty',
+    close: 'listingActions.close'
+  },
+  manage: {
+    groups: {
+      propertyData: 'manage.groups.propertyData',
+      productSetup: 'manage.groups.productSetup',
+      brandBilling: 'manage.groups.brandBilling'
+    },
+    items: {
+      inventory: 'manage.items.inventory',
+      inventorySub: 'manage.items.inventorySub',
+      map: 'manage.items.map',
+      mapSub: 'manage.items.mapSub',
+      integrations: 'manage.items.integrations',
+      integrationsSub: 'manage.items.integrationsSub',
+      tourSetup: 'manage.items.tourSetup',
+      tourSetupSub: 'manage.items.tourSetupSub',
+      touchSetup: 'manage.items.touchSetup',
+      touchSetupSub: 'manage.items.touchSetupSub',
+      mapSetup: 'manage.items.mapSetup',
+      mapSetupSub: 'manage.items.mapSetupSub',
+      branding: 'manage.items.branding',
+      brandingSub: 'manage.items.brandingSub',
+      pricingCalc: 'manage.items.pricingCalc',
+      pricingCalcSub: 'manage.items.pricingCalcSub',
+      billing: 'manage.items.billing',
+      billingSub: 'manage.items.billingSub'
+    },
+    productOff: 'manage.productOff'
+  },
+  embed: {
+    button: 'embed.button',
+    title: 'embed.title',
+    subtitle: 'embed.subtitle',
+    marketing: 'embed.marketing',
+    marketingSub: 'embed.marketingSub',
+    ops: 'embed.ops',
+    opsSub: 'embed.opsSub',
+    unavailable: 'embed.unavailable',
+    notAvailable: 'embed.notAvailable',
+    copyUrl: 'embed.copyUrl',
+    copyCode: 'embed.copyCode',
+    open: 'embed.open',
+    close: 'embed.close'
+  },
+  prodSetup: {
+    touchTitle: 'prodSetup.touchTitle',
+    mapsTitle: 'prodSetup.mapsTitle',
+    touchSub: 'prodSetup.touchSub',
+    mapsSub: 'prodSetup.mapsSub',
+    switchLabel: 'prodSetup.switchLabel',
+    tourSwitch: 'prodSetup.tourSwitch',
+    touchSwitch: 'prodSetup.touchSwitch',
+    mapsSwitch: 'prodSetup.mapsSwitch',
+    offNote: 'prodSetup.offNote',
+    toolsTitle: 'prodSetup.toolsTitle',
+    tools: {
+      homeScreen: 'prodSetup.tools.homeScreen',
+      homeScreenSub: 'prodSetup.tools.homeScreenSub',
+      favorites: 'prodSetup.tools.favorites',
+      favoritesSub: 'prodSetup.tools.favoritesSub',
+      branding: 'prodSetup.tools.branding',
+      brandingSub: 'prodSetup.tools.brandingSub',
+      mapPlotting: 'prodSetup.tools.mapPlotting',
+      mapPlottingSub: 'prodSetup.tools.mapPlottingSub',
+      inventory: 'prodSetup.tools.inventory',
+      inventorySub: 'prodSetup.tools.inventorySub',
+      svgOptimizer: 'prodSetup.tools.svgOptimizer',
+      svgOptimizerSub: 'prodSetup.tools.svgOptimizerSub'
+    },
+    entryQr: 'prodSetup.entryQr',
+    entryQrValue: 'prodSetup.entryQrValue',
+    demoNote: 'prodSetup.demoNote'
+  },
+  tours: {
+    published: 'tours.published',
+    notPublished: 'tours.notPublished',
+    locksOn: 'tours.locksOn',
+    locksOff: 'tours.locksOff',
+    publishPending: 'tours.publishPending',
+    tabs: {
+      overview: 'tours.tabs.overview',
+      visitors: 'tours.tabs.visitors',
+      chat: 'tours.tabs.chat',
+      settings: 'tours.tabs.settings'
+    },
+    checklist: {
+      title: 'tours.checklist.title',
+      progress: 'tours.checklist.progress',
+      route: 'tours.checklist.route',
+      routeDone: 'tours.checklist.routeDone',
+      routeTodo: 'tours.checklist.routeTodo',
+      plot: 'tours.checklist.plot',
+      plotDone: 'tours.checklist.plotDone',
+      plotTodo: 'tours.checklist.plotTodo',
+      starts: 'tours.checklist.starts',
+      startsDone: 'tours.checklist.startsDone',
+      startsTodo: 'tours.checklist.startsTodo',
+      elevators: 'tours.checklist.elevators',
+      elevatorsDone: 'tours.checklist.elevatorsDone',
+      elevatorsTodo: 'tours.checklist.elevatorsTodo',
+      locks: 'tours.checklist.locks',
+      locksDone: 'tours.checklist.locksDone',
+      locksTodo: 'tours.checklist.locksTodo',
+      publish: 'tours.checklist.publish',
+      publishTodo: 'tours.checklist.publishTodo',
+      addStops: 'tours.checklist.addStops',
+      openMap: 'tours.checklist.openMap',
+      openElevators: 'tours.checklist.openElevators',
+      openStops: 'tours.checklist.openStops',
+      openPublish: 'tours.checklist.openPublish'
+    },
+    kpis: {
+      stops: 'tours.kpis.stops',
+      hidden: 'tours.kpis.hidden',
+      attention: 'tours.kpis.attention',
+      unmapped: 'tours.kpis.unmapped'
+    },
+    attention: {
+      title: 'tours.attention.title',
+      subtitle: 'tours.attention.subtitle',
+      empty: 'tours.attention.empty',
+      notPlotted: 'tours.attention.notPlotted',
+      hidden: 'tours.attention.hidden',
+      cta: 'tours.attention.cta'
+    },
+    live: {
+      title: 'tours.live.title',
+      subtitle: 'tours.live.subtitle',
+      unavailable: 'tours.live.unavailable'
+    },
+    visitors: {
+      title: 'tours.visitors.title',
+      subtitle: 'tours.visitors.subtitle',
+      when: 'tours.visitors.when',
+      visitor: 'tours.visitors.visitor',
+      type: 'tours.visitors.type',
+      status: 'tours.visitors.status',
+      crm: 'tours.visitors.crm',
+      empty: 'tours.visitors.empty'
+    },
+    chat: {
+      title: 'tours.chat.title',
+      body: 'tours.chat.body',
+      open: 'tours.chat.open'
+    },
+    settings: {
+      title: 'tours.settings.title',
+      scheduling: 'tours.settings.scheduling',
+      schedulingSub: 'tours.settings.schedulingSub',
+      booking: 'tours.settings.booking',
+      bookingSub: 'tours.settings.bookingSub',
+      access: 'tours.settings.access',
+      accessSub: 'tours.settings.accessSub',
+      experience: 'tours.settings.experience',
+      experienceSub: 'tours.settings.experienceSub',
+      messages: 'tours.settings.messages',
+      messagesSub: 'tours.settings.messagesSub',
+      navigation: 'tours.settings.navigation',
+      navigationSub: 'tours.settings.navigationSub',
+      autoWayfinding: 'tours.settings.autoWayfinding',
+      selfTour: 'tours.settings.selfTour',
+      svgMode: 'tours.settings.svgMode',
+      autoZoom: 'tours.settings.autoZoom',
+      defaultFloor: 'tours.settings.defaultFloor',
+      routeColor: 'tours.settings.routeColor',
+      hours: 'tours.settings.hours',
+      tourTypes: 'tours.settings.tourTypes',
+      closed: 'tours.settings.closed',
+      demoNote: 'tours.settings.demoNote',
+      unavailable: 'tours.settings.unavailable',
+      readOnly: 'tours.settings.readOnly',
+      notSet: 'tours.settings.notSet'
+    }
   }
 } as const;

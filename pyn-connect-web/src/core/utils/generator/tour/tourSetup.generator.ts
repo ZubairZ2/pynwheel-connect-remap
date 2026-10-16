@@ -50,7 +50,15 @@ export interface LocalPhoto {
   url: string;
 }
 
-export type TourTab = 'stops' | 'elevators' | 'routing';
+/**
+ * The Tours page's tabs (Back Office design, Oct 13, 2026): the overview and
+ * the three real-data tabs, then visitors, live chat and settings.
+ */
+export type TourTab = 'overview' | 'stops' | 'elevators' | 'routing' | 'visitors' | 'chat' | 'settings';
+
+export const TOUR_TABS: TourTab[] = ['overview', 'stops', 'elevators', 'routing', 'visitors', 'chat', 'settings'];
+
+export const isTourTab = (value: string | undefined): value is TourTab => !!value && (TOUR_TABS as string[]).includes(value);
 
 export interface TourConfirm {
   title: string;
@@ -88,8 +96,8 @@ export interface TourLocalState {
 const stopKey = (id: number): string => `stop:${id}`;
 
 /** The stops of the community tour, in sort order, each with its stored talking point. */
-export const initialTourState = (map: PropertyMap): TourLocalState => ({
-  tab: 'stops',
+export const initialTourState = (map: PropertyMap, tab: TourTab = 'overview'): TourLocalState => ({
+  tab,
   stops: [...map.graph.tourStops]
     .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0) || a.id - b.id)
     .map((stop) => ({

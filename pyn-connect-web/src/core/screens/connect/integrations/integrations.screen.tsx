@@ -1,6 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import React from 'react';
+
+import { propToursRoute } from '~/config/app/connectRoutes';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useIntegrationsScreen } from '~/core/hooks/connect/useIntegrationsScreen';
@@ -22,7 +25,6 @@ export const IntegrationsScreen = () => {
     latchKeys,
     lockConnectedCount,
     lockTotalLabel,
-    lockVendors,
     onAccessFilter,
     onPropSelect,
     propId,
@@ -79,94 +81,21 @@ export const IntegrationsScreen = () => {
         {isIntegTab ? (
           <>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-                  <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "#EEF0F4", color: "var(--bo-ink)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0" }}>
-                    <Icon name={"lock"} style={{ display: "flex" }} />
+              <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px", display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
+                <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "#EEF0F4", color: "var(--bo-ink)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0" }}>
+                  <Icon name={"lock"} style={{ display: "flex" }} />
+                </div>
+                <div style={{ flex: "1 1 260px", minWidth: "0" }}>
+                  <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
+                    Locks / Physical Access<DemoMark />
                   </div>
-                  <div style={{ flex: "1" }}>
-                    <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Locks / Physical Access<DemoMark />
-                    </div>
-                    <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
-                      One lock provider per property · {lockConnectedCount} connected · {lockTotalLabel}
-                    </div>
+                  <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
+                    Lock providers, lock inventory and issued codes moved to Tour Setup → Elevators &amp; Locks · {lockConnectedCount} connected · {lockTotalLabel}
                   </div>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "12px", alignItems: "start" }}>
-                  {(lockVendors ?? []).map((v: any, vIdx: number) => (
-                    <React.Fragment key={vIdx}>
-                      <div style={{ border: `1px solid ${v.cardBorder}`, background: v.cardBg, borderRadius: "10px", padding: "14px 16px", display: "flex", flexDirection: "column", gap: "11px" }}>
-                        <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-                          <div style={{ flex: "1", minWidth: "0" }}>
-                            <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                              {v.name}<DemoMark />
-                            </div>
-                            <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
-                              {v.note}
-                            </div>
-                          </div>
-                          <StatusPill variant={v.statusV} label={v.status} />
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "6px", padding: "11px 12px", background: "#FBFBFC", border: "1px solid var(--bo-line-2)", borderRadius: "8px" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", gap: "8px", font: "600 11.5px var(--bo-font)", color: "var(--bo-muted)" }}>
-                            Credential
-                            <span style={{ fontFamily: "ui-monospace,SFMono-Regular,Menlo,monospace", color: "var(--bo-ink)" }}>
-                              {v.cred}
-                            </span>
-                          </div>
-                          <div style={{ display: "flex", justifyContent: "space-between", gap: "8px", font: "600 11.5px var(--bo-font)", color: "var(--bo-muted)" }}>
-                            Mapping
-                            <span style={{ fontWeight: "700", color: "var(--bo-ink)" }}>
-                              {v.mappedLabel}
-                            </span>
-                          </div>
-                          <div style={{ display: "flex", justifyContent: "space-between", gap: "8px", font: "600 11.5px var(--bo-font)", color: "var(--bo-muted)" }}>
-                            Last test
-                            <span style={{ fontWeight: "700", color: "var(--bo-ink)" }}>
-                              {v.lastTest}
-                            </span>
-                          </div>
-                        </div>
-                        {v.hasExtra ? (
-                          <>
-                            <div style={{ padding: "9px 11px", background: "#FFF4D4", border: "1px solid #FFECAE", borderRadius: "8px", font: "700 11.5px var(--bo-font)", color: "#8A6A00" }}>
-                              {v.extraLabel}<DemoMark />
-                            </div>
-                          </>
-                        ) : null}
-                        {v.on ? (
-                          <>
-                            <div style={{ display: "flex", gap: "7px", flexWrap: "wrap" }}>
-                              <button onClick={v.test} style={{ height: "32px", padding: "0 11px", border: "1px solid var(--bo-line)", background: "#fff", borderRadius: "7px", font: "700 11.5px var(--bo-font)", color: "var(--bo-muted)", cursor: "pointer" }}>
-                                Test Connection
-                              </button>
-                              <button onClick={v.imp} style={{ height: "32px", padding: "0 11px", border: "1px solid var(--bo-line)", background: "#fff", borderRadius: "7px", font: "700 11.5px var(--bo-font)", color: "var(--bo-muted)", cursor: "pointer" }}>
-                                Import Locks
-                              </button>
-                              <button onClick={v.automap} style={{ height: "32px", padding: "0 11px", border: "1px solid var(--bo-line)", background: "#fff", borderRadius: "7px", font: "700 11.5px var(--bo-font)", color: "var(--bo-muted)", cursor: "pointer" }}>
-                                Auto-Map
-                              </button>
-                              <button onClick={v.instr} style={{ height: "32px", padding: "0 11px", border: "1px solid var(--bo-line)", background: "#fff", borderRadius: "7px", font: "700 11.5px var(--bo-font)", color: "var(--bo-muted)", cursor: "pointer" }}>
-                                Instruction Images
-                              </button>
-                              <button onClick={v.revoke} style={{ height: "32px", padding: "0 11px", border: "1px solid #F7CFD5", background: "#fff", borderRadius: "7px", font: "700 11.5px var(--bo-font)", color: "#C62534", cursor: "pointer" }}>
-                                Disconnect
-                              </button>
-                            </div>
-                          </>
-                        ) : null}
-                        {v.notOn ? (
-                          <>
-                            <button onClick={v.connect} style={{ width: "100%", height: "34px", border: "none", background: "var(--bo-accent)", borderRadius: "7px", font: "700 12px var(--bo-font)", color: "#fff", cursor: "pointer" }}>
-                              Connect
-                            </button>
-                          </>
-                        ) : null}
-                      </div>
-                    </React.Fragment>
-                  ))}
-                </div>
+                <Link href={propToursRoute(propId, 'elevators')} className="bo-primarybutton" style={{ height: "38px", display: "inline-flex", alignItems: "center" }}>
+                  Open Access for this property
+                </Link>
               </div>
               {latchActive ? (
                 <>

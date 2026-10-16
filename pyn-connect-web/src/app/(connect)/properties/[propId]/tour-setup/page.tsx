@@ -9,14 +9,16 @@ import { readRailsCookie } from '~/core/session/session.server';
 import { ConnectScreenTemplate } from '~/core/templates/ConnectScreenTemplate';
 import { TourSetupScreen as DemoTourSetupScreen } from '~/core/screens/connect/properties/tourSetup.screen';
 import { TourSetupScreen } from '~/core/screens/properties/tourSetup.screen';
+import { isTourTab } from '~/core/utils/generator/tour/tourSetup.generator';
 
 export const dynamic = 'force-dynamic';
 
 /** Real properties have integer ids; demo slugs (`luxe`) keep the demo screen, as on Property Detail. */
 const REAL_ID = /^\d+$/;
 
-export default async function Page({ params }: { params: Promise<{ propId: string }> }) {
+export default async function Page({ params, searchParams }: { params: Promise<{ propId: string }>; searchParams: Promise<{ tab?: string }> }) {
   const { propId } = await params;
+  const { tab } = await searchParams;
   const title = i18n.t(CORE_STRINGS.tourSetup.title);
 
   if (!REAL_ID.test(propId)) {
@@ -35,6 +37,7 @@ export default async function Page({ params }: { params: Promise<{ propId: strin
   return (
     <ConnectScreenTemplate title={title}>
       <TourSetupScreen
+        initialTab={isTourTab(tab) ? tab : undefined}
         map={load.status === 'found' ? load.map : null}
         error={load.status === 'failed' ? i18n.t(CORE_STRINGS.tourSetup.loadFailed) : null}
       />

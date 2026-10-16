@@ -11,26 +11,36 @@ import { SafeImage } from '~/core/components/atoms/SafeImage';
 import { StatusPill } from '~/core/components/atoms/StatusPill';
 import { Breadcrumb } from '~/core/components/molecules/Breadcrumb';
 import { Modal } from '~/core/components/molecules/Modal';
+import { SetupSwitcher } from '~/core/components/molecules/SetupSwitcher';
 import { useTourSetup, type TourSetupController } from '~/core/hooks/useTourSetup';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
+import { CORE_STRINGS } from '~/config/app/strings';
 import { t } from '~/core/utils/generator/inventory/inventoryText';
 import { pinKey } from '~/core/utils/generator/map/mapState';
 import { M } from '~/core/utils/generator/map/mapText';
-import { T, type StopCard } from '~/core/utils/generator/tour/tourSetup.generator';
+import { generateSetupSwitcher } from '~/core/utils/generator/productSetup.generator';
+import { generateTourHeadPills } from '~/core/utils/generator/tour/tourModule.generator';
+import { T, type StopCard, type TourTab } from '~/core/utils/generator/tour/tourSetup.generator';
+import { ChatTab, OverviewTab, SettingsTab, VisitorsTab } from './tour/tourModuleTabs';
 
 interface Props {
   /** Null when the property was not found, or could not be loaded (then `error` says so). */
   map: PropertyMap | null;
   error?: string | null;
+  /** The tab to open on (`?tab=`); the Overview otherwise. */
+  initialTab?: TourTab;
 }
 
 /**
- * Tour Setup on real data: the plotting design's `tourSetup` screen — Tour
- * Stops, Elevators & Locks, Routing — over the community tour's stops, the
- * property's elevators and its pathway graph. Every write action opens its
- * UI, changes the page's local state and sends nothing.
+ * Tour Setup on real data: the Back Office design's Tours page (Oct 13, 2026)
+ * around the plotting design's `tourSetup` screen. Overview, Tour Stops,
+ * Elevators & Locks and Routing read the community tour's stops, the
+ * property's elevators and its pathway graph; Visitors and the scheduling
+ * settings are the demo data set and say so. Every write action opens its UI
+ * and changes the page's local state; only Save (when enabled) sends anything.
  */
-export const TourSetupScreen = ({ map, error }: Props) => (map ? <TourSetup map={map} /> : <TourUnavailable error={error ?? null} />);
+export const TourSetupScreen = ({ map, error, initialTab }: Props) =>
+  map ? <TourSetup map={map} initialTab={initialTab} /> : <TourUnavailable error={error ?? null} />;
 
 /** The map screen with a stop selected (plotted) or armed for plotting (not yet). */
 const mapHref = (propId: string, card: StopCard): string => {
@@ -42,18 +52,24 @@ const mapHref = (propId: string, card: StopCard): string => {
   return `${mapEditorRoute(propId)}${query ? `?${query}` : ''}`;
 };
 
-const TourSetup = ({ map }: { map: PropertyMap }) => {
-  const controller = useTourSetup(map);
-  const { state, summary, actions } = controller;
+const TourSetup = ({ map, initialTab }: { map: PropertyMap; initialTab?: TourTab }) => {
+  const controller = useTourSetup(map, initialTab);
+  const { state, summary, actions, stops, elevators } = controller;
   const propId = String(map.inventory.property.id);
-  const tabs: { id: typeof state.tab; label: string; count: number }[] = [
+  const tabs: { id: TourTab; label: string; count: number | null }[] = [
+    { id: 'overview', label: i18n.t(CORE_STRINGS.tours.tabs.overview), count: null },
     { id: 'stops', label: i18n.t(T.tabs.stops), count: summary.stops },
     { id: 'elevators', label: i18n.t(T.tabs.elevators), count: summary.elevators },
-    { id: 'routing', label: i18n.t(T.tabs.routing), count: summary.connections }
+    { id: 'routing', label: i18n.t(T.tabs.routing), count: summary.connections },
+    { id: 'visitors', label: i18n.t(CORE_STRINGS.tours.tabs.visitors), count: null },
+    { id: 'chat', label: i18n.t(CORE_STRINGS.tours.tabs.chat), count: null },
+    { id: 'settings', label: i18n.t(CORE_STRINGS.tours.tabs.settings), count: null }
   ];
+  const pills = generateTourHeadPills(summary, stops, elevators, controller.unsaved);
+  const stopHref = (card: StopCard) => mapHref(propId, card);
 
   return (
-    <div className="bo-inv bo-tour">
+    <div className="bo-inv bo-tour bo-tm">
       <Breadcrumb
         items={[
           { label: i18n.t(T.breadcrumbRoot), href: APP_ROUTES.properties },
@@ -64,8 +80,16 @@ const TourSetup = ({ map }: { map: PropertyMap }) => {
 
       <div className="bo-inv__header">
         <div className="bo-inv__heading">
-          <h2 className="bo-inv__title">{i18n.t(T.title)}</h2>
+          <div className="bo-tm__titlerow">
+            <h2 className="bo-inv__title">{i18n.t(T.title)}</h2>
+            {pills.map((pill) => (
+              <StatusPill key={pill.id} variant={pill.variant} label={pill.label} />
+            ))}
+          </div>
           <p className="bo-inv__summary">{summary.subtitle}</p>
+          <div className="bo-tm__switchrow">
+            <SetupSwitcher options={generateSetupSwitcher(propId, 'tour')} label={i18n.t(CORE_STRINGS.prodSetup.switchLabel)} />
+          </div>
         </div>
         <div className="bo-inv__headactions">
           <Link href={tourContentRoute(propId)} className="bo-inv__ghost">
@@ -113,14 +137,18 @@ const TourSetup = ({ map }: { map: PropertyMap }) => {
             onClick={() => actions.setTab(tab.id)}
           >
             {tab.label}
-            <span className="bo-tour__tabcount">{tab.count}</span>
+            {tab.count != null && <span className="bo-tour__tabcount">{tab.count}</span>}
           </button>
         ))}
       </div>
 
+      {state.tab === 'overview' && <OverviewTab controller={controller} propId={propId} mapHref={stopHref} />}
       {state.tab === 'stops' && <StopsTab controller={controller} propId={propId} />}
       {state.tab === 'elevators' && <ElevatorsTab controller={controller} propId={propId} />}
       {state.tab === 'routing' && <RoutingTab controller={controller} propId={propId} />}
+      {state.tab === 'visitors' && <VisitorsTab />}
+      {state.tab === 'chat' && <ChatTab propId={propId} />}
+      {state.tab === 'settings' && <SettingsTab controller={controller} />}
 
       <TourDialogs controller={controller} />
     </div>
