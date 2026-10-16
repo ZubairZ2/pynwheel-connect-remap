@@ -1,0 +1,235 @@
+platform :ios, '12.0'
+source 'https://github.com/CocoaPods/Specs.git'
+
+require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+
+# Convert all permission pods into static libraries
+pre_install do |installer|
+  installer.pod_targets.each do |pod|
+    if pod.name.eql?('RNPermissions') || pod.name.start_with?('Permission-')
+      def pod.build_type;
+        Pod::BuildType.static_library # >= 1.9
+      end
+    end
+  end
+end
+
+target 'SelfTour' do
+  config = use_native_modules!
+
+  # React Native must come BEFORE use_frameworks! (RN 0.63 style)
+  use_react_native!(
+    :path => config[:reactNativePath]
+  )
+
+  # for igloo SDK - must come after React Native
+  use_frameworks! :linkage => :static
+
+  # Third-party pods
+  pod 'RxBluetoothKit', :git => 'https://gitlab.com/igloohome/rxbluetoothkit.git', :tag => '6.1.2'
+  pod 'RxSwift', '~> 5.1'
+  pod 'iOSDFULibrary', '~> 4.11.1'
+  
+  ## Permissions
+  permissions_path = '../node_modules/react-native-permissions/ios'
+  pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse.podspec"
+  pod 'Permission-Camera', :path => "#{permissions_path}/Camera.podspec"
+  
+  pod 'SwiftyJWT'
+  pod 'RNCryptor', '~> 5.0'
+  
+  # react-native-vector-icons is included via autolinking (RN 0.60+)
+
+  target 'SelfTourTests' do
+    inherit! :complete
+  end
+
+end
+
+post_install do |installer|
+  # Fix for iOS deployment target and simulator archs
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+      
+      # Fix for Xcode 14.3+ bitwise operator warning in Yoga
+      config.build_settings['GCC_WARN_64_TO_32_BIT_CONVERSION'] = 'NO'
+      config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
+      config.build_settings['CLANG_WARN_COMMA'] = 'NO'
+      config.build_settings['CLANG_WARN_STRICT_PROTOTYPES'] = 'NO'
+      config.build_settings['CLANG_WARN_DOCUMENTATION_COMMENTS'] = 'NO'
+      
+      # Fix for Yoga bitwise operator error (Xcode 14.3+, Xcode 16)
+      config.build_settings['OTHER_CPLUSPLUSFLAGS'] ||= ['$(OTHER_CFLAGS)']
+      config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-Wno-error=bitwise-instead-of-logical'
+      
+      # Additional fixes for Xcode 16
+      config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
+      config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
+      
+      # Force Swift 5 mode for compatibility with RN 0.63.3 (Xcode 16 defaults to Swift 6)
+      config.build_settings['SWIFT_VERSION'] = '5.0'
+    end
+  end
+  
+  # Set Swift version for the main project too
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['SWIFT_VERSION'] = '5.0'
+  end
+
+  # Dependency's config
+  installer.pods_project.targets.each do |target|
+    if target.name == 'iOSDFULibrary' || target.name == 'RxSwift' || target.name == 'RxBluetoothKit'
+      target.build_configurations.each do |config|
+        config.build_settings["BUILD_LIBRARY_FOR_DISTRIBUTION"] = "YES"
+      end 
+    end 
+  end
+  
+  # Fix SwiftyCrypto for Swift 5 compatibility (deallocate capacity deprecated)
+  swifty_crypto_file = File.join(installer.sandbox.root, 'SwiftyCrypto/Sources/HMAC/HMACCrypto.swift')
+  if File.exist?(swifty_crypto_file)
+    begin
+      # Make file writable
+      File.chmod(0644, swifty_crypto_file)
+      text = File.read(swifty_crypto_file)
+      # Replace deprecated deallocate(capacity:) with deallocate()
+      new_text = text.gsub(/\.deallocate\(capacity:\s*\d+\)/, '.deallocate()')
+      File.open(swifty_crypto_file, 'w') { |file| file.puts new_text }
+      puts "✅ Patched SwiftyCrypto for Swift 5 compatibility"
+    rescue => e
+      puts "⚠️  Could not patch SwiftyCrypto: #{e.message}"
+    end
+  end
+
+  # Ensure CCommonCrypto module.modulemap exists for SwiftyCrypto (Xcode 14+ strict module verification).
+  # SwiftyCrypto ships these under CocoaPods/{sdk}/; create or fix if missing so the system CommonCrypto header is found.
+  dev_root = ENV['DEVELOPER_DIR'] || '/Applications/Xcode.app/Contents/Developer'
+  sdk_headers = {
+    'iphoneos' => "#{dev_root}/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/CommonCrypto/CommonCrypto.h",
+    'iphonesimulator' => "#{dev_root}/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/usr/include/CommonCrypto/CommonCrypto.h",
+    'macosx' => "#{dev_root}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/CommonCrypto/CommonCrypto.h",
+    'appletvos' => "#{dev_root}/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk/usr/include/CommonCrypto/CommonCrypto.h",
+    'appletvsimulator' => "#{dev_root}/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator.sdk/usr/include/CommonCrypto/CommonCrypto.h",
+    'watchos' => "#{dev_root}/Platforms/WatchOS.platform/Developer/SDKs/WatchOS.sdk/usr/include/CommonCrypto/CommonCrypto.h",
+    'watchsimulator' => "#{dev_root}/Platforms/WatchSimulator.platform/Developer/SDKs/WatchSimulator.sdk/usr/include/CommonCrypto/CommonCrypto.h"
+  }
+  cocoapods_base = File.join(installer.sandbox.root, 'SwiftyCrypto/CocoaPods')
+  sdk_headers.each do |sdk, header_path|
+    dir = File.join(cocoapods_base, sdk)
+    modulemap_path = File.join(dir, 'module.modulemap')
+    content = <<~MODULEMAP
+      module CCommonCrypto [system] {
+          header "#{header_path}"
+          export *
+      }
+    MODULEMAP
+    if File.directory?(dir)
+      if !File.exist?(modulemap_path) || !File.read(modulemap_path).include?('CCommonCrypto')
+        File.write(modulemap_path, content)
+        puts "✅ Created/fixed CCommonCrypto module.modulemap for #{sdk}"
+      end
+    end
+  end
+
+  # CCommonCrypto paths for SwiftyCrypto (needed by SwiftyJWT) - used by any target that imports SwiftyJWT/SwiftyCrypto
+  swifty_crypto_include_paths = {
+    'SWIFT_INCLUDE_PATHS[sdk=iphoneos*]' => '$(PODS_ROOT)/SwiftyCrypto/CocoaPods/iphoneos',
+    'SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]' => '$(PODS_ROOT)/SwiftyCrypto/CocoaPods/iphonesimulator',
+    'SWIFT_INCLUDE_PATHS[sdk=macosx*]' => '$(PODS_ROOT)/SwiftyCrypto/CocoaPods/macosx',
+    'SWIFT_INCLUDE_PATHS[sdk=appletvos*]' => '$(PODS_ROOT)/SwiftyCrypto/CocoaPods/appletvos',
+    'SWIFT_INCLUDE_PATHS[sdk=appletvsimulator*]' => '$(PODS_ROOT)/SwiftyCrypto/CocoaPods/appletvsimulator',
+    'SWIFT_INCLUDE_PATHS[sdk=watchos*]' => '$(PODS_ROOT)/SwiftyCrypto/CocoaPods/watchos',
+    'SWIFT_INCLUDE_PATHS[sdk=watchsimulator*]' => '$(PODS_ROOT)/SwiftyCrypto/CocoaPods/watchsimulator'
+  }
+
+  # Fix SwiftyJWT pod target
+  installer.pods_project.targets.each do |target|
+    if target.name == 'SwiftyJWT'
+      target.build_configurations.each do |config|
+        config.build_settings['SWIFT_INCLUDE_PATHS'] ||= '$(inherited)'
+        swifty_crypto_include_paths.each { |k, v| config.build_settings[k] = v }
+      end
+      puts "✅ Set SwiftyJWT SWIFT_INCLUDE_PATHS for CCommonCrypto"
+      break
+    end
+  end
+
+  # Fix main app target (SelfTour): CCommonCrypto + explicit modules.
+  # Use SDK-specific SWIFT_INCLUDE_PATHS so only one module map is visible per build (avoids "redefinition of module CCommonCrypto").
+  # Disable explicit modules for app to avoid _SwiftConcurrencyShims issues with Xcode 26 / Swift 5.
+  installer.aggregate_targets.each do |aggregate_target|
+    next unless aggregate_target.name == 'Pods-SelfTour'
+    ccommon_block = <<~XCCONFIG
+
+      // CCommonCrypto for SwiftyCrypto/SwiftyJWT (one path per SDK to avoid redefinition)
+      SWIFT_INCLUDE_PATHS[sdk=iphoneos*] = $(inherited) "${PODS_ROOT}/SwiftyCrypto/CocoaPods/iphoneos"
+      SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*] = $(inherited) "${PODS_ROOT}/SwiftyCrypto/CocoaPods/iphonesimulator"
+      SWIFT_ENABLE_EXPLICIT_MODULES = NO
+    XCCONFIG
+    %w[debug release].each do |config|
+      xcconfig_path = File.join(installer.sandbox.root, 'Target Support Files', aggregate_target.name, "Pods-SelfTour.#{config}.xcconfig")
+      if File.exist?(xcconfig_path)
+        content = File.read(xcconfig_path)
+        next if content.include?('SWIFT_INCLUDE_PATHS[sdk=iphoneos*]')
+        # Remove any existing CCommonCrypto / SwiftyCrypto block (wrong or old format)
+        content = content.gsub(/\n\s*\/\/ CCommonCrypto[^\n]*\n[^\n]*SWIFT_INCLUDE_PATHS[^\n]*\n?/, "\n")
+        content = content.gsub(/\n\s*SWIFT_ENABLE_EXPLICIT_MODULES[^\n]*\n?/, "\n")
+        content = content.rstrip
+        content << ccommon_block
+        File.write(xcconfig_path, content)
+        puts "✅ Set SDK-specific SWIFT_INCLUDE_PATHS and SWIFT_ENABLE_EXPLICIT_MODULES in Pods-SelfTour.#{config}.xcconfig"
+      end
+      # Fix _swift_coroFrameAlloc undefined symbol (RxBluetoothKit/Swift concurrency) — allow symbol to be resolved at load time
+      if File.exist?(xcconfig_path) && !File.read(xcconfig_path).include?('_swift_coroFrameAlloc')
+        content = File.read(xcconfig_path)
+        content = content.gsub(/(OTHER_LDFLAGS = )(.*)/, "\\1\\2 -Wl,-U,_swift_coroFrameAlloc")
+        File.write(xcconfig_path, content)
+        puts "✅ Added -Wl,-U,_swift_coroFrameAlloc to Pods-SelfTour.#{config}.xcconfig for RxBluetoothKit"
+      end
+    end
+    break
+  end
+
+  # Fix SwiftyJWT for Swift 5 compatibility (enum case with empty parentheses)
+  swifty_jwt_files = [
+    File.join(installer.sandbox.root, 'SwiftyJWT/Sources/base/InvalidTokenError.swift'),
+    File.join(installer.sandbox.root, 'SwiftyJWT/Sources/base/JWT.swift')
+  ]
+  
+  swifty_jwt_files.each do |file_path|
+    if File.exist?(file_path)
+      begin
+        # Make file writable
+        File.chmod(0644, file_path)
+        text = File.read(file_path)
+        original_text = text.dup
+        
+        # Remove empty parentheses from enum case declarations
+        text = text.gsub(/case invalidSignature\(\)/, 'case invalidSignature')
+        # Fix switch cases
+        text = text.gsub(/case \.invalidSignature\(\):/, 'case .invalidSignature:')
+        # Fix throw statements and references
+        text = text.gsub(/InvalidTokenError\.invalidSignature\(\)/, 'InvalidTokenError.invalidSignature')
+        text = text.gsub(/throw \.invalidSignature\(\)/, 'throw .invalidSignature')
+        
+        if text != original_text
+          File.open(file_path, 'w') { |file| file.puts text }
+          puts "✅ Patched #{File.basename(file_path)} for Swift 5 compatibility"
+        end
+      rescue => e
+        puts "⚠️  Could not patch #{File.basename(file_path)}: #{e.message}"
+      end
+    end
+  end
+end
+
+target 'SelfTour-tvOS' do
+  # Pods for SelfTour-tvOS
+
+  target 'SelfTour-tvOSTests' do
+    inherit! :search_paths
+  end
+end

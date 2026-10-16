@@ -12,6 +12,13 @@ module Api
           stop_id = string_param(params[:stop_id], loc: %w[body stop_id], min: 3, max: 64)
           render json: TourApi::Locks.pin!(@property, built, stop_id)
         end
+
+        # The igloohome v1 Bluetooth guest key for one stop (the app's native
+        # igloohome SDK opens the lock with it).
+        def bluetooth_key
+          stop_id = string_param(params[:stop_id], loc: %w[body stop_id], min: 3, max: 64)
+          render json: TourApi::Locks.bluetooth_key!(@property, built, stop_id)
+        end
       end
     end
   end

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pynwheel Invoice</title>
+</head>
+<body style="font-family: 'Segoe UI', system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 24px; color: #222;">
+  <div style="border-bottom: 2px solid #1a1a1a; padding-bottom: 16px; margin-bottom: 24px;">
+    <div style="font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">Pynwheel</div>
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #666; margin-top: 4px;">Invoice</div>
+    <div style="margin-top: 12px; font-size: 14px; color: #444;">
+      <strong>Fraz Mirza</strong><br>
+      Senior Software engineer
+    </div>
+  </div>
+
+  <div style="margin-bottom: 32px;">
+    <div style="min-width: 180px; display: inline-block; vertical-align: top; margin-right: 24px;">
+      <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; margin-bottom: 4px;">Invoice number</div>
+      <div style="font-size: 15px;">PYN-INV-2025-001</div>
+    </div>
+    <div style="min-width: 180px; display: inline-block; vertical-align: top; margin-right: 24px;">
+      <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; margin-bottom: 4px;">Date</div>
+      <div style="font-size: 15px;">March 17, 2026</div>
+    </div>
+    <div style="min-width: 180px; display: inline-block; vertical-align: top;">
+      <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; margin-bottom: 4px;">Bill to</div>
+      <div style="font-size: 15px;">SelfTour / Pynwheel React Native Project</div>
+    </div>
+  </div>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 24px 0;">
+    <thead>
+      <tr>
+        <th style="text-align: left; padding: 12px 0; border-bottom: 1px solid #ddd; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Description</th>
+        <th style="text-align: right; padding: 12px 0; border-bottom: 1px solid #ddd; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Amount (USD)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 12px 24px 12px 0; border-bottom: 1px solid #eee; vertical-align: top;">
+          <strong>iOS build fixes and dependency updates — PynwheelReactNative-ST</strong><br>
+          Development and implementation of fixes to restore iOS and Android build and run for the SelfTour app (React Native), including Swift/Xcode 26 compatibility, CocoaPods configuration, and linker fixes.
+        </td>
+        <td style="padding: 12px 0; border-bottom: 1px solid #eee; vertical-align: top; text-align: right; white-space: nowrap;">$190.00</td>
+      </tr>
+      <tr>
+        <td style="padding: 16px 24px 0 0; border-bottom: none; vertical-align: top; font-weight: 600; font-size: 18px;">Total</td>
+        <td style="padding: 16px 0 0 0; border-bottom: none; vertical-align: top; text-align: right; white-space: nowrap; font-weight: 600; font-size: 18px; color: #1a1a1a;">$190.00</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 32px; padding: 16px; background: #f8f8f8; border-radius: 8px; font-size: 13px; color: #444;">
+    <div style="font-weight: 600; margin-bottom: 8px;">Main changes included</div>
+    <p style="margin: 0 0 8px 0;"><strong>iOS</strong></p>
+    <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+      <li style="margin: 4px 0;"><strong>CCommonCrypto / SwiftyJWT:</strong> SDK-specific SWIFT_INCLUDE_PATHS (iphoneos vs iphonesimulator) to fix "redefinition of module CCommonCrypto"; ensured module maps under SwiftyCrypto/CocoaPods for each SDK.</li>
+      <li style="margin: 4px 0;"><strong>Swift explicit modules:</strong> Set SWIFT_ENABLE_EXPLICIT_MODULES = NO for the app target to resolve "Unable to find module dependency: _SwiftConcurrencyShims" with Xcode 26 / Swift 5.</li>
+      <li style="margin: 4px 0;"><strong>RxBluetoothKit linker:</strong> Added -Wl,-U,_swift_coroFrameAlloc to OTHER_LDFLAGS so _swift_coroFrameAlloc resolves at load time from the Swift runtime.</li>
+      <li style="margin: 4px 0;"><strong>SwiftyCrypto / SwiftyJWT:</strong> Existing Swift 5 compatibility patches (e.g. deallocate, enum cases) retained and verified.</li>
+      <li style="margin: 4px 0;"><strong>CocoaPods:</strong> SelfTourTests ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES set to $(inherited) to clear CocoaPods override warning.</li>
+      <li style="margin: 4px 0;"><strong>RNVectorIcons:</strong> Switched to autolinking (RN 0.60+) instead of explicit pod entry.</li>
+    </ul>
+    <p style="margin: 16px 0 8px 0;"><strong>Android</strong></p>
+    <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+      <li style="margin: 4px 0;"><strong>Build configuration:</strong> Moved ext (buildToolsVersion, minSdkVersion, compileSdkVersion, targetSdkVersion) to top-level in root build.gradle; app build.gradle now uses rootProject.ext.buildToolsVersion.</li>
+      <li style="margin: 4px 0;"><strong>Native modules:</strong> Added react-native-config and react-native-video to settings.gradle and app dependencies; added Teknasyon Maven repository for dependencies.</li>
+    </ul>
+    <div style="font-weight: 600; margin: 20px 0 8px 0;">Files changed</div>
+    <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+      <li style="margin: 4px 0;"><strong>iOS:</strong> ios/Podfile, ios/Podfile.lock, ios/SelfTour.xcodeproj/project.pbxproj; Pods-SelfTour xcconfig (debug/release); SwiftyCrypto CocoaPods module maps (per SDK).</li>
+      <li style="margin: 4px 0;"><strong>Android:</strong> android/build.gradle, android/app/build.gradle, android/settings.gradle.</li>
+      <li style="margin: 4px 0;"><strong>Other:</strong> package.json, yarn.lock; src/Screens/Onboarding/index.js, src/Screens/WelcomeTour/index.js.</li>
+    </ul>
+  </div>
+</body>
+</html>

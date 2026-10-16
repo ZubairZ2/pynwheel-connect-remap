@@ -1,12 +1,12 @@
 import communityPhoto from '~/assets/images/community-pool.jpg';
 import { APP_VERSION, AR_INIT_LABELS, BOOKING_TIMES, CONCIERGE_GREETING_GENERAL, CONCIERGE_GREETING_STOP, CONCIERGE_HUMAN_REPLY, CONCIERGE_NOT_CONNECTED, CONCIERGE_PROMPTS, HELP_ITEMS, ONBOARDING_SLIDES, SUPPORT_EMAIL, upcomingDays } from '~/content/appCopy';
-import type { LockPin, MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
+import type { LockBluetoothKey, LockPin, MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
 import { clearSession, loadSession, saveSession, type Session } from '~/services/session';
 import { placesFromBundle } from '../places';
 import { FeatureUnavailableError, type AppContent, type BookingRequest, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult } from '../tourRepository';
 import { ApiClient, ApiError } from './apiClient';
-import type { ApiDistancesResponse, ApiGraph, ApiLockPinResponse, ApiLoginResponse, ApiMapResponse, ApiPropertyDetail, ApiPropertySummary, ApiRouteResponse, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
-import { parseBundle, parseDistances, parseListing, parseLockPin, parseRoute, parseTourRoute } from './parsers';
+import type { ApiDistancesResponse, ApiGraph, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiLoginResponse, ApiMapResponse, ApiPropertyDetail, ApiPropertySummary, ApiRouteResponse, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
+import { parseBundle, parseDistances, parseListing, parseLockBluetoothKey, parseLockPin, parseRoute, parseTourRoute } from './parsers';
 
 /**
  * The production provider: the Pynwheel Tour App API, served by the Rails CMS
@@ -16,7 +16,7 @@ import { parseBundle, parseDistances, parseListing, parseLockPin, parseRoute, pa
  *   GET  {API}/properties, /properties/{id}
  *   GET  {API}/properties/{id}/stops | /map | /map/levels/{id} | /map/levels/{id}/svg | /graph
  *   POST {API}/properties/{id}/route | /tour-route | /stops/distances
- *   POST {API}/properties/{id}/locks/pin
+ *   POST {API}/properties/{id}/locks/pin | /locks/bluetooth-key
  *
  * The session (token, user, selected property) is persisted by
  * `services/session.ts`; the graph is cached per property with its ETag.
@@ -290,6 +290,13 @@ export class PynwheelApiTourRepository implements TourRepository {
     const { data } = await this.client.post<ApiLockPinResponse>(`${API}/properties/${id}/locks/pin`, { stop_id: node });
     if (typeof data.pin !== 'string' || !data.pin) throw new ApiError('malformed_response', 'The lock service answered without a door code. Please try again.', 200);
     return parseLockPin(data);
+  }
+
+  async getStopLockBluetoothKey(node: string): Promise<LockBluetoothKey> {
+    const id = await this.requireProperty();
+    const { data } = await this.client.post<ApiLockBluetoothKeyResponse>(`${API}/properties/${id}/locks/bluetooth-key`, { stop_id: node });
+    if (typeof data.bluetooth_key !== 'string' || !data.bluetooth_key) throw new ApiError('malformed_response', 'The lock service answered without a Bluetooth key. Please try again.', 200);
+    return parseLockBluetoothKey(data);
   }
 
   // --------------------------------------------- features without a backend

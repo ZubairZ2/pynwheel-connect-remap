@@ -33,6 +33,7 @@ Both apps share the **same Rails backend** (`pynwheel-staging/`, "Pynwheel Conne
 | `src/Utils/`, `src/Components/`, `src/assest/` | Helpers, shared components, images/fonts/json (`R.js` is the asset registry). |
 | `android/` | Gradle 7.6.4, AGP 7.4.2, compileSdk 34, targetSdk 35, minSdk 26. Flavours `selftour` (Pynwheel Tour, `com.pynwheel.selftour`) and `lincolnselftour` (white-label "Lincoln"). Native modules in `app/src/main/java/com/pynwheel/selftour/{igloo,latch}` and `ZervModule.java`; vendored SDKs in `android/libs/*.aar` and `android/leafble/`. |
 | `ios/` | `SelfTour.xcworkspace`, targets SelfTour and Lincoln. Swift bridges `IglooModule.swift`, `LatchModule.swift`, `ZervModule.swift`; frameworks `IgloohomeSDK.xcframework`, `LeafBle.framework`, `Zerv_SDK_Library.framework`. |
+| `ios/Zerv_SDK_Library.framework/` | **Not in git** (its binary embeds Zerv's own AWS credentials, which GitHub push protection rejects); copy it in from the original clone before building the iOS target. The release signing key `android/app/selftour-key.keystore` is likewise kept local. |
 | `patches/` | `patch-package` patches (RN 0.63, camera, video, netinfo, orientation, country picker, node-emoji). Applied on `yarn install`. |
 | `.env`, `.env.pynwheel`, `.env.lincoln` | `react-native-config`. `ENV=pynwheel` or `lincoln` picks the flavour's endpoints. Contains committed Google API keys — do not copy them anywhere. |
 | `IglooTest.js`, `Pynwheel_Invoice.html`, `.scannerwork/` | Leftovers, not part of the app. |
@@ -174,3 +175,5 @@ Gotchas when porting:
 * Many legacy endpoints take `token` in the query string; the new API uses headers.
 * `Singleton.js` hides a lot of implicit state (tour type, verification provider, "move to next stop" flags) — look there first when a screen behaves unexpectedly.
 * Lock data only exists for plotted stops; the new map must keep `tour_stops.display_stop` and coordinates populated or locks vanish.
+
+**Update, October 17, 2026:** the Capacitor app now wraps both SDK binaries in `tour-app/plugins/igloohome-ble` and runs the v1 Bluetooth flow through them (`tour-app-igloo-bluetooth.md`); the Android AAR is copied there, the iOS xcframework linked.

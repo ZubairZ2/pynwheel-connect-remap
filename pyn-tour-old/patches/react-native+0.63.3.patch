@@ -1,0 +1,56 @@
+diff --git a/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/devsupport/DevSupportManagerBase.java b/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/devsupport/DevSupportManagerBase.java
+index 249a359..12e5a37 100644
+--- a/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/devsupport/DevSupportManagerBase.java
++++ b/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/devsupport/DevSupportManagerBase.java
+@@ -1181,7 +1181,11 @@ public abstract class DevSupportManagerBase
+       if (!mIsReceiverRegistered) {
+         IntentFilter filter = new IntentFilter();
+         filter.addAction(getReloadAppAction(mApplicationContext));
+-        mApplicationContext.registerReceiver(mReloadAppBroadcastReceiver, filter);
++        if (android.os.Build.VERSION.SDK_INT >= 34) {
++          mApplicationContext.registerReceiver(mReloadAppBroadcastReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
++        } else {
++          mApplicationContext.registerReceiver(mReloadAppBroadcastReceiver, filter);
++        }
+         mIsReceiverRegistered = true;
+       }
+ 
+diff --git a/node_modules/react-native/scripts/.packager.env b/node_modules/react-native/scripts/.packager.env
+new file mode 100644
+index 0000000..21a13cf
+--- /dev/null
++++ b/node_modules/react-native/scripts/.packager.env
+@@ -0,0 +1 @@
++export RCT_METRO_PORT=8081
+\ No newline at end of file
+diff --git a/node_modules/react-native/scripts/ios-configure-glog.sh b/node_modules/react-native/scripts/ios-configure-glog.sh
+index 73a892c..123c4e7 100755
+--- a/node_modules/react-native/scripts/ios-configure-glog.sh
++++ b/node_modules/react-native/scripts/ios-configure-glog.sh
+@@ -16,7 +16,7 @@ if [ -z "$CURRENT_ARCH" ] || [ "$CURRENT_ARCH" == "undefined_arch" ]; then
+     if [[ "$PLATFORM_NAME" == *"simulator"* ]]; then
+         CURRENT_ARCH="x86_64"
+     else
+-        CURRENT_ARCH="armv7"
++        CURRENT_ARCH="arm64"
+     fi
+ fi
+ 
+diff --git a/node_modules/react-native/scripts/launchPackager.command b/node_modules/react-native/scripts/launchPackager.command
+index 4a77481..c1a7ec9 100755
+--- a/node_modules/react-native/scripts/launchPackager.command
++++ b/node_modules/react-native/scripts/launchPackager.command
+@@ -10,6 +10,13 @@ clear
+ 
+ THIS_DIR=$(cd -P "$(dirname "$(readlink "${BASH_SOURCE[0]}" || echo "${BASH_SOURCE[0]}")")" && pwd)
+ 
++# Use project Node version (e.g. from .nvmrc) to avoid OpenSSL errors on Node 17+
++PROJECT_ROOT="$THIS_DIR/../../.."
++if [ -s "$HOME/.nvm/nvm.sh" ] && [ -f "$PROJECT_ROOT/.nvmrc" ]; then
++  . "$HOME/.nvm/nvm.sh"
++  cd "$PROJECT_ROOT" && nvm use
++fi
++
+ # shellcheck source=/dev/null
+ . "$THIS_DIR/packager.sh"
+ 

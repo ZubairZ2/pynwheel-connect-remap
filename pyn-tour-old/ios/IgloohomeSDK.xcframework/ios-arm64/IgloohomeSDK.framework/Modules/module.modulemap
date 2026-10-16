@@ -1,0 +1,22 @@
+framework module IgloohomeSDK {
+  umbrella header "IgloohomeSDK.h"
+
+  export *
+  module * { export * }
+  
+  explicit module IgloohomeSDK_Private {
+      header "aes.h"
+      header "modes.h"
+      header "uECC.h"
+      header "prp.h"
+      link "CifrauECC"
+      export *
+  }  
+}
+
+
+
+module IgloohomeSDK.Swift {
+    header "IgloohomeSDK-Swift.h"
+    requires objc
+}

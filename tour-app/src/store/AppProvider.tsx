@@ -48,7 +48,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           if (persisted && persisted.propertyId !== session.propertyId) {
             // The UI state was saved for another property (or the session store moved on): nothing of that
             // property's tour, selection, routes or floors may leak into this one.
-            Object.assign(base, { selected: {}, tourOrder: [], stopIndex: 0, unlocked: {}, lockPins: {}, notes: {}, guided: initialGuided(), wayfinding: initialWayfinding(), floorByLevel: {} });
+            Object.assign(base, { selected: {}, tourOrder: [], stopIndex: 0, unlocked: {}, lockPins: {}, lockKeys: {}, notes: {}, guided: initialGuided(), wayfinding: initialWayfinding(), floorByLevel: {} });
           }
           base.propertyId = session.propertyId;
           if (session.propertyId == null && persisted?.screen !== 'search') base.screen = 'splash';

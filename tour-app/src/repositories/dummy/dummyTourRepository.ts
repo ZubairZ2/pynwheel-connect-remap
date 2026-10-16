@@ -1,4 +1,4 @@
-import type { LockPin, MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
+import type { LockBluetoothKey, LockPin, MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
 import type { Session } from '~/services/session';
 import { placesFromBundle } from '../places';
 import {
@@ -181,6 +181,10 @@ export class DummyTourRepository implements TourRepository {
   async getStopLockPin(_node: string): Promise<LockPin> {
     // The demo property has no smart locks (its units carry no `lock`), so the UI never asks; a caller that does gets the honest answer.
     throw new FeatureUnavailableError('A door code');
+  }
+
+  async getStopLockBluetoothKey(_node: string): Promise<LockBluetoothKey> {
+    throw new FeatureUnavailableError('A Bluetooth key');
   }
 
   async askConcierge(question: string, context: { stopName: string | null }): Promise<string> {

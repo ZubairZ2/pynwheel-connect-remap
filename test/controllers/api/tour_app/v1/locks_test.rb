@@ -179,19 +179,76 @@ class Api::TourApp::V1::LocksTest < ActionDispatch::IntegrationTest
     assert_equal 'validation_error', request_pin('x')['error']['code']
   end
 
-  test 'igloohome v1 (Bluetooth) and other vendors are present but unsupported' do
+  def request_key(stop_id, headers = auth)
+    post_json("#{@base}/locks/bluetooth-key", { stop_id: stop_id }, headers)
+    body
+  end
+
+  test 'igloohome v1 is a Bluetooth lock: supported, but not with a door code' do
     @account.update_columns(version: 'v1')
     reset_tour_api_caches!
     lock = stop_lock(@u101)
-    assert_equal({ 'provider' => 'Igloohome', 'mode' => 'v1', 'method' => 'bluetooth', 'device_id' => 'SK3E14001756', 'supported' => false }, lock)
+    assert_equal({ 'provider' => 'Igloohome', 'mode' => 'v1', 'method' => 'bluetooth', 'device_id' => 'SK3E14001756', 'supported' => true }, lock)
     assert_equal 'lock_unsupported', request_pin(@u101)['error']['code']
     assert_response 422
     assert_equal 0, @calls.size
+  end
 
+  test 'a Bluetooth guest key for a v1 lock: the legacy partner-API requests, 90 minutes, the backup PIN' do
+    @account.update_columns(version: 'v1')
+    reset_tour_api_caches!
+    stub = lambda do |url, **options|
+      @calls << [url, options]
+      # The partner API answers the key and the PIN at the top level of the body.
+      if url.end_with?('/ekeys')
+        FakeResponse.new(200, { 'bluetoothGuestKey' => 'guest-key-abc', 'keyId' => 'key-1' })
+      else
+        FakeResponse.new(200, { 'pin' => '4455667' })
+      end
+    end
+    HTTParty.stub(:post, stub) do
+      travel_to Time.utc(2026, 10, 16, 14, 25) do
+        data = request_key(@u101)
+        assert_response :success, response.body
+        assert_equal %w[success stop_id provider mode device_id lock_name bluetooth_key key_id guest_pin valid_from valid_until], data.keys
+        assert_equal({ 'stop_id' => @u101, 'provider' => 'Igloohome', 'mode' => 'v1', 'device_id' => 'SK3E14001756', 'lock_name' => 'SK3E14001756', 'bluetooth_key' => 'guest-key-abc', 'key_id' => 'key-1', 'guest_pin' => '4455667' }, data.except('success', 'valid_from', 'valid_until'))
+        assert_equal '2026-10-16T14:25:00+00:00', data['valid_from']
+        assert_equal '2026-10-16T15:55:00+00:00', data['valid_until'], '90 minutes, as IgloohomeService asks the partner API'
+      end
+    end
+    ekeys, pin = @calls
+    assert_equal "#{ENV['IGLOOHOME_API_BASE_URL']}/v2/locks/SK3E14001756/ekeys", ekeys[0]
+    assert_equal ENV['IGLOOHOME_API_KEY'], ekeys[1][:headers]['X-IGLOOCOMPANY-APIKEY']
+    ekeys_body = JSON.parse(ekeys[1][:body])
+    assert_includes ekeys_body['permissions'], 'UNLOCK'
+    assert_equal 23, ekeys_body['permissions'].size, 'the permission set the legacy service grants'
+    assert_equal "#{ENV['IGLOOHOME_API_BASE_URL']}/v2/locks/SK3E14001756/pin/hourly", pin[0]
+    assert_equal 3, JSON.parse(pin[1][:body])['variance']
+    assert_no_match(/guest-key-abc/, File.read(Rails.root.join('log', 'test.log')).lines.last(40).join) rescue nil
+  end
+
+  test 'a Bluetooth key is refused for door-code locks, and a partner-API refusal is a 502' do
+    assert_equal 'lock_unsupported', request_key(@u101)['error']['code'], 'the account is in igloohome (PIN) mode'
+    assert_response 422
+    @account.update_columns(version: 'v1')
+    reset_tour_api_caches!
+    with_vendor(FakeResponse.new(404, { 'message' => 'Lock not found' })) do
+      data = request_key(@u101)
+      assert_response 502, response.body
+      assert_equal 'lock_unavailable', data['error']['code']
+    end
+    assert_equal 'no_lock', request_key(@u301)['error']['code']
+    assert_equal 'invalid_stop', request_key('unit:999999')['error']['code']
+    post_json("#{@base}/locks/bluetooth-key", { stop_id: @u101 }, JSON_HEADERS)
+    assert_response :unauthorized
+  end
+
+  test 'other vendors are present but unsupported' do
     @unit101.update_columns(lock_provider: 'Latch')
     reset_tour_api_caches!
     assert_equal({ 'provider' => 'Latch', 'mode' => nil, 'method' => 'bluetooth', 'device_id' => nil, 'supported' => false }, stop_lock(@u101))
     assert_equal 'lock_unsupported', request_pin(@u101)['error']['code']
+    assert_equal 'lock_unsupported', request_key(@u101)['error']['code']
   end
 
   test 'an igloohome stop with no device mapped is unsupported' do

@@ -1,0 +1,14 @@
+{
+    "plugins": [
+      ["module-resolver", {
+        "root": ["./"],
+        "alias": {
+          //"components":"./app/components",
+          "screens":"./src/Screens",
+          "Library":"./src/Library"
+          //"test": "./test",
+          //"underscore": "lodash"
+        }
+      }]
+    ]
+  }

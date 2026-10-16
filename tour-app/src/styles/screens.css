@@ -1532,6 +1532,9 @@
 .pw-stop .pw-lockcode {
   padding-bottom: 20px;
 }
+.pw-lockcode .pw-lockcode__done {
+  margin: 0;
+}
 
 /* ───────── Tour complete / summary ───────── */
 .pw-complete {

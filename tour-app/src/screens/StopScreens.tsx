@@ -5,7 +5,7 @@ import { Button, IconButton, Pill } from '~/components/ui';
 import type { LockPin } from '~/models';
 import { success, tap } from '~/services/native';
 import type { TourStopView } from '~/store/selectors';
-import { LockAccessCard } from './LockAccess';
+import { LockAccessCard, type BluetoothControls } from './LockAccess';
 import { LightShell } from './shared';
 
 /** The smart-lock state of the stop on screen (the store's door code and request for this stop). */
@@ -14,6 +14,8 @@ export interface StopLockProps {
   lockBusy: boolean;
   lockError: string | null;
   onRequestPin: () => void;
+  /** The igloohome v1 Bluetooth flow for this stop. */
+  lockBluetooth: BluetoothControls;
 }
 
 interface StopDetailProps extends StopLockProps {
@@ -28,7 +30,7 @@ interface StopDetailProps extends StopLockProps {
 }
 
 /** An amenity stop: its smart lock's door code when it has one, video, notes, the concierge, "Next Stop". */
-export const StopDetailScreen = ({ stop, lockPin, lockBusy, lockError, onRequestPin, onItinerary, onClose, onVideo, onNote, onAi, onNext, isLast }: StopDetailProps) => (
+export const StopDetailScreen = ({ stop, lockPin, lockBusy, lockError, onRequestPin, lockBluetooth, onItinerary, onClose, onVideo, onNote, onAi, onNext, isLast }: StopDetailProps) => (
   <LightShell>
     <ScreenHeader layout="split" left={<IconButton icon="list" label="Itinerary" onClick={onItinerary} />} right={<IconButton icon="close" label="Close" onClick={onClose} />} />
     <div className="pw-stop">
@@ -46,7 +48,7 @@ export const StopDetailScreen = ({ stop, lockPin, lockBusy, lockError, onRequest
           {stop.amenity.hours ? <span> · {stop.amenity.hours} *</span> : null}
         </div>
       ) : null}
-      {stop.lock ? <LockAccessCard lock={stop.lock} pin={lockPin} busy={lockBusy} error={lockError} onRequest={onRequestPin} /> : null}
+      {stop.lock ? <LockAccessCard lock={stop.lock} pin={lockPin} busy={lockBusy} error={lockError} onRequest={onRequestPin} bluetooth={lockBluetooth} /> : null}
       <div className="pw-stop__actions">
         <button type="button" className="pw-stop__action" onClick={onVideo}>
           <span className="pw-stop__actionicon pw-stop__actionicon--dark">
@@ -96,7 +98,7 @@ interface UnlockProps extends StopLockProps {
  * legacy app's CONTINUE did. Without one, the reference's slider: slide the
  * 56 px thumb across the 64 px track; past 85% the (demo) lock opens.
  */
-export const UnlockUnitScreen = ({ stop, lockPin, lockBusy, lockError, onRequestPin, drag, unlocked, onDrag, onRelease, onItinerary, onClose, onNext, isLast }: UnlockProps) => {
+export const UnlockUnitScreen = ({ stop, lockPin, lockBusy, lockError, onRequestPin, lockBluetooth, drag, unlocked, onDrag, onRelease, onItinerary, onClose, onNext, isLast }: UnlockProps) => {
   const track = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState<{ startX: number; startPct: number } | null>(null);
   const THUMB = 56;
@@ -132,9 +134,9 @@ export const UnlockUnitScreen = ({ stop, lockPin, lockBusy, lockError, onRequest
             <Pill>Unit</Pill>
           </div>
           <div className="pw-stop__name">Unlock {stop.name}</div>
-          <LockAccessCard lock={stop.lock} pin={lockPin} busy={lockBusy} error={lockError} onRequest={onRequestPin} />
+          <LockAccessCard lock={stop.lock} pin={lockPin} busy={lockBusy} error={lockError} onRequest={onRequestPin} bluetooth={lockBluetooth} />
           <div className="pw-stop__next">
-            <Button onClick={onNext} variant={lockPin ? 'primary' : 'secondary'}>
+            <Button onClick={onNext} variant={lockPin || lockBluetooth.unlocked ? 'primary' : 'secondary'}>
               {isLast ? 'Finish Tour' : 'Next Stop'}
             </Button>
           </div>

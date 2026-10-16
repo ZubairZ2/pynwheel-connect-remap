@@ -13,6 +13,25 @@ class IgloohomeService < BaseService
     get_igloohome_locks_guest_key(igloohome_locks) if igloohome_locks.present?
   end
 
+  # The guest access for one lock, as `assign_guest_bluetooth_key` asks the
+  # partner API for it: the Bluetooth guest key (90 minutes from now) and the
+  # backup hourly PIN. Nothing is written; the caller decides what to keep.
+  # Added October 2026 for the Tour App API (TourApi::Locks#bluetooth_key!).
+  def guest_access_for lock
+    response = get_device_bluetooth_key(lock)
+    payload = response.success? ? response["payload"] : nil
+    bluetooth_key = payload.present? ? payload["bluetoothGuestKey"] : nil
+    key_id = payload.present? ? payload["keyId"] : nil
+    {
+      bluetooth_key: bluetooth_key.presence,
+      key_id: key_id.presence,
+      guest_pin: get_guest_pin(lock),
+      valid_from: @current_time,
+      valid_until: @current_time + 90.minutes,
+      status: payload.respond_to?(:code) ? payload.code : nil
+    }
+  end
+
   private
 
   def update_igloohome_guest_key_pin response, lock, bluetooth_key = nil, master_pin = nil

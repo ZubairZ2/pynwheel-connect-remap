@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>266998310147-n59qqan5l217s8jj3hvoq6f5c0ef5eg2.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.266998310147-n59qqan5l217s8jj3hvoq6f5c0ef5eg2</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCIz7HDilVRSRwq_5zKvvTWhrRWu4aYWIU</string>
+	<key>GCM_SENDER_ID</key>
+	<string>266998310147</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.pynwheel.SelfTourAppStore</string>
+	<key>PROJECT_ID</key>
+	<string>portico-9557c</string>
+	<key>STORAGE_BUCKET</key>
+	<string>portico-9557c.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:266998310147:ios:a04ef9a391029f53467536</string>
+	<key>DATABASE_URL</key>
+	<string>https://portico-9557c.firebaseio.com</string>
+</dict>
+</plist>

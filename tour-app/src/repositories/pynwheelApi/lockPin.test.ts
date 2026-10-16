@@ -75,6 +75,20 @@ describe('getStopLockPin', () => {
     await expect(repo.getStopLockPin('unit:1')).rejects.toMatchObject({ code: 'no_property' });
   });
 
+  it('getStopLockBluetoothKey posts the stop to the Bluetooth-key endpoint and returns the guest access', async () => {
+    answer = () => json(200, { success: true, stop_id: 'unit:483954', provider: 'Igloohome', mode: 'v1', device_id: 'SK3E14001756', lock_name: 'SK3E14001756', bluetooth_key: 'guest-key-abc', key_id: 'key-1', guest_pin: '4455667', valid_from: '2026-10-16T14:25:00+00:00', valid_until: '2026-10-16T15:55:00+00:00' });
+    const repo = await repository();
+    const access = await repo.getStopLockBluetoothKey('unit:483954');
+    expect(access).toMatchObject({ lockName: 'SK3E14001756', key: 'guest-key-abc', keyId: 'key-1', guestPin: '4455667', validUntil: '2026-10-16T15:55:00+00:00' });
+    const call = calls.at(-1)!;
+    expect(call.url).toBe('http://cms.test/api/tour/v1/properties/3539/locks/bluetooth-key');
+    expect(JSON.parse(String(call.init.body))).toEqual({ stop_id: 'unit:483954' });
+    answer = () => json(422, { success: false, error: { code: 'lock_unsupported', message: 'This lock opens with a door code, not over Bluetooth.' } });
+    await expect(repo.getStopLockBluetoothKey('unit:1')).rejects.toMatchObject({ code: 'lock_unsupported', status: 422 });
+    answer = () => json(200, { success: true, stop_id: 'unit:1' });
+    await expect(repo.getStopLockBluetoothKey('unit:1')).rejects.toMatchObject({ code: 'malformed_response' });
+  });
+
   it('a network failure is reported as such', async () => {
     answer = () => {
       throw new TypeError('Failed to fetch');

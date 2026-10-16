@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react';
 import { useRepository } from '~/repositories/repositoryContext';
 import { FeatureUnavailableError } from '~/repositories/tourRepository';
+import { unlockOverBluetooth } from '~/services/iglooBle';
 import { success, tap } from '~/services/native';
 import { useApp } from './appContext';
 import { bestMatchUnit, currentStop, markOf, selectedNodes, tourStopViews } from './selectors';
@@ -12,8 +13,10 @@ import { bestMatchUnit, currentStop, markOf, selectedNodes, tourStopViews } from
 export const useAppActions = () => {
   const { state, dispatch, data } = useApp();
   const repository = useRepository();
-  // Door-code requests in flight, by stop: a second tap before the store re-renders must not start a second request.
+  // Lock requests in flight, by stop: a second tap before the store re-renders must not start a second request.
   const lockRequests = useRef(new Set<string>());
+  // The Bluetooth unlock running per stop, so the screen can cancel it (scan, connection or unlock).
+  const bluetoothUnlocks = useRef(new Map<string, AbortController>());
 
   return useMemo(() => {
     const bundle = data.bundle;
@@ -122,6 +125,52 @@ export const useAppActions = () => {
         } finally {
           lockRequests.current.delete(node);
         }
+      },
+
+      /**
+       * The igloohome v1 flow of the legacy app's lock screen: the backend issues the Bluetooth guest key for the
+       * stop (kept for the tour, 90 minutes), then the native igloohome SDK scans for the lock, connects with the
+       * key and unlocks; each phase reaches the screen, every failure is a sentence with a retry. One attempt per
+       * stop at a time; an answer for a property the visitor has left is dropped by the reducer.
+       */
+      unlockWithBluetooth: async (node: string) => {
+        if (!bundle || lockRequests.current.has(node)) return;
+        const propertyId = state.propertyId;
+        const controller = new AbortController();
+        lockRequests.current.add(node);
+        bluetoothUnlocks.current.set(node, controller);
+        try {
+          let key = state.lockKeys[node] ?? null;
+          const stale = key?.validUntil ? Date.parse(key.validUntil) <= Date.now() : false;
+          if (!key || stale) {
+            dispatch({ type: 'lockPhase', node, propertyId, status: 'loading' });
+            key = await repository.getStopLockBluetoothKey(node);
+            if (controller.signal.aborted) return;
+            dispatch({ type: 'lockKeyReady', node, propertyId, key });
+          }
+          await unlockOverBluetooth({
+            lockName: key.lockName,
+            key: key.key,
+            signal: controller.signal,
+            onPhase: (phase) => dispatch({ type: 'lockPhase', node, propertyId, status: phase === 'preparing' ? 'loading' : phase })
+          });
+          dispatch({ type: 'lockUnlocked', node, propertyId });
+          void success();
+        } catch (error) {
+          if (controller.signal.aborted) {
+            dispatch({ type: 'lockPinDismiss' });
+            return;
+          }
+          dispatch({ type: 'lockPinFailed', node, propertyId, message: messageOf(error, 'The lock could not be opened. Please try again.') });
+        } finally {
+          lockRequests.current.delete(node);
+          if (bluetoothUnlocks.current.get(node) === controller) bluetoothUnlocks.current.delete(node);
+        }
+      },
+
+      /** Stops the Bluetooth attempt for a stop (the plugin is reset) and clears its status. */
+      cancelBluetoothUnlock: (node: string) => {
+        bluetoothUnlocks.current.get(node)?.abort();
       },
 
       findRoute: async () => {

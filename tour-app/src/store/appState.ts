@@ -1,4 +1,4 @@
-import type { LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
+import type { LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
 import type { Overlay, Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
 
@@ -53,12 +53,15 @@ export interface AuthState {
   error: string | null;
 }
 
-/** The door-code request in flight (or the one that failed) for a stop; cleared once a code arrives. */
+/** What a smart-lock request is doing for a stop: fetching a code or key (`loading`), the Bluetooth phases, or why it failed. */
+export type LockRequestStatus = 'loading' | 'scanning' | 'connecting' | 'unlocking' | 'error';
+
+/** The lock request in flight (or the one that failed) for a stop; cleared once a code arrives or the lock opened. */
 export interface LockRequestState {
   node: string;
   /** The property the request was made for: an answer for another property is dropped. */
   propertyId: number | null;
-  status: 'loading' | 'error';
+  status: LockRequestStatus;
   error: string | null;
 }
 
@@ -85,6 +88,8 @@ export interface AppState {
   unlockDrag: number;
   /** Door codes issued for this tour, by stop node (kept until the next tour, property change or sign-out). */
   lockPins: Record<string, LockPin>;
+  /** Bluetooth guest keys issued for this tour, by stop node: memory only (never persisted), dropped with the tour. */
+  lockKeys: Record<string, LockBluetoothKey>;
   lockRequest: LockRequestState | null;
   notes: Record<string, string>;
   noteDraft: string;
@@ -140,6 +145,7 @@ export const initialAppState = (): AppState => ({
   unlocked: {},
   unlockDrag: 0,
   lockPins: {},
+  lockKeys: {},
   lockRequest: null,
   notes: {},
   noteDraft: '',
