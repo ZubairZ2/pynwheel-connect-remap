@@ -9,7 +9,7 @@ step: `tour-app-igloo-integration.md` (the v2 / v3 door-code flows, October 16).
 | | |
 |---|---|
 | Original branch | `feature/legacy-app-in-repo` at `c50752d2e` |
-| New branch | `feature/igloo-bluetooth-capacitor-plugin` |
+| New branch | `feature/igloo-bluetooth-capacitor-plugin` — merged into `feature/legacy-app-in-repo` (PR #27) and into `main` (PR #28, which also brought the vendored legacy app to `main`) on October 17, 2026 |
 | Base verified | `git merge-base --is-ancestor feature/legacy-app-in-repo HEAD` → yes; `main` is an ancestor too |
 | Uncommitted work preserved | the owner's `tour-app/ios/App/App.xcodeproj/project.pbxproj`, `Info.plist`, `.DS_Store`, `db_compat_audit/` and the two reference HTML files are untouched and not part of this work |
 

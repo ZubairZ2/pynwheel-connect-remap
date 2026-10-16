@@ -86,5 +86,3 @@ latest.dump*
 .ruby-lsp/
 artifacts/
 
-# Legacy React Native tour app: kept only on branch feature/legacy-app-in-repo, never merged to main
-pyn-tour-old/

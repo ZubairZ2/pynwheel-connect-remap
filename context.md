@@ -1147,7 +1147,7 @@ legacy reference `LEGACY_APP_CONTEXT.md`).
 
 ## 34. igloohome v1 Bluetooth in the Tour App — implementation knowledge (October 17, 2026)
 
-Branch `feature/igloo-bluetooth-capacitor-plugin` (PYN_CONNECT_PROGRESS.md §39; report `tour-app-igloo-bluetooth.md`).
+Branch `feature/igloo-bluetooth-capacitor-plugin`, merged to `main` on October 17 (PR #28; PYN_CONNECT_PROGRESS.md §39; report `tour-app-igloo-bluetooth.md`). `pyn-tour-old/` is on `main` since the same merge.
 
 - **Where the key comes from**: `IGLOOHOME_API_KEY` is Pynwheel's igloohome *partner* key; `…/v2/locks/:id/ekeys`
   only knows locks enrolled under that partner account. A lock paired to someone's own igloohome app account

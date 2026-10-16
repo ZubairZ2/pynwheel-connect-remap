@@ -1,6 +1,6 @@
 # Pynwheel Tour (legacy React Native app) — context for Claude
 
-This folder (`pyn-tour-old/` at the root of `pynwheel-staging` since October 16, 2026; before that `~/Downloads/pyn-tour-old`) is the **legacy Pynwheel Tour / SelfTour mobile app**: React Native 0.63.3, React 16.13, Redux + redux-persist, react-navigation v4 (stack), Firebase Crashlytics. Clone of `github.com/jencyphers/PynwheelReactNative-ST`. First commit April 2020, last commit July 2026 (API level 35 / 16 KB page size work).
+This folder (`pyn-tour-old/` at the root of `pynwheel-staging`, on `main` since October 17, 2026; before that `~/Downloads/pyn-tour-old`) is the **legacy Pynwheel Tour / SelfTour mobile app**: React Native 0.63.3, React 16.13, Redux + redux-persist, react-navigation v4 (stack), Firebase Crashlytics. Clone of `github.com/jencyphers/PynwheelReactNative-ST`. First commit April 2020, last commit July 2026 (API level 35 / 16 KB page size work).
 
 It is being replaced by the **Capacitor app in `pynwheel-staging/tour-app/`** (branch `feature/tour_app_front_end`), which talks to the new Rails namespace `Api::TourApp::V1` mounted at `/api/tour/v1`. Use this file to understand what the legacy app does, which backend contracts it depends on, and what must be reproduced (or deliberately dropped) in the new app.
 

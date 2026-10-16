@@ -1,14 +1,10 @@
 # Pynwheel Tour (legacy React Native app) — context for Claude
 
-This folder (`pyn-tour-old/` at the root of the `pynwheel-staging` checkout since October 16, 2026; before that `~/Downloads/pyn-tour-old`) is the **legacy Pynwheel Tour / SelfTour mobile app**: React Native 0.63.3, React 16.13, Redux + redux-persist, react-navigation v4 (stack), Firebase Crashlytics. Clone of `github.com/jencyphers/PynwheelReactNative-ST`. First commit April 2020, last commit July 2026 (API level 35 / 16 KB page size work).
+This folder (`pyn-tour-old/` at the root of `pynwheel-staging`, on `main` since October 17, 2026; before that `~/Downloads/pyn-tour-old`) is the **legacy Pynwheel Tour / SelfTour mobile app**: React Native 0.63.3, React 16.13, Redux + redux-persist, react-navigation v4 (stack), Firebase Crashlytics. Clone of `github.com/jencyphers/PynwheelReactNative-ST`. First commit April 2020, last commit July 2026 (API level 35 / 16 KB page size work).
 
-**Where the code lives (owner's decision, October 16, 2026):** the folder is *not* tracked on `main` and must never be merged into it; `pyn-tour-old/` is git-ignored there. The vendored copy exists only on the remote branch `feature/legacy-app-in-repo` (commit `812451753`, "Vendor the legacy Pynwheel Tour React Native app as pyn-tour-old/"). On a fresh clone of `main`, restore it without switching branches:
+**Where the code lives (October 17, 2026):** the folder is tracked on `main` since pull request #28 merged `feature/igloo-bluetooth-capacitor-plugin` (which carried the vendored copy from `feature/legacy-app-in-repo`); the earlier decision to keep it off `main` (October 16) was reversed by that merge, and the `.gitignore` rule that hid it was removed. Two files are still not in git and must be copied in on a fresh clone: the release keystore `android/app/selftour-key.keystore` and the Zerv iOS framework `ios/Zerv_SDK_Library.framework` (its binary embeds Zerv's AWS credentials). The old branch remains as history (commit `812451753`, "Vendor the legacy Pynwheel Tour React Native app as pyn-tour-old/").
 
-```bash
-git fetch origin feature/legacy-app-in-repo && git checkout origin/feature/legacy-app-in-repo -- pyn-tour-old && git restore --staged pyn-tour-old
-```
 
-The release keystore (`android/app/selftour-key.keystore`) is git-ignored on that branch too and has to be copied in separately.
 
 It is being replaced by the **Capacitor app in `pynwheel-staging/tour-app/`** (branch `feature/tour_app_front_end`), which talks to the new Rails namespace `Api::TourApp::V1` mounted at `/api/tour/v1`. Use this file to understand what the legacy app does, which backend contracts it depends on, and what must be reproduced (or deliberately dropped) in the new app.
 
