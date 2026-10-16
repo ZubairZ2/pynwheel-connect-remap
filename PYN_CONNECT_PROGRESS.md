@@ -2328,8 +2328,7 @@ The dual-map verification of October 10 (`svg_map_qa/scripts/verify.mjs`, 31 che
 ## 38. Tour App: Igloo smart locks from the legacy app, Android test APK (October 16, 2026)
 
 Brief `IGLOO_INTEGRATION_mobile_app.md`; report `tour-app-igloo-integration.md`; branch
-`feature/igloo-integration-tour-app`. After the legacy Pynwheel Tour app (`pyn-tour-old`, untracked on `main`, vendored only on the remote
-branch `feature/legacy-app-in-repo`; context in `LEGACY_APP_CONTEXT.md`) had been built on this Mac and had opened the tester's igloohome Smart Keybox 3E
+`feature/igloo-integration-tour-app`. After the legacy Pynwheel Tour app (`pyn-tour-old`, vendored into this repository and on `main` since pull request #28 of October 17; context in `LEGACY_APP_CONTEXT.md`) had been built on this Mac and had opened the tester's igloohome Smart Keybox 3E
 with a code from the CMS's igloohome account (October 15), the same integration was brought to the Capacitor
 app: the stops list reports each stop's lock, `POST /api/tour/v1/properties/:id/locks/pin` issues the legacy
 hourly algoPIN through `IgloohomeLockService` / `IgloohomeIglooworksService`, and the app's unit / amenity
@@ -2354,7 +2353,8 @@ unsupported.
 ## 39. Tour App: igloohome v1 Bluetooth unlock through a native Capacitor plugin (October 17, 2026)
 
 Report `tour-app-igloo-bluetooth.md`; branch `feature/igloo-bluetooth-capacitor-plugin` (from
-`feature/legacy-app-in-repo`). The two vendor SDK binaries the legacy app shipped — Android
+`feature/legacy-app-in-repo`), merged to `main` as PR #28 on October 17, together with the vendored legacy app
+`pyn-tour-old/`; the `.gitignore` rule that had kept that folder off `main` was removed the same day. The two vendor SDK binaries the legacy app shipped — Android
 `pyn-tour-old/android/libs/ble-sdk-release.aar` (`co.igloohome.ble`, minSdk 23, Kotlin + RxJava 2, arm64 / armv7
 native libs) and iOS `pyn-tour-old/ios/IgloohomeSDK.xcframework` (Swift 5.6 module, RxSwift / RxBluetoothKit /
 iOSDFULibrary) — were inspected and wrapped in `tour-app/plugins/igloohome-ble` (`@pynwheel/igloohome-ble`):
