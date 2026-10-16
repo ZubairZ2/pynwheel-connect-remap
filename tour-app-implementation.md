@@ -405,8 +405,8 @@ keystroke instead of 163 ms on this Mac). Report: `tour-app-final-qa-report.md`,
 ## 17. Igloo smart locks: the legacy app's door-code flow in the unlock screen (October 16, 2026)
 
 Brief `IGLOO_INTEGRATION_mobile_app.md`; report `tour-app-igloo-integration.md`; branch
-`feature/igloo-integration-tour-app`. The legacy Pynwheel Tour app (`/Users/zubairzulifqar/pynwheel-staging/pyn-tour-old`,
-context in `LEGACY_APP_CONTEXT.md`) opened the tester's igloohome Smart Keybox 3E with a code issued by the
+`feature/igloo-integration-tour-app`. The legacy Pynwheel Tour app (`/Users/zubairzulifqar/pynwheel-staging/pyn-tour-old`, untracked on `main` and
+vendored only on the remote branch `feature/legacy-app-in-repo`; context in `LEGACY_APP_CONTEXT.md`) opened the tester's igloohome Smart Keybox 3E with a code issued by the
 CMS's igloohome account on October 15; the same flow now runs in this app.
 
 | Area | Change |

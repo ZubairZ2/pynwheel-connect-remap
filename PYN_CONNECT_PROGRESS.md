@@ -2328,8 +2328,8 @@ The dual-map verification of October 10 (`svg_map_qa/scripts/verify.mjs`, 31 che
 ## 38. Tour App: Igloo smart locks from the legacy app, Android test APK (October 16, 2026)
 
 Brief `IGLOO_INTEGRATION_mobile_app.md`; report `tour-app-igloo-integration.md`; branch
-`feature/igloo-integration-tour-app`. After the legacy Pynwheel Tour app (`pyn-tour-old`, context in
-`LEGACY_APP_CONTEXT.md`) had been built on this Mac and had opened the tester's igloohome Smart Keybox 3E
+`feature/igloo-integration-tour-app`. After the legacy Pynwheel Tour app (`pyn-tour-old`, untracked on `main`, vendored only on the remote
+branch `feature/legacy-app-in-repo`; context in `LEGACY_APP_CONTEXT.md`) had been built on this Mac and had opened the tester's igloohome Smart Keybox 3E
 with a code from the CMS's igloohome account (October 15), the same integration was brought to the Capacitor
 app: the stops list reports each stop's lock, `POST /api/tour/v1/properties/:id/locks/pin` issues the legacy
 hourly algoPIN through `IgloohomeLockService` / `IgloohomeIglooworksService`, and the app's unit / amenity
