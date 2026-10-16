@@ -583,26 +583,11 @@ class ToursController < ApplicationController
   def flag_id_mismatch
     if params[:tour_user_id].present?
       tour_user = TourUser.find_by_id params[:tour_user_id]
-      tour_user.update_attributes id_selfie_mismatch: params[:match_status]
       community = Community.find_by_id params[:community]
-      community_email =  community.email
       status = 200
-      message = "ID/Selfie is marked #{params[:match_status] == "true" ? 'Mismatched' : 'Matched' }"
-
-      if tour_user.id_selfie_mismatch
-        name = tour_user.name || tour_user.email.split('@').first.humanize
-
-        email_content = "The photo ID/selfie for #{name} visiting #{community.name} was marked as a mismatch.  Please click on the link below to view.<br><br> <a href='#{manual_selfie_match_url tour_user.id }?community=#{community.id}' target='_blank'> Visitor's ID page</a>"
-        DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk',community,nil,nil,nil,nil,false,nil)
-        if community_email.present?
-          emails = community_email.gsub(" ","").split(',')
-          emails.each do |email|
-            DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, email,community,nil,nil,nil,nil,false,nil)
-          end
-        else
-          DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com',community,nil,nil,nil,nil,false,nil) unless params[:local_testing].present?
-        end
-      end
+      # The flag and the mails live in Visitors::IdReview (shared with Connect, October 2026).
+      message = Visitors::IdReview.flag!(community: community, tour_user: tour_user, mismatch: params[:match_status] == "true",
+                                         review_url: "#{manual_selfie_match_url tour_user.id}?community=#{community.id}", local_testing: params[:local_testing].present?)
     else
       status = 404
     end

@@ -1051,6 +1051,41 @@ Rails.application.routes.draw do
     end
   end
 
+  # Pynwheel Connect: the Tour Setup modules (Stops, Locks, Visitors, Booking)
+  # on their own JSON routes (Connect::BaseController: reads scoped to the
+  # properties the user may see, writes behind the CSRF check and the
+  # PYN_CONNECT_WRITES kill switch). No legacy route or action changes.
+  scope path: 'communities/:community_id/connect', module: 'connect', as: 'connect', defaults: { format: :json } do
+    get    'locks', to: 'locks#index'
+    get    'locks/auto_match', to: 'locks#auto_match_preview'
+    post   'locks/auto_match', to: 'locks#auto_match_apply'
+    put    'locks/map', to: 'locks#map'
+    put    'locks/unmap', to: 'locks#unmap'
+    put    'locks/manual_code', to: 'locks#manual_code'
+    post   'locks/sync', to: 'locks#sync'
+    post   'locks/test', to: 'locks#test'
+    delete 'locks/purge', to: 'locks#purge'
+    put    'locks/enabled', to: 'locks#enabled'
+    get    'stops', to: 'stops#index'
+    put    'stops/:id', to: 'stops#update'
+    get    'visitors', to: 'visitors#index'
+    get    'visitors/export', to: 'visitors#export'
+    post   'visitors/bookings', to: 'visitors#create'
+    put    'visitors/bookings/:id/reschedule', to: 'visitors#reschedule'
+    delete 'visitors/bookings/:id', to: 'visitors#cancel'
+    get    'visitors/:id', to: 'visitors#show'
+    post   'visitors/:id/reset_stops', to: 'visitors#reset_stops'
+    put    'visitors/:id/id_review', to: 'visitors#id_review'
+    put    'visitors/:id/reset_verification', to: 'visitors#reset_verification'
+    put    'visitors/:id/remove_pii', to: 'visitors#remove_pii'
+    delete 'visitors/:id', to: 'visitors#destroy'
+    get    'booking', to: 'booking#show'
+    get    'booking/availability', to: 'booking#availability'
+    put    'booking/rules', to: 'booking#update_rules'
+    put    'booking/hours', to: 'booking#update_hours'
+    put    'booking/form', to: 'booking#update_form'
+  end
+
   # Pynwheel Tour mobile app API (Api::TourApp::V1): the Rails port of the
   # former FastAPI service `tour-api/` (October 7, 2026), same contract. Its
   # own prefix because the legacy `/api/v1/properties` (schedule_tours) is
