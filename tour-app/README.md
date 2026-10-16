@@ -39,7 +39,7 @@ npm run assets       # regenerate icons + splash from assets/logo.png (@capacito
 | Web dir | `dist/` |
 | iOS | `ios/App/App.xcodeproj` — Swift Package Manager (`ios/App/CapApp-SPM`), no CocoaPods |
 | Android | `android/` — Gradle, `minSdk` / `targetSdk` from `android/variables.gradle` |
-| Plugins | app (back button, resume), status-bar, splash-screen, keyboard, haptics, preferences |
+| Plugins | app (back button, resume), status-bar, splash-screen, keyboard, haptics, preferences, `@pynwheel/igloohome-ble` (`plugins/igloohome-ble`: the igloohome Bluetooth SDK for v1 locks) |
 
 ## Dummy data
 
@@ -53,3 +53,8 @@ A stop whose unit or amenity carries an igloohome API or Iglooworks lock in the 
 card instead of the demo slider; the code comes from `POST /api/tour/v1/properties/{id}/locks/pin` (the
 legacy app's hourly algoPIN request, issued by the property's own vendor account on the server). Bluetooth
 locks (igloohome v1, Latch, Zerv) are shown as unsupported. See `../tour-app-igloo-integration.md`.
+
+Locks in igloohome **v1** mode open over Bluetooth: the backend issues the guest key
+(`POST /api/tour/v1/properties/{id}/locks/bluetooth-key`) and the local plugin `plugins/igloohome-ble`
+drives the vendor SDK (Android `ble-sdk-release.aar`; iOS `IgloohomeSDK.xcframework`, dependencies still
+to be proven). See `../tour-app-igloo-bluetooth.md`.

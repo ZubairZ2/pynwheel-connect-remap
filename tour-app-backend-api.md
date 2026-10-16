@@ -710,3 +710,17 @@ and secret gets one fresh client-credentials token (stored as the service stores
 Tests: `test/controllers/api/tour_app/v1/locks_test.rb` (12) — the whole `api/tour_app/v1` + `services/tour_api`
 suite is 81 runs, 585 assertions, 0 failures. The vendor is answered by a stub of `HTTParty.post` (token +
 PIN); the URLs, headers and bodies asserted are the ones the legacy services send.
+
+## 17. `POST /properties/{id}/locks/bluetooth-key`: the igloohome v1 guest key (October 17, 2026)
+
+Report: `tour-app-igloo-bluetooth.md`. The v1 (Bluetooth) half of the legacy integration, for the Capacitor app's
+native igloohome plugin. Additive; the v2 / v3 endpoint of §16 and the legacy namespaces are unchanged.
+
+| Method · Path | Purpose | Auth | Request | Response | Source | Errors |
+|---|---|---|---|---|---|---|
+| `GET /api/tour/v1/properties/{id}/stops` | a v1 lock with a mapped device is now `lock.supported: true, method: "bluetooth"` | bearer, tour on | — | as §16 | `TourApi::Locks#describe` | as before |
+| `POST /api/tour/v1/properties/{id}/locks/bluetooth-key` | the Bluetooth guest key for one stop | bearer, tour on | `{stop_id}` | `{success, stop_id, provider: "Igloohome", mode: "v1", device_id, lock_name, bluetooth_key, key_id, guest_pin, valid_from, valid_until}` (90 minutes) | `TourApi::Locks#bluetooth_key!` → `IgloohomeService#guest_access_for` (new, public): the legacy partner-API requests, `POST {IGLOOHOME_API_BASE_URL}/v2/locks/:id/ekeys` with the 23-permission list and `…/pin/hourly` (variance 3), header `X-IGLOOCOMPANY-APIKEY` | 422 `invalid_stop` · `no_lock` · `locks_disabled` · `lock_unsupported` (door-code locks, other vendors); 502 `lock_unavailable` (the partner API refused — e.g. a lock not enrolled under Pynwheel's partner account — or is unreachable; the log has property, stop and status only) |
+| `POST /api/tour/v1/properties/{id}/locks/pin` | unchanged, but a v1 lock answers 422 `lock_unsupported` ("opens over Bluetooth") | | | | | |
+
+The key travels to the phone once per tour (the app keeps it in memory, never in storage) and is never logged.
+Tests: `locks_test.rb` is 15 tests; the Tour App API suite 84 runs / 605 assertions / 0 failures.

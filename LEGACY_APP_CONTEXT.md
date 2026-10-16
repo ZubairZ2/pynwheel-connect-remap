@@ -175,3 +175,5 @@ Gotchas when porting:
 * Many legacy endpoints take `token` in the query string; the new API uses headers.
 * `Singleton.js` hides a lot of implicit state (tour type, verification provider, "move to next stop" flags) — look there first when a screen behaves unexpectedly.
 * Lock data only exists for plotted stops; the new map must keep `tour_stops.display_stop` and coordinates populated or locks vanish.
+
+**Update, October 17, 2026:** the Capacitor app now wraps both SDK binaries in `tour-app/plugins/igloohome-ble` and runs the v1 Bluetooth flow through them (`tour-app-igloo-bluetooth.md`); the Android AAR is copied there, the iOS xcframework linked.
