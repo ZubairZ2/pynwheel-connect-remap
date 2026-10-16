@@ -2,7 +2,9 @@
 
 Brief: `IGLOO_INTEGRATION_mobile_app.md`. Branch: `feature/igloo-integration-tour-app`. Legacy reference:
 `/Users/zubairzulifqar/pynwheel-staging/pyn-tour-old/` (its context file is `LEGACY_APP_CONTEXT.md` at the
-repository root, a copy of `pyn-tour-old/CONTEXT.md`).
+repository root, a copy of `pyn-tour-old/CONTEXT.md`). That folder is untracked and git-ignored on `main`; the
+code is kept only on the remote branch `feature/legacy-app-in-repo`, which is deliberately not merged (see
+`LEGACY_APP_CONTEXT.md` for how to restore it).
 
 The legacy Pynwheel Tour app's working Igloo integration — the Smart Keybox 3E was unlocked with it on
 October 15 against the local CMS — is now in the Capacitor app: the same backend account, the same vendor
@@ -174,7 +176,7 @@ coordinates sit at the tester's phone location in the development database, but 
 leaves 1604 out of Hazel's tour (its legacy path data does not reach floor 16), so the legacy app keeps
 using Floor-Level (3539, unit 101).
 
-### Rebuilding the APKs (October 16, 2026; the legacy app now lives at `pyn-tour-old/` in this repository)
+### Rebuilding the APKs (October 16, 2026; the legacy app is vendored on the remote branch `feature/legacy-app-in-repo` only, never on `main`)
 
 Capacitor app (the deliverable above):
 

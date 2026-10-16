@@ -1144,3 +1144,26 @@ legacy reference `LEGACY_APP_CONTEXT.md`).
   runner`, exported to the process), LAN APK via `tour-app/.env.production.local`
   (`VITE_TOUR_API_URL=http://192.168.8.100:3000`) → `npm run build && npx cap sync android && ./gradlew
   assembleDebug` with JDK 21 (`~/Library/Java/JavaVirtualMachines/jbr-21.0.11`).
+
+## 34. igloohome v1 Bluetooth in the Tour App — implementation knowledge (October 17, 2026)
+
+Branch `feature/igloo-bluetooth-capacitor-plugin` (PYN_CONNECT_PROGRESS.md §39; report `tour-app-igloo-bluetooth.md`).
+
+- **Where the key comes from**: `IGLOOHOME_API_KEY` is Pynwheel's igloohome *partner* key; `…/v2/locks/:id/ekeys`
+  only knows locks enrolled under that partner account. A lock paired to someone's own igloohome app account
+  (the owner's keybox) gets 404 → the API answers 502 `lock_unavailable`. Hazel's four keyboxes are enrolled.
+- **Mode decides the flow**: `igloohomes.version = 'v1'` → `lock.method = 'bluetooth'` → the app's Bluetooth card and
+  `locks/bluetooth-key`; `'igloohome'` / `'iglooworks'` → `method = 'pin'` → `locks/pin`. Switching Hazel between
+  them in the dev DB is one `update igloohomes set version=…`.
+- **The plugin** is a local `file:` package (`tour-app/plugins/igloohome-ble`); `npx cap sync android` writes it into
+  `capacitor.settings.gradle` / `capacitor.build.gradle` (both tracked). AGP 8 refuses a direct `.aar` file
+  dependency inside a library module: the AAR is a `flatDir` artifact and the app's `build.gradle` lists the
+  plugin's `libs` folder, because Gradle resolves a project dependency's artifacts with the consumer's repositories.
+- **Permissions**: the plugin manifest declares them per Android version; the app manifest removes the SDK's coarse /
+  background location with `tools:node="remove"`. The APK's merged manifest is the place to check (`aapt2 dump badging`).
+- **The legacy unlock arguments** (`unlock(now, now)`) are kept on purpose; nothing about the SDK's second argument is
+  documented, and the legacy app shipped with it.
+- **Emulators** cannot run the SDK (no x86 slice) and have no Bluetooth; only a phone proves the flow.
+- **iOS**: `plugins/igloohome-ble/ios/IgloohomeSDK.xcframework` is a symlink into `pyn-tour-old/ios`; the Swift
+  plugin compiles without the SDK (`#if canImport`) so a build never breaks on it. The app's `CapApp-SPM` package
+  was not touched (the owner has uncommitted iOS project changes).

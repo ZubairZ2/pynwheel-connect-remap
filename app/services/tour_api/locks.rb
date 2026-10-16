@@ -16,12 +16,18 @@ module TourApi
   #   top of the property's current hour for three hours, named after the
   #   lock's stop.
   #
-  # Igloohome v1 (Bluetooth guest keys through the native igloohome SDK) and
-  # the other vendors (Latch, Zerv, Dwelo, EdgeState, Manual) are reported as
-  # present but not supported: this app has no native lock SDK.
+  # * `bluetooth_key!` issues the igloohome v1 guest access for one stop the
+  #   way the legacy tour start did (`IgloohomeService#assign_guest_bluetooth_key`):
+  #   a Bluetooth guest key from Pynwheel's partner account, 90 minutes from
+  #   now, plus the backup hourly PIN. The app opens the lock with the key
+  #   through the native igloohome SDK (the Capacitor plugin, October 2026).
+  #
+  # The other vendors (Latch, Zerv, Dwelo, EdgeState, Manual) are reported as
+  # present but not supported: this app has no SDK for them.
   module Locks
     PIN_MODES = %w[igloohome iglooworks].freeze
     PIN_HOURS = 3
+    KEY_MINUTES = 90
     STOP_ID = /\A(unit|amenity):(\d+)\z/
 
     # The property's igloohome account and its lock rows, read once for a stops list.
@@ -68,7 +74,7 @@ module TourApi
         mode: mode,
         method: method,
         device_id: device_id,
-        supported: igloo && PIN_MODES.include?(mode) && device_id.present? && index.community.enable_locks ? true : false
+        supported: igloo && (PIN_MODES.include?(mode) || mode == 'v1') && device_id.present? && index.community.enable_locks ? true : false
       }
     end
 
@@ -78,6 +84,7 @@ module TourApi
       raise ApiError.unprocessable('no_lock', 'This stop has no smart lock.') unless lock
       raise ApiError.unprocessable('locks_disabled', 'Smart locks are turned off for this property.') unless community.enable_locks
       raise ApiError.unprocessable('lock_unsupported', unsupported_message(lock)) unless lock[:supported]
+      raise ApiError.unprocessable('lock_unsupported', 'This lock opens over Bluetooth, not with a door code.') unless lock[:method] == 'pin'
 
       target = target_of(record)
       now = Time.now.in_time_zone(community.get_time_zone)
@@ -98,6 +105,47 @@ module TourApi
       }
     end
 
+    # The igloohome v1 guest access for one stop: the Bluetooth guest key and
+    # the backup PIN from the partner API, exactly as the legacy tour start
+    # asked for them. The key travels to the phone once and is never logged.
+    def bluetooth_key!(community, built, stop_id)
+      record = stop_record!(community, built, stop_id)
+      idx = index(community)
+      lock = describe(idx, record)
+      raise ApiError.unprocessable('no_lock', 'This stop has no smart lock.') unless lock
+      raise ApiError.unprocessable('locks_disabled', 'Smart locks are turned off for this property.') unless community.enable_locks
+      raise ApiError.unprocessable('lock_unsupported', unsupported_message(lock)) unless lock[:supported]
+      raise ApiError.unprocessable('lock_unsupported', 'This lock opens with a door code, not over Bluetooth.') unless lock[:method] == 'bluetooth' && lock[:provider] == 'Igloohome'
+
+      target = target_of(record)
+      row = idx.locks[[target.class.name, target.id]]
+      now = Time.now.in_time_zone(community.get_time_zone)
+      access = begin
+        IgloohomeService.new(community, now, nil).guest_access_for(row)
+      rescue StandardError => e
+        Rails.logger.warn("[tour-api] lock key failed property=#{community.id} stop=#{stop_id} #{e.class}")
+        raise ApiError.new(502, 'lock_unavailable', 'The lock service could not be reached. Please try again.')
+      end
+      unless access[:bluetooth_key]
+        Rails.logger.warn("[tour-api] lock key refused property=#{community.id} stop=#{stop_id} status=#{access[:status]}")
+        raise ApiError.new(502, 'lock_unavailable', 'The lock service did not issue a Bluetooth key. Please try again.')
+      end
+
+      {
+        success: true,
+        stop_id: stop_id,
+        provider: 'Igloohome',
+        mode: 'v1',
+        device_id: lock[:device_id],
+        lock_name: lock[:device_id],
+        bluetooth_key: access[:bluetooth_key],
+        key_id: access[:key_id],
+        guest_pin: access[:guest_pin],
+        valid_from: access[:valid_from].strftime('%Y-%m-%dT%H:%M:%S%:z'),
+        valid_until: access[:valid_until].strftime('%Y-%m-%dT%H:%M:%S%:z')
+      }
+    end
+
     # The stop must be on the property's stops list (the same membership the
     # routes use) and be one of this property's records.
     def stop_record!(community, built, stop_id)
@@ -110,9 +158,7 @@ module TourApi
     end
 
     def unsupported_message(lock)
-      if lock[:provider] == 'Igloohome' && lock[:mode] == 'v1'
-        'This igloohome lock opens over Bluetooth, which this app cannot do yet. Ask the leasing office for access.'
-      elsif lock[:provider] == 'Igloohome' && lock[:device_id].nil?
+      if lock[:provider] == 'Igloohome' && lock[:device_id].nil?
         'This stop has no igloohome lock assigned to it yet.'
       elsif lock[:provider] == 'Igloohome'
         'This property\'s igloohome account is not set up for door codes.'

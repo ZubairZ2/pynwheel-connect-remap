@@ -1,7 +1,7 @@
-import type { Amenity, AmenityIcon, Building, GraphNode, LockPin, MapLevel, Property, PropertyListing, Route, RouteLeg, RouteStage, RouteStep, StopLock, TourRoute, TourStopPlace, Unit, WayfindingGraph } from '~/models';
+import type { Amenity, AmenityIcon, Building, GraphNode, LockBluetoothKey, LockPin, MapLevel, Property, PropertyListing, Route, RouteLeg, RouteStage, RouteStep, StopLock, TourRoute, TourStopPlace, Unit, WayfindingGraph } from '~/models';
 import type { StopKind } from '~/models';
 import type { PropertyBundle, StopDistance } from '../tourRepository';
-import type { ApiDistancesResponse, ApiGraph, ApiLeg, ApiLevel, ApiLockPinResponse, ApiMapResponse, ApiNode, ApiPropertyDetail, ApiPropertySummary, ApiRoute, ApiRouteStep, ApiStop, ApiStopLock, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
+import type { ApiDistancesResponse, ApiGraph, ApiLeg, ApiLevel, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiMapResponse, ApiNode, ApiPropertyDetail, ApiPropertySummary, ApiRoute, ApiRouteStep, ApiStop, ApiStopLock, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
 
 /**
  * snake_case API JSON → the camelCase models the screens consume. The only
@@ -42,6 +42,16 @@ export const parseLock = (l: ApiStopLock | null | undefined): StopLock | null =>
     supported: l.supported === true
   };
 };
+
+export const parseLockBluetoothKey = (body: ApiLockBluetoothKeyResponse, now = Date.now()): LockBluetoothKey => ({
+  lockName: str(body.lock_name) || str(body.device_id),
+  key: str(body.bluetooth_key),
+  keyId: strOrNull(body.key_id),
+  guestPin: strOrNull(body.guest_pin),
+  validFrom: strOrNull(body.valid_from),
+  validUntil: strOrNull(body.valid_until),
+  issuedAt: now
+});
 
 export const parseLockPin = (body: ApiLockPinResponse, now = Date.now()): LockPin => ({ pin: str(body.pin), validFrom: strOrNull(body.valid_from), validUntil: strOrNull(body.valid_until), issuedAt: now });
 

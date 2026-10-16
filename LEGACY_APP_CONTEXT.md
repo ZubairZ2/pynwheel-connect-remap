@@ -1,6 +1,14 @@
 # Pynwheel Tour (legacy React Native app) — context for Claude
 
-This folder (`pyn-tour-old/` at the root of `pynwheel-staging` since October 16, 2026; before that `~/Downloads/pyn-tour-old`) is the **legacy Pynwheel Tour / SelfTour mobile app**: React Native 0.63.3, React 16.13, Redux + redux-persist, react-navigation v4 (stack), Firebase Crashlytics. Clone of `github.com/jencyphers/PynwheelReactNative-ST`. First commit April 2020, last commit July 2026 (API level 35 / 16 KB page size work).
+This folder (`pyn-tour-old/` at the root of the `pynwheel-staging` checkout since October 16, 2026; before that `~/Downloads/pyn-tour-old`) is the **legacy Pynwheel Tour / SelfTour mobile app**: React Native 0.63.3, React 16.13, Redux + redux-persist, react-navigation v4 (stack), Firebase Crashlytics. Clone of `github.com/jencyphers/PynwheelReactNative-ST`. First commit April 2020, last commit July 2026 (API level 35 / 16 KB page size work).
+
+**Where the code lives (owner's decision, October 16, 2026):** the folder is *not* tracked on `main` and must never be merged into it; `pyn-tour-old/` is git-ignored there. The vendored copy exists only on the remote branch `feature/legacy-app-in-repo` (commit `812451753`, "Vendor the legacy Pynwheel Tour React Native app as pyn-tour-old/"). On a fresh clone of `main`, restore it without switching branches:
+
+```bash
+git fetch origin feature/legacy-app-in-repo && git checkout origin/feature/legacy-app-in-repo -- pyn-tour-old && git restore --staged pyn-tour-old
+```
+
+The release keystore (`android/app/selftour-key.keystore`) is git-ignored on that branch too and has to be copied in separately.
 
 It is being replaced by the **Capacitor app in `pynwheel-staging/tour-app/`** (branch `feature/tour_app_front_end`), which talks to the new Rails namespace `Api::TourApp::V1` mounted at `/api/tour/v1`. Use this file to understand what the legacy app does, which backend contracts it depends on, and what must be reproduced (or deliberately dropped) in the new app.
 
@@ -167,3 +175,5 @@ Gotchas when porting:
 * Many legacy endpoints take `token` in the query string; the new API uses headers.
 * `Singleton.js` hides a lot of implicit state (tour type, verification provider, "move to next stop" flags) — look there first when a screen behaves unexpectedly.
 * Lock data only exists for plotted stops; the new map must keep `tour_stops.display_stop` and coordinates populated or locks vanish.
+
+**Update, October 17, 2026:** the Capacitor app now wraps both SDK binaries in `tour-app/plugins/igloohome-ble` and runs the v1 Bluetooth flow through them (`tour-app-igloo-bluetooth.md`); the Android AAR is copied there, the iOS xcframework linked.

@@ -405,8 +405,8 @@ keystroke instead of 163 ms on this Mac). Report: `tour-app-final-qa-report.md`,
 ## 17. Igloo smart locks: the legacy app's door-code flow in the unlock screen (October 16, 2026)
 
 Brief `IGLOO_INTEGRATION_mobile_app.md`; report `tour-app-igloo-integration.md`; branch
-`feature/igloo-integration-tour-app`. The legacy Pynwheel Tour app (`/Users/zubairzulifqar/pynwheel-staging/pyn-tour-old`,
-context in `LEGACY_APP_CONTEXT.md`) opened the tester's igloohome Smart Keybox 3E with a code issued by the
+`feature/igloo-integration-tour-app`. The legacy Pynwheel Tour app (`/Users/zubairzulifqar/pynwheel-staging/pyn-tour-old`, untracked on `main` and
+vendored only on the remote branch `feature/legacy-app-in-repo`; context in `LEGACY_APP_CONTEXT.md`) opened the tester's igloohome Smart Keybox 3E with a code issued by the
 CMS's igloohome account on October 15; the same flow now runs in this app.
 
 | Area | Change |
@@ -424,3 +424,24 @@ leaving the screen and a reload, renewed on demand, a vendor refusal shown with 
 unit shown as unsupported, sign-out / sign-in. Android: `artifacts/pynwheel-tour-igloo-test.apk` (debug,
 `com.pynwheel.tour`, API `http://192.168.8.100:3000` from `.env.production.local`) built and inspected, **not run
 on a device** (none connected). Bluetooth locks are out of scope: no native SDK plugin exists in this app.
+
+## 18. igloohome v1 over Bluetooth: the native Capacitor plugin (October 17, 2026)
+
+Report `tour-app-igloo-bluetooth.md`; branch `feature/igloo-bluetooth-capacitor-plugin` (from `feature/legacy-app-in-repo`).
+The v2 / v3 door-code flow of §17 is unchanged; a stop whose lock is an igloohome **v1** lock now opens over
+Bluetooth through the vendor SDK, as the legacy app did.
+
+| Area | Change |
+|---|---|
+| `plugins/igloohome-ble/` (`@pynwheel/igloohome-ble`, a `file:` dependency) | the Capacitor plugin: `src/definitions.ts` (typed methods, events `lockFound` / `scanStopped`, the error codes), `src/web.ts` (`unavailable`, nothing simulated); Android `IgloohomeBlePlugin.java` over the vendored `ble-sdk-release.aar` (scan → connect with the guest key → unlock → disconnect, permission aliases per Android version, timeouts, `LockSession` state machine with JVM tests); iOS `IgloohomeBlePlugin.swift` over `IgloohomeSDK.xcframework` behind `#if canImport` (its SPM dependencies are not yet proven, §8 of the report) |
+| `src/services/iglooBle.ts` | `unlockOverBluetooth`: the legacy lock screen's order over the plugin, phases for the card, `AbortSignal` cancel that resets the plugin, every outcome a `BluetoothUnlockError` with a code and a sentence |
+| `src/repositories/*`, `src/models/inventory.model.ts` | `getStopLockBluetoothKey(node)` → `POST /properties/{id}/locks/bluetooth-key` → `LockBluetoothKey` (lock name, guest key, backup PIN, 90-minute window) |
+| `src/store/*` | `lockKeys` (memory only), the request phases (`loading` → `scanning` → `connecting` → `unlocking`), `lockKeyReady` / `lockPhase` / `lockUnlocked`; `unlockWithBluetooth` / `cancelBluetoothUnlock` in `useAppActions` |
+| `src/screens/LockAccess.tsx`, `StopScreens.tsx`, `App.tsx` | the Bluetooth branch of the existing lock card: Unlock Door → phase + Cancel → "Unlocked — Push Door To Enter" → errors with Try Again; the honest note where the plugin is not compiled in (web, iOS for now) |
+| `android/app/src/main/AndroidManifest.xml`, `android/app/build.gradle` | the SDK's coarse / background location removed; the plugin's `libs` in the app's `flatDir` |
+| Tests | vitest 9 files / 53 tests (new `services/iglooBle.test.ts`, `store/lockBluetooth.test.ts`); plugin JVM tests 4; typecheck and build clean |
+
+`artifacts/pynwheel-tour-igloo-bluetooth-test.apk` (debug, `com.pynwheel.tour`, API `http://192.168.8.100:3000`)
+was built and inspected (SDK classes, plugin class, both native libs, the exact permission set) but **not run on a
+device**: none was connected. The real Bluetooth unlock also needs a lock enrolled under Pynwheel's igloohome
+partner account; the owner's keybox is not (the live key request answered 502 `lock_unavailable`, partner API 404).

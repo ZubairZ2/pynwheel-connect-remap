@@ -2328,8 +2328,8 @@ The dual-map verification of October 10 (`svg_map_qa/scripts/verify.mjs`, 31 che
 ## 38. Tour App: Igloo smart locks from the legacy app, Android test APK (October 16, 2026)
 
 Brief `IGLOO_INTEGRATION_mobile_app.md`; report `tour-app-igloo-integration.md`; branch
-`feature/igloo-integration-tour-app`. After the legacy Pynwheel Tour app (`pyn-tour-old`, context in
-`LEGACY_APP_CONTEXT.md`) had been built on this Mac and had opened the tester's igloohome Smart Keybox 3E
+`feature/igloo-integration-tour-app`. After the legacy Pynwheel Tour app (`pyn-tour-old`, untracked on `main`, vendored only on the remote
+branch `feature/legacy-app-in-repo`; context in `LEGACY_APP_CONTEXT.md`) had been built on this Mac and had opened the tester's igloohome Smart Keybox 3E
 with a code from the CMS's igloohome account (October 15), the same integration was brought to the Capacitor
 app: the stops list reports each stop's lock, `POST /api/tour/v1/properties/:id/locks/pin` issues the legacy
 hourly algoPIN through `IgloohomeLockService` / `IgloohomeIglooworksService`, and the app's unit / amenity
@@ -2350,3 +2350,22 @@ unsupported.
   owner's client, the keybox on Hazel's unit 1604 (door), Hazel's hours and coordinates opened for the legacy app;
   Floor-Level (3539) keeps the keybox on unit 101 for the legacy app (hours / coordinates adjusted on Oct 15); the
   interim staging-Floorplates setup was removed.
+
+## 39. Tour App: igloohome v1 Bluetooth unlock through a native Capacitor plugin (October 17, 2026)
+
+Report `tour-app-igloo-bluetooth.md`; branch `feature/igloo-bluetooth-capacitor-plugin` (from
+`feature/legacy-app-in-repo`). The two vendor SDK binaries the legacy app shipped — Android
+`pyn-tour-old/android/libs/ble-sdk-release.aar` (`co.igloohome.ble`, minSdk 23, Kotlin + RxJava 2, arm64 / armv7
+native libs) and iOS `pyn-tour-old/ios/IgloohomeSDK.xcframework` (Swift 5.6 module, RxSwift / RxBluetoothKit /
+iOSDFULibrary) — were inspected and wrapped in `tour-app/plugins/igloohome-ble` (`@pynwheel/igloohome-ble`):
+scan, connect with the guest key, unlock, disconnect, with typed error codes, per-version permissions, timeouts,
+one operation at a time and cleanup on pause / destroy. The backend gained `POST /api/tour/v1/properties/:id/locks/bluetooth-key`
+(`IgloohomeService#guest_access_for`, the legacy partner-API requests) and reports v1 locks as `method: bluetooth`.
+The app's lock card gained the Bluetooth branch; the v2 / v3 door-code flow is unchanged and was re-verified.
+
+- Tests: Rails 84 runs / 605 assertions / 0 failures; plugin JVM 4 / 0; vitest 53; typecheck and build clean.
+- `artifacts/pynwheel-tour-igloo-bluetooth-test.apk` (debug, API `http://192.168.8.100:3000`) built and inspected,
+  **not device-tested**: no phone or emulator here, and the owner's keybox is not enrolled under Pynwheel's partner
+  account (the partner API answered 404), so a hardware test needs an enrolled lock (Hazel's own four are) and a phone.
+- iOS: plugin source and `Package.swift` written; the SDK's SPM dependencies (igloohome's RxBluetoothKit fork,
+  the Nordic DFU library's module name) remain to be proven; the iOS build answers `unavailable` until then.
