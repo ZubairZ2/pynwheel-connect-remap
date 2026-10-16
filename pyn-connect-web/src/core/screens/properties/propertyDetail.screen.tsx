@@ -7,17 +7,15 @@ import { APP_ROUTES } from '~/config/app/urls';
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
 import { Icon } from '~/core/components/atoms/connect/Icon';
-import { ExternalLinkIcon } from '~/core/components/atoms/Icons';
+import { ChevronRightIcon, ExternalLinkIcon } from '~/core/components/atoms/Icons';
 import { StatusPill } from '~/core/components/atoms/StatusPill';
 import { Switch } from '~/core/components/atoms/Switch';
+import { ConfigCardView } from '~/core/components/molecules/ConfigCard';
 import { DetailSection } from '~/core/components/molecules/DetailSection';
+import { Modal } from '~/core/components/molecules/Modal';
 import { usePropertyDetail } from '~/core/hooks/usePropertyDetail';
 import type { PropertyDetail } from '~/core/models/data/property.data';
-import type {
-  ConfigCard,
-  ConfigRow,
-  ProfileDraft
-} from '~/core/utils/generator/propertyDetail.generator';
+import type { ManageGroup, ProfileDraft } from '~/core/utils/generator/propertyDetail.generator';
 
 const S = CORE_STRINGS.propertyDetail;
 const t = (key: string): string => i18n.t(key);
@@ -55,7 +53,7 @@ const PropertyDetailView = ({ property }: { property: PropertyDetail }) => {
   const view = usePropertyDetail(property);
   const {
     header,
-    manageLinks,
+    manageGroups,
     lifecycle,
     profileGroups,
     profileEditURL,
@@ -98,17 +96,9 @@ const PropertyDetailView = ({ property }: { property: PropertyDetail }) => {
         <p className="bo-detail__subtitle">{header.subtitle}</p>
       </div>
 
-      <DetailSection
-        className="bo-section--bar"
-        icon="compass"
-        title={t(S.manage.title)}
-        subtitle={t(S.manage.subtitle)}
-        action={manageLinks.map((link) => (
-          <Link key={link.id} href={link.href} className="bo-linkbutton">
-            {link.label}
-          </Link>
-        ))}
-      />
+      <DetailSection icon="compass" title={t(S.manage.title)} subtitle={t(S.manage.subtitle)}>
+        <ManageGrid groups={manageGroups} />
+      </DetailSection>
 
       <DetailSection title={t(S.lifecycle.title)} subtitle={`${t(S.lifecycle.current)} ${lifecycle.currentLabel}`}>
         <ol className="bo-steps">
@@ -190,6 +180,11 @@ const PropertyDetailView = ({ property }: { property: PropertyDetail }) => {
                   <div className="bo-products__name">{product.name}</div>
                   <div className="bo-products__metric">{product.metric}</div>
                 </div>
+                {product.embed && (
+                  <button type="button" className="bo-linkbutton bo-linkbutton--small bo-products__embed" onClick={view.openEmbed}>
+                    {t(CORE_STRINGS.embed.button)}
+                  </button>
+                )}
                 <Switch on={product.enabled} label={`${product.name}: ${product.stateLabel}`} />
               </li>
             ))}
@@ -248,13 +243,16 @@ const PropertyDetailView = ({ property }: { property: PropertyDetail }) => {
         </ul>
       </DetailSection>
 
-      <div className="bo-configs">
+      <div className="bo-configs" id="prop-config">
         {configCards.map((card) => (
           <ConfigCardView key={card.id} card={card} />
         ))}
       </div>
 
+      <EmbedMapDialog open={view.embedOpen} onClose={view.closeEmbed} />
+
       <DetailSection
+        id="prop-billing"
         title={t(S.billing.title)}
         subtitle={billing.subtitle}
         action={
@@ -307,82 +305,96 @@ const PropertyDetailView = ({ property }: { property: PropertyDetail }) => {
   );
 };
 
-const ConfigCardView = ({ card }: { card: ConfigCard }) => (
-  <DetailSection
-    className={`bo-section--config${card.id === 'settings' ? ' bo-section--wide' : ''}${card.active ? '' : ' bo-section--off'}${
-      card.active ? ' bo-section--accent-icon' : ' bo-section--neutral-icon'
-    }`}
-    icon={card.icon}
-    title={card.title}
-    subtitle={card.subtitle}
-  >
-    {card.offNote && <div className="bo-offnote">{card.offNote}</div>}
-    <div className={card.groups.length > 1 ? 'bo-configgroups' : undefined}>
-      {card.groups.map((group) => (
-        <div key={group.id} className="bo-configgroup">
-          {group.title && <h4 className="bo-configgroup__title">{group.title}</h4>}
-          {group.rows.map((row) => (
-            <ConfigRowView key={row.label} row={row} />
+/** The design's "Manage This Property" grid: three groups of screens, each item an icon tile, a label, a line and a chevron. */
+export const ManageGrid = ({ groups }: { groups: ManageGroup[] }) => (
+  <div className="bo-manage">
+    {groups.map((group) => (
+      <div key={group.id} className="bo-manage__group">
+        <h4 className="bo-profile__heading">{group.title}</h4>
+        <ul className="bo-manage__list">
+          {group.items.map((item) => (
+            <li key={item.id}>
+              <Link
+                href={item.href}
+                className={`bo-manage__item${item.dim ? ' bo-manage__item--dim' : ''}`}
+                title={item.dim ? `${item.label} · ${t(CORE_STRINGS.manage.productOff)}` : undefined}
+              >
+                <span className="bo-manage__icon" aria-hidden="true">
+                  <Icon name={item.icon} />
+                </span>
+                <span className="bo-manage__text">
+                  <span className="bo-manage__label">
+                    {item.label}
+                    {item.dim && ` · ${t(CORE_STRINGS.manage.productOff)}`}
+                  </span>
+                  <br />
+                  <span className="bo-manage__sub">{item.sub}</span>
+                </span>
+                <span className="bo-manage__chevron" aria-hidden="true">
+                  <ChevronRightIcon />
+                </span>
+              </Link>
+            </li>
           ))}
-        </div>
-      ))}
-    </div>
-    {card.links.length > 0 && (
-      <div className="bo-configlinks">
-        {card.links.map((link) => (
-          <Link key={link.id} href={link.href} className="bo-linkbutton bo-linkbutton--quiet bo-configlinks__link">
-            {link.label}
-          </Link>
-        ))}
+        </ul>
       </div>
-    )}
-  </DetailSection>
-);
-
-/** The design's controls, showing the stored value only (Connect is read-only, so they are disabled). */
-const ConfigRowView = ({ row }: { row: ConfigRow }) => (
-  <div className="bo-configrow" title={row.kind === 'value' ? undefined : t(S.config.readOnly)}>
-    <span className="bo-configrow__label">{row.label}</span>
-    {row.kind === 'toggle' && (
-      <Switch on={row.on} label={`${row.label}: ${t(row.on ? S.products.enabled : S.products.notEnabled)}`} />
-    )}
-    {row.kind === 'value' && <span className="bo-configrow__value">{row.value}</span>}
-    {row.kind === 'input' && (
-      <input
-        className="bo-field bo-configrow__control"
-        value={row.value}
-        placeholder={row.placeholder}
-        aria-label={row.label}
-        readOnly
-        disabled
-      />
-    )}
-    {row.kind === 'date' && (
-      <input
-        type="date"
-        className="bo-field bo-configrow__control"
-        value={row.value ?? ''}
-        aria-label={row.label}
-        readOnly
-        disabled
-      />
-    )}
-    {row.kind === 'select' && (
-      <select
-        className={`bo-field bo-configrow__control${row.narrow ? ' bo-configrow__control--narrow' : ''}`}
-        value={row.value}
-        aria-label={row.label}
-        disabled
-      >
-        {row.options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    )}
+    ))}
   </div>
 );
+
+/**
+ * The design's Embed Map dialog. The Maps product publishes the marketing and
+ * ops map URLs; communities#edit.json does not carry them, so the dialog says
+ * so instead of showing made-up links.
+ */
+const EmbedMapDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+  const E = CORE_STRINGS.embed;
+  const row = (title: string, sub: string) => (
+    <div className="bo-embed__row">
+      <div>
+        <div className="bo-embed__title">{title}</div>
+        <div className="bo-embed__sub">{sub}</div>
+      </div>
+      <div className="bo-embed__url" role="status">
+        {t(E.notAvailable)}
+      </div>
+      <div className="bo-embed__actions">
+        <button type="button" className="bo-linkbutton bo-linkbutton--small" disabled title={t(E.notAvailable)}>
+          {t(E.copyUrl)}
+        </button>
+        <button type="button" className="bo-linkbutton bo-linkbutton--small" disabled title={t(E.notAvailable)}>
+          {t(E.copyCode)}
+        </button>
+        <button type="button" className="bo-linkbutton bo-linkbutton--small" disabled title={t(E.notAvailable)}>
+          {t(E.open)}
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <Modal
+      open={open}
+      title={t(E.title)}
+      subtitle={t(E.subtitle)}
+      width={620}
+      onClose={onClose}
+      closeLabel={t(E.close)}
+      dismissOnBackdrop
+      footer={
+        <button type="button" className="bo-btn bo-btn--secondary" onClick={onClose}>
+          {t(E.close)}
+        </button>
+      }
+    >
+      <div className="bo-embed">
+        <div className="bo-offnote">{t(E.unavailable)}</div>
+        {row(t(E.marketing), t(E.marketingSub))}
+        {row(t(E.ops), t(E.opsSub))}
+      </div>
+    </Modal>
+  );
+};
 
 /** The design's inline Edit Details form. It edits a local draft only. */
 const ProfileForm = ({

@@ -10,7 +10,7 @@ import {
   generateInventoryHref,
   generateInventorySummary,
   generateLifecycle,
-  generateManageLinks,
+  generateManageGroups,
   generatePartners,
   generateProductCards,
   generateProfileDraft,
@@ -31,7 +31,7 @@ export const usePropertyDetail = (property: PropertyDetail) => {
   const view = useMemo(
     () => ({
       header: generatePropertyHeader(property),
-      manageLinks: generateManageLinks(property),
+      manageGroups: generateManageGroups(property),
       lifecycle: generateLifecycle(property),
       profileGroups: generateProfileGroups(property),
       profileEditURL: generateProfileEditURL(property),
@@ -49,9 +49,14 @@ export const usePropertyDetail = (property: PropertyDetail) => {
   const [profileDraft, setProfileDraft] = useState<ProfileDraft | null>(null);
   const [ratesDraft, setRatesDraft] = useState<RatesDraft | null>(null);
   const [notice, setNotice] = useState<'profile' | 'rates' | null>(null);
+  const [embedOpen, setEmbedOpen] = useState(false);
 
   return {
     ...view,
+    /** The Embed Map dialog. It only explains that the URLs are not exposed to Connect yet. */
+    embedOpen,
+    openEmbed: () => setEmbedOpen(true),
+    closeEmbed: () => setEmbedOpen(false),
     profileDraft,
     editProfile: () => {
       setNotice(null);

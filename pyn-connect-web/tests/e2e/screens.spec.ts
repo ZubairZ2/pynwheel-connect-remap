@@ -6,6 +6,7 @@ import { expect, test, type Page } from '@playwright/test';
  */
 const SCREENS: Array<[string, string]> = [
   ['dashboard', 'Sessions Right Now'],
+  ['launchBoard', 'launches across 7 stages'],
   ['companyDetail', 'Portfolio Groups'],
   ['companyRegions', 'Add Region'],
   ['companyGroups', 'Portfolio Groups'],

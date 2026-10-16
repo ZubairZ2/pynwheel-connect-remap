@@ -1167,3 +1167,34 @@ Branch `feature/igloo-bluetooth-capacitor-plugin`, merged to `main` on October 1
 - **iOS**: `plugins/igloohome-ble/ios/IgloohomeSDK.xcframework` is a symlink into `pyn-tour-old/ios`; the Swift
   plugin compiles without the SDK (`#if canImport`) so a build never breaks on it. The app's `CapApp-SPM` package
   was not touched (the owner has uncommitted iOS project changes).
+
+## 35. Connect: the October 13 Back Office design (October 17, 2026)
+
+Branch `feature/new-cms-design-oct-17`; PYN_CONNECT_PROGRESS.md §40. Frontend only (no Rails / API / schema change).
+
+- **Reading a Claude Design project without a signed-in browser pane:** the `.dc.html` files come back base64 from
+  `POST /design/anthropic.omelette.api.v1alpha.OmeletteService/GetFile` `{projectId, path}` in the user's Chrome
+  (`ListFiles` lists them). The Back Office file is 1.2 MB (650 KB DOM snapshot + 540 KB `text/x-dc` logic); the
+  Tours module is a separate `TourModule.dc.html`. Posting the text to a local receiver is refused by the auto-mode
+  classifier; stash it in `localStorage` and read it through a scratch tab's `<pre>` with `get_page_text` in 48 KB
+  slices. `javascript_tool` truncates at ~1 KB and redacts anything that looks like a query string.
+- **Navigation model:** `NAV_GROUP` maps every property page (Tours, Integrations, Pricing Calculator, Favorites,
+  Resident Access, Live Chat, Product Setup) to `properties`; the old top-level URLs stay routable but are out of the
+  sidebar. `activeNavId` lights Launch Board for `/launch-board`.
+- **Property-scoped demo pages:** `PropertyScopedDemoPage` (server) loads the breadcrumb name through
+  `loadPropertyCrumb` (communities#edit.json for numeric ids, `SEED_PROPS` for slugs) and wraps the existing demo
+  screen in `PropertyPageFrame`; a demo slug goes through `PropertyScope`, a real id keeps the screen's own demo
+  picker and shows a note. `PropertyPreselect` is no longer used by a page.
+- **Tours page = the real Tour Setup screen** with `TourTab` widened to `overview | stops | elevators | routing |
+  visitors | chat | settings`; `useTourSetup(map, initialTab)`; the page reads `?tab=`. The Overview checklist
+  derives from `StopCard.plotted`, `ElevatorCard.gated`, `lockLabel` and `startPoints.missing`; the Settings rail's
+  "Route & navigation" rows come from `graph.settings` and `graph.tour`. Publish, live sessions, bookings and
+  scheduling settings are not in the CMS JSON and are shown as unavailable / demo.
+- **Launch Board** is pure demo (`data/mock/launchBoard.mock.ts`, "today" = `LB_TODAY`); state is React-local
+  (`useLaunchBoard`), not the Redux demo slice, so nothing leaks into other screens. Swap the fixture for a repository
+  read when the CMS gains a launch pipeline; the generator and screen take the same shapes.
+- **Verification pair for this branch:** launch entries `rails-design-verify` (:3100, `pynwheel_development`) and
+  `connect-design-verify` (:3005 from the working tree with `PYNWHEEL_CMS_URL=http://127.0.0.1:3100`), minted session
+  for `salahudin@pynwheel.com` (user 1854) via `<scratchpad>/mint.rb` (§7 of the progress doc), screenshots via
+  `<scratchpad>/shots.mjs`. Running `next dev` from the working tree works as long as `.next` is removed after a
+  `next build`.

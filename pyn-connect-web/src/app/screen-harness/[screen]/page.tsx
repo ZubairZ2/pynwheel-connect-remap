@@ -19,6 +19,7 @@ import { DashboardScreen } from '~/core/screens/connect/dashboard/dashboard.scre
 import { FavoritesScreen } from '~/core/screens/connect/favorites/favorites.screen';
 import { HelpScreen } from '~/core/screens/connect/help/help.screen';
 import { IntegrationsScreen } from '~/core/screens/connect/integrations/integrations.screen';
+import { LaunchBoardScreen } from '~/core/screens/connect/launchBoard/launchBoard.screen';
 import { LiveChatScreen } from '~/core/screens/connect/liveChat/liveChat.screen';
 import { PartnerConfigScreen } from '~/core/screens/connect/partnerConfig/partnerConfig.screen';
 import { PricingCalculatorScreen } from '~/core/screens/connect/pricingCalculator/pricingCalculator.screen';
@@ -39,6 +40,7 @@ import { UsersScreen } from '~/core/screens/connect/users/users.screen';
 
 const SCREENS: Record<string, () => React.JSX.Element> = {
   dashboard: DashboardScreen,
+  launchBoard: LaunchBoardScreen,
   companyDetail: CompanyDetailScreen,
   companyRegions: CompanyRegionsScreen,
   companyGroups: CompanyGroupsScreen,

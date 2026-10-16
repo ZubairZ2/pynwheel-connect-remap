@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 /** Every URL the sidebar and the ported screens link to. */
 const CONNECT_ROUTES = [
   '/dashboard',
+  '/launch-board',
   '/companies',
   '/companies/alliance',
   '/companies/alliance/regions',
@@ -17,6 +18,13 @@ const CONNECT_ROUTES = [
   '/properties/luxe/tour-setup',
   '/properties/luxe/branding',
   '/properties/luxe/content',
+  '/properties/luxe/setup/touch',
+  '/properties/luxe/setup/maps',
+  '/properties/luxe/integrations',
+  '/properties/luxe/pricing-calculator',
+  '/properties/luxe/favorites',
+  '/properties/luxe/resident-access',
+  '/properties/luxe/live-chat',
   '/scheduling',
   '/integrations',
   '/svg-maps-optimizer',

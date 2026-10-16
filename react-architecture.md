@@ -2799,3 +2799,29 @@ no way to tell a Detect run's proposals from a user's own points.
 `pyn-connect-web/src/app/(connect)/properties/[propId]/map/page.tsx` (`preloadFirstPlan`),
 `pyn-connect-web/src/core/hooks/usePropertyMap.ts` (`planRequest`, the "floor SVGs" effect);
 `performance-audit-report.md`, PYN_CONNECT_PROGRESS.md §37, context.md §32.
+
+### October 17, 2026 — Infrastructure Update: property-scoped pages over demo screens, a page frame, and board state outside the store
+
+**What was missing:**
+§5 (Routing) and §9 (Redux Store) assume every screen either owns its data or reads a slice. The October 13 Back
+Office design moves six screens that still run on the demo data set (Integrations, Pricing Calculator, Favorites,
+Resident Access, Live Chat, Tours) under `/properties/:id/…`, where the id may be a real community or a demo slug,
+and adds a board (the Launch Board) whose state is rich but belongs to one page.
+
+**What was found/implemented:**
+- A server template, `PropertyScopedDemoPage`, resolves the breadcrumb name on the server (`loadPropertyCrumb`: the
+  same `communities#edit.json` read Property Detail makes for a numeric id; the demo seed for a slug) and renders the
+  existing client screen inside `PropertyPageFrame`. Real ids get an explicit note that the screen's data is not this
+  property's yet; demo slugs select the demo property through `PropertyScope`. The screens themselves are untouched,
+  so the later swap to real data is one template change per page.
+- Page-local interactive state (the Launch Board's cards, filters, drawer, drag) lives in a hook with `useState`,
+  not in the demo slice: nothing else reads it, and §9's rule — the store holds what crosses screens — holds.
+  Generators stay pure (`launchBoard.generator.ts` takes the cards and returns columns, stats and the drawer view).
+- A screen that grows tabs beyond its data (the Tours page around the real Tour Setup) widens its local `tab` union
+  and takes the initial tab from the route's `searchParams`, instead of a second screen or a slice field.
+
+**Reference:**
+`pyn-connect-web/src/core/templates/PropertyScopedDemoPage.tsx`, `components/connect/PropertyPageFrame.tsx`,
+`repository/remote/propertyCrumb.server.ts`, `hooks/connect/useLaunchBoard.ts`,
+`utils/generator/connect/launchBoard.generator.ts`, `screens/properties/tourSetup.screen.tsx`;
+PYN_CONNECT_PROGRESS.md §40.

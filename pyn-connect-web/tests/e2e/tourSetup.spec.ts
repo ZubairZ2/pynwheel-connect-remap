@@ -51,6 +51,11 @@ test.describe('Tour Setup (real data)', () => {
     const stopCount = Number((await stopsTab.locator('.bo-tour__tabcount').innerText()).trim());
     expect(stopCount).toBeGreaterThan(0);
 
+    // The page opens on the Overview (Back Office design, Oct 2026): checklist and KPIs from the real tour.
+    await expect(page.getByTestId('tour-overview')).toBeVisible();
+    await expect(page.getByText('Set up the tour')).toBeVisible();
+    await stopsTab.click();
+
     // Stops: cards, reorder, hide, edit, remove, add — all local.
     const stops = page.locator('.bo-tour__stop');
     await expect(stops).toHaveCount(stopCount);
