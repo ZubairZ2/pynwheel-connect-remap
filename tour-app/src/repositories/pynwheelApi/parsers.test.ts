@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ApiGraph, ApiPropertyDetail, ApiRoute, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
-import { amenityIcon, floorLabelOf, parseBundle, parseDistances, parseLock, parseLockPin, parseRoute, parseTourRoute } from './parsers';
+import { amenityIcon, floorLabelOf, parseBundle, parseDistances, parseLock, parseLockBluetoothKey, parseLockPin, parseRoute, parseTourRoute } from './parsers';
 
 const graph: ApiGraph = {
   success: true,
@@ -136,5 +136,10 @@ describe('smart locks', () => {
   it('parseLockPin keeps the code and its window', () => {
     const pin = parseLockPin({ success: true, stop_id: 'unit:101', provider: 'Igloohome', mode: 'igloohome', device_id: 'SK3E14001756', access_name: '101', pin: '221673337', valid_from: '2026-10-16T14:00:00+05:00', valid_until: '2026-10-16T17:00:00+05:00' }, 1000);
     expect(pin).toEqual({ pin: '221673337', validFrom: '2026-10-16T14:00:00+05:00', validUntil: '2026-10-16T17:00:00+05:00', issuedAt: 1000 });
+  });
+
+  it('parseLockBluetoothKey keeps the lock name, the key and the window; the device id stands in for a missing name', () => {
+    const access = parseLockBluetoothKey({ success: true, stop_id: 'unit:1', provider: 'Igloohome', mode: 'v1', device_id: 'SK3E14001756', lock_name: '', bluetooth_key: 'k', key_id: null, guest_pin: null, valid_from: null, valid_until: '2026-10-16T15:55:00+00:00' }, 7);
+    expect(access).toEqual({ lockName: 'SK3E14001756', key: 'k', keyId: null, guestPin: null, validFrom: null, validUntil: '2026-10-16T15:55:00+00:00', issuedAt: 7 });
   });
 });

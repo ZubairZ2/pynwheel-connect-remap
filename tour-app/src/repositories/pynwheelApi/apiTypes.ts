@@ -157,6 +157,22 @@ export interface ApiLockPinResponse {
   valid_until: string | null;
 }
 
+/** `POST /properties/{id}/locks/bluetooth-key`: the igloohome v1 guest access (`TourApi::Locks#bluetooth_key!`): the Bluetooth guest key for 90 minutes and the backup PIN. */
+export interface ApiLockBluetoothKeyResponse {
+  success: true;
+  stop_id: string;
+  provider: string;
+  mode: 'v1';
+  device_id: string | null;
+  /** The lock's Bluetooth name the scan must match (the CMS device id). */
+  lock_name: string;
+  bluetooth_key: string;
+  key_id: string | null;
+  guest_pin: string | null;
+  valid_from: string | null;
+  valid_until: string | null;
+}
+
 export interface ApiStopsResponse {
   success: true;
   property_id: number;

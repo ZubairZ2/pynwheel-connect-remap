@@ -4,6 +4,7 @@ import type {
   ConciergeAnswer,
   HelpItem,
   Listing,
+  LockBluetoothKey,
   LockPin,
   MapLevel,
   OnboardingSlide,
@@ -133,6 +134,12 @@ export interface TourRepository {
    * (`no_lock`, `lock_unsupported`, `locks_disabled`, `lock_unavailable`, `invalid_stop`) or a network error.
    */
   getStopLockPin(node: string): Promise<LockPin>;
+  /**
+   * The igloohome v1 guest access for a stop whose lock opens over Bluetooth: the guest key (90 minutes) the native
+   * igloohome SDK presents to the lock, issued by Pynwheel's partner account exactly as the legacy tour start did.
+   * Rejects with the API's reason (`lock_unsupported` for door-code locks, `no_lock`, `lock_unavailable`, …).
+   */
+  getStopLockBluetoothKey(node: string): Promise<LockBluetoothKey>;
   askConcierge(question: string, context: { stopName: string | null }): Promise<string>;
   requestBooking(request: BookingRequest): Promise<{ id: string }>;
   startApplication(unitNode: string): Promise<{ id: string }>;

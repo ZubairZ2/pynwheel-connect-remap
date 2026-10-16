@@ -5,6 +5,7 @@ import { useBackButton, useChrome, useFramed, useNativeSplash } from '~/hooks/us
 import type { Route } from '~/models';
 import { topOverlay, type Overlay } from '~/navigation/screens';
 import { useRepository } from '~/repositories/repositoryContext';
+import { bluetoothUnlockAvailable } from '~/services/iglooBle';
 import { RepositoryProvider, createTourRepository } from '~/repositories/repositoryProvider';
 import type { TourRepository } from '~/repositories/tourRepository';
 import { AppProvider } from '~/store/AppProvider';
@@ -126,12 +127,22 @@ const Shell = () => {
   const onWfSim = useCallback((sim: SimulationState) => dispatch({ type: 'wfSim', sim }), [dispatch]);
   const goTab = (tab: 'home' | 'search' | 'profile') => dispatch({ type: 'navigate', screen: tab });
   // The current stop's smart-lock state: its door code, and the request in flight or failed for it.
-  const lockOf = (node: string) => ({
-    lockPin: state.lockPins[node] ?? null,
-    lockBusy: state.lockRequest?.node === node && state.lockRequest.status === 'loading',
-    lockError: state.lockRequest?.node === node && state.lockRequest.status === 'error' ? state.lockRequest.error : null,
-    onRequestPin: () => void actions.requestLockPin(node)
-  });
+  const lockOf = (node: string) => {
+    const request = state.lockRequest?.node === node ? state.lockRequest : null;
+    return {
+      lockPin: state.lockPins[node] ?? null,
+      lockBusy: request?.status === 'loading',
+      lockError: request?.status === 'error' ? request.error : null,
+      onRequestPin: () => void actions.requestLockPin(node),
+      lockBluetooth: {
+        available: bluetoothUnlockAvailable(),
+        phase: request && request.status !== 'error' ? request.status : null,
+        unlocked: !!state.unlocked[node],
+        onUnlock: () => void actions.unlockWithBluetooth(node),
+        onCancel: () => actions.cancelBluetoothUnlock(node)
+      }
+    };
+  };
   const open = (overlay: Overlay) => dispatch({ type: 'openOverlay', overlay });
   const close = (overlay: Overlay) => dispatch({ type: 'closeOverlay', overlay });
   const has = (overlay: Overlay) => state.overlays.includes(overlay);

@@ -23,6 +23,22 @@ export interface StopLock {
   supported: boolean;
 }
 
+/**
+ * The igloohome v1 guest access the backend issued for a stop's lock: the Bluetooth
+ * guest key the native igloohome SDK presents to the lock (90 minutes), the lock's
+ * Bluetooth name, and the backup keypad PIN the legacy flow fetched with it.
+ * Kept in memory for the tour only, never persisted.
+ */
+export interface LockBluetoothKey {
+  lockName: string;
+  key: string;
+  keyId: string | null;
+  guestPin: string | null;
+  validFrom: string | null;
+  validUntil: string | null;
+  issuedAt: number;
+}
+
 /** A door code the backend issued for a stop's lock: valid from the top of the property's current hour for three hours. */
 export interface LockPin {
   pin: string;
