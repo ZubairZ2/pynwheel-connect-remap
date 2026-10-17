@@ -445,3 +445,103 @@ Bluetooth through the vendor SDK, as the legacy app did.
 was built and inspected (SDK classes, plugin class, both native libs, the exact permission set) but **not run on a
 device**: none was connected. The real Bluetooth unlock also needs a lock enrolled under Pynwheel's igloohome
 partner account; the owner's keybox is not (the live key request answered 502 `lock_unavailable`, partner API 404).
+
+## 19. The Self Tour App design refresh: the Claude Design tour app, tweak by tweak (October 17, 2026)
+
+Brief `app_ui_redesign_17_oct.md`; report `tour-app-design-refresh-report.md`; branch `feature/self-tour-app-design-refresh`
+from `main` (`cf51ffec8`, the merge of PR #30) in the worktree `.claude/worktrees/self-tour-app-design-refresh`. Design reference:
+the Claude Design project `13d18a36-ed41-492e-b118-e69e26e4636a`, file **"Pynwheel Self Tour App.dc.html"** (the live version of
+October 16, 22:40, 4,560 lines, read through the design service's `GetFile` RPC), with `UnlockScreen.dc.html`, the Pynwheel design
+system (`--pw-*` tokens, Manrope, `#0077AE`) and the earlier October 5 bundle (`tour-app.html`) for comparison. **Frontend only:**
+the diff is confined to `tour-app/src/` (plus these docs); no Rails, API, serializer, route, schema or Capacitor-native change, and no
+new request to the CMS.
+
+### The design's Tweaks are runtime demo scenarios
+
+The artifact's Tweaks panel (design-time props) became **Settings › Demo scenarios** (`state.demo`, persisted; `store/scenarios.ts`
+resolves them into view models; `auto` means "whatever the app's own state says"). Every value a scenario invents is marked `*`.
+
+| Tweak in the design | Runtime scenario | What it drives |
+|---|---|---|
+| `confirmTourScenario` (Today · Later this week · Pending approval · Past tour · Missed · Cancelled · No tours) | `demo.tour` | the Home tour-status card (`tourCard`), the profile-confirmation card after sign-in, the check-in sheet, the upcoming list |
+| `locationScenario` (Not asked · Denied · Nearby · At property · Approximate · Offline · Precise off) | `demo.location` + the real `location` state (ask / allow / deny) | the Home location row, the location sheet, which check-in variant opens (`checkinModel`: ready / verify / away / active / uncertain / pending / early) |
+| `idVerified` | `demo.idVerified` or the local Verify Identity flow | the Verified pill, "Verify now", the check-in gate |
+| `agentOnline` | `demo.agentOnline` | the Chat options sheet (AI assistant + "Chat with Maya · Online now"), the AI sheet's agent offer |
+| `upcomingTours` One / Multiple | `demo.upcomingTours` | "+N more tours" on the card and the Upcoming tours list (the booked tour, then the demo extras) |
+| `startingPoints` One / Multiple | `demo.startingPoints` | Before You Start: one entrance, or a choice of the graph's start + entry gates |
+| `buildLayout` (List + map · Map + cards · List / Map tabs · List / Map switch) | `demo.buildLayout` | the four Build Your Tour layouts around the same real `MapView` and stop list |
+
+### Screens and sheets
+
+| Design screen | App | Data |
+|---|---|---|
+| Splash | kept | — |
+| Onboarding (3 slides, points card, Prev / dots / Next, Let's Start) | `OnboardingScreen.tsx` rewritten | legacy slide images |
+| Get Started: email + password → "Does everything look good?" (profile + tour-status card) → Home; Continue as Guest | `GetStartedScreen.tsx` (replaces `LoginScreen.tsx`); `authStep: 'email' | 'confirm'` | **real** login (`POST /auth/login`), real profile; local edits never sent |
+| Home (member): location row, tour card (7 scenarios), property card, links (Upcoming / Book / Completed / Find Shortest Path / AR), how it works; Home (guest): nearby listings, guest card, find-a-property rows | `HomeScreen.tsx` rewritten | real property, real property list; demo listings and tours marked `*` |
+| Schedule Self-Tour + confirmation | `ScheduleScreen.tsx` (new) | local booking (`state.scheduledTour`), never sent |
+| Verify Identity (intro · scan · selfie · card · done) with the CheckpointID wordmark | `VerifyScreen.tsx` (new) | simulated; `state.verified` local |
+| Check-in sheet (7 variants), Before You Start (starting point), Return to Start | `FlowSheets.tsx`, `TourStartScreens.tsx` (new) | starting points from the real graph (`startPoints(bundle)`), the 45-minute door-access window is local |
+| Build Your Tour: real map + pins, floor menu, groups by floor, Add Stops sheet, preview overlay, 4 layouts | `BuildTourScreen.tsx` rewritten; `MapView` gained `pins` / `focusNode` | **real** stops, distances (`POST /stops/distances`) and plans |
+| Guided Navigation: zone pill, Directions from the real route steps, Avoid stairs (`stepFree` re-route), audio guide, Play Route, I've Arrived, skip, safety bar (time left · Leasing · SOS · Report) | `GuidedScreen.tsx` rewritten | **real** `POST /tour-route`, the existing `useSimulationPlayer` |
+| Stop (one screen for units and amenities): lock card, facts, floor plan, photos, narration, reactions, actions, AI concierge, lease pricing / move-in estimate (`*`), Next Stop / Skip | `StopScreen.tsx` (replaces `StopScreens.tsx`); `LockAccess.tsx` **unchanged** | real lock (`pin` / `bluetooth` / unsupported) through the existing flows; the demo slider only on the dummy property |
+| Tour Complete (survey) / Tour Summary (recap, best match, favourites, compare, highlights, follow-up, share, 2nd visit) | `SummaryScreens.tsx` rewritten | local; skipped stops carry a labelled pill and are not counted as visited |
+| Properties (real list; beds / price chips only for demo listings) + Explore | `SearchScreen.tsx` (+ `ExploreScreen`) | **real** `GET /properties`; a real listing's Explore shows what the listing carries and switches the property |
+| Profile (member / guest), Saved units, Tour passes, Settings (+ Demo scenarios), Notifications, History | `ProfileScreen.tsx`, `AccountSheets.tsx` | real user; the rest local |
+| Help, Itinerary, Add stop, Note, Video, Book, AI chat (agent / offline / mic), Apply (details / hold), 360, Share, Call, Chat options, Location, QR, Tour link, Guest gate, Upcoming list, Add units, Preview, Gallery, Skip, SOS, Report | `TourSheets.tsx`, `AccountSheets.tsx`, `FlowSheets.tsx` | local |
+| Kept as they were: Find Shortest Path (Wayfinding), the AR flow (entry row on Home), Play Route, the lock flows | — | real |
+
+Stylesheet: `src/styles/refresh.css` (new, every new screen and sheet) beside `screens.css`, from which the eight replaced blocks
+(onboarding, login, home, profile, build, guided, stop, complete / summary) were removed; `components/ui2.tsx` adds the primitives the
+design needed (Eyebrow, Chip, Segmented, LinkRow, RoundAction, NumberedStep, Callout, TonePill, DemoNote); `Icon.tsx` gained 23 icons.
+Store: `appState.ts` (new types and fields, `STATE_VERSION` 2), `reducer.ts`, `useAppActions.ts`, `scenarios.ts`, `views.ts`,
+`content/demoFixtures.ts` (every demo constant, `DEMO = ' *'`), `navigation/screens.ts` (the new screens and overlays, `backScreenOf`).
+
+### Original assets reused
+
+`src/assets/images/onboard-home.png`, `onboard-wayfinding.png`, `onboard-access.png` (the legacy app's `img_slide1..3`, 748×700) for
+the three onboarding slides instead of the artifact's stock photos; `checkpointid.png` (the legacy CheckpointID wordmark, on a blue badge
+because its glyphs are white) in Verify Identity; the existing `logo.png` / wordmark, the site-plan hero and the community photo
+fallbacks already in `src/assets/images/`.
+
+### Verification
+
+- `npm run typecheck`, `npm run test` (vitest: **10 files / 62 tests**, including the 9 new `scenarios.test.ts` cases), `vite build`: clean.
+- **Dummy data source** (Vite `tour-app-refresh-dummy` on :3015, the browser pane at 375×812): onboarding, Get Started, profile
+  confirmation, Home, Schedule and confirmation, the Verify Identity flow, the Today card and countdown, the check-in sheet, the QR path,
+  Before You Start, Build Your Tour (map focus, preview, Add Stops), route generation, Guided Navigation with the safety bar, Play Route,
+  SOS, amenity and unit stops (slide to unlock, lease pricing, move-in estimate), the Skip sheet, Return to Start, Tour Complete,
+  Tour Summary, Profile, Settings; **all seven tour-status scenarios** on the Home card; **all seven location scenarios** (row + sheet);
+  Agent online (chat options); Multiple upcoming tours (card "+N more" and the list); Multiple starting points (Before You Start);
+  **all four Build layouts**; Properties and Explore (tourable and not); guest mode (guest Home, nearby listings, Explore with plans and
+  amenities, the guest gate, guest Profile, sign-in from the gate); Find Shortest Path (picker, route, Play Route controls, the
+  "pick two different places" validation); the AR flow (QR scan → initializing → Choose AR Stops → AR Live → AR guided stop).
+- **Real API** (Vite `tour-app-refresh` on :3014 → Rails :3000 on `pynwheel_development`, the dev-only verification Super Admin, driven
+  by headless Playwright in the scratchpad because the browser pane cannot be given the account's password): sign-in and the real
+  profile, the 803-property list and search, Explore of a real listing, Schedule (property switch → local booking), the Today card,
+  the check-in sheet "away" (0.3 mi) and "ready" (At property + ID verified) variants, Take a Virtual Tour → Before You Start → Build
+  with **Hazel's seven real stops on its real Floor 1 plan**, `POST /tour-route`, Guided Navigation with the real directions, Play Route
+  on the real plan, the Lobby stop with its Zerv lock, the in-person check-in → Before You Start (door access 45 min) → Build → route →
+  stops 1–3 including unit 1508 with the real igloohome **Get Door Code** card (not pressed: it would issue a live vendor code) and
+  the Skip sheet. Every request stayed on the existing `/api/tour/v1` endpoints (login, properties, property, graph, map, stops,
+  stops/distances, tour-route); 0 console errors. Arbour Place (1601) was also opened: a property without a floor plan renders the
+  "This level has no floor plan in Pynwheel yet" state.
+
+### Bugs found and fixed during verification
+
+Previous pass (dummy): Add Stops ignored stops removed after it first mounted; the shared Sheet's drag handler swallowed clicks on its
+× button; "Avoid stairs" could swap in a route that dropped a stop and reset progress; the summary and completion counted skipped stops
+as visited; the last-tour card hard-coded "5 doors unlocked"; the CheckpointID wordmark was invisible on white.
+This pass (real API and the remaining scenarios): **a signed-in member with no property could never open Explore** (App forced the
+Properties list whenever `propertyId` was null, so a real listing could not be chosen — the design's only way to pick a property);
+Explore › Schedule a Self-Tour on another real property flashed the guest gate (it used the gate action to set `pendingAfterAuth`;
+a dedicated `pendingAfterAuth` action now does it); a stop whose lock the app cannot open (Zerv, Latch, …) showed **"Code accepted —
+push the door to enter"** on in-person tours (now a muted "Staff-assisted door" strip; `LockAccess` untouched); the Upcoming tours list
+ignored the demo tour scenario (it listed only the extras while the card said "+1 more"; it now shows the same tour the card shows,
+and never a missed one); dismissing the guest gate with Keep Browsing kept the pending action, so a later sign-in jumped to Schedule.
+
+### Not done
+
+Device builds (iOS / Android) were not run; the real lock request was not issued on purpose; the design's agent chat, booking, apply,
+hold, verification, survey and share actions stay local (the CMS has no endpoints for them); the Explore hero of a real listing is the
+generic site plan (the listing endpoint carries no image).

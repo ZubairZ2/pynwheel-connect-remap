@@ -1,7 +1,27 @@
 import type { LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
 import { backScreenOf, topOverlay, type Overlay, type Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
-import { initialAppState, initialGuided, initialWayfinding, type AiMessage, type AppState, type LockRequestStatus, type MapView, type PersistedState, type TourMode } from './appState';
+import {
+  initialAppState,
+  initialDemoScenarios,
+  initialGuided,
+  initialSchedule,
+  initialVerify,
+  initialWayfinding,
+  type AiMessage,
+  type AppState,
+  type DemoScenarios,
+  type GuestPropertySource,
+  type LockRequestStatus,
+  type MapView,
+  type PersistedState,
+  type Reaction,
+  type ScheduleDraft,
+  type ScheduledTour,
+  type TourMode,
+  type TourPass,
+  type VerifyStep
+} from './appState';
 
 /**
  * Every state change of the app, in one pure reducer. The async flows
@@ -25,6 +45,16 @@ export type Action =
   | { type: 'loginStart' }
   | { type: 'loginFailed'; message: string }
   | { type: 'loginSucceeded'; user: { name: string; email: string }; propertyId: number | null }
+  | { type: 'confirmProfile' }
+  | { type: 'editProfile'; on: boolean }
+  | { type: 'setProfileField'; field: 'first' | 'last' | 'email' | 'phone'; value: string }
+  | { type: 'authBack' }
+  | { type: 'continueAsGuest' }
+  | { type: 'guestGate'; why: string; pending: AppState['pendingAfterAuth'] }
+  | { type: 'pendingAfterAuth'; pending: AppState['pendingAfterAuth'] }
+  | { type: 'guestSignIn' }
+  | { type: 'guestFound'; via: GuestPropertySource }
+  | { type: 'guestChangeProperty' }
   | { type: 'selectProperty'; propertyId: number }
   | { type: 'sessionExpired'; message: string }
   | { type: 'signOut' }
@@ -40,11 +70,13 @@ export type Action =
   | { type: 'goChooseStops' }
   | { type: 'beginGuided' }
   | { type: 'jumpToStop'; node: string }
-  | { type: 'arrive' }
-  | { type: 'nextStop'; propertyName: string; names: string[]; date: string }
+  | { type: 'arrive'; now: number }
+  | { type: 'nextStop' }
+  | { type: 'finishTour'; entry: TourHistoryEntry; pass: TourPass | null }
   | { type: 'exitStop' }
   | { type: 'unlockDrag'; pct: number }
   | { type: 'unlockRelease'; node: string }
+  | { type: 'demoUnlock'; node: string }
   | { type: 'lockPinStart'; node: string }
   | { type: 'lockPinReady'; node: string; propertyId: number | null; pin: LockPin }
   | { type: 'lockPinFailed'; node: string; propertyId: number | null; message: string }
@@ -56,22 +88,28 @@ export type Action =
   | { type: 'setNoteDraft'; value: string }
   | { type: 'saveNote'; node: string }
   | { type: 'toast'; message: string | null }
-  | { type: 'openAiChat'; context: 'stop' | 'general'; greeting: string }
+  | { type: 'openAiChat'; context: 'stop' | 'general'; greeting: string; mode?: 'ai' | 'agent' }
   | { type: 'setAiInput'; value: string }
   | { type: 'aiAsk'; question: string }
   | { type: 'aiReply'; text: string }
   | { type: 'aiHuman'; text: string }
+  | { type: 'aiMode'; mode: 'ai' | 'agent'; text?: string }
+  | { type: 'aiListening'; on: boolean; input?: string }
   | { type: 'openBook'; day: string; time: string; unit: string }
   | { type: 'setBook'; field: 'day' | 'time' | 'unit'; value: string }
   | { type: 'bookSubmitting' }
   | { type: 'bookDone' }
   | { type: 'openApply'; unit: string }
   | { type: 'pickApplyUnit'; unit: string }
+  | { type: 'applyStep'; step: 'details' | 'hold' }
   | { type: 'applySubmitting' }
   | { type: 'applyDone'; message: string }
-  | { type: 'toggleNotif'; key: 'tours' | 'priceDrops' | 'newUnits' }
+  | { type: 'toggleNotif'; key: keyof AppState['notifs'] }
   | { type: 'toggleHelp'; id: string }
   | { type: 'setSearchQuery'; value: string }
+  | { type: 'setSearchBeds'; value: AppState['searchBeds'] }
+  | { type: 'setSearchPrice'; value: AppState['searchPrice'] }
+  | { type: 'openExplore'; id: string }
   | { type: 'setHistory'; history: TourHistoryEntry[] }
   | { type: 'wfOpenPicker'; which: 'from' | 'to' }
   | { type: 'wfSetEndpoint'; which: 'from' | 'to'; node: string | null; floor: number | null }
@@ -85,13 +123,56 @@ export type Action =
   | { type: 'wfSim'; sim: SimulationState }
   | { type: 'guidedView'; view: MapView }
   | { type: 'guidedSim'; sim: SimulationState }
+  | { type: 'guidedStepFree'; on: boolean }
   | { type: 'setFloor'; level: string; floor: number | null }
   | { type: 'addStop'; node: string }
   | { type: 'tourUpdated'; tour: TourRoute; order: string[] }
   | { type: 'leaveTour' }
-  | { type: 'resetTour' };
+  | { type: 'resetTour' }
+  // ── the design refresh ──
+  | { type: 'setDemo'; patch: Partial<DemoScenarios> }
+  | { type: 'resetDemo' }
+  | { type: 'locAsk'; sheet: 'ask' | 'pick' | 'manage' }
+  | { type: 'locClose' }
+  | { type: 'locLocating' }
+  | { type: 'locLocated' }
+  | { type: 'locDeny' }
+  | { type: 'qrOpen'; mode: 'property' | 'checkin' }
+  | { type: 'linkStep'; step: AppState['linkStep'] }
+  | { type: 'openSchedule'; draft: ScheduleDraft }
+  | { type: 'setSchedule'; patch: Partial<ScheduleDraft> }
+  | { type: 'confirmSchedule'; tour: ScheduledTour }
+  | { type: 'cancelTour' }
+  | { type: 'openVerify'; then: 'start' | null }
+  | { type: 'verifyStep'; step: VerifyStep }
+  | { type: 'verifyConsent' }
+  | { type: 'verifyScanning'; on: boolean }
+  | { type: 'verifyCard'; field: 'number' | 'expiry' | 'zip'; value: string }
+  | { type: 'toggleRequireCard' }
+  | { type: 'verified' }
+  | { type: 'verifyFinish' }
+  | { type: 'openCheckin'; for: string | null }
+  | { type: 'checkIn'; now: number; accessMs: number }
+  | { type: 'extendAccess'; ms: number }
+  | { type: 'goTourStart'; startPointId: string | null; virtual: boolean }
+  | { type: 'setStartPoint'; id: string }
+  | { type: 'continueToBuild'; selectAll: string[] | null }
+  | { type: 'openSkip' }
+  | { type: 'setSkipReason'; reason: string }
+  | { type: 'skipStop'; node: string; reason: string }
+  | { type: 'setReaction'; node: string; reaction: Reaction }
+  | { type: 'toggleFavourite'; node: string }
+  | { type: 'addPhoto'; node: string }
+  | { type: 'toggleCompare'; node: string }
+  | { type: 'holdUnit'; node: string }
+  | { type: 'setLeaseTerm'; term: AppState['leaseTerm'] }
+  | { type: 'toggleAudio' }
+  | { type: 'narration'; node: string | null; base: number; startAt: number | null }
+  | { type: 'setSurvey'; patch: Partial<AppState['survey']> }
+  | { type: 'buildView'; patch: Partial<AppState['build']> };
 
 const without = (overlays: Overlay[], overlay: Overlay) => overlays.filter((o) => o !== overlay);
+const withOnTop = (overlays: Overlay[], overlay: Overlay) => [...without(overlays, overlay), overlay];
 
 const firstView = (tour: TourRoute | null): MapView | null => {
   const stage = tour?.segments[0]?.route.stages[0] ?? tour?.route.stages[0];
@@ -103,18 +184,86 @@ const segmentView = (tour: TourRoute | null, index: number): MapView | null => {
   return stage ? { level: stage.level, floor: stage.floor } : firstView(tour);
 };
 
+/** Everything that belongs to one property's tour: cleared when the property changes. */
+const propertyScoped = (): Partial<AppState> => ({
+  selected: {},
+  tourOrder: [],
+  stopIndex: 0,
+  unlocked: {},
+  unlockDrag: 0,
+  lockPins: {},
+  lockKeys: {},
+  lockRequest: null,
+  notes: {},
+  guided: initialGuided(),
+  wayfinding: initialWayfinding(),
+  floorByLevel: {},
+  scheduledTour: null,
+  scheduleDone: false,
+  checkedIn: false,
+  accessEndsAt: null,
+  passStart: null,
+  virtualTour: false,
+  startPointId: null,
+  reactions: {},
+  photos: {},
+  favourites: {},
+  visitedAt: {},
+  compare: {},
+  holds: {},
+  skipped: {},
+  build: { mode: 'preset', tab: 'list', expanded: false, focusNode: null, previewNode: null }
+});
+
+/** What a finished or abandoned tour leaves behind: the next tour starts clean. */
+const tourScoped = (): Partial<AppState> => ({
+  selected: {},
+  tourOrder: [],
+  stopIndex: 0,
+  unlocked: {},
+  unlockDrag: 0,
+  lockPins: {},
+  lockKeys: {},
+  lockRequest: null,
+  guided: initialGuided(),
+  checkedIn: false,
+  accessEndsAt: null,
+  passStart: null,
+  virtualTour: false,
+  skipped: {},
+  survey: { stars: 0, unit: null, nps: null }
+});
+
+const toStop = (state: AppState, index: number): AppState => ({
+  ...state,
+  stopIndex: index,
+  screen: 'guided',
+  overlays: [],
+  unlockDrag: 0,
+  guided: { ...state.guided, view: segmentView(state.guided.tour, index), sim: initialSimulationState(state.guided.sim.mode) }
+});
+
 export const reducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
     case 'hydrate': {
-      const next = { ...state, ...action.state, auth: { status: 'idle' as const, error: null } };
+      const next: AppState = { ...state, ...action.state, auth: { status: 'idle', error: null } };
       // A simulation that was playing resumes paused; overlays never persist.
-      next.wayfinding = { ...next.wayfinding, status: 'idle', sim: { ...next.wayfinding.sim, status: next.wayfinding.sim.status === 'playing' ? 'paused' : next.wayfinding.sim.status } };
-      next.guided = { ...next.guided, status: next.guided.tour ? 'ready' : 'idle', sim: { ...next.guided.sim, status: next.guided.sim.status === 'playing' ? 'paused' : next.guided.sim.status } };
+      next.wayfinding = { ...initialWayfinding(), ...next.wayfinding, status: 'idle', sim: { ...next.wayfinding.sim, status: next.wayfinding.sim.status === 'playing' ? 'paused' : next.wayfinding.sim.status } };
+      next.guided = { ...initialGuided(), ...next.guided, status: next.guided.tour ? 'ready' : 'idle', sim: { ...next.guided.sim, status: next.guided.sim.status === 'playing' ? 'paused' : next.guided.sim.status } };
       next.overlays = [];
       next.toast = null;
       next.lockRequest = null;
       next.lockPins = next.lockPins ?? {};
       next.lockKeys = {};
+      next.demo = { ...initialDemoScenarios(), ...(next.demo ?? {}) };
+      next.notifs = { ...initialAppState().notifs, ...(next.notifs ?? {}) };
+      next.authStep = 'email';
+      next.location = { ...state.location, sheet: null, locating: false };
+      next.verify = initialVerify();
+      // An access window that ended while the app was closed is over.
+      if (next.accessEndsAt != null && next.accessEndsAt <= Date.now()) {
+        next.checkedIn = false;
+      }
       return next;
     }
     case 'navigate':
@@ -122,7 +271,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'back': {
       const top = topOverlay(state.overlays);
       if (top) return { ...state, overlays: without(state.overlays, top) };
-      const target = backScreenOf(state.screen, state.tourMode);
+      const target = backScreenOf(state.screen, state.tourMode, { checkedIn: state.checkedIn, virtualTour: state.virtualTour });
       return target ? { ...state, screen: target } : state;
     }
     case 'openOverlay':
@@ -135,13 +284,13 @@ export const reducer = (state: AppState, action: Action): AppState => {
     }
     case 'splashDone':
       if (state.screen !== 'splash') return state;
-      return { ...state, screen: state.signedIn ? 'home' : 'onboarding' };
+      return { ...state, screen: state.signedIn || state.guest ? 'home' : 'onboarding' };
     case 'onboardNext':
-      return state.onboardIndex >= action.count - 1 ? { ...state, screen: 'login' } : { ...state, onboardIndex: state.onboardIndex + 1 };
+      return state.onboardIndex >= action.count - 1 ? { ...state, screen: 'getStarted', authStep: 'email' } : { ...state, onboardIndex: state.onboardIndex + 1 };
     case 'onboardPrev':
       return { ...state, onboardIndex: Math.max(0, state.onboardIndex - 1) };
     case 'skipOnboard':
-      return { ...state, screen: 'login' };
+      return { ...state, screen: 'getStarted', authStep: 'email' };
     case 'setEmail':
       return { ...state, email: action.value };
     case 'setPassword':
@@ -151,15 +300,41 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'loginFailed':
       return { ...state, auth: { status: 'error', error: action.message } };
     case 'loginSucceeded':
-      return { ...state, screen: action.propertyId != null ? 'home' : 'search', signedIn: true, user: action.user, propertyId: action.propertyId, password: '', auth: { status: 'idle', error: null } };
+      // The design confirms the profile ("Does everything look good?") before Home.
+      return { ...state, screen: 'getStarted', authStep: 'confirm', signedIn: true, guest: false, guestProperty: null, user: action.user, propertyId: action.propertyId, password: '', editingProfile: false, auth: { status: 'idle', error: null } };
+    case 'confirmProfile': {
+      const pending = state.pendingAfterAuth;
+      const screen: Screen = state.propertyId == null ? 'search' : pending === 'schedule' ? 'schedule' : 'home';
+      const overlays: Overlay[] = state.propertyId != null && pending === 'book' ? ['book'] : state.propertyId != null && pending === 'upcoming' ? ['upcoming'] : state.propertyId != null && pending === 'history' ? ['history'] : [];
+      return { ...state, screen, overlays, authStep: 'email', editingProfile: false, pendingAfterAuth: null, guestGateWhy: null, scheduleDone: false };
+    }
+    case 'editProfile':
+      return { ...state, editingProfile: action.on };
+    case 'setProfileField':
+      return { ...state, profileEdits: { ...state.profileEdits, [action.field]: action.value } };
+    case 'authBack':
+      if (state.authStep === 'confirm') return { ...state, authStep: 'email', editingProfile: false };
+      return state.guest ? { ...state, screen: 'home', pendingAfterAuth: null, guestGateWhy: null } : { ...state, screen: 'onboarding' };
+    case 'continueAsGuest':
+      return { ...state, screen: 'home', overlays: [], guest: true, guestProperty: null, pendingAfterAuth: null, guestGateWhy: null, scheduledTour: null };
+    case 'pendingAfterAuth':
+      return { ...state, pendingAfterAuth: action.pending };
+    case 'guestGate':
+      return { ...state, overlays: withOnTop(state.overlays, 'guestGate'), guestGateWhy: action.why, pendingAfterAuth: action.pending };
+    case 'guestSignIn':
+      return { ...state, screen: 'getStarted', overlays: [], authStep: 'email', auth: { status: 'idle', error: null } };
+    case 'guestFound':
+      return { ...state, guestProperty: action.via, overlays: [] };
+    case 'guestChangeProperty':
+      return { ...state, guestProperty: null };
     case 'selectProperty':
       if (state.propertyId === action.propertyId) return { ...state, screen: 'home', overlays: [], searchQuery: '' };
       // A new property: every tour, route and selection belonged to the old one.
-      return { ...state, propertyId: action.propertyId, screen: 'home', overlays: [], searchQuery: '', selected: {}, tourOrder: [], stopIndex: 0, unlocked: {}, unlockDrag: 0, lockPins: {}, lockKeys: {}, lockRequest: null, notes: {}, guided: initialGuided(), wayfinding: initialWayfinding(), floorByLevel: {} };
+      return { ...state, ...propertyScoped(), propertyId: action.propertyId, screen: state.pendingAfterAuth === 'schedule' ? 'schedule' : 'home', overlays: [], searchQuery: '', pendingAfterAuth: null, exploreId: null };
     case 'sessionExpired':
-      return { ...initialAppState(), screen: 'login', signedIn: false, email: state.email, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, toast: action.message };
+      return { ...initialAppState(), screen: 'getStarted', signedIn: false, email: state.email, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, demo: state.demo, toast: action.message };
     case 'signOut':
-      return { ...initialAppState(), screen: 'login', signedIn: false, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey };
+      return { ...initialAppState(), screen: 'getStarted', signedIn: false, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, demo: state.demo, verified: state.verified };
     case 'toggleStop':
       return { ...state, selected: { ...state.selected, [action.node]: !state.selected[action.node] } };
     case 'selectStops': {
@@ -174,9 +349,9 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'tourCalculating':
       return { ...state, tourMode: action.mode, guided: { ...state.guided, status: 'calculating', error: null } };
     case 'tourReady': {
-      const guided = { status: 'ready' as const, tour: action.tour, error: null, view: firstView(action.tour), sim: initialSimulationState('stop') };
+      const guided = { ...state.guided, status: 'ready' as const, tour: action.tour, error: null, view: firstView(action.tour), sim: initialSimulationState('stop') };
       // A new tour means new door codes, as the legacy app regenerated its lock accesses on every tour start.
-      return { ...state, tourMode: action.mode, tourOrder: action.order, stopIndex: 0, unlocked: {}, lockPins: {}, lockKeys: {}, lockRequest: null, screen: action.mode === 'ar' ? 'arLive' : 'guided', overlays: [], guided };
+      return { ...state, tourMode: action.mode, tourOrder: action.order, stopIndex: 0, unlocked: {}, lockPins: {}, lockKeys: {}, lockRequest: null, skipped: {}, screen: action.mode === 'ar' ? 'arLive' : 'guided', overlays: [], guided };
     }
     case 'tourFailed':
       return { ...state, guided: { ...state.guided, status: 'error', error: action.message } };
@@ -194,32 +369,47 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'goChooseStops':
       return { ...state, screen: 'chooseStops' };
     case 'beginGuided':
-      return { ...state, screen: 'guided', stopIndex: 0, guided: { ...state.guided, view: segmentView(state.guided.tour, 0), sim: initialSimulationState(state.guided.sim.mode) } };
+      return toStop(state, 0);
     case 'jumpToStop': {
       const index = state.tourOrder.indexOf(action.node);
       if (index < 0) return state;
       // Jumping from the itinerary closes it, so the map is visible at once.
-      return { ...state, stopIndex: index, screen: 'guided', overlays: without(state.overlays, 'itinerary'), guided: { ...state.guided, view: segmentView(state.guided.tour, index), sim: initialSimulationState(state.guided.sim.mode) } };
+      return toStop(state, index);
     }
     case 'arrive': {
       const node = state.tourOrder[state.stopIndex];
       if (!node) return state;
-      return node.startsWith('unit:') ? { ...state, screen: 'unlockUnit', unlockDrag: 0 } : { ...state, screen: 'stopDetail' };
+      return { ...state, screen: 'stop', overlays: [], unlockDrag: 0, visitedAt: { ...state.visitedAt, [node]: state.visitedAt[node] ?? action.now } };
     }
     case 'nextStop': {
-      if (state.stopIndex + 1 < state.tourOrder.length) {
-        const index = state.stopIndex + 1;
-        return { ...state, stopIndex: index, screen: 'guided', overlays: [], guided: { ...state.guided, view: segmentView(state.guided.tour, index), sim: initialSimulationState(state.guided.sim.mode) } };
-      }
-      const entry: TourHistoryEntry = { id: `h-${Date.now()}`, property: action.propertyName, date: action.date, tags: action.names };
-      return { ...state, screen: 'tourComplete', overlays: [], journey: { ...state.journey, toured: true }, tourHistory: [entry, ...state.tourHistory] };
+      if (state.stopIndex + 1 < state.tourOrder.length) return toStop(state, state.stopIndex + 1);
+      // The last stop: an in-person tour returns to its starting point first; a virtual tour (and the AR demo) finish at once.
+      if (state.virtualTour || state.tourMode === 'ar') return state; // the action layer dispatches `finishTour`
+      return { ...state, screen: 'tourReturn', overlays: [] };
     }
+    case 'finishTour':
+      return {
+        ...state,
+        ...tourScoped(),
+        screen: 'tourComplete',
+        overlays: [],
+        journey: { ...state.journey, toured: true },
+        tourHistory: [action.entry, ...state.tourHistory],
+        tourPasses: action.pass ? [action.pass, ...state.tourPasses] : state.tourPasses,
+        scheduledTour: state.scheduledTour ? { ...state.scheduledTour, status: 'past' } : null,
+        // The summary still needs the order and what happened on the tour.
+        tourOrder: state.tourOrder,
+        unlocked: state.unlocked,
+        guided: state.guided
+      };
     case 'exitStop':
       return { ...state, screen: state.tourMode === 'ar' ? 'arLive' : 'guided', overlays: [] };
     case 'unlockDrag':
       return { ...state, unlockDrag: Math.max(0, Math.min(100, action.pct)) };
     case 'unlockRelease':
       return state.unlockDrag >= 85 ? { ...state, unlockDrag: 100, unlocked: { ...state.unlocked, [action.node]: true } } : { ...state, unlockDrag: 0 };
+    case 'demoUnlock':
+      return { ...state, unlocked: { ...state.unlocked, [action.node]: true }, unlockDrag: 100 };
     case 'lockPinStart':
       return { ...state, lockRequest: { node: action.node, propertyId: state.propertyId, status: 'loading', error: null } };
     case 'lockPinReady':
@@ -240,7 +430,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
       if (action.propertyId !== state.propertyId) return state;
       return { ...state, unlocked: { ...state.unlocked, [action.node]: true }, lockRequest: null };
     case 'openNote':
-      return { ...state, overlays: [...without(state.overlays, 'note'), 'note'], noteDraft: state.notes[action.node] ?? '' };
+      return { ...state, overlays: withOnTop(state.overlays, 'note'), noteDraft: state.notes[action.node] ?? '' };
     case 'setNoteDraft':
       return { ...state, noteDraft: action.value };
     case 'saveNote':
@@ -248,19 +438,23 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'toast':
       return { ...state, toast: action.message };
     case 'openAiChat':
-      return { ...state, overlays: [...without(state.overlays, 'aiChat'), 'aiChat'], ai: { context: action.context, messages: [{ role: 'ai', text: action.greeting }], input: '', typing: false } };
+      return { ...state, overlays: withOnTop(without(state.overlays, 'chatOptions'), 'aiChat'), ai: { context: action.context, messages: [{ role: 'ai', text: action.greeting }], input: '', typing: false, mode: action.mode ?? 'ai', listening: false } };
     case 'setAiInput':
       return { ...state, ai: { ...state.ai, input: action.value } };
     case 'aiAsk': {
       const message: AiMessage = { role: 'user', text: action.question };
-      return { ...state, ai: { ...state.ai, messages: [...state.ai.messages, message], input: '', typing: true } };
+      return { ...state, ai: { ...state.ai, messages: [...state.ai.messages, message], input: '', typing: true, listening: false } };
     }
     case 'aiReply':
       return { ...state, ai: { ...state.ai, messages: [...state.ai.messages, { role: 'ai', text: action.text }], typing: false } };
     case 'aiHuman':
       return { ...state, ai: { ...state.ai, messages: [...state.ai.messages, { role: 'ai', text: action.text }], typing: false } };
+    case 'aiMode':
+      return { ...state, overlays: state.overlays.includes('aiChat') ? state.overlays : withOnTop(without(state.overlays, 'chatOptions'), 'aiChat'), ai: { ...state.ai, mode: action.mode, messages: action.text ? [...state.ai.messages, { role: 'ai', text: action.text }] : state.ai.messages, typing: false } };
+    case 'aiListening':
+      return { ...state, ai: { ...state.ai, listening: action.on, input: action.input ?? state.ai.input } };
     case 'openBook':
-      return { ...state, overlays: [...without(state.overlays, 'book'), 'book'], book: { day: action.day, time: action.time, unit: action.unit, done: false, submitting: false } };
+      return { ...state, overlays: withOnTop(state.overlays, 'book'), book: { day: action.day, time: action.time, unit: action.unit, done: false, submitting: false } };
     case 'setBook':
       return { ...state, book: { ...state.book, [action.field]: action.value } };
     case 'bookSubmitting':
@@ -268,23 +462,31 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'bookDone':
       return { ...state, book: { ...state.book, submitting: false, done: true }, journey: { ...state.journey, booked: true } };
     case 'openApply':
-      return { ...state, overlays: [...without(state.overlays, 'apply'), 'apply'], applyUnit: action.unit, applySubmitting: false };
+      return { ...state, overlays: withOnTop(state.overlays, 'apply'), applyUnit: action.unit, applySubmitting: false, applyStep: 'details' };
     case 'pickApplyUnit':
       return { ...state, applyUnit: action.unit };
+    case 'applyStep':
+      return { ...state, applyStep: action.step, holds: action.step === 'hold' && state.applyUnit ? { ...state.holds, [state.applyUnit]: true } : state.holds };
     case 'applySubmitting':
       return { ...state, applySubmitting: true };
     case 'applyDone':
-      return { ...state, applySubmitting: false, overlays: without(state.overlays, 'apply'), toast: action.message, journey: { ...state.journey, applied: true } };
+      return { ...state, applySubmitting: false, applyStep: 'details', overlays: without(state.overlays, 'apply'), toast: action.message, journey: { ...state.journey, applied: true } };
     case 'toggleNotif':
       return { ...state, notifs: { ...state.notifs, [action.key]: !state.notifs[action.key] } };
     case 'toggleHelp':
       return { ...state, helpExpanded: { ...state.helpExpanded, [action.id]: !state.helpExpanded[action.id] } };
     case 'setSearchQuery':
       return { ...state, searchQuery: action.value };
+    case 'setSearchBeds':
+      return { ...state, searchBeds: action.value };
+    case 'setSearchPrice':
+      return { ...state, searchPrice: action.value };
+    case 'openExplore':
+      return { ...state, screen: 'explore', overlays: [], exploreId: action.id };
     case 'setHistory':
       return state.historyLoaded ? state : { ...state, tourHistory: action.history, historyLoaded: true };
     case 'wfOpenPicker':
-      return { ...state, wayfinding: { ...state.wayfinding, picker: action.which }, overlays: [...without(state.overlays, 'placePicker'), 'placePicker'] };
+      return { ...state, wayfinding: { ...state.wayfinding, picker: action.which }, overlays: withOnTop(state.overlays, 'placePicker') };
     case 'wfSetEndpoint': {
       const wayfinding = { ...state.wayfinding, result: null, status: 'idle' as const, sim: initialSimulationState(state.wayfinding.sim.mode) };
       if (action.which === 'from') {
@@ -330,6 +532,8 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, guided: { ...state.guided, view: action.view }, floorByLevel: { ...state.floorByLevel, [action.view.level]: action.view.floor } };
     case 'guidedSim':
       return { ...state, guided: { ...state.guided, sim: action.sim } };
+    case 'guidedStepFree':
+      return { ...state, guided: { ...state.guided, stepFree: action.on } };
     case 'setFloor':
       return { ...state, floorByLevel: { ...state.floorByLevel, [action.level]: action.floor } };
     case 'addStop':
@@ -343,8 +547,119 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'leaveTour':
       return { ...state, screen: 'home', overlays: [], unlockDrag: 0 };
     case 'resetTour':
-      return { ...state, screen: 'home', overlays: [], selected: {}, tourOrder: [], stopIndex: 0, unlocked: {}, unlockDrag: 0, lockPins: {}, lockKeys: {}, lockRequest: null, guided: initialGuided() };
+      return { ...state, ...tourScoped(), screen: 'home', overlays: [] };
+
+    // ── the design refresh ──
+    case 'setDemo':
+      return { ...state, demo: { ...state.demo, ...action.patch } };
+    case 'resetDemo':
+      return { ...state, demo: initialDemoScenarios() };
+    case 'locAsk':
+      return { ...state, location: { ...state.location, sheet: action.sheet }, overlays: withOnTop(state.overlays, 'location') };
+    case 'locClose':
+      return { ...state, location: { ...state.location, sheet: null }, overlays: without(state.overlays, 'location') };
+    case 'locLocating':
+      return { ...state, location: { perm: 'on', locating: true, sheet: null }, overlays: without(state.overlays, 'location') };
+    case 'locLocated':
+      return { ...state, location: { ...state.location, locating: false } };
+    case 'locDeny':
+      return { ...state, location: { perm: 'off', locating: false, sheet: null }, overlays: without(state.overlays, 'location') };
+    case 'qrOpen':
+      return { ...state, qrMode: action.mode, overlays: withOnTop(without(without(state.overlays, 'checkin'), 'location'), 'qr') };
+    case 'linkStep':
+      return { ...state, linkStep: action.step, overlays: action.step === 'enter' && !state.overlays.includes('link') ? withOnTop(state.overlays, 'link') : state.overlays };
+    case 'openSchedule':
+      return { ...state, screen: 'schedule', overlays: [], scheduleDone: false, schedule: action.draft };
+    case 'setSchedule':
+      return { ...state, schedule: { ...state.schedule, ...action.patch } };
+    case 'confirmSchedule':
+      return { ...state, scheduledTour: action.tour, scheduleDone: true, checkedIn: false, accessEndsAt: null, overlays: [] };
+    case 'cancelTour':
+      return { ...state, scheduledTour: state.scheduledTour ? { ...state.scheduledTour, status: 'cancelled' } : null, overlays: [], checkinFor: null };
+    case 'openVerify':
+      return { ...state, screen: 'verify', overlays: [], verify: { ...initialVerify(), step: state.verified ? 'done' : 'intro', then: action.then } };
+    case 'verifyStep':
+      return { ...state, verify: { ...state.verify, step: action.step, scanning: false } };
+    case 'verifyConsent':
+      return { ...state, verify: { ...state.verify, consent: !state.verify.consent } };
+    case 'verifyScanning':
+      return { ...state, verify: { ...state.verify, scanning: action.on } };
+    case 'verifyCard':
+      return { ...state, verify: { ...state.verify, card: { ...state.verify.card, [action.field]: action.value } } };
+    case 'toggleRequireCard': {
+      const requireCard = !state.requireCard;
+      // Turning the card off while on the card step completes the check.
+      const onCard = state.verify.step === 'card' && !requireCard;
+      return { ...state, requireCard, verified: onCard ? true : state.verified, verify: onCard ? { ...state.verify, step: 'done' } : state.verify };
+    }
+    case 'verified':
+      return { ...state, verified: true, verify: { ...state.verify, step: 'done', scanning: false } };
+    case 'verifyFinish':
+      return { ...state, screen: 'home', overlays: [], verify: { ...state.verify, then: null } };
+    case 'openCheckin':
+      return { ...state, checkinFor: action.for, overlays: withOnTop(without(state.overlays, 'upcoming'), 'checkin') };
+    case 'checkIn':
+      return {
+        ...state,
+        checkedIn: true,
+        virtualTour: false,
+        accessEndsAt: action.now + action.accessMs,
+        passStart: action.now,
+        overlays: [],
+        scheduledTour: state.scheduledTour && state.scheduledTour.status !== 'past' ? { ...state.scheduledTour, status: 'checkedIn' } : state.scheduledTour
+      };
+    case 'extendAccess':
+      return { ...state, accessEndsAt: Math.max(state.accessEndsAt ?? 0, Date.now()) + action.ms };
+    case 'goTourStart':
+      return { ...state, screen: 'tourStart', overlays: [], virtualTour: action.virtual, startPointId: action.startPointId ?? state.startPointId };
+    case 'setStartPoint':
+      return { ...state, startPointId: action.id };
+    case 'continueToBuild': {
+      const anySelected = Object.values(state.selected).some(Boolean);
+      const selected: Record<string, boolean> = {};
+      (action.selectAll ?? []).forEach((n) => {
+        selected[n] = true;
+      });
+      return { ...state, screen: 'buildTour', overlays: [], selected: anySelected || !action.selectAll ? state.selected : selected, build: { ...state.build, focusNode: null, previewNode: null } };
+    }
+    case 'openSkip':
+      return { ...state, overlays: withOnTop(state.overlays, 'skip'), skipReason: null };
+    case 'setSkipReason':
+      return { ...state, skipReason: action.reason };
+    case 'skipStop': {
+      const skipped = { ...state.skipped, [action.node]: action.reason };
+      const next = { ...state, skipped, overlays: without(state.overlays, 'skip'), skipReason: null };
+      if (state.stopIndex + 1 < state.tourOrder.length) return toStop(next, state.stopIndex + 1);
+      if (state.virtualTour || state.tourMode === 'ar') return next;
+      return { ...next, screen: 'tourReturn' };
+    }
+    case 'setReaction': {
+      const reactions: Record<string, Reaction> = { ...state.reactions };
+      if (reactions[action.node] === action.reaction) delete reactions[action.node];
+      else reactions[action.node] = action.reaction;
+      return { ...state, reactions };
+    }
+    case 'toggleFavourite':
+      return { ...state, favourites: { ...state.favourites, [action.node]: !state.favourites[action.node] } };
+    case 'addPhoto':
+      return { ...state, photos: { ...state.photos, [action.node]: Math.min(4, (state.photos[action.node] ?? 0) + 1) } };
+    case 'toggleCompare':
+      return { ...state, compare: { ...state.compare, [action.node]: !state.compare[action.node] } };
+    case 'holdUnit':
+      return { ...state, holds: { ...state.holds, [action.node]: true } };
+    case 'setLeaseTerm':
+      return { ...state, leaseTerm: action.term };
+    case 'toggleAudio':
+      return { ...state, audioOn: !state.audioOn };
+    case 'narration':
+      return { ...state, narration: { node: action.node, base: action.base, startAt: action.startAt } };
+    case 'setSurvey':
+      return { ...state, survey: { ...state.survey, ...action.patch } };
+    case 'buildView':
+      return { ...state, build: { ...state.build, ...action.patch } };
     default:
       return state;
   }
 };
+
+export { initialSchedule };

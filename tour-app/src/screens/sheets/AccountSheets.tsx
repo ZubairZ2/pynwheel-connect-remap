@@ -1,7 +1,11 @@
+import { DEMO, HOLD_HOURS, MOVE_IN_FEES } from '~/content/demoFixtures';
 import { Icon } from '~/components/Icon';
 import { Button, Sheet, Toggle } from '~/components/ui';
+import { Eyebrow, Segmented } from '~/components/ui2';
 import type { TourHistoryEntry, Unit, Visitor } from '~/models';
+import type { AppState, DemoLocationScenario, DemoScenarios, DemoTourScenario } from '~/store/appState';
 import { unitMeta, unitPrice } from '~/store/selectors';
+import { money, unitFacts, type Profile } from '~/store/views';
 
 interface BookProps {
   open: boolean;
@@ -76,71 +80,201 @@ export const BookSheet = ({ open, propertyName, visitor, days, times, units, val
 
 interface ApplyProps {
   open: boolean;
+  step: 'details' | 'hold';
   units: Unit[];
   bestMatch: string | null;
   selected: string | null;
   submitting: boolean;
+  profile: Profile;
+  verified: boolean;
+  mark: string;
   onPick: (node: string) => void;
-  onSubmit: () => void;
+  onStartHold: () => void;
+  onEsign: () => void;
+  onBack: () => void;
   onClose: () => void;
 }
 
-export const ApplySheet = ({ open, units, bestMatch, selected, submitting, onPick, onSubmit, onClose }: ApplyProps) => (
-  <Sheet open={open} onClose={onClose} title="Apply For A Unit" zIndex={320}>
-    <div className="pw-apply__intro">Choose which unit to apply for. Your best match from this tour is pre-selected.</div>
-    <div className="pw-apply__units">
-      {units.map((u) => {
-        const on = selected === u.node;
-        return (
-          <button key={u.node} type="button" className={`pw-apply__unit${on ? ' pw-apply__unit--on' : ''}`} onClick={() => onPick(u.node)} aria-pressed={on}>
-            <span className="pw-apply__unittext">
-              <span className="pw-apply__unithead">
-                <b>{u.name}</b>
-                {bestMatch === u.node ? <span className="pw-apply__best">Best Match</span> : null}
-              </span>
-              <span className="pw-apply__unitmeta">{unitMeta(u)}</span>
+/** Apply: step one picks the unit (pre-filled from the profile, with the move-in total), step two confirms the local hold and continues to the real application request. */
+export const ApplySheet = ({ open, step, units, bestMatch, selected, submitting, profile, verified, mark, onPick, onStartHold, onEsign, onBack, onClose }: ApplyProps) => {
+  const unit = units.find((u) => u.node === selected) ?? units[0] ?? null;
+  const facts = unit ? unitFacts(unit, mark) : null;
+  const fees = MOVE_IN_FEES.reduce((a, f) => a + f.amount, 0);
+  const total = facts?.rent != null ? money(facts.rent + fees) : null;
+  const holdEnd = new Date(Date.now() + HOLD_HOURS * 3600000);
+  return (
+    <Sheet open={open} onClose={onClose} title={step === 'hold' ? 'Unit on hold' : 'Apply For A Unit'} zIndex={320} size="scroll" className="pw-apply">
+      <div className="pw-apply__progress">
+        <span className="pw-apply__bar pw-apply__bar--on" />
+        <span className={`pw-apply__bar${step === 'hold' ? ' pw-apply__bar--on' : ''}`} />
+      </div>
+      {step === 'details' ? (
+        <>
+          <div className="pw-apply__intro">Choose which unit to apply for. Your best match from this tour is pre-selected.</div>
+          <div className="pw-apply__units">
+            {units.map((u) => {
+              const on = selected === u.node;
+              return (
+                <button key={u.node} type="button" className={`pw-apply__unit${on ? ' pw-apply__unit--on' : ''}`} onClick={() => onPick(u.node)} aria-pressed={on}>
+                  <span className="pw-apply__unittext">
+                    <span className="pw-apply__unithead">
+                      <b>{u.name}</b>
+                      {bestMatch === u.node ? <span className="pw-apply__best">Best Match</span> : null}
+                    </span>
+                    <span className="pw-apply__unitmeta">{unitMeta(u)}</span>
+                  </span>
+                  <span className={`pw-apply__price${on ? ' pw-apply__price--on' : ''}`}>{unitPrice(u)}</span>
+                  <span className={`pw-apply__check${on ? ' pw-apply__check--on' : ''}`}>{on ? <Icon name="check" size={12} color="#fff" strokeWidth={3} /> : null}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="pw-apply__prefill">
+            <div className="pw-apply__prefillhead">
+              <Icon name="shield" size={14} color="var(--pw-live)" strokeWidth={2.2} />
+              {verified ? 'Pre-filled from your verified ID' : 'Pre-filled from your profile'}
+            </div>
+            {(
+              [
+                ['Name', `${profile.first} ${profile.last}`.trim(), ''],
+                ['Phone', profile.phone || '—', ''],
+                ['ID status', verified ? `Verified · CheckpointID${DEMO}` : 'Not verified yet', verified ? 'pw-apply__ok' : 'pw-apply__warn']
+              ] as const
+            ).map(([label, value, cls]) => (
+              <div key={label} className="pw-apply__prefillrow">
+                <Eyebrow>{label}</Eyebrow>
+                <span className={cls}>{value}</span>
+              </div>
+            ))}
+          </div>
+          <div className="pw-apply__facts">
+            {['$50 application fee · takes about 5 minutes *', `Unit held for ${HOLD_HOURS} hours while you apply *`, 'Refundable if not approved *'].map((fact) => (
+              <div key={fact}>
+                <Icon name="check" size={16} color="var(--pw-primary)" strokeWidth={2.5} />
+                {fact}
+              </div>
+            ))}
+          </div>
+          {total ? (
+            <div className="pw-apply__total">
+              <div>
+                <div>Total move-in cost{DEMO}</div>
+                <div>12-mo rent + deposit + fees</div>
+              </div>
+              <b>{total}</b>
+            </div>
+          ) : null}
+          <Button onClick={onStartHold} disabled={!selected}>
+            Start Application
+          </Button>
+        </>
+      ) : (
+        <>
+          <div className="pw-apply__hold">
+            <span className="pw-apply__holdbadge">
+              <Icon name="lock" size={28} color="#fff" strokeWidth={2.6} />
             </span>
-            <span className={`pw-apply__price${on ? ' pw-apply__price--on' : ''}`}>{unitPrice(u)}</span>
-            <span className={`pw-apply__check${on ? ' pw-apply__check--on' : ''}`}>{on ? <Icon name="check" size={12} color="#fff" strokeWidth={3} /> : null}</span>
+            <div className="pw-apply__holdtitle">
+              {unit?.name ?? 'Your unit'} held for {HOLD_HOURS}h · noted in the app{DEMO}
+            </div>
+            <div className="pw-apply__holdsub">Hold ends {holdEnd.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {holdEnd.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</div>
+          </div>
+          <div className="pw-apply__prefill">
+            <div className="pw-apply__prefillrow">
+              <span>Applicant</span>
+              <b>{`${profile.first} ${profile.last}`.trim()}</b>
+            </div>
+            <div className="pw-apply__prefillrow">
+              <span>Unit</span>
+              <b>
+                {unit?.name} · {facts?.price}
+              </b>
+            </div>
+            {total ? (
+              <div className="pw-apply__prefillrow">
+                <span>Total move-in cost</span>
+                <b className="pw-apply__ok">{total}</b>
+              </div>
+            ) : null}
+          </div>
+          <div className="pw-demonote">The hold is a note on this phone; the leasing office is not told until the application starts.{DEMO}</div>
+          <Button busy={submitting} onClick={onEsign}>
+            Continue to e-sign
+          </Button>
+          <button type="button" className="pw-textlink pw-textlink--muted" onClick={onBack}>
+            Back
           </button>
-        );
-      })}
-    </div>
-    <div className="pw-apply__facts">
-      {['$50 application fee · takes about 5 minutes *', 'Unit held for 48 hours while you apply *', 'Refundable if not approved *'].map((fact) => (
-        <div key={fact}>
-          <Icon name="check" size={16} color="var(--pw-primary)" strokeWidth={2.5} />
-          {fact}
-        </div>
-      ))}
-    </div>
-    <Button busy={submitting} onClick={onSubmit} disabled={!selected}>
-      Start Application
-    </Button>
-  </Sheet>
-);
+        </>
+      )}
+    </Sheet>
+  );
+};
 
-export const NotificationsSheet = ({ open, value, onToggle, onClose }: { open: boolean; value: { tours: boolean; priceDrops: boolean; newUnits: boolean }; onToggle: (key: 'tours' | 'priceDrops' | 'newUnits') => void; onClose: () => void }) => (
+const NOTIF_ROWS: { key: keyof AppState['notifs']; label: string; sub: string }[] = [
+  { key: 'tours', label: 'Tour Reminders', sub: '24h and 1h before your tour' },
+  { key: 'startingSoon', label: 'Tour starting soon', sub: '15 min before your start time' },
+  { key: 'accessExpiring', label: 'Access expiring (10 min warning)', sub: 'Before your access pass ends' },
+  { key: 'agentReplied', label: 'Agent replied', sub: 'When leasing answers your question' },
+  { key: 'priceDrops', label: 'Price Drop Alerts', sub: 'On units you toured' },
+  { key: 'newUnits', label: 'New Unit Notifications', sub: 'Matching your saved search' }
+];
+
+export const NotificationsSheet = ({ open, value, onToggle, onClose }: { open: boolean; value: AppState['notifs']; onToggle: (key: keyof AppState['notifs']) => void; onClose: () => void }) => (
   <Sheet open={open} onClose={onClose} title="Notifications" zIndex={320}>
     <div className="pw-settings">
-      <div className="pw-settings__row pw-settings__row--toggle">
-        <span>Tour Reminders</span>
-        <Toggle on={value.tours} onChange={() => onToggle('tours')} label="Tour reminders" />
-      </div>
-      <div className="pw-settings__row pw-settings__row--toggle">
-        <span>Price Drop Alerts</span>
-        <Toggle on={value.priceDrops} onChange={() => onToggle('priceDrops')} label="Price drop alerts" />
-      </div>
-      <div className="pw-settings__row pw-settings__row--toggle">
-        <span>New Unit Notifications</span>
-        <Toggle on={value.newUnits} onChange={() => onToggle('newUnits')} label="New unit notifications" />
-      </div>
+      {NOTIF_ROWS.map((row) => (
+        <div key={row.key} className="pw-settings__row pw-settings__row--toggle">
+          <span className="pw-settings__labels">
+            <span>{row.label}</span>
+            <span className="pw-settings__sub">{row.sub}</span>
+          </span>
+          <Toggle on={value[row.key]} onChange={() => onToggle(row.key)} label={row.label} />
+        </div>
+      ))}
+      <div className="pw-demonote">Preferences are kept on this phone in this build.{DEMO}</div>
     </div>
   </Sheet>
 );
 
-export const SettingsSheet = ({ open, email, version, onClose }: { open: boolean; email: string; version: string; onClose: () => void }) => (
-  <Sheet open={open} onClose={onClose} title="Settings" zIndex={320}>
+const TOUR_SCENARIOS: { id: DemoTourScenario; label: string }[] = [
+  { id: 'auto', label: 'Auto (what you booked)' },
+  { id: 'today', label: 'Today' },
+  { id: 'upcoming', label: 'Later this week' },
+  { id: 'pending', label: 'Pending approval' },
+  { id: 'past', label: 'Past tour' },
+  { id: 'missed', label: 'Missed' },
+  { id: 'cancelled', label: 'Cancelled' },
+  { id: 'none', label: 'No tours' }
+];
+const LOCATION_SCENARIOS: { id: DemoLocationScenario; label: string }[] = [
+  { id: 'auto', label: 'Auto (ask / allow / deny)' },
+  { id: 'denied', label: 'Denied' },
+  { id: 'nearby', label: 'Nearby' },
+  { id: 'atProperty', label: 'At property' },
+  { id: 'approximate', label: 'Approximate' },
+  { id: 'offline', label: 'Offline' },
+  { id: 'preciseOff', label: 'Precise off' }
+];
+const LAYOUTS: { id: DemoScenarios['buildLayout']; label: string }[] = [
+  { id: 'listMap', label: 'List + map' },
+  { id: 'mapCards', label: 'Map + cards' },
+  { id: 'tabs', label: 'List / Map tabs' },
+  { id: 'switch', label: 'List / Map switch (bottom)' }
+];
+
+interface SettingsProps {
+  open: boolean;
+  email: string;
+  version: string;
+  demo: DemoScenarios;
+  onDemo: (patch: Partial<DemoScenarios>) => void;
+  onResetDemo: () => void;
+  onClose: () => void;
+}
+
+/** Settings, plus the design's Tweaks as "Demo scenarios": the owner can force every variant the design shows. */
+export const SettingsSheet = ({ open, email, version, demo, onDemo, onResetDemo, onClose }: SettingsProps) => (
+  <Sheet open={open} onClose={onClose} title="Settings" zIndex={320} size="scroll" className="pw-settingssheet">
     <div className="pw-settings pw-settings--list">
       <div className="pw-settings__row">
         <span>Account</span>
@@ -162,6 +296,69 @@ export const SettingsSheet = ({ open, email, version, onClose }: { open: boolean
         <span>App Version</span>
         <span className="pw-settings__value pw-settings__value--subtle">{version}</span>
       </div>
+    </div>
+    <div className="pw-demo">
+      <div className="pw-demo__head">
+        <div>
+          <div className="pw-demo__title">Demo scenarios{DEMO}</div>
+          <div className="pw-demo__sub">The design&rsquo;s tweaks, for review. They change only what this phone shows.</div>
+        </div>
+        <button type="button" className="pw-textlink pw-textlink--sm" onClick={onResetDemo}>
+          Reset
+        </button>
+      </div>
+      <label className="pw-demo__field">
+        <Eyebrow>1 · Tour status (signed-in Home)</Eyebrow>
+        <select className="pw-select" value={demo.tour} onChange={(e) => onDemo({ tour: e.target.value as DemoTourScenario })}>
+          {TOUR_SCENARIOS.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="pw-demo__field">
+        <Eyebrow>2 · Location</Eyebrow>
+        <select className="pw-select" value={demo.location} onChange={(e) => onDemo({ location: e.target.value as DemoLocationScenario })}>
+          {LOCATION_SCENARIOS.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="pw-settings__row pw-settings__row--toggle">
+        <span className="pw-settings__labels">
+          <span>3 · ID verification</span>
+          <span className="pw-settings__sub">Treat the visitor as verified</span>
+        </span>
+        <Toggle on={demo.idVerified} onChange={() => onDemo({ idVerified: !demo.idVerified })} label="ID verified" />
+      </div>
+      <div className="pw-settings__row pw-settings__row--toggle">
+        <span className="pw-settings__labels">
+          <span>4 · Chat</span>
+          <span className="pw-settings__sub">A leasing agent is online</span>
+        </span>
+        <Toggle on={demo.agentOnline} onChange={() => onDemo({ agentOnline: !demo.agentOnline })} label="Agent online" />
+      </div>
+      <div className="pw-demo__field">
+        <Eyebrow>5 · Upcoming tours list</Eyebrow>
+        <Segmented options={[{ id: 'one', label: 'One' }, { id: 'multiple', label: 'Multiple' }]} value={demo.upcomingTours} onChange={(id) => onDemo({ upcomingTours: id })} />
+      </div>
+      <div className="pw-demo__field">
+        <Eyebrow>6 · Tour starting point</Eyebrow>
+        <Segmented options={[{ id: 'one', label: 'One' }, { id: 'multiple', label: 'Multiple' }]} value={demo.startingPoints} onChange={(id) => onDemo({ startingPoints: id })} />
+      </div>
+      <label className="pw-demo__field">
+        <Eyebrow>7 · Build Your Tour layout</Eyebrow>
+        <select className="pw-select" value={demo.buildLayout} onChange={(e) => onDemo({ buildLayout: e.target.value as DemoScenarios['buildLayout'] })}>
+          {LAYOUTS.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </label>
     </div>
   </Sheet>
 );

@@ -11,7 +11,7 @@ import { reducer } from './reducer';
 
 const pin: LockPin = { pin: '221673337', validFrom: '2026-10-16T14:00:00+05:00', validUntil: '2026-10-16T17:00:00+05:00', issuedAt: 1 };
 
-const signedIn = (): AppState => ({ ...initialAppState(), signedIn: true, user: { name: 'QA', email: 'qa@example.com' }, propertyId: 3539, screen: 'unlockUnit', tourOrder: ['unit:1'], stopIndex: 0 });
+const signedIn = (): AppState => ({ ...initialAppState(), signedIn: true, user: { name: 'QA', email: 'qa@example.com' }, propertyId: 3539, screen: 'stop', tourOrder: ['unit:1'], stopIndex: 0 });
 
 const tour: TourRoute = { route: { from: 'a', to: 'b', stepFree: false, avoidBlockers: true, lengthPx: 0, lengthFt: null, durationS: null, legs: [], steps: [], warnings: [], stages: [] }, segments: [] };
 

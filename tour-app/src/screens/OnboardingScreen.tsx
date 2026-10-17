@@ -1,10 +1,10 @@
 import { useRef, type PointerEvent as ReactPointerEvent } from 'react';
-import communityPhoto from '~/assets/images/community-pool.jpg';
-import aerialPhoto from '~/assets/images/pool-aerial.jpg';
+import accessPhoto from '~/assets/images/onboard-access.png';
+import homePhoto from '~/assets/images/onboard-home.png';
+import wayfindingPhoto from '~/assets/images/onboard-wayfinding.png';
 import logo from '~/assets/images/pynwheel-tour-logo.png';
 import { HomeIndicator, StatusArea } from '~/components/chrome';
 import { Icon } from '~/components/Icon';
-import { Button } from '~/components/ui';
 import type { OnboardingSlide } from '~/models';
 
 interface Props {
@@ -15,7 +15,22 @@ interface Props {
   onSkip: () => void;
 }
 
-/** Three slides, as the reference draws them; a horizontal swipe on the picture moves between them (the touch equivalent of Previous / Next). */
+/** The three onboarding photographs are the original Pynwheel Tour app's slides (pyn-tour-old/src/assest/images/img_slide1–3.png). */
+const PHOTOS = [homePhoto, wayfindingPhoto, accessPhoto];
+
+/** The design's three bullet points per slide. */
+const POINTS: string[][] = [
+  ['Book any day, including evenings and weekends', 'Pick the units and amenities you want to see', 'No leasing agent needed'],
+  ['Snap photos at every stop', 'Jot notes on what you liked', 'Compare units side by side after your tour'],
+  ['Turn-by-turn directions to each stop', 'Unlock doors right from your phone', 'Help from the leasing team is one tap away']
+];
+
+/**
+ * Three slides, as the October 2026 design draws them: the photograph card,
+ * a centred title and body, the three check points on a soft card, then
+ * Previous · dots · Next (Let's Start on the last). A horizontal swipe on the
+ * photograph moves between slides.
+ */
 export const OnboardingScreen = ({ slides, index, onNext, onPrev, onSkip }: Props) => {
   const slide = slides[index] ?? slides[0];
   const last = index >= slides.length - 1;
@@ -39,75 +54,59 @@ export const OnboardingScreen = ({ slides, index, onNext, onPrev, onSkip }: Prop
     <div className="pw-screen pw-onboard">
       <StatusArea />
       <div className="pw-onboard__top">
-        <img src={logo} alt="Pynwheel Tour" width={130} className="pw-onboard__logo" />
-        <button type="button" className="pw-onboard__skip" onClick={onSkip}>
-          Skip
-        </button>
+        <span />
+        <img src={logo} alt="Pynwheel Tour" width={150} className="pw-onboard__logo" />
+        <div className="pw-onboard__topright">
+          {!last ? (
+            <button type="button" className="pw-onboard__skip" onClick={onSkip}>
+              Skip
+            </button>
+          ) : null}
+        </div>
       </div>
       <div className="pw-onboard__body">
         <div className="pw-onboard__picture" onPointerDown={onDown} onPointerUp={onUp} onPointerCancel={() => (swipe.current = null)}>
-          {index === 0 ? (
-            <div className="pw-onboard__slide">
-              <img src={communityPhoto} alt="Apartment community" />
-              <div className="pw-onboard__shade pw-onboard__shade--up" />
-              <span className="pw-onboard__chip pw-onboard__chip--tour">
-                <span className="pw-onboard__dot" />
-                Your Tour
-              </span>
-              <div className="pw-onboard__bottomchips">
-                <span>Units</span>
-                <span>Amenities</span>
-                <span>Community</span>
-              </div>
-            </div>
-          ) : index === 1 ? (
-            <div className="pw-onboard__slide pw-onboard__slide--dark">
-              <img src={aerialPhoto} alt="Amenities" style={{ opacity: 0.9 }} />
-              <div className="pw-onboard__shade pw-onboard__shade--down" />
-              <span className="pw-onboard__chip pw-onboard__chip--primary" style={{ top: 58, left: 36 }}>
-                Amenities →
-              </span>
-              <span className="pw-onboard__chip pw-onboard__chip--white" style={{ top: 104, right: 34 }}>
-                Pool ↑
-              </span>
-              <div className="pw-onboard__qr">
-                <span className="pw-onboard__qrcode" />
-                <span>Scan lobby QR to start</span>
-              </div>
-            </div>
-          ) : (
-            <div className="pw-onboard__slide pw-onboard__slide--dark">
-              <img src={communityPhoto} alt="Apartment community" />
-              <div className="pw-onboard__shade pw-onboard__shade--up2" />
-              <div className="pw-onboard__unlock">
-                <span className="pw-onboard__unlockicon">
-                  <Icon name="unlock" size={22} color="#fff" />
-                </span>
-                <div className="pw-onboard__unlocktitle">Your Unit · Unlocked</div>
-                <div className="pw-onboard__unlocksub">Tap your phone to enter</div>
-              </div>
-            </div>
-          )}
+          <img src={PHOTOS[index] ?? PHOTOS[0]} alt={slide.title} />
         </div>
         <div className="pw-onboard__text">
           <div className="pw-onboard__title">{slide.title}</div>
           <div className="pw-onboard__copy">{slide.body}</div>
         </div>
+        <div className="pw-onboard__points">
+          {(POINTS[index] ?? POINTS[0]).map((p) => (
+            <div key={p} className="pw-onboard__point">
+              <span className="pw-onboard__pointicon">
+                <Icon name="check" size={11} color="var(--pw-primary)" strokeWidth={3.4} />
+              </span>
+              <span>{p}</span>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="pw-onboard__dots" aria-hidden>
-        {slides.map((s, i) => (
-          <span key={s.id} className={i === index ? 'pw-onboard__dotactive' : 'pw-onboard__dotidle'} />
-        ))}
-      </div>
-      <div className="pw-onboard__actions">
-        {index > 0 ? (
-          <Button variant="secondary" style={{ flex: 1 }} block={false} onClick={onPrev}>
-            Previous
-          </Button>
-        ) : null}
-        <Button style={{ flex: 2, fontSize: 14 }} block={false} onClick={onNext}>
-          {last ? 'Get Started' : 'Next'}
-        </Button>
+      <div className="pw-onboard__bar">
+        <div className="pw-onboard__barleft">
+          {index > 0 ? (
+            <button type="button" className="pw-onboard__textbtn" onClick={onPrev}>
+              Previous
+            </button>
+          ) : null}
+        </div>
+        <div className="pw-onboard__dots" aria-hidden>
+          {slides.map((s, i) => (
+            <span key={s.id} className={i === index ? 'pw-onboard__dotactive' : 'pw-onboard__dotidle'} />
+          ))}
+        </div>
+        <div className="pw-onboard__barright">
+          {last ? (
+            <button type="button" className="pw-onboard__start" onClick={onNext}>
+              Let&rsquo;s Start
+            </button>
+          ) : (
+            <button type="button" className="pw-onboard__textbtn pw-onboard__textbtn--primary" onClick={onNext}>
+              Next
+            </button>
+          )}
+        </div>
       </div>
       <div className="pw-onboard__copyright">© Pynwheel, Inc</div>
       <HomeIndicator />

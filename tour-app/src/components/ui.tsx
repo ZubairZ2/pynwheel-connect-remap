@@ -13,7 +13,7 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'dark' | 'soft' | 'dang
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
-  height?: 50 | 48 | 46 | 44 | 40 | 36 | 34;
+  height?: number;
   icon?: IconName;
   iconSize?: number;
   block?: boolean;
@@ -137,6 +137,8 @@ export const Sheet = ({ open, onClose, title, children, size = 'auto', zIndex = 
   const onDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     const scroller = panel.current;
     if (scroller && scroller.scrollTop > 0) return;
+    // A press on the header's × (or any button) is a tap, not a drag: capturing the pointer here would retarget its click to this div.
+    if ((e.target as HTMLElement).closest('button')) return;
     setDrag({ startY: e.clientY, dy: 0 });
     e.currentTarget.setPointerCapture(e.pointerId);
   };

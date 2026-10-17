@@ -1,13 +1,13 @@
 # Pynwheel Tour — mobile app (Capacitor)
 
-The self-guided tour app for iOS and Android, rendering the design in `../tour-app.html`. This
-phase is **frontend only**: every value the visitor sees is local dummy data, marked with a
-trailing `*`, served through a repository interface that the real Pynwheel Tour App API will
-replace later. No request is ever made to a Rails server.
+The self-guided tour app for iOS and Android. Since October 17, 2026 it renders the Claude Design
+"Pynwheel Self Tour App" (the October 16 version with every tweak); real data comes from the Rails
+Tour App API (`/api/tour/v1`) through a repository interface, and every value the backend does not
+publish is local demo data marked with a trailing `*`.
 
 ```
-Screens / hooks  ──►  TourRepository  ──►  DummyTourRepository  (today: src/dummy, local, offline)
-                                      └─►  PynwheelApiTourRepository (later: /api/self_tour/v1/…/wayfinding.json)
+Screens / hooks  ──►  TourRepository  ──►  PynwheelApiTourRepository  (VITE_TOUR_API_URL, the Rails CMS: /api/tour/v1)
+                                      └─►  DummyTourRepository        (VITE_TOUR_DATA_SOURCE=dummy: src/dummy, offline)
 ```
 
 See [`../tour-app-implementation.md`](../tour-app-implementation.md) for the full write-up:
@@ -58,3 +58,14 @@ Locks in igloohome **v1** mode open over Bluetooth: the backend issues the guest
 (`POST /api/tour/v1/properties/{id}/locks/bluetooth-key`) and the local plugin `plugins/igloohome-ble`
 drives the vendor SDK (Android `ble-sdk-release.aar`; iOS `IgloohomeSDK.xcframework`, dependencies still
 to be proven). See `../tour-app-igloo-bluetooth.md`.
+
+## Design refresh (October 2026)
+
+The screens follow the Claude Design artifact (see `../tour-app-implementation.md` §19 and
+`../tour-app-design-refresh-report.md`). The design's Tweaks are **Settings › Demo scenarios**
+(tour status, location, ID verified, agent online, upcoming tours, starting points, Build layout):
+they change only what this phone shows and never call the backend. Styles for the refreshed screens
+live in `src/styles/refresh.css`; the untouched screens (Wayfinding, AR, lock card) keep `screens.css`.
+
+Local flows with no backend yet (booking, verification, check-in, reactions, favourites, survey,
+apply / hold, share) keep their state on the phone and say so in the UI.
