@@ -37,6 +37,12 @@ class CommunitiesController < ApplicationController
         render :json => {data: user_enable_communities.to_json}, :status => 200
       end
     end
+    # The legacy Properties page is reached through a company
+    # (/companies/:company_id/communities); without one in the request or the
+    # session the view cannot build its links, so send the user to pick one
+    # instead of answering a 500.
+    return redirect_to(companies_path, notice: 'Pick a company first.') if current_company.nil? && (current_user.is_super_admin? || current_user.is_dwelo_admin? || current_user.is_company_admin?)
+
     if current_user.is_super_admin?
       @communities = alphabetical_sort(current_company.communities)
     elsif current_user.is_dwelo_admin? || current_user.is_company_admin?

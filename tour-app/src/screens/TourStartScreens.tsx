@@ -1,4 +1,4 @@
-import { ACCESS_MINUTES } from '~/content/demoFixtures';
+import { ACCESS_MINUTES, DEMO } from '~/content/demoFixtures';
 import { Icon } from '~/components/Icon';
 import { Button, IconButton } from '~/components/ui';
 import type { StartPoint } from '~/store/views';
@@ -61,7 +61,7 @@ export const TourStartScreen = ({ virtual, startPoints, startPointId, stats, onP
             <div className="pw-tstart__title">Before You Start</div>
             <div className="pw-tstart__meta">
               <Icon name="check" size={12} strokeWidth={2.6} />
-              {virtual ? 'Virtual tour · No check-in or ID needed' : `Checked in · Door access active for ${ACCESS_MINUTES} min`}
+              {virtual ? 'Virtual tour · No check-in or ID needed' : `Checked in · Door access active for ${ACCESS_MINUTES} min${DEMO}`}
             </div>
           </div>
         </div>
@@ -89,7 +89,7 @@ export const TourStartScreen = ({ virtual, startPoints, startPointId, stats, onP
         </div>
         <div className="pw-tstart__startlabel">
           <div>{multi ? 'Choose where to start' : 'Your starting point'}</div>
-          <div>{virtual ? (multi ? 'Pick an entrance. The virtual tour follows the route from there.' : 'Your virtual tour follows the route from here.') : multi ? "Pick the entrance you're closest to. You'll finish there too." : 'Your tour starts and finishes here.'}</div>
+          <div>{virtual ? (multi ? 'Pick an entrance. Your route starts and finishes there.' : 'Your virtual tour follows the route from here.') : multi ? "Pick the entrance you're closest to. You'll finish there too." : 'Your tour starts and finishes here.'}</div>
         </div>
         <div className="pw-tstart__points">
           {startPoints.map((sp) => {

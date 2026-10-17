@@ -9,7 +9,8 @@
         <div class="image-box video-box">
           <div class="images height-200">
             <a class="preview-image" data-title="Elevator Image" data-toggle="lightbox" href="<%= elevator.image? ? elevator.image.url : asset_path("elev2.png") %>">
-              <%= image_tag elevator.image.url %>
+              <%# An elevator saved without a photo (e.g. one added from Connect's Map & Plotting) must not 500 the page. %>
+              <%= image_tag(elevator.image? ? elevator.image.url : asset_path("elev2.png")) %>
             </a>
           </div>
         </div>
@@ -43,7 +44,7 @@
           <div class="carousel-inner" style="height: 500px;">
             <% @elevators.each_with_index do |elevator,index| %>
               <div class="<%= index == 0 ? 'active' : '' %> item text-center">
-                <%= image_tag elevator.image_url %>
+                <%= image_tag(elevator.image? ? elevator.image_url : asset_path("elev2.png")) %>
                 <div class="carousel-caption">
                   image  
                 </div>

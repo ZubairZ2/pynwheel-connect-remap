@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import co.igloohome.ble.lock.BleManager;
 import co.igloohome.ble.lock.IglooLock;
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 
@@ -71,6 +72,9 @@ public class IgloohomeBlePlugin extends Plugin {
     @Nullable private Disposable unlockDisposable;
     @Nullable private IglooLock selectedLock;
     @Nullable private Runnable scanTimeout;
+    /** The connect / unlock call still waiting for the SDK: settled exactly once, by the SDK or by a cancel. */
+    @Nullable private PluginCall connectCall;
+    @Nullable private PluginCall unlockCall;
 
     // ------------------------------------------------------------------ state
 
@@ -210,25 +214,63 @@ public class IgloohomeBlePlugin extends Plugin {
         long timeoutMs = call.getLong("timeoutMs", DEFAULT_CONNECT_TIMEOUT_MS);
         selectedLock = lock;
         disposeConnection();
+        setConnectCall(call);
         try {
+            // The Observable stays open for the connection's life (disposing it disconnects), so the timeout
+            // covers only the first emission - the connection itself - and never tears a live connection down.
             connectDisposable = lock.connectByStringKey(getContext(), key)
-                .timeout(timeoutMs, TimeUnit.MILLISECONDS)
+                .timeout(Observable.timer(timeoutMs, TimeUnit.MILLISECONDS), item -> Observable.never())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(connected -> {
-                    if (session.state() != LockSession.State.CONNECTING) return; // cancelled meanwhile
+                    PluginCall pending = takeConnectCall();
+                    if (pending == null || session.state() != LockSession.State.CONNECTING) return; // cancelled meanwhile
                     session.connected(connected.getName());
                     JSObject out = new JSObject();
                     out.put("name", connected.getName());
-                    call.resolve(out);
+                    pending.resolve(out);
                 }, error -> {
-                    session.connectFailed();
+                    PluginCall pending = takeConnectCall();
+                    if (pending != null) {
+                        session.connectFailed();
+                        disposeConnection();
+                        reject(pending, codeOf(error), describe(error));
+                        return;
+                    }
+                    // The connection dropped after it was established: an unlock in flight cannot finish.
+                    PluginCall unlocking = takeUnlockCall();
                     disposeConnection();
-                    reject(call, codeOf(error), describe(error));
+                    selectedLock = null;
+                    session.disconnected();
+                    if (unlocking != null) reject(unlocking, "not_connected", describe(error));
                 });
         } catch (Throwable error) {
+            PluginCall pending = takeConnectCall();
             session.connectFailed();
-            reject(call, codeOf(error), describe(error));
+            if (pending != null) reject(pending, codeOf(error), describe(error));
         }
+    }
+
+    private synchronized void setConnectCall(@Nullable PluginCall call) {
+        connectCall = call;
+    }
+
+    /** The waiting connect call, once: a second caller (the SDK after a cancel, a cancel after the SDK) gets null. */
+    @Nullable
+    private synchronized PluginCall takeConnectCall() {
+        PluginCall pending = connectCall;
+        connectCall = null;
+        return pending;
+    }
+
+    private synchronized void setUnlockCall(@Nullable PluginCall call) {
+        unlockCall = call;
+    }
+
+    @Nullable
+    private synchronized PluginCall takeUnlockCall() {
+        PluginCall pending = unlockCall;
+        unlockCall = null;
+        return pending;
     }
 
     // ----------------------------------------------------------------- unlock
@@ -247,23 +289,29 @@ public class IgloohomeBlePlugin extends Plugin {
         long timeoutMs = call.getLong("timeoutMs", DEFAULT_UNLOCK_TIMEOUT_MS);
         // The legacy module passed the current epoch seconds as both arguments; kept as is.
         int now = (int) (System.currentTimeMillis() / 1000);
+        setUnlockCall(call);
         try {
             unlockDisposable = selectedLock.unlock((long) now, now)
                 .timeout(timeoutMs, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(() -> {
+                    PluginCall pending = takeUnlockCall();
                     session.endUnlock();
+                    if (pending == null) return; // cancelled meanwhile
                     JSObject out = new JSObject();
                     out.put("unlocked", true);
-                    call.resolve(out);
+                    pending.resolve(out);
                 }, error -> {
+                    PluginCall pending = takeUnlockCall();
                     session.endUnlock();
+                    if (pending == null) return;
                     String code = codeOf(error);
-                    reject(call, "sdk_error".equals(code) || "connect_failed".equals(code) ? "unlock_failed" : code, describe(error));
+                    reject(pending, "sdk_error".equals(code) || "connect_failed".equals(code) ? "unlock_failed" : code, describe(error));
                 });
         } catch (Throwable error) {
+            PluginCall pending = takeUnlockCall();
             session.endUnlock();
-            reject(call, "unlock_failed", describe(error));
+            if (pending != null) reject(pending, "unlock_failed", describe(error));
         }
     }
 
@@ -283,12 +331,17 @@ public class IgloohomeBlePlugin extends Plugin {
         call.resolve();
     }
 
+    /** Drops the connection; a connect or unlock still waiting is answered `cancelled` so its promise settles. */
     private void disconnectNow() {
+        PluginCall unlocking = takeUnlockCall();
+        PluginCall connecting = takeConnectCall();
         if (unlockDisposable != null && !unlockDisposable.isDisposed()) unlockDisposable.dispose();
         unlockDisposable = null;
         disposeConnection();
         selectedLock = null;
         session.disconnected();
+        if (unlocking != null) reject(unlocking, "cancelled", "The unlock was cancelled.");
+        if (connecting != null) reject(connecting, "cancelled", "The connection was cancelled.");
     }
 
     private void disposeConnection() {

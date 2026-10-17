@@ -1,0 +1,8 @@
+# The Partner Configuration screen and its tests need at least one active
+# partner in the registry (Partner.registry = active partners in order).
+map_partner:
+  key: map_sdk
+  label: Map SDK partner
+  position: 1
+  active: true
+  settings: {}

@@ -228,3 +228,11 @@ after `ArrayList<HashMap<String, String>>`), or the build fails with "argument t
    the keybox would have to move onto 1508's door, replacing Hazel's own lock row there.
 6. Hazel's own locks (1508, 1506) look supported in this mode but cannot be opened from the tester's account;
    restoring Hazel's record to `v1` undoes that.
+
+## I. Final platform QA pass (October 18, 2026)
+
+The redesigned Stop screen hid the door-code card the moment `lockPinReady` marked the stop unlocked, so no visitor could
+read, retype or renew a code issued through this integration; fixed in `StopScreen.tsx` and verified with a mocked
+`POST …/locks/pin` on Hazel (clone row switched to `igloohome` mode for the run and restored to `v1` afterwards; no
+vendor call, no real code). The backend contract and tests are unchanged and green. See
+`FINAL_PLATFORM_QA_REPORT_2026-10-17.md` §17 and §24.

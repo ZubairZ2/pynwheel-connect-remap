@@ -13,7 +13,7 @@ module Visitors
       @base_url = base_url
       @zone = ActiveSupport::TimeZone[Status.tz(community)] || ActiveSupport::TimeZone['UTC']
       @now = Time.now.in_time_zone(@zone)
-      @query = Query.new(community)
+      @query = Query.new(community, visitor_id: tour_user.id)
     end
 
     def as_json(*)
@@ -52,8 +52,12 @@ module Visitors
         @bucket ||= Connect::UploadUrl.bucket_hint(community)
       end
 
+      def grace
+        @grace ||= Status.grace_minutes(community)
+      end
+
       def booking_json(booking)
-        status = Status.booking_status(booking, community, @now)
+        status = Status.booking_status(booking, community, @now, grace: grace)
         {
           id: booking.id,
           status: status,

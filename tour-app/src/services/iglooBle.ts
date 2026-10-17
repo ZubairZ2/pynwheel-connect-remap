@@ -94,6 +94,8 @@ const waitForLock = (plugin: IgloohomeBlePlugin, lockName: string, signal: Abort
     plugin
       .addListener('scanStopped', (event: ScanStoppedEvent) => {
         if (event.reason === 'error') finish(new BluetoothUnlockError('sdk_error', event.message || MESSAGES.sdk_error));
+        // A scan stopped by `reset` / `stopScan` or by the app going to the background was interrupted, not exhausted.
+        else if (event.reason === 'paused' || event.reason === 'stopped') finish(new BluetoothUnlockError('cancelled', MESSAGES.cancelled));
         else finish(new BluetoothUnlockError('not_found', MESSAGES.not_found));
       })
       .then((h) => handles.push(h))

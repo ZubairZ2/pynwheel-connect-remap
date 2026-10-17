@@ -1282,3 +1282,40 @@ PYN_CONNECT_PROGRESS.md §42 has the inventory; this is what to remember when to
   `PYN_CONNECT_E2E_MODULES_PROPERTY` (default 1618 Hazel), `PYN_CONNECT_E2E_TOUR_PROPERTY=2934` for the older spec.
 - Rails tests: `DATABASE_URL=postgres://<user>@localhost/pynwheel_test bundle exec rails test` — without it the
   runner stops with "The `test` database is not configured".
+
+## 38. Final platform QA pass — implementation knowledge (October 18, 2026)
+
+Report: `FINAL_PLATFORM_QA_REPORT_2026-10-17.md`; branch `qa/final-platform-regression-2026-10-17` from `main` `e86a28024`.
+
+- **Connect endpoints are JSON whatever the suffix says.** The Connect concerns keyed every guard on
+  `request.format.json?` while the routes keep Rails' optional `(.:format)`, so `visitors.html` or `stops.xml` reached
+  the action with no scoping, CSRF or kill switch. `Connect::BaseController` now forces the JSON format before any
+  callback and its `connect_read?` / `connect_write?` ignore the format (`test/controllers/connect/format_guard_test.rb`).
+  When adding a Connect controller, inherit from `Connect::BaseController`; a legacy controller that includes the
+  concerns keeps the JSON-only predicate on purpose.
+- **Resolve `community_tour` once.** `Community#community_tour` is a query every call. `Visitors::Status.booking_status`
+  takes `grace:`; `Visitors::Query` / `Profile` memoise grace and stay limit; `Bookings::Availability` memoises the tour,
+  setting, interval and hours and uses `SchedualTours::Capacity::DayCounter` (a day's bookings loaded once, the widget's
+  rule in `Capacity.limits_for`). `availability_parity.rb` (session scratchpad recipe) compares the new day against the
+  legacy per-slot rule — keep it at 0 mismatches when touching slots.
+- **Hooks must not retry on their own.** A module read that fails keeps its data `null`; an effect guarded only on the
+  data re-runs forever. Guard on an attempt flag / `error` state and offer Retry (Overview, booking settings, the
+  drawer's lock inventory).
+- **The Stop screen's lock card is independent of `unlocked`.** A supported real lock renders `LockAccessCard` whether
+  or not a code was issued; only the help/skip link belongs to the locked state.
+- **Legacy views cannot be rendered under the test environment** (the stylesheet's Sass `rgba` call fails to compile
+  there), so legacy page regressions are proven with the in-process harness on the clone, not with Minitest.
+- **Legacy write-on-GET:** `GET /communities/:id/tours/building_starting_point` creates an entry point and a tour stop;
+  never request it from a read-only harness.
+- **Session scratchpads are emptied when a session dies**; keep recovery-point exports and backups of changed clone
+  rows inside the repository-adjacent scratchpad only as long as the session lives, or copy them elsewhere first.
+
+### 38a. Resolution round (October 18, 2026)
+Every code-level finding of the final QA report was fixed on the QA branch (report §29): `Visitors::Query` is
+visitor-scoped and bounded, `tour_histories` gained `community_id`/`tour_id` indexes (migration `20261018090000`),
+`Connect::BaseController` rescues `StandardError` into the envelope (declared before the specific handlers), the
+Tour App route takes `start_stop_id`, the TourApi lock endpoints gate on `multiple_locks_provider` and write
+`igloohome_guests` rows, the legacy visitors list reads its flags once, and the Connect / Self Tour App findings were
+closed by two implementation passes (tsc, vitest 77/77, Playwright 7/7, the headless journeys green). The plugin's
+Swift package resolves (RxSwift 5.1.3, rxbluetoothkit 6.1.2, DFU 4.11.1). Left to the owner: merge + deploy, run the
+index migration on production, set `HOST_URL`, wire the iOS plugin into CapApp-SPM, provide Bluetooth hardware.

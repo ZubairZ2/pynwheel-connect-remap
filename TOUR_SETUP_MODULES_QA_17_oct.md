@@ -78,3 +78,25 @@ only, through the read-only URL, and only to confirm facts; no production row wa
 - Lock health exists only for Zerv; others show "Not reported".
 - Cancelled bookings depend on PaperTrail destroy versions being present for the property.
 - The booking link panel needs `HOST_URL` on the Connect-facing Rails instance.
+
+## Update — October 18, 2026 (final platform QA pass)
+
+- **Critical defect found and fixed:** every Connect read and write guard was conditional on the JSON format while the
+  routes accept a format suffix, so `GET /communities/<other company's id>/connect/visitors.html` returned another
+  tenant's visitor list (names, emails, phones), `locks.html` the device inventory, `visitors/export.html` the CSV and
+  `stops.xml` the stops, and the write actions were reachable, for any signed-in user. Reproduced with a company admin
+  of company 44 against Hazel. `Connect::BaseController` now forces JSON and the predicates ignore the format; nine
+  regression tests in `test/controllers/connect/format_guard_test.rb`.
+- Query storms fixed: `GET visitors` (Hazel, 25 rows) 500 → 13 queries; `GET booking/availability?days=7` 1,872 → 25
+  (31 days: 49). The availability rewrite matches the legacy per-slot rule on 2,792 slots over 14 days for five
+  properties (0 mismatches).
+- Hooks fixed: Overview, the booking settings read (Visitors and Settings tabs) and the drawer's lock inventory
+  re-requested a failed read forever; now one request and a Retry.
+- `Bookings::Create` no longer re-enables SMS for a visitor who opted out when a later booking omits the flag.
+- Writes re-verified on the clone: stop content (818), lock map/unmap/manual code and the foreign-target 404 (Hazel),
+  booking create/reschedule/closed-day/duplicate reuse/cancel and the cross-property 404 (Jennifer Demo FP), rules,
+  hours (overlap and format validation) and form on 818 — each persisted, reloaded, audited and reverted.
+- Observed: setting a manual code on a stop whose door holds a vendor device releases the device (documented contract);
+  the UI offers it without a confirmation. Remaining findings are listed in the final report §25.
+- Alliance in production: 818 has six sitemap-plotted stops and no hallways, locks or bookings; 8005 has three SVG plates,
+  333/339 plotted units (October 17), no stops, locks or bookings. Both render the empty / "connect a provider" states.

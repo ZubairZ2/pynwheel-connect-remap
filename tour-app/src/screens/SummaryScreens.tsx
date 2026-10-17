@@ -51,7 +51,7 @@ export const TourCompleteScreen = ({ propertyName, stops, minutes, inPerson, sur
       {inPerson ? (
         <div className="pw-complete__pass">
           <Icon name="lock" size={16} color="var(--pw-primary)" />
-          Your access pass has ended and all doors are locked.
+          Your access pass has ended and all doors are locked.{DEMO}
         </div>
       ) : null}
       <div className="pw-complete__survey">

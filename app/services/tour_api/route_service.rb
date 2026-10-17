@@ -23,8 +23,17 @@ module TourApi
     # the tour, else `invalid_stop`). Answers [Result, segments]: one segment
     # per leg of the sequence, the return to the start included (without a
     # tour stop), so the whole tour's steps can be assembled from them.
-    def tour(stop_keys: nil)
+    # `start_key`: the entry gate (`bsp:<id>`) or tour start the visitor chose
+    # on "Before You Start"; the tour then starts and finishes there. An
+    # unknown or non-gate key answers :unknown_start.
+    def tour(stop_keys: nil, start_key: nil)
       start = graph.nodes.keys.find { |k| k.start_with?('tour_start:') }
+      if start_key.present?
+        gate = graph.nodes.key?(start_key) && (start_key.start_with?('bsp:') || start_key.start_with?('tour_start:'))
+        return [failure(:unknown_start, from: start_key, to: nil), []] unless gate
+
+        start = start_key
+      end
       return [failure(:no_start, from: nil, to: nil), []] unless start
 
       rows = ordered_tour_stops

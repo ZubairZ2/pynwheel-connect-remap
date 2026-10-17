@@ -183,3 +183,12 @@ M15; then Tour Setup reads the stops model.
 - **Locks, Visitors, Scheduling, Booking form and link**: real, through the Connect endpoints (PYN_CONNECT_PROGRESS.md §42).
 - **CRM & Sync**: read-only by decision (out of scope for this phase).
 - **Publishing from Connect**: still a dialog that says it is unavailable.
+
+## October 18, 2026 update — final platform QA pass
+
+- No new gap on the backend; the Connect endpoints gained a hard JSON format guard (`Connect::BaseController`) after the
+  QA pass found that a format suffix skipped property scoping, CSRF and the kill switch.
+- T6 (route preview as the CMS routes): the shortest-path test sends the previewed plate's lowest floor for floor-less
+  endpoints on stacked plates where Rails would otherwise answer `ambiguous_floor`; a from/to floor control is still
+  missing (report §25).
+- Booking link still needs `HOST_URL` on the Connect-facing Rails instance; CRM & Sync stays read-only.

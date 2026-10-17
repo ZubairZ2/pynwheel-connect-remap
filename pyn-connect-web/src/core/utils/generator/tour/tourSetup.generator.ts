@@ -1,7 +1,7 @@
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
 import type { InventoryAmenity, InventoryUnit } from '~/core/models/data/propertyInventory.data';
-import type { MapElevator, MapStartingPoint, PropertyMap } from '~/core/models/data/propertyMap.data';
+import type { MapElevator, MapStartingPoint, MapTourStop, PropertyMap } from '~/core/models/data/propertyMap.data';
 import type { PillVariant } from '../listing.types';
 import { layoutText, plainText, t } from '../inventory/inventoryText';
 import { generateMapLevels, levelForAmenity, levelForFloor, levelForUnit, type MapLevel } from '../map/mapLevels.generator';
@@ -103,23 +103,29 @@ export interface TourLocalState {
 
 const stopKey = (id: number): string => `stop:${id}`;
 
+/**
+ * The stored stops the page works with, in sort order: a stop whose record is
+ * missing from the map (a deleted unit, an elevator of another property) is
+ * left out here and in the saved order alike, so opening a tour with such a
+ * stop does not count as a reorder.
+ */
+const storedStops = (map: PropertyMap): MapTourStop[] =>
+  [...map.graph.tourStops].sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0) || a.id - b.id).filter((stop) => stopRecord(map, stop.stopType as StopKind, stop.stopId) != null);
+
 /** The stops of the community tour, in sort order, each with its stored talking point. */
 export const initialTourState = (map: PropertyMap, tab: TourTab = 'overview'): TourLocalState => ({
   tab,
-  stops: [...map.graph.tourStops]
-    .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0) || a.id - b.id)
-    .map((stop) => ({
-      key: stopKey(stop.id),
-      kind: stop.stopType as StopKind,
-      recordId: stop.stopId,
-      sort: stop.sort,
-      visible: stop.displayStop,
-      talkingPoint: storedTalkingPoint(map, stop.stopType as StopKind, stop.stopId),
-      duration: stop.durationMinutes != null ? String(stop.durationMinutes) : '',
-      removed: false,
-      local: false
-    }))
-    .filter((stop) => stopRecord(map, stop.kind, stop.recordId) != null),
+  stops: storedStops(map).map((stop) => ({
+    key: stopKey(stop.id),
+    kind: stop.stopType as StopKind,
+    recordId: stop.stopId,
+    sort: stop.sort,
+    visible: stop.displayStop,
+    talkingPoint: storedTalkingPoint(map, stop.stopType as StopKind, stop.stopId),
+    duration: stop.durationMinutes != null ? String(stop.durationMinutes) : '',
+    removed: false,
+    local: false
+  })),
   gated: {},
   photos: {},
   photoOrder: {},
@@ -575,8 +581,7 @@ export const buildTourSetupPayload = (map: PropertyMap, state: TourLocalState): 
     if (minutesOf(stop.duration) !== before.durationMinutes) payload.stops.duration.push({ id, duration_minutes: minutesOf(stop.duration) });
   });
   // The order is sent when it differs from the stored one, or when a new stop has to be placed in it.
-  const storedOrder = [...map.graph.tourStops]
-    .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0) || a.id - b.id)
+  const storedOrder = storedStops(map)
     .map((stop) => stop.id)
     .filter((id) => !payload.stops.remove.includes(id));
   const pageOrder = shown.map((stop) => (stop.local ? stop.key : storedId(stop.key))).filter((row): row is number | string => row != null);

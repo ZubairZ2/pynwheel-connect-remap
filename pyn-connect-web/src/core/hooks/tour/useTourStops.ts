@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { APP_API } from '~/config/app/urls';
 import { CORE_STRINGS } from '~/config/app/strings';
@@ -77,6 +77,8 @@ export interface PathResult {
   steps: RouteStepJson[];
   warnings: string[];
   legs: RouteLegJson[];
+  /** The route service's error code when the route failed (`ambiguous_floor` opens the floor selects). */
+  code: string | null;
 }
 
 interface PathState {
@@ -84,9 +86,14 @@ interface PathState {
   from: string;
   to: string;
   stepFree: boolean;
+  /** Floors the user picked after an `ambiguous_floor` answer; null leaves the endpoint's own floor (or none) in charge. */
+  fromFloor: number | null;
+  toFloor: number | null;
   loading: boolean;
   result: PathResult | null;
 }
+
+const failedPath = (head: string, sub: string | null = null, code: string | null = null, warnings: string[] = []): PathResult => ({ ok: false, head, sub, steps: [], warnings, legs: [], code });
 
 export interface AddCandidate {
   id: string;
@@ -129,14 +136,17 @@ export const useTourStops = (propertyId: number, controller: TourSetupController
   const [savingContent, setSavingContent] = useState(false);
   const [inventory, setInventory] = useState<LockInventory | null>(null);
   const [inventoryLoading, setInventoryLoading] = useState(false);
+  const [inventoryError, setInventoryError] = useState<string | null>(null);
   const [lockChoice, setLockChoice] = useState<LockChoice>('none');
   const [lockQuery, setLockQuery] = useState('');
   const [manualCode, setManualCode] = useState('');
   const [lockBusy, setLockBusy] = useState(false);
+  /** A lock segment choice waiting for the "unmap the smart lock" confirmation. */
+  const [lockConfirm, setLockConfirm] = useState<LockChoice | null>(null);
   const [add, setAdd] = useState<{ open: boolean; query: string; tab: AddTab; picked: string[] }>({ open: false, query: '', tab: 'all', picked: [] });
   const [drag, setDrag] = useState<{ key: string | null; over: string | null }>({ key: null, over: null });
   const [previewLevelId, setPreviewLevelId] = useState<string | null>(null);
-  const [path, setPath] = useState<PathState>({ scope: 'plate', from: '', to: '', stepFree: false, loading: false, result: null });
+  const [path, setPath] = useState<PathState>({ scope: 'plate', from: '', to: '', stepFree: false, fromFloor: null, toFloor: null, loading: false, result: null });
 
   /* ── the CMS rows ─────────────────────────────────────────────────── */
 
@@ -173,13 +183,24 @@ export const useTourStops = (propertyId: number, controller: TourSetupController
     if (selectedKey && !items.some((item) => item.key === selectedKey)) setSelectedKey(null);
   }, [items, selectedKey]);
 
-  // The drawer's fields restart from the row whenever another stop is picked or the rows are re-read.
+  // The drawer's fields restart from the row when another stop is picked. Every
+  // load() makes new row objects (a lock write, Retry, a Save), so on a re-read
+  // of the same stop the lock fields follow the row while the content fields
+  // are only re-derived when the user has not typed in them.
   const selectedRow = selected?.row ?? null;
+  const editedRef = useRef(false);
+  const lastKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    setDraftState(draftOf(selectedRow));
+    const keyChanged = lastKeyRef.current !== selectedKey;
+    lastKeyRef.current = selectedKey;
+    if (keyChanged) {
+      editedRef.current = false;
+      setLockQuery('');
+      setLockConfirm(null);
+    }
+    if (keyChanged || !editedRef.current) setDraftState(draftOf(selectedRow));
     setLockChoice(lockChoiceOf(selectedRow?.lock ?? null));
     setManualCode(selectedRow?.lock?.manualCode ?? '');
-    setLockQuery('');
   }, [selectedRow, selectedKey]);
 
   /* ── drawer: content ──────────────────────────────────────────────── */
@@ -187,7 +208,10 @@ export const useTourStops = (propertyId: number, controller: TourSetupController
   const dirty = useMemo(() => draftChanged(draft, selectedRow), [draft, selectedRow]);
   const editable = useMemo(() => editableFields(selectedRow), [selectedRow]);
 
-  const setDraft = useCallback((patch: Partial<ContentDraft>) => setDraftState((current) => ({ ...current, ...patch })), []);
+  const setDraft = useCallback((patch: Partial<ContentDraft>) => {
+    editedRef.current = true;
+    setDraftState((current) => ({ ...current, ...patch }));
+  }, []);
 
   const saveContent = useCallback(async () => {
     if (!selected?.row) return;
@@ -204,6 +228,8 @@ export const useTourStops = (propertyId: number, controller: TourSetupController
     setSavingContent(true);
     const result = await tourPost<StopRows>(propertyId, `stops/${selected.row.id}`, payload);
     if (result.ok) {
+      // The saved row is the new base: the drawer re-derives from it.
+      editedRef.current = false;
       setRows(result.data);
       setMeta(result.meta);
       toast(i18n.t(ST.drawer.contentSaved));
@@ -217,15 +243,18 @@ export const useTourStops = (propertyId: number, controller: TourSetupController
 
   const loadInventory = useCallback(async () => {
     setInventoryLoading(true);
+    setInventoryError(null);
     const result = await tourGet<LockInventory>(propertyId, 'locks');
     if (result.ok) setInventory(result.data);
-    else toast(writeErrorText(result));
+    else setInventoryError(writeErrorText(result));
     setInventoryLoading(false);
-  }, [propertyId, toast]);
+  }, [propertyId]);
 
   useEffect(() => {
-    if (drawerTab === 'lock' && !inventory && !inventoryLoading) void loadInventory();
-  }, [drawerTab, inventory, inventoryLoading, loadInventory]);
+    // A failed read is remembered (`inventoryError`) and shown with a Retry
+    // button; without that guard the effect would re-run the request forever.
+    if (drawerTab === 'lock' && !inventory && !inventoryLoading && !inventoryError) void loadInventory();
+  }, [drawerTab, inventory, inventoryError, inventoryLoading, loadInventory]);
 
   const target = useMemo(() => stopTarget(selected), [selected]);
   const lockChoices = useMemo(() => generateLockChoices(inventory, lockQuery, selectedRow?.lock ?? null), [inventory, lockQuery, selectedRow]);
@@ -282,7 +311,7 @@ export const useTourStops = (propertyId: number, controller: TourSetupController
   }, [canEdit, lockWrite, refuse, target]);
 
   /** The lock segment: `none` drops whatever the stop has; the other two show their editor until something is assigned. */
-  const chooseLock = useCallback(
+  const applyLockChoice = useCallback(
     (choice: LockChoice) => {
       setLockChoice(choice);
       if (choice !== 'none' || !selectedRow?.lock) return;
@@ -291,6 +320,30 @@ export const useTourStops = (propertyId: number, controller: TourSetupController
     },
     [clearManual, selectedRow, unassign]
   );
+
+  /**
+   * Leaving `smart` on a stop whose holder carries a device releases that
+   * device (`none` unmaps it here; a saved manual code unmaps it in the
+   * service), so those two choices wait for a confirmation first.
+   */
+  const chooseLock = useCallback(
+    (choice: LockChoice) => {
+      if (choice !== 'smart' && choice !== lockChoice && selectedRow?.lock?.device) {
+        setLockConfirm(choice);
+        return;
+      }
+      applyLockChoice(choice);
+    },
+    [applyLockChoice, lockChoice, selectedRow]
+  );
+
+  const confirmLockChoice = useCallback(() => {
+    if (!lockConfirm) return;
+    setLockConfirm(null);
+    applyLockChoice(lockConfirm);
+  }, [applyLockChoice, lockConfirm]);
+
+  const cancelLockChoice = useCallback(() => setLockConfirm(null), []);
 
   /* ── list: selection, drag and drop ───────────────────────────────── */
 
@@ -415,45 +468,60 @@ export const useTourStops = (propertyId: number, controller: TourSetupController
     });
   }, [endpoints]);
 
+  /** The floors the "From floor" / "To floor" selects offer after an `ambiguous_floor` answer: the previewed plate's. */
+  const floorOptions = useMemo(() => previewLevel?.floors ?? [], [previewLevel]);
+  const needsFloorPick = path.result?.code === 'ambiguous_floor' || path.fromFloor != null || path.toFloor != null;
+
   const findPath = useCallback(async () => {
     if (!path.from || !path.to || path.from === path.to) {
-      setPath((current) => ({ ...current, result: { ok: false, head: i18n.t(ST.path.pick), sub: null, steps: [], warnings: [], legs: [] } }));
+      setPath((current) => ({ ...current, result: failedPath(i18n.t(ST.path.pick)) }));
       return;
     }
     setPath((current) => ({ ...current, loading: true }));
     let result: PathResult;
     try {
       const query = new URLSearchParams({ from: path.from, to: path.to, step_free: path.stepFree ? '1' : '0' });
-      // A place on a stacked floorplate needs its floor: the record's own, else (on "This Floor") the previewed level's lowest floor.
-      const fallback = path.scope === 'plate' && previewLevel && previewLevel.floors.length ? previewLevel.floors[0] : null;
-      const a = endpoints.find((row) => row.key === path.from);
-      const b = endpoints.find((row) => row.key === path.to);
-      const floorA = a?.floor ?? fallback;
-      const floorB = b?.floor ?? fallback;
+      // A place on a stacked floorplate needs its floor: the one the user picked
+      // after an `ambiguous_floor` answer, else the record's own, else (on "This
+      // floor", and only for a place on the previewed plate) the plate's lowest
+      // floor. An elevator or entry point of another level sends none, so Rails
+      // can answer `ambiguous_floor` and the selects below take over.
+      const plateFallback = path.scope === 'plate' && previewLevel && previewLevel.floors.length ? previewLevel.floors[0] : null;
+      const floorOf = (key: string, picked: number | null): number | null => {
+        if (picked != null) return picked;
+        const row = endpoints.find((item) => item.key === key);
+        if (!row) return null;
+        if (row.floor != null) return row.floor;
+        return previewLevel && row.levelId === previewLevel.id ? plateFallback : null;
+      };
+      const floorA = floorOf(path.from, path.fromFloor);
+      const floorB = floorOf(path.to, path.toFloor);
       if (floorA != null) query.set('from_floor', String(floorA));
       if (floorB != null) query.set('to_floor', String(floorB));
       const response = await fetch(`${APP_API.wayfindingPath(propertyId)}?${query.toString()}`, { cache: 'no-store', headers: { Accept: 'application/json' } });
       const body = (await response.json()) as { ok: boolean; route?: RouteJson; error?: string };
       const route = body.route;
       if (!route) {
-        result = { ok: false, head: body.error === 'unauthorized' ? i18n.t(E.unauthorized) : i18n.t(ST.path.failed), sub: null, steps: [], warnings: [], legs: [] };
+        result = failedPath(body.error === 'unauthorized' ? i18n.t(E.unauthorized) : i18n.t(ST.path.failed));
       } else if (!route.success) {
         const code = route.error?.code ?? 'unknown';
         const known = (ST.path.error as Record<string, string>)[code];
-        result = { ok: false, head: known ? i18n.t(known) : t(ST.path.error.default, { error: route.error?.message ?? code }), sub: route.error?.fix ?? null, steps: [], warnings: route.warnings ?? [], legs: [] };
+        // Rails' own message says which place is ambiguous; the catalogue line is the fallback.
+        const head = code === 'ambiguous_floor' && route.error?.message ? route.error.message : known ? i18n.t(known) : t(ST.path.error.default, { error: route.error?.message ?? code });
+        result = failedPath(head, route.error?.fix ?? null, code, route.warnings ?? []);
       } else {
         const minutes = Math.max(1, Math.round((route.duration_s ?? 0) / 60));
         const head = route.length_ft != null ? t(ST.path.result, { ft: Math.round(route.length_ft), minutes }) : t(ST.path.resultPx, { px: Math.round(route.length_px ?? 0) });
         const legs = route.legs ?? [];
-        result = { ok: true, head, sub: t(ST.path.legs, { legs: legs.length }), steps: route.steps ?? [], warnings: route.warnings ?? [], legs };
+        result = { ok: true, head, sub: t(ST.path.legs, { legs: legs.length }), steps: route.steps ?? [], warnings: route.warnings ?? [], legs, code: null };
         const first = legs.find((leg) => leg.kind === 'walk' && leg.level);
         if (first?.level && first.level !== previewLevel?.id && levelById(levels, first.level)) setPreviewLevelId(first.level);
       }
     } catch {
-      result = { ok: false, head: i18n.t(ST.path.failed), sub: null, steps: [], warnings: [], legs: [] };
+      result = failedPath(i18n.t(ST.path.failed));
     }
     setPath((current) => ({ ...current, loading: false, result }));
-  }, [endpoints, levels, path.from, path.scope, path.stepFree, path.to, previewLevel, propertyId]);
+  }, [endpoints, levels, path.from, path.fromFloor, path.scope, path.stepFree, path.to, path.toFloor, previewLevel, propertyId]);
 
   const routeLegsHere = useMemo(
     () => (path.result?.legs ?? []).filter((leg) => leg.kind === 'walk' && leg.level === previewLevel?.id && (leg.points?.length ?? 0) > 1),
@@ -489,8 +557,13 @@ export const useTourStops = (propertyId: number, controller: TourSetupController
     saveContent,
     inventory,
     inventoryLoading,
+    inventoryError,
+    retryInventory: loadInventory,
     lockChoice,
     chooseLock,
+    lockConfirm,
+    confirmLockChoice,
+    cancelLockChoice,
     lockQuery,
     setLockQuery,
     lockChoices,
@@ -524,6 +597,8 @@ export const useTourStops = (propertyId: number, controller: TourSetupController
     endpoints,
     path,
     setPath,
+    floorOptions,
+    needsFloorPick,
     findPath,
     routeLegsHere
   };

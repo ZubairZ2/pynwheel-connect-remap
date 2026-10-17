@@ -69,12 +69,17 @@ module TourApi
                  'bluetooth'
                end
       device_id = Text.presence(lock&.device_id)
+      # The property's active vendors (`communities.multiple_locks_provider`,
+      # the Locks tab's "enabled" switch per provider) gate the issuance the
+      # way the legacy tour start did: a mapped device of a vendor the staff
+      # turned off is reported, never opened.
+      vendor_on = Array(index.community.multiple_locks_provider).include?('Igloohome')
       {
         provider: provider,
         mode: mode,
         method: method,
         device_id: device_id,
-        supported: igloo && (PIN_MODES.include?(mode) || mode == 'v1') && device_id.present? && index.community.enable_locks ? true : false
+        supported: igloo && vendor_on && (PIN_MODES.include?(mode) || mode == 'v1') && device_id.present? && index.community.enable_locks ? true : false
       }
     end
 
@@ -83,6 +88,7 @@ module TourApi
       lock = describe(index(community), record)
       raise ApiError.unprocessable('no_lock', 'This stop has no smart lock.') unless lock
       raise ApiError.unprocessable('locks_disabled', 'Smart locks are turned off for this property.') unless community.enable_locks
+      raise ApiError.unprocessable('lock_unsupported', VENDOR_OFF) if lock[:provider] == 'Igloohome' && !vendor_on?(community)
       raise ApiError.unprocessable('lock_unsupported', unsupported_message(lock)) unless lock[:supported]
       raise ApiError.unprocessable('lock_unsupported', 'This lock opens over Bluetooth, not with a door code.') unless lock[:method] == 'pin'
 
@@ -92,6 +98,7 @@ module TourApi
       valid_until = (now + PIN_HOURS.hours).strftime('%Y-%m-%dT%H:00:00%:z')
       access_name = access_name_of(target, lock[:mode])
       pin = issue(community, lock, now, access_name, valid_from, valid_until, stop_id)
+      record_issue!(community, record, target, guest_pin: pin)
       {
         success: true,
         stop_id: stop_id,
@@ -114,6 +121,7 @@ module TourApi
       lock = describe(idx, record)
       raise ApiError.unprocessable('no_lock', 'This stop has no smart lock.') unless lock
       raise ApiError.unprocessable('locks_disabled', 'Smart locks are turned off for this property.') unless community.enable_locks
+      raise ApiError.unprocessable('lock_unsupported', VENDOR_OFF) if lock[:provider] == 'Igloohome' && !vendor_on?(community)
       raise ApiError.unprocessable('lock_unsupported', unsupported_message(lock)) unless lock[:supported]
       raise ApiError.unprocessable('lock_unsupported', 'This lock opens with a door code, not over Bluetooth.') unless lock[:method] == 'bluetooth' && lock[:provider] == 'Igloohome'
 
@@ -130,6 +138,7 @@ module TourApi
         Rails.logger.warn("[tour-api] lock key refused property=#{community.id} stop=#{stop_id} status=#{access[:status]}")
         raise ApiError.new(502, 'lock_unavailable', 'The lock service did not issue a Bluetooth key. Please try again.')
       end
+      record_issue!(community, record, target, guest_pin: access[:guest_pin], guest_bluetooth_key: access[:bluetooth_key], guest_key: access[:key_id])
 
       {
         success: true,
@@ -155,6 +164,26 @@ module TourApi
 
       model = match[1] == 'unit' ? Unit : Amenity
       model.find_by(id: match[2].to_i, community_id: community.id) || raise(invalid)
+    end
+
+    VENDOR_OFF = 'This property\'s igloohome locks are switched off.'
+
+    # `communities.multiple_locks_provider` lists the vendors staff turned on.
+    def vendor_on?(community)
+      Array(community.multiple_locks_provider).include?('Igloohome')
+    end
+
+    # The audit row the legacy tour start wrote per issuance (`igloohome_guests`,
+    # what the Locks tab lists as "issued codes"). The app's visitor is a CMS
+    # user, not a TourUser, so `tour_user_id` stays nil; a failure to write
+    # the row never fails the issuance.
+    def record_issue!(community, record, target, guest_pin: nil, guest_bluetooth_key: nil, guest_key: nil)
+      IgloohomeGuest.create!(
+        community_id: community.id, tour_user_id: nil, guest_pin: guest_pin, guest_bluetooth_key: guest_bluetooth_key, guest_key: guest_key,
+        stop_id: target.id, stop_type: target.class.name, guest_of_stop_type: record.class.name, guest_of_stop_id: record.id
+      )
+    rescue StandardError => e
+      Rails.logger.warn("[tour-api] lock audit row not written property=#{community.id} #{e.class}: #{e.message[0, 120]}")
     end
 
     def unsupported_message(lock)

@@ -180,21 +180,26 @@ export const StopScreen = (p: Props) => {
             )}
           </div>
 
-          {locked && realLock ? (
+          {realLock && realLock.supported && !p.virtual ? (
+            // The card stays after a code was issued or the door opened: the code must remain
+            // readable (and renewable) at the keypad, and a re-locked Bluetooth door must be
+            // openable again. Only the help / skip link belongs to the still-locked state.
             <div className="pw-stop__lockcard">
               <div className="pw-stop__lockhead">
                 <span className="pw-stop__lockicon">
-                  <Icon name="lock" size={14} strokeWidth={2.2} />
+                  <Icon name={locked ? 'lock' : 'check'} size={14} strokeWidth={2.2} />
                 </span>
                 <div>
-                  <div className="pw-stop__locktitle">{realLock.method === 'pin' ? 'Enter the door code' : 'Unlock the door'}</div>
-                  <div className="pw-stop__locksub">{realLock.method === 'pin' ? 'Get the code, then type it on the keypad next to the door.' : 'Hold your phone near the lock, then unlock.'}</div>
+                  <div className="pw-stop__locktitle">{realLock.method === 'pin' ? (locked ? 'Enter the door code' : 'Your door code') : locked ? 'Unlock the door' : 'Door unlocked'}</div>
+                  <div className="pw-stop__locksub">{realLock.method === 'pin' ? 'Get the code, then type it on the keypad next to the door.' : locked ? 'Hold your phone near the lock, then unlock.' : 'Closed again? Unlock once more from here.'}</div>
                 </div>
               </div>
               <LockAccessCard lock={realLock} pin={p.lockPin} busy={p.lockBusy} error={p.lockError} onRequest={p.onRequestPin} bluetooth={p.lockBluetooth} />
-              <button type="button" className="pw-textlink pw-textlink--muted" onClick={p.onSkip}>
-                Lock not working? Get help or skip
-              </button>
+              {locked ? (
+                <button type="button" className="pw-textlink pw-textlink--muted" onClick={p.onSkip}>
+                  Lock not working? Get help or skip
+                </button>
+              ) : null}
             </div>
           ) : null}
 

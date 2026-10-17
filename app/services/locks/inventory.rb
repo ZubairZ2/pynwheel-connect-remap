@@ -56,8 +56,10 @@ module Locks
       end
     end
 
+    # The four lists below are memoised: `as_json` and `counts` read each of
+    # them, and every `Targets.describe` of a door loads its parent record.
     def locks
-      Vendors::KEYS.flat_map do |vendor|
+      @locks ||= Vendors::KEYS.flat_map do |vendor|
         device_rows[vendor].map do |row|
           holder = holder_record(row.stop_type, row.stop_id)
           {
@@ -80,7 +82,7 @@ module Locks
 
     # Holders with lock_provider "Manual": the fixed keypad code every visitor sees.
     def manual_codes
-      holders.select { |record| record.lock_provider == Vendors::MANUAL }.map do |record|
+      @manual_codes ||= holders.select { |record| record.lock_provider == Vendors::MANUAL }.map do |record|
         {
           target: Targets.describe(record, tour_stop_ids: tour_stop_ids),
           code_present: record.access_code.present?,
@@ -92,7 +94,7 @@ module Locks
     # A lock holder that names a provider but has no device of that provider
     # (or a Manual holder with no code): the visitor cannot open the door.
     def locked_without_lock
-      holders.select { |record| missing_lock?(record) }.map do |record|
+      @locked_without_lock ||= holders.select { |record| missing_lock?(record) }.map do |record|
         {
           target: Targets.describe(record, tour_stop_ids: tour_stop_ids),
           provider: record.lock_provider,
@@ -105,7 +107,7 @@ module Locks
     # (their door when they have one), the elevators, the building entry
     # points, the access points and the tour's own start.
     def targets
-      candidate_records.map do |record|
+      @targets ||= candidate_records.map do |record|
         holder = Targets.holder_of(record)
         {
           target: Targets.describe(record, tour_stop_ids: tour_stop_ids),
@@ -237,7 +239,7 @@ module Locks
           device_rows.each_value { |rows| rows.each { |row| set << holder_record(row.stop_type, row.stop_id) } }
           set.concat(community.units.where.not(lock_provider: [nil, '']).to_a)
           set.concat(community.amenities.where.not(lock_provider: [nil, '']).to_a)
-          set.concat(community.doors.where.not(lock_provider: [nil, '']).to_a)
+          set.concat(community.doors.where.not(lock_provider: [nil, '']).includes(:attached_with).to_a)
           set.concat(elevators.select { |e| e.lock_provider.present? })
           set.concat(entry_points.select { |p| p.lock_provider.present? })
           set << tour if tour&.lock_provider.present?
@@ -270,7 +272,7 @@ module Locks
         @holder_cache[key] = case stop_type.to_s
                              when 'Unit' then community.units.find_by(id: stop_id)
                              when 'Amenity' then community.amenities.find_by(id: stop_id)
-                             when 'Door' then community.doors.find_by(id: stop_id)
+                             when 'Door' then community.doors.includes(:attached_with).find_by(id: stop_id)
                              when 'Elevator' then community.elevators.find_by(id: stop_id)
                              when 'BuildingStartingPoint' then BuildingStartingPoint.find_by(id: stop_id, community_id: community.id)
                              when 'Tour' then tour && tour.id == stop_id.to_i ? tour : nil

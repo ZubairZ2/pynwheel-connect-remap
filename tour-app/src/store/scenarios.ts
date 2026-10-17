@@ -292,12 +292,12 @@ export const locationModel = (state: Pick<AppState, 'demo' | 'location' | 'check
   const street = address.split(',')[0] || address;
   const atProperty = scenario === 'atProperty' || (scenario !== 'nearby' && perm === 'on' && (state.checkedIn || state.guestProperty === 'near' || state.guestProperty === 'qr'));
   const base = atProperty
-    ? { line: `You're at ${propertyName}`, lineSub: '', manageSub: 'Detected from your location. Not right? Refresh, scan the QR code on site, or search for the property.', primaryLabel: 'Refresh Location', primaryAction: 'refresh' as const }
-    : { line: `0.3 mi from ${propertyName}`, lineSub: `· ${street}`, manageSub: "Showing the closest property. If you're already there, refresh or scan the QR code at the entrance.", primaryLabel: 'Refresh Location', primaryAction: 'refresh' as const };
+    ? { line: `You're at ${propertyName}${DEMO}`, lineSub: '', manageSub: 'Detected from your location. Not right? Refresh, scan the QR code on site, or search for the property.', primaryLabel: 'Refresh Location', primaryAction: 'refresh' as const }
+    : { line: `0.3 mi from ${propertyName}${DEMO}`, lineSub: `· ${street}`, manageSub: "Showing the closest property. If you're already there, refresh or scan the QR code at the entrance.", primaryLabel: 'Refresh Location', primaryAction: 'refresh' as const };
   const variants: Partial<Record<LocationScenario, Pick<LocationModel, 'line' | 'lineSub' | 'manageSub' | 'primaryLabel' | 'primaryAction'>>> = {
-    approximate: { line: `~ Near ${street}`, lineSub: '· Approximate', manageSub: "Your signal is weak, so we can't tell exactly where you are. This often happens indoors. Scan the QR code at the entrance to confirm the property.", primaryLabel: 'Scan QR Code to Confirm', primaryAction: 'qr' },
-    offline: { line: `Last seen near ${street}`, lineSub: '· Offline', manageSub: `You're offline. We're showing where you were last: near ${street}. Garages and stairwells often lose signal. Move closer to an entrance and retry.`, primaryLabel: 'Retry', primaryAction: 'refresh' },
-    preciseOff: { line: 'Precise location off', lineSub: '· Turn on', manageSub: "We can see your general area but not which building you're in. In your phone's Settings, go to Pynwheel, then Location, and turn on Precise Location.", primaryLabel: 'Open Settings', primaryAction: 'settings' }
+    approximate: { line: `~ Near ${street}${DEMO}`, lineSub: '· Approximate', manageSub: "Your signal is weak, so we can't tell exactly where you are. This often happens indoors. Scan the QR code at the entrance to confirm the property.", primaryLabel: 'Scan QR Code to Confirm', primaryAction: 'qr' },
+    offline: { line: `Last seen near ${street}${DEMO}`, lineSub: '· Offline', manageSub: `You're offline. We're showing where you were last: near ${street}. Garages and stairwells often lose signal. Move closer to an entrance and retry.`, primaryLabel: 'Retry', primaryAction: 'refresh' },
+    preciseOff: { line: `Precise location off${DEMO}`, lineSub: '· Turn on', manageSub: "We can see your general area but not which building you're in. In your phone's Settings, go to Pynwheel, then Location, and turn on Precise Location.", primaryLabel: 'Open Settings', primaryAction: 'settings' }
   };
   const v = variants[scenario] ?? base;
   return {
@@ -370,7 +370,7 @@ export const checkinModel = (
   const opt = (title: string, sub: string, action: CheckinOption['action'], danger = false): CheckinOption => ({ title, sub, action, danger });
   switch (scenario) {
     case 'ready':
-      return { scenario, tone: 'ok', title: `You're at ${name}`, sub: `Your ${time} tour is ready. Check in to unlock doors for ${ACCESS_MINUTES} minutes.`, primary: 'Start In-Person Tour', primaryAction: 'start', steps: null, warn: null, options: [opt('Check in with the QR code', 'Use the code at the entrance if location is off', 'qr'), opt('Running late?', 'Let the leasing team know', 'late'), opt('Reschedule', 'Pick a different time', 'reschedule')] };
+      return { scenario, tone: 'ok', title: `You're at ${name}`, sub: `Your ${time} tour is ready. Check in to unlock doors for ${ACCESS_MINUTES} minutes.${DEMO}`, primary: 'Start In-Person Tour', primaryAction: 'start', steps: null, warn: null, options: [opt('Check in with the QR code', 'Use the code at the entrance if location is off', 'qr'), opt('Running late?', 'Let the leasing team know', 'late'), opt('Reschedule', 'Pick a different time', 'reschedule')] };
     case 'verify':
       return {
         scenario,
@@ -391,7 +391,7 @@ export const checkinModel = (
         scenario,
         tone: 'warn',
         title: 'Start your tour once you arrive',
-        sub: `You're 0.3 mi from ${name}. When you're at the property, tap Start Tour to check in and unlock doors.`,
+        sub: `You're 0.3 mi from ${name}. When you're at the property, tap Start Tour to check in and unlock doors.${DEMO}`,
         primary: 'Got It',
         primaryAction: 'close',
         steps: null,
@@ -404,7 +404,7 @@ export const checkinModel = (
         scenario,
         tone: 'ok',
         title: "You're checked in",
-        sub: `Your tour at ${name} is in progress. Door access is active for ${left} more min.`,
+        sub: `Your tour at ${name} is in progress. Door access is active for ${left} more min.${DEMO}`,
         primary: 'Continue In-Person Tour',
         primaryAction: 'resume',
         steps: null,

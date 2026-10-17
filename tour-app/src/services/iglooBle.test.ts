@@ -116,6 +116,17 @@ describe('unlockOverBluetooth', () => {
     await expect(run2).rejects.toMatchObject({ code: 'sdk_error', message: 'BluetoothException: adapter reset' });
   });
 
+  it('a scan the plugin stopped or paused was interrupted, not exhausted: cancelled, not not_found', async () => {
+    for (const reason of ['stopped', 'paused'] as const) {
+      const plugin = fakePlugin();
+      const run = unlockOverBluetooth({ lockName: 'L', key: 'k', plugin, available: true });
+      await vi.waitFor(() => expect(plugin.calls).toContain('startScan'));
+      plugin.emit('scanStopped', { reason });
+      await expect(run).rejects.toMatchObject({ code: 'cancelled' });
+      expect(plugin.connect).not.toHaveBeenCalled();
+    }
+  });
+
   it("the plugin's rejection codes reach the caller: invalid key on connect, a lock that will not open", async () => {
     const badKey = fakePlugin({ connect: vi.fn(async () => Promise.reject(rejection('invalid_key', 'InvalidKeyException'))) });
     const run = unlockOverBluetooth({ lockName: 'L', key: 'k', plugin: badKey, available: true });

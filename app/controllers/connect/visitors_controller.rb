@@ -23,6 +23,9 @@ module Connect
     CONNECT_WRITE_ACTIONS = %w[create reschedule cancel reset_stops id_review reset_verification remove_pii destroy].freeze
 
     before_action :require_super_admin!, only: %w[remove_pii destroy]
+    # The legacy "visitor_detail_page" role may only open its own visitor record
+    # (TourUsersController#show); it gets no list, profile or export here.
+    before_action :refuse_visitor_detail_role!, only: %w[index show export]
 
     def index
       render_connect(Visitors::Query.new(@community, filters).as_json)
@@ -119,11 +122,19 @@ module Connect
         visitor
       end
 
+      # Cheap checks first: the cancelled bookings come from PaperTrail versions
+      # (up to 500 YAML documents), so they are read last and only when needed.
       def visitor_of_property?(visitor)
         return true if @community.schedual_tours.where(tour_user_id: visitor.id).exists?
-        return true if Visitors::Cancelled.for(@community).any? { |booking| booking.tour_user_id == visitor.id }
+        return true if TourHistory.where(tour_user_id: visitor.id).where(tour_id: Tour.where(community_id: @community.id).select(:id)).or(TourHistory.where(tour_user_id: visitor.id, community_id: @community.id)).exists?
 
-        TourHistory.where(tour_user_id: visitor.id).where(tour_id: Tour.where(community_id: @community.id).select(:id)).or(TourHistory.where(tour_user_id: visitor.id, community_id: @community.id)).exists?
+        Visitors::Cancelled.for(@community).any? { |booking| booking.tour_user_id == visitor.id }
+      end
+
+      def refuse_visitor_detail_role!
+        return unless current_user&.is_view_visitor_details_page?
+
+        render_connect_error(:forbidden, code: 'forbidden', message: 'This account may only open its own visitor record.')
       end
 
       def booking!

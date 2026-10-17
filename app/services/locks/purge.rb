@@ -17,11 +17,24 @@ module Locks
       count = 0
       ApplicationRecord.transaction do
         rows.find_each do |row|
+          holder = row.stop_id.present? ? (row.stop rescue nil) : nil
           row.destroy!
           count += 1
+          release_holder!(holder, vendor)
         end
       end
       count
+    end
+
+    # The legacy destroy callback blanks only the holder's `lock_provider`; the
+    # access code and the unit's or amenity's own provider (set when a device
+    # is mapped to its door) stayed behind and read as "locked, no lock".
+    def release_holder!(holder, vendor)
+      return if holder.nil?
+
+      holder.update_columns(lock_provider: '', access_code: '') if holder.lock_provider.blank? || holder.lock_provider == vendor
+      parent = holder.is_a?(Door) ? holder.attached_with : nil
+      parent.update_columns(lock_provider: '', access_code: '') if (parent.is_a?(Unit) || parent.is_a?(Amenity)) && parent.lock_provider == vendor
     end
   end
 end

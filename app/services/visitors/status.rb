@@ -32,14 +32,17 @@ module Visitors
       (community.community_tour&.grace_period || 10).to_i
     end
 
-    def booking_status(booking, community, now)
+    # `grace:` lets a caller that classifies many bookings resolve the
+    # property's grace period once (`community_tour` is a query every call:
+    # Visitors::Query and Profile pass it in; see the October 17, 2026 QA pass).
+    def booking_status(booking, community, now, grace: nil)
       return 'cancelled' if booking.respond_to?(:cancelled?) && booking.cancelled?
       return 'completed' if booking.is_tour_completed
 
       at = booked_at(booking, now.time_zone)
       return 'upcoming' if at.nil?
 
-      at + grace_minutes(community).minutes > now ? 'upcoming' : 'missed'
+      at + (grace || grace_minutes(community)).minutes > now ? 'upcoming' : 'missed'
     end
 
     def visit_status(history, now)

@@ -545,3 +545,30 @@ and never a missed one); dismissing the guest gate with Keep Browsing kept the p
 Device builds (iOS / Android) were not run; the real lock request was not issued on purpose; the design's agent chat, booking, apply,
 hold, verification, survey and share actions stay local (the CMS has no endpoints for them); the Explore hero of a real listing is the
 generic site plan (the listing endpoint carries no image).
+
+## 20. Final platform QA pass (October 18, 2026)
+
+Branch `qa/final-platform-regression-2026-10-17`; report `FINAL_PLATFORM_QA_REPORT_2026-10-17.md`.
+
+- **Critical fix:** `StopScreen.tsx` rendered the lock card only while the stop was locked, and `lockPinReady` marks
+  the stop unlocked, so an issued door code vanished immediately and could never be read or renewed (the Bluetooth
+  "unlock once more" state was unreachable too). The card now renders for every supported real lock; verified in
+  headless Chrome on Hazel with `POST …/locks/pin` answered by a mocked code (no vendor call).
+- Also fixed: cancelling while the Bluetooth key is fetched left the stop loading (`useAppActions`); a failed online
+  application marked the journey applied (`applyFailed`); a stop's lock answer cleared another stop's in-flight request;
+  `signOut` kept `verified`; Capacitor bridge logging (`loggingBehavior: 'none'`) no longer prints the guest key. Tests:
+  `src/store/qaFixes.test.ts` (6); vitest 68/68, tsc and `vite build` clean; Android plugin tests 4/4, debug APK built.
+- Verified on real Hazel data (clone): the virtual journey end to end (29 steps, four floors, Avoid stairs, Summary) and
+  the in-person journey through Settings › Demo scenarios (Today + At property + verified) to the lock stop; 0 console
+  errors; only the existing `/api/tour/v1` reads.
+- Open (not fixed): native cancel during connect/unlock never settles the promise; the 30 s Rx timeout on the connect
+  observable; iOS plugin not wired into `CapApp-SPM`, `NSBluetoothAlwaysUsageDescription` missing, timer/permission
+  defects; unmarked simulated copy ("You're 0.3 mi from …", 45-minute access, saved-units count, chat hours);
+  the Demo scenarios panel is reachable by every visitor. Hardware validation remains blocked.
+
+### 20a. Resolution round (October 18, 2026)
+Demo marks on every simulated line, `pendingAfterAuth` hygiene, sign-out on Back / guest, typed malformed-response
+errors, the Demo scenarios panel gated by `VITE_DEMO_SCENARIOS` (always on in dev), and the chosen starting point sent
+as `start_stop_id` to `POST …/tour-route` (the tour starts and finishes at the chosen entry gate). Plugin: pending calls
+rejected with `cancelled`, first-emission connect timeout, Swift timer / permission / no-SDK fixes, DFU pinned, Swift
+package resolution proven. Report §29.

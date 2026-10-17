@@ -67,13 +67,13 @@ describe('location scenario (the locationScenario tweak)', () => {
     const on = locationModel({ ...s, location: { ...s.location, perm: 'on' } }, 'Luxe', '3401 Blake St, Denver');
     expect(on.perm).toBe('on');
     expect(on.atProperty).toBe(false);
-    expect(on.line).toBe('0.3 mi from Luxe');
+    expect(on.line).toBe('0.3 mi from Luxe *');
     expect(locationModel({ ...s, location: { ...s.location, perm: 'on' }, checkedIn: true }, 'Luxe', 'a').atProperty).toBe(true);
   });
   it('forces every variant from the demo switch', () => {
     const s = initialAppState();
     expect(locationModel({ ...s, demo: { ...s.demo, location: 'denied' } }, 'L', 'a').perm).toBe('off');
-    expect(locationModel({ ...s, demo: { ...s.demo, location: 'atProperty' } }, 'L', 'a').line).toBe("You're at L");
+    expect(locationModel({ ...s, demo: { ...s.demo, location: 'atProperty' } }, 'L', 'a').line).toBe("You're at L *");
     expect(locationModel({ ...s, demo: { ...s.demo, location: 'nearby' } }, 'L', 'a').atProperty).toBe(false);
     expect(locationModel({ ...s, demo: { ...s.demo, location: 'approximate' } }, 'L', '3401 Blake St, Denver').primaryAction).toBe('qr');
     expect(locationModel({ ...s, demo: { ...s.demo, location: 'offline' } }, 'L', 'a').lineSub).toBe('· Offline');

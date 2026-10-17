@@ -82,6 +82,8 @@ module Connect
 
     # The property's "Enable locks" switch (communities.enable_locks, the Settings page).
     def enabled
+      raise Connect::DomainError.invalid('missing_enabled', 'Say whether locks are on or off.') unless params.key?(:enabled)
+
       value = boolean(params[:enabled])
       @community.update_columns(enable_locks: value) if @community.enable_locks != value
       audit('locks_enabled', enabled: value)

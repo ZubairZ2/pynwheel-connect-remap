@@ -13,11 +13,15 @@ module Visitors
     PER_DEFAULT = 25
     PER_MAX = 100
     BOOKING_LIMIT = 3000
+    HISTORY_LIMIT = 5000
 
     Row = Struct.new(:visitor, :bookings, :sessions, :status, :when_at, :type, :source, :flags, :id_check, keyword_init: true)
 
-    def initialize(community, filters = {})
+    # `visitor_id:` scopes the bookings and visits to one visitor (the profile
+    # and the writes need one row, not the whole property).
+    def initialize(community, filters = {}, visitor_id: nil)
       @community = community
+      @visitor_id = visitor_id
       @filters = filters.to_h.with_indifferent_access
       @zone = ActiveSupport::TimeZone[Status.tz(community)] || ActiveSupport::TimeZone['UTC']
       @now = Time.now.in_time_zone(@zone)
@@ -110,25 +114,44 @@ module Visitors
         end
       end
 
+      # Resolved once per query: both go through `community_tour` (a query per
+      # call) and are needed for every booking and visit of the list.
       def stay_limit
-        (community.community_tour&.tour_setting&.length_stay_limit || 45).to_i
+        @stay_limit ||= (community.community_tour&.tour_setting&.length_stay_limit || 45).to_i
+      end
+
+      def grace
+        @grace ||= Status.grace_minutes(community)
       end
 
       def bookings
-        @bookings ||= community.schedual_tours.where.not(tour_user_id: nil).order(Arel.sql('coalesce(tour_date, created_at) desc, id desc')).limit(BOOKING_LIMIT).to_a + Cancelled.for(community)
+        @bookings ||= begin
+          scope = community.schedual_tours.where.not(tour_user_id: nil)
+          scope = scope.where(tour_user_id: @visitor_id) if @visitor_id
+          cancelled = Cancelled.for(community)
+          cancelled = cancelled.select { |booking| booking.tour_user_id == @visitor_id } if @visitor_id
+          scope.order(Arel.sql('coalesce(tour_date, created_at) desc, id desc')).limit(BOOKING_LIMIT).to_a + cancelled
+        end
       end
 
       def tour_ids
         @tour_ids ||= Tour.where(community_id: community.id).pluck(:id)
       end
 
+      # The property's visits, newest first, bounded like the bookings are
+      # (HISTORY_LIMIT): a property with years of visits is not loaded whole.
       def histories
-        @histories ||= TourHistory.where(tour_id: tour_ids).or(TourHistory.where(community_id: community.id)).where.not(tour_user_id: nil).order(arrived: :desc, id: :desc).to_a
+        @histories ||= begin
+          scope = TourHistory.where(tour_id: tour_ids).or(TourHistory.where(community_id: community.id)).where.not(tour_user_id: nil)
+          scope = scope.where(tour_user_id: @visitor_id) if @visitor_id
+          scope.order(arrived: :desc, id: :desc).limit(HISTORY_LIMIT).to_a
+        end
       end
 
       def visitors
         @visitors ||= begin
           ids = (bookings.map(&:tour_user_id) + histories.map(&:tour_user_id)).compact.uniq
+          ids &= [@visitor_id] if @visitor_id
           TourUser.where(id: ids).to_a
         end
       end
@@ -144,7 +167,7 @@ module Visitors
       def build_row(visitor)
         vb = (bookings_by_visitor[visitor.id] || []).sort_by { |b| [-(Status.booked_at(b, @zone) || b.created_at).to_i, -b.id] }
         vs = (histories_by_visitor[visitor.id] || []).reject { |h| h.history == true }
-        statuses = vb.map { |b| [b, Status.booking_status(b, community, now)] }
+        statuses = vb.map { |b| [b, Status.booking_status(b, community, now, grace: grace)] }
         active = vs.find { |h| Status.visit_status(h, now) == 'in_progress' }
         upcoming = statuses.select { |_b, st| st == 'upcoming' }.map(&:first).sort_by { |b| (Status.booked_at(b, @zone) || now + 1000.years).to_i }
         status, when_at = if active
@@ -212,7 +235,7 @@ module Visitors
 
       def coming_today_count
         today = now.to_date
-        rows.sum { |row| row.bookings.count { |b| Status.booking_status(b, community, now) == 'upcoming' && b.tour_date == today } }
+        rows.sum { |row| row.bookings.count { |b| Status.booking_status(b, community, now, grace: grace) == 'upcoming' && b.tour_date == today } }
       end
   end
 end

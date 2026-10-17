@@ -58,11 +58,16 @@ export const useTourBooking = (propertyId: number, enabled = true) => {
   const [preview, setPreview] = useState<Availability | null>(null);
   const [previewDate, setPreviewDate] = useState<string | null>(null);
 
-  const adopt = useCallback((next: BookingSettings) => {
+  /**
+   * The settings the CMS answered become the base. A load restarts every
+   * draft; a save restarts only the saved section's, so unsaved edits in the
+   * other two sections survive it.
+   */
+  const adopt = useCallback((next: BookingSettings, only: 'rules' | 'hours' | 'form' | null = null) => {
     setSettings(next);
-    setRulesState(rulesDraftOf(next));
-    setHoursState(hoursDraftOf(next));
-    setFormState(formDraftOf(next));
+    if (!only || only === 'rules') setRulesState(rulesDraftOf(next));
+    if (!only || only === 'hours') setHoursState(hoursDraftOf(next));
+    if (!only || only === 'form') setFormState(formDraftOf(next));
   }, []);
 
   const load = useCallback(async () => {
@@ -79,9 +84,11 @@ export const useTourBooking = (propertyId: number, enabled = true) => {
   }, [adopt, propertyId]);
 
   useEffect(() => {
-    if (!enabled || settings || loading) return;
+    // A failed read keeps `settings` null: without the `error` guard the effect
+    // would call load() again as soon as `loading` drops, without end.
+    if (!enabled || settings || loading || error) return;
     void load();
-  }, [enabled, load, loading, settings]);
+  }, [enabled, error, load, loading, settings]);
 
   const canEdit = !!meta?.canEdit && !!meta?.writesEnabled;
   const refuse = useCallback(() => toast(i18n.t(meta?.writesEnabled ? X.readOnly : X.writesOff)), [meta?.writesEnabled, toast]);
@@ -91,7 +98,7 @@ export const useTourBooking = (propertyId: number, enabled = true) => {
       setSaving(kind);
       const result = await tourPost<BookingSettings>(propertyId, path, payload);
       if (result.ok) {
-        adopt(result.data);
+        adopt(result.data, kind);
         setMeta(result.meta);
         toast(success);
       } else {
@@ -170,14 +177,14 @@ export const useTourBooking = (propertyId: number, enabled = true) => {
   );
 
   const saveHours = useCallback(async () => {
-    if (!hours) return;
+    if (!hours || !settings) return;
     if (!canEdit) return refuse();
     const problem = Object.values(hourErrors)[0];
     if (problem) return toast(problem);
     if (!hoursDirty) return toast(i18n.t(X.nothingToSave));
-    const ok = await write('hours', 'booking/hours', hoursPayload(hours), i18n.t(B.hours.saved));
+    const ok = await write('hours', 'booking/hours', hoursPayload(hours, settings), i18n.t(B.hours.saved));
     if (ok) setHoursEditor(null);
-  }, [canEdit, hourErrors, hours, hoursDirty, refuse, toast, write]);
+  }, [canEdit, hourErrors, hours, hoursDirty, refuse, settings, toast, write]);
 
   /* ── form ─────────────────────────────────────────────────────────── */
 

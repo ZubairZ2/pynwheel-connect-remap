@@ -58,7 +58,10 @@ export const useAppActions = () => {
       const nodes = chosen.length ? chosen : all;
       dispatch({ type: 'tourCalculating', mode });
       try {
-        const result = await repository.getTourRoute(nodes, { stepFree });
+        // The entry gate chosen on Before You Start (a real graph node: `bsp:<id>` or the tour start); the
+        // dummy fallback id 'start' is not a node and is left out.
+        const startId = state.startPointId && state.startPointId !== 'start' ? state.startPointId : null;
+        const result = await repository.getTourRoute(nodes, { stepFree, startId });
         if (!result.ok) {
           dispatch({ type: 'tourFailed', message: result.error.message });
           return;
@@ -71,7 +74,8 @@ export const useAppActions = () => {
         dispatch({ type: 'tourReady', tour: result.tour, order, mode });
         void success();
       } catch (error) {
-        dispatch({ type: 'tourFailed', message: error instanceof Error ? error.message : 'The route could not be calculated.' });
+        // A typed error (the API's own message, a malformed answer) is readable; a programming error is not.
+        dispatch({ type: 'tourFailed', message: error instanceof TypeError || error instanceof RangeError ? 'The route could not be calculated.' : messageOf(error, 'The route could not be calculated.') });
       }
     };
 
@@ -147,21 +151,35 @@ export const useAppActions = () => {
         }
       },
 
-      continueAsGuest: () => dispatch({ type: 'continueAsGuest' }),
+      /** Back from the "Does everything look good?" confirmation abandons the sign-in: the token is logged out too. */
+      authBack: () => {
+        const live = state.authStep === 'confirm' && state.signedIn;
+        dispatch({ type: 'authBack' });
+        if (live) void repository.logout().catch(() => undefined);
+      },
+
+      /** Guest mode never coexists with a live session: a signed-in visitor who chooses it is logged out first. */
+      continueAsGuest: () => {
+        const live = state.signedIn;
+        dispatch({ type: 'continueAsGuest' });
+        if (live) void repository.logout().catch(() => undefined);
+      },
       guestSignIn: () => dispatch({ type: 'guestSignIn' }),
 
-      /** Switch to another property (only tourable ones can be chosen). */
-      selectProperty: async (propertyId: number, tourable: boolean, name: string) => {
+      /** Switch to another property (only tourable ones can be chosen); `then` opens Schedule on it once the switch succeeded. */
+      selectProperty: async (propertyId: number, tourable: boolean, name: string, then: 'schedule' | null = null) => {
         if (!tourable) {
           toast(`${name} has no Self-Guided Tour yet, so it cannot be toured in the app.`);
-          return;
+          return false;
         }
         try {
           await repository.selectProperty(propertyId);
-          dispatch({ type: 'selectProperty', propertyId });
+          dispatch({ type: 'selectProperty', propertyId, then });
           void tap();
+          return true;
         } catch (error) {
           toast(messageOf(error, 'The property could not be selected.'));
+          return false;
         }
       },
 
@@ -394,7 +412,12 @@ export const useAppActions = () => {
           if (!key || stale) {
             dispatch({ type: 'lockPhase', node, propertyId, status: 'loading' });
             key = await repository.getStopLockBluetoothKey(node);
-            if (controller.signal.aborted) return;
+            if (controller.signal.aborted) {
+              // Cancelled while the key was being fetched: clear the "Getting your key…" status,
+              // or the stop stays loading with a Cancel button that no longer does anything.
+              dispatch({ type: 'lockPinDismiss' });
+              return;
+            }
             dispatch({ type: 'lockKeyReady', node, propertyId, key });
           }
           await unlockOverBluetooth({
@@ -559,7 +582,7 @@ export const useAppActions = () => {
           dispatch({ type: 'applyDone', message: `Application started for ${unit?.name ?? 'your unit'} — check your email to finish.${mark}` });
           void success();
         } catch (error) {
-          dispatch({ type: 'applyDone', message: error instanceof FeatureUnavailableError ? error.message : `The application could not be started. Please try again.${mark}` });
+          dispatch({ type: 'applyFailed', message: error instanceof FeatureUnavailableError ? error.message : `The application could not be started. Please try again.${mark}` });
         }
       },
       holdUnit: (node: string) => {

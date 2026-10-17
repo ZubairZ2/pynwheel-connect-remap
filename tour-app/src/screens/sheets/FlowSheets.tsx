@@ -120,7 +120,7 @@ export const ChatOptionsSheet = ({ open, agentOnline, onAi, onAgent, onClose }: 
     ) : (
       <div className="pw-chatopts__offline">
         <i />
-        No leasing agents are online right now. The AI assistant can help, or call the office between 9 AM and 6 PM.
+        No leasing agents are online right now. The AI assistant can help, or call the office between 9 AM and 6 PM.{DEMO}
       </div>
     )}
     <button type="button" className="pw-textlink" onClick={onClose}>
@@ -623,7 +623,7 @@ export const SafetyBar = ({ remainingMs, onLeasing, onSos, onReport }: { remaini
     <div className="pw-safety__time">
       <Icon name="clock" size={14} />
       <span>{fmtClock(remainingMs)}</span>
-      <i>left</i>
+      <i>left{DEMO}</i>
     </div>
     <button type="button" onClick={onLeasing}>
       <Icon name="phone" size={12} strokeWidth={2.2} />

@@ -171,3 +171,18 @@ the honest note.
    it can only prove that the plugin loads and answers `unsupported`.
 5. The backup keypad PIN the backend returns with the key (`guest_pin`, as the legacy flow fetched it) is kept in
    the store but not shown, to match the legacy screen; showing it when Bluetooth fails would be a small addition.
+
+## 10. Final platform QA pass (October 18, 2026)
+
+- Still **BLOCKED for hardware**: no Android device or AVD on this Mac, no lock enrolled under Pynwheel's partner account
+  within reach; the APK was rebuilt (10.7 MB) and its manifest, native libraries and dex contents re-verified; plugin
+  JVM tests 4/4.
+- **iOS still unproven**: the plugin is not referenced by `ios/App/CapApp-SPM/Package.swift`, `Info.plist` lacks
+  `NSBluetoothAlwaysUsageDescription`, and the review found the Swift plugin's scan timer runs on a queue without a run
+  loop and `requestPermissions` resolves before the system prompt answers; `swift package resolve` had not completed
+  at report time.
+- Review findings in the Java plugin (not fixed): cancelling during connect/unlock disposes the Rx subscription without
+  rejecting the pending `PluginCall` (the JS promise never settles, the stop stays "Connecting…"); the 30 s `timeout` on
+  the connect observable tears a live connection down 30 s after connecting; `scanStopped{reason:'paused'}` maps to
+  `not_found`. Fixed in JS: cancel while the key is fetched (`lockPinDismiss`); the card now stays visible after an
+  unlock so "unlock once more" is reachable; Capacitor bridge logging disabled so the guest key is not printed.

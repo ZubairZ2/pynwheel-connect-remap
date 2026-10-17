@@ -53,6 +53,10 @@ module Bookings
       previous = {}
       ApplicationRecord.transaction do
         existing = MaxDateScheduledTourService.new(visitor, community, true).get_scheduled_tour
+        # The legacy service answers the visitor's first row unchecked when that
+        # row has no date (an old unscheduled visit); only a dated booking that
+        # is still upcoming is reused, anything else gets a new row.
+        existing = nil if existing && (existing.tour_date.blank? || Visitors::Status.booking_status(existing, community, @availability.now) != 'upcoming')
         if existing.present? && !existing.is_tour_completed
           booking = existing
           rescheduled = existing.tour_user_id.present?
@@ -134,7 +138,13 @@ module Bookings
         visitor.phone_number = phone
         visitor.email = email
         visitor.desired_bedroom = attrs[:desired_bedroom].presence
-        visitor.is_sms_enabled = attrs.key?(:is_sms_enabled) ? ActiveModel::Type::Boolean.new.cast(attrs[:is_sms_enabled]) != false : true
+        # A visitor who opted out of SMS stays opted out when a later booking
+        # does not say otherwise; only a new visitor defaults to opted in.
+        if attrs.key?(:is_sms_enabled)
+          visitor.is_sms_enabled = ActiveModel::Type::Boolean.new.cast(attrs[:is_sms_enabled]) != false
+        elsif visitor.new_record?
+          visitor.is_sms_enabled = true
+        end
         raise Connect::DomainError.invalid('invalid_visitor', visitor.errors.full_messages.join(', ')) unless visitor.save
 
         visitor

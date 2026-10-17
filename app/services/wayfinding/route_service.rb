@@ -22,7 +22,8 @@ module Wayfinding
       no_step_free: 'No step-free route: every way between those floors uses stairs.',
       no_vertical_link: 'Nothing links those floors. Add an elevator or stairs that serves both.',
       no_building_link: 'Nothing links building %{a} to building %{b}. Add an entry or exit point to each.',
-      no_start: 'The tour has no starting point on the map.'
+      no_start: 'The tour has no starting point on the map.',
+      unknown_start: 'That starting point is not one of the property\'s entry gates.'
     }.freeze
 
     def initialize(community, from: nil, to: nil, step_free: false, avoid_blockers: true, from_floor: nil, to_floor: nil, graph: nil)

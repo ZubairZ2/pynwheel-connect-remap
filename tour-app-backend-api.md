@@ -724,3 +724,18 @@ native igloohome plugin. Additive; the v2 / v3 endpoint of §16 and the legacy n
 
 The key travels to the phone once per tour (the app keeps it in memory, never in storage) and is never logged.
 Tests: `locks_test.rb` is 15 tests; the Tour App API suite 84 runs / 605 assertions / 0 failures.
+
+## 17. Final platform QA pass (October 18, 2026)
+
+- `test/controllers/api/tour_app` and `test/services/tour_api` are green on `main` `e86a28024` plus the QA branch; the
+  lock endpoints never wrote a PIN or key to the Rails log during the browser runs (the door-code request was mocked in
+  the browser, so the backend saw none).
+- Review findings left open: `pin!` / `bluetooth_key!` write no `IgloohomeGuest` audit row and do not check
+  `communities.multiple_locks_provider`; see `FINAL_PLATFORM_QA_REPORT_2026-10-17.md` §25.
+- The legacy mobile `GET /api/self_tour/v1/communities/:id/wayfinding.json` answers 200 for 8005, 1618, 1411, 1412 and
+  422 for 818 (no plates, no path data); its two writes per call are the legacy `impressions` request log.
+
+### 17a. Resolution round (October 18, 2026)
+`POST /api/tour/v1/properties/:id/tour-route` accepts `start_stop_id` (`bsp:<id>` or the tour start; 422
+`unknown_start` otherwise). `POST …/locks/pin` and `…/locks/bluetooth-key` require Igloohome in
+`communities.multiple_locks_provider` and write an `igloohome_guests` row (no `tour_user`) per issuance.
