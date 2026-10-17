@@ -88,7 +88,7 @@ export const tourSetupRoute = (propId: string): string => `/properties/${propId}
 export const brandingRoute = (propId: string): string => `/properties/${propId}/branding`;
 export const contentRoute = (propId: string): string => `/properties/${propId}/content`;
 
-/** The Tours page opened on one of its tabs (`overview`, `stops`, `elevators`, `routing`, `visitors`, `chat`, `settings`). */
+/** The Tours page opened on one of its tabs (`overview`, `stops`, `elevators`, `locks`, `visitors`, `chat`, `settings`). */
 export const propToursRoute = (propId: string, tab?: string): string =>
   tab ? `${tourSetupRoute(propId)}?tab=${encodeURIComponent(tab)}` : tourSetupRoute(propId);
 
