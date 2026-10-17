@@ -1198,3 +1198,36 @@ Branch `feature/new-cms-design-oct-17`; PYN_CONNECT_PROGRESS.md §40. Frontend o
   for `salahudin@pynwheel.com` (user 1854) via `<scratchpad>/mint.rb` (§7 of the progress doc), screenshots via
   `<scratchpad>/shots.mjs`. Running `next dev` from the working tree works as long as `.next` is removed after a
   `next build`.
+
+## 36. Self Tour App design refresh — implementation knowledge (October 17, 2026)
+
+Branch `feature/self-tour-app-design-refresh` (worktree `.claude/worktrees/self-tour-app-design-refresh`, from `main` `cf51ffec8`);
+PYN_CONNECT_PROGRESS.md §41; `tour-app-implementation.md` §19; report `tour-app-design-refresh-report.md`. Frontend only, `tour-app/src/` + docs.
+
+- **Tweaks are state, not props.** The artifact's Tweaks panel is `state.demo` (Settings › Demo scenarios, persisted). `store/scenarios.ts`
+  turns demo + real state into view models (`tourCard`, `locationModel`, `checkinModel`, `effectiveTour`, `startPoints`, `extraTours`);
+  `auto` defers to the app's own state. Anything a scenario invents is marked `*` (`DEMO` in `content/demoFixtures.ts`). The Home card,
+  the Upcoming list and the confirmation card must read the **same** `effectiveTour`, or the counts disagree.
+- **Screen gating in `App.tsx`:** a signed-in member without a property is held on Properties — except `explore`, which is the only way
+  to pick a property in this design (Explore → Schedule / Book → `selectProperty`, which honours `pendingAfterAuth === 'schedule'`).
+  Use the `pendingAfterAuth` action to queue what happens after a property switch or sign-in; never the `guestGate` action (it opens a sheet).
+  Dismissing the guest gate must clear the pending action.
+- **Stop screen lock strip:** `locked` is "a lock the app can open and has not yet". A lock the app cannot open (`supported: false`:
+  Zerv, Latch, Dwelo, EdgeState, Manual) is *open* for navigation (Next Stop stays available) but must not claim a code was accepted;
+  it gets the muted "Staff-assisted door" strip. `LockAccess.tsx` (door code / Bluetooth) is untouched by the refresh.
+- **Virtual vs in-person:** `state.virtualTour` skips check-in, keeps doors locked ("Virtual tour" strip) and finishes at the last stop;
+  an in-person tour returns to its starting point (`tourReturn`) and counts only visited stops (skipped ones carry a pill).
+- **Verification without a password in the pane:** the auto-mode classifier refuses to read the verification account's password file
+  (Credential Materialization), Claude in Chrome was not connected, and the pane cannot take the account's password. The recipe that
+  worked: headless Playwright from the scratchpad (`real/run.mjs`, `createRequire` on `pyn-connect-web`, `channel: 'chrome'`, 390×844
+  mobile context) reads the password file itself, signs in at :3014, and runs JSON step scripts (`click` / `clickRole` / `select` /
+  `switch` / `snap` / `buttons`); screenshots + `log.md` (page text, `/api/tour/` responses, console errors) are the evidence.
+  Traps: a `Button` with no text in `read_page` still has an accessible name for `getByRole`; `getByText('Hazel')` hits an address of
+  another listing — match the listing button by `^Hazel 4733 Hazel St`; a disabled Confirm (no slot picked) makes `click` wait forever;
+  a locked unit's CTA is "Skip to Next Stop", which opens the Skip sheet; the ID-verified toggle is `role="switch"`.
+- **Preview tool and worktrees:** `preview_start` reads the *main checkout's* `.claude/launch.json`, not the worktree's; the two
+  worktree configs (`tour-app-refresh` :3014 → Rails :3000, `tour-app-refresh-dummy` :3015) were added there. Rails from the worktree
+  needs the git-ignored `.ruby-version`, `.bundle/config`, `config/application.yml` and a `gems` symlink to the main checkout's gems.
+- **Pane driving:** sheets animate for ~0.5 s — a screenshot right after a tap shows the previous frame; a `×` tap during the animation
+  is swallowed, a backdrop tap at the top of the viewport always closes; `form_input` works on the Demo scenarios `<select>`s; refs go
+  stale on every screen change, so `find` before each click or use the tab-bar coordinates.

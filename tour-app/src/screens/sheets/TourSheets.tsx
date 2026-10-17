@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import communityPhoto from '~/assets/images/community-pool.jpg';
+import { DEMO } from '~/content/demoFixtures';
 import { Icon } from '~/components/Icon';
 import { Button, IconButton, Modal, Sheet } from '~/components/ui';
 import { useKeyboardInset } from '~/hooks/useDevice';
@@ -8,7 +9,7 @@ import type { AiMessage } from '~/store/appState';
 import type { TourStopView } from '~/store/selectors';
 
 export const HelpSheet = ({ open, items, expanded, supportEmail, onToggle, onClose }: { open: boolean; items: HelpItem[]; expanded: Record<string, boolean>; supportEmail: string; onToggle: (id: string) => void; onClose: () => void }) => (
-  <Sheet open={open} onClose={onClose} title="Help & Support">
+  <Sheet open={open} onClose={onClose} title="Help & Support" size="scroll">
     <div className="pw-help">
       {items.map((item) => (
         <div key={item.id} className="pw-help__item">
@@ -27,15 +28,15 @@ export const HelpSheet = ({ open, items, expanded, supportEmail, onToggle, onClo
   </Sheet>
 );
 
-export const ItinerarySheet = ({ open, stops, stopIndex, onAdd, onJump, onClose }: { open: boolean; stops: TourStopView[]; stopIndex: number; onAdd: () => void; onJump: (node: string) => void; onClose: () => void }) => (
+export const ItinerarySheet = ({ open, stops, stopIndex, skipped, onAdd, onJump, onClose }: { open: boolean; stops: TourStopView[]; stopIndex: number; skipped: Record<string, string>; onAdd: () => void; onJump: (node: string) => void; onClose: () => void }) => (
   <Sheet open={open} onClose={onClose} title={<span className="pw-sheet__title--18">Tour Itinerary</span>} size="scroll">
     <div className="pw-itin">
       {stops.length ? (
         stops.map((s, i) => (
           <button key={s.node} type="button" className="pw-itin__row" onClick={() => onJump(s.node)}>
             {i < stopIndex ? (
-              <span className="pw-itin__done">
-                <Icon name="check" size={11} color="#fff" strokeWidth={3} />
+              <span className={`pw-itin__done${skipped[s.node] ? ' pw-itin__done--skipped' : ''}`}>
+                <Icon name={skipped[s.node] ? 'close' : 'check'} size={11} color="#fff" strokeWidth={3} />
               </span>
             ) : i === stopIndex ? (
               <span className="pw-itin__current" />
@@ -45,7 +46,7 @@ export const ItinerarySheet = ({ open, stops, stopIndex, onAdd, onJump, onClose 
             <span className="pw-itin__text">
               <span className="pw-itin__name">{s.name}</span>
               <span className="pw-itin__meta">
-                {s.kind === 'unit' ? s.floorLabel : s.floor} · {s.duration} min
+                {s.kind === 'unit' ? s.floorLabel : s.floor} · {s.duration} min{skipped[s.node] ? ' · skipped' : ''}
               </span>
             </span>
           </button>
@@ -61,7 +62,7 @@ export const ItinerarySheet = ({ open, stops, stopIndex, onAdd, onJump, onClose 
 );
 
 export const AddStopSheet = ({ open, stops, onAdd, onClose }: { open: boolean; stops: TourStopView[]; onAdd: (node: string) => void; onClose: () => void }) => (
-  <Sheet open={open} onClose={onClose} title={<span className="pw-sheet__title--18">Add A Stop</span>} zIndex={310}>
+  <Sheet open={open} onClose={onClose} title={<span className="pw-sheet__title--18">Add A Stop</span>} zIndex={310} size="scroll">
     <div className="pw-itin">
       {stops.length ? (
         stops.map((s) => (
@@ -94,43 +95,61 @@ export const NoteSheet = ({ open, stopName, draft, onChange, onSave, onClose }: 
   );
 };
 
-export const VideoModal = ({ open, stopName, onClose }: { open: boolean; stopName: string; onClose: () => void }) => (
+export const VideoModal = ({ open, stopName, videoUrl, onClose }: { open: boolean; stopName: string; videoUrl?: string | null; onClose: () => void }) => (
   <Modal open={open} onClose={onClose}>
     <IconButton icon="close" label="Close" tone="round" className="pw-video__close" onClick={onClose} />
-    <img src={communityPhoto} alt="Video tour" className="pw-video__poster" />
-    <div className="pw-video__caption">Video Tour — {stopName} *</div>
+    {videoUrl ? <video src={videoUrl} controls playsInline className="pw-video__player" /> : <img src={communityPhoto} alt="Video tour" className="pw-video__poster" />}
+    <div className="pw-video__caption">
+      Video Tour — {stopName}
+      {videoUrl ? '' : DEMO}
+    </div>
   </Modal>
 );
 
 interface AiProps {
   open: boolean;
   propertyName: string;
+  mode: 'ai' | 'agent';
+  agentOnline: boolean;
   messages: AiMessage[];
   typing: boolean;
+  listening: boolean;
   input: string;
   prompts: { label: string; question: string }[];
   onInput: (value: string) => void;
   onSend: (text?: string) => void;
-  onHuman: () => void;
+  onMic: () => void;
+  onAgent: () => void;
+  onBackToAi: () => void;
+  onCallOffice: () => void;
   onClose: () => void;
 }
 
-export const AiChatSheet = ({ open, propertyName, messages, typing, input, prompts, onInput, onSend, onHuman, onClose }: AiProps) => {
+/** The chat sheet: the AI concierge, or a leasing agent (demo) when one is online; voice input is simulated. */
+export const AiChatSheet = ({ open, propertyName, mode, agentOnline, messages, typing, listening, input, prompts, onInput, onSend, onMic, onAgent, onBackToAi, onCallOffice, onClose }: AiProps) => {
   const list = useRef<HTMLDivElement>(null);
   const inset = useKeyboardInset();
   useEffect(() => {
     list.current?.scrollTo({ top: list.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, typing, open]);
+  }, [messages, typing, listening, open]);
+  const agent = mode === 'agent';
   return (
     <Sheet open={open} onClose={onClose} size="tall" zIndex={320} className="pw-ai">
       <div className="pw-ai__head">
         <div className="pw-ai__who">
-          <span className="pw-ai__avatar">
-            <Icon name="sparkle" size={16} color="var(--pw-label-yellow)" />
-          </span>
+          {agent ? (
+            <span className="pw-ai__agent">
+              MC
+              <i />
+            </span>
+          ) : (
+            <span className="pw-ai__avatar">
+              <Icon name="sparkle" size={16} color="var(--pw-label-yellow)" />
+            </span>
+          )}
           <div>
-            <div className="pw-ai__title">AI Concierge</div>
-            <div className="pw-ai__online">● Online · {propertyName}</div>
+            <div className="pw-ai__title">{agent ? `Maya Chen${DEMO}` : 'AI Assistant'}</div>
+            <div className="pw-ai__online">{agent ? 'Leasing agent · Online now' : `Replies instantly · ${propertyName}`}</div>
           </div>
         </div>
         <IconButton icon="close" label="Close" tone="round" onClick={onClose} />
@@ -142,6 +161,12 @@ export const AiChatSheet = ({ open, propertyName, messages, typing, input, promp
           </div>
         ))}
         {typing ? <div className="pw-ai__bubble pw-ai__bubble--typing">Typing…</div> : null}
+        {listening ? (
+          <div className="pw-ai__bubble pw-ai__bubble--listening">
+            <i />
+            Listening…{DEMO}
+          </div>
+        ) : null}
       </div>
       <div className="pw-ai__prompts">
         {prompts.map((p) => (
@@ -151,9 +176,27 @@ export const AiChatSheet = ({ open, propertyName, messages, typing, input, promp
         ))}
       </div>
       <div className="pw-ai__human">
-        <Button variant="dark" height={40} icon="people" iconSize={15} onClick={onHuman}>
-          Talk to a Human
-        </Button>
+        {agent ? (
+          <button type="button" className="pw-textlink pw-textlink--sm" onClick={onBackToAi}>
+            Switch back to AI assistant
+          </button>
+        ) : agentOnline ? (
+          <button type="button" className="pw-ai__offer" onClick={onAgent}>
+            <span className="pw-ai__agent pw-ai__agent--sm">
+              MC
+              <i />
+            </span>
+            <span>Maya from leasing is online{DEMO}</span>
+            <b>Chat with Maya</b>
+          </button>
+        ) : (
+          <div className="pw-ai__offline">
+            No leasing agents online.
+            <button type="button" onClick={onCallOffice}>
+              Call the office
+            </button>
+          </div>
+        )}
       </div>
       <form
         className="pw-ai__compose"
@@ -163,7 +206,10 @@ export const AiChatSheet = ({ open, propertyName, messages, typing, input, promp
           onSend();
         }}
       >
-        <input value={input} onChange={(e) => onInput(e.target.value)} placeholder="Ask about pricing, pets, parking…" className="pw-input pw-input--chat" enterKeyHint="send" aria-label="Message" />
+        <input value={input} onChange={(e) => onInput(e.target.value)} placeholder={agent ? 'Message Maya…' : 'Type your question…'} className="pw-input pw-input--chat" enterKeyHint="send" aria-label="Message" />
+        <button type="button" className={`pw-ai__mic${listening ? ' pw-ai__mic--on' : ''}`} aria-label="Voice input" onClick={onMic}>
+          <Icon name="mic" size={18} />
+        </button>
         <button type="submit" className="pw-ai__send" aria-label="Send" disabled={!input.trim()}>
           <Icon name="send" size={18} color="#fff" />
         </button>

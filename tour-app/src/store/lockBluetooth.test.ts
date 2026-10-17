@@ -11,7 +11,7 @@ import { reducer } from './reducer';
 
 const key: LockBluetoothKey = { lockName: 'SK3E14001756', key: 'guest-key', keyId: 'k1', guestPin: '4455667', validFrom: null, validUntil: '2026-10-16T15:55:00+00:00', issuedAt: 1 };
 
-const signedIn = (): AppState => ({ ...initialAppState(), signedIn: true, user: { name: 'QA', email: 'qa@example.com' }, propertyId: 1618, screen: 'unlockUnit', tourOrder: ['unit:483954'], stopIndex: 0 });
+const signedIn = (): AppState => ({ ...initialAppState(), signedIn: true, user: { name: 'QA', email: 'qa@example.com' }, propertyId: 1618, screen: 'stop', tourOrder: ['unit:483954'], stopIndex: 0 });
 
 const tour: TourRoute = { route: { from: 'a', to: 'b', stepFree: false, avoidBlockers: true, lengthPx: 0, lengthFt: null, durationS: null, legs: [], steps: [], warnings: [], stages: [] }, segments: [] };
 
