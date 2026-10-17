@@ -424,6 +424,14 @@ export const useTourStops = (propertyId: number, controller: TourSetupController
     let result: PathResult;
     try {
       const query = new URLSearchParams({ from: path.from, to: path.to, step_free: path.stepFree ? '1' : '0' });
+      // A place on a stacked floorplate needs its floor: the record's own, else (on "This Floor") the previewed level's lowest floor.
+      const fallback = path.scope === 'plate' && previewLevel && previewLevel.floors.length ? previewLevel.floors[0] : null;
+      const a = endpoints.find((row) => row.key === path.from);
+      const b = endpoints.find((row) => row.key === path.to);
+      const floorA = a?.floor ?? fallback;
+      const floorB = b?.floor ?? fallback;
+      if (floorA != null) query.set('from_floor', String(floorA));
+      if (floorB != null) query.set('to_floor', String(floorB));
       const response = await fetch(`${APP_API.wayfindingPath(propertyId)}?${query.toString()}`, { cache: 'no-store', headers: { Accept: 'application/json' } });
       const body = (await response.json()) as { ok: boolean; route?: RouteJson; error?: string };
       const route = body.route;
@@ -445,7 +453,7 @@ export const useTourStops = (propertyId: number, controller: TourSetupController
       result = { ok: false, head: i18n.t(ST.path.failed), sub: null, steps: [], warnings: [], legs: [] };
     }
     setPath((current) => ({ ...current, loading: false, result }));
-  }, [levels, path.from, path.stepFree, path.to, previewLevel?.id, propertyId]);
+  }, [endpoints, levels, path.from, path.scope, path.stepFree, path.to, previewLevel, propertyId]);
 
   const routeLegsHere = useMemo(
     () => (path.result?.legs ?? []).filter((leg) => leg.kind === 'walk' && leg.level === previewLevel?.id && (leg.points?.length ?? 0) > 1),

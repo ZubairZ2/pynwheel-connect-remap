@@ -226,9 +226,11 @@ const HoursPanel = ({ c }: { c: TourBookingController }) => {
                     <div className="bo-tx__dayrow">
                       <span style={{ width: 40, font: '700 12px var(--bo-font)', color: 'var(--bo-ink)' }}>{day.slice(0, 3)}</span>
                       <div className="bo-tx__bars">
-                        {hoursBars(ranges).map((bar, index) => (
-                          <span key={index} className={`bo-tx__barfill${lane === 'guided' ? ' bo-tx__barfill--agent' : ''}`} style={{ left: `${bar.left}%`, width: `${bar.width}%` }} />
-                        ))}
+                        <div className="bo-tx__bar">
+                          {hoursBars(ranges).map((bar, index) => (
+                            <span key={index} className={`bo-tx__barfill${lane === 'guided' ? ' bo-tx__barfill--agent' : ''}`} style={{ left: `${bar.left}%`, width: `${bar.width}%` }} />
+                          ))}
+                        </div>
                       </div>
                       <span className={`bo-tx__meta${error ? ' bo-tx__warn' : ''}`} style={{ minWidth: 150 }}>
                         {error ?? hoursLabel(ranges)}

@@ -17,6 +17,9 @@ import { T, type StopCard } from '~/core/utils/generator/tour/tourSetup.generato
 const X = CORE_STRINGS.tourModules.common;
 const SCOPES: PathScope[] = ['plate', 'floors', 'buildings'];
 
+/** A stop note as stored by the legacy forms (HTML), shown as text. */
+const plain = (value: string): string => value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
 interface Props {
   controller: TourSetupController;
   propertyId: number;
@@ -451,8 +454,8 @@ const PreviewPane = ({ c }: { c: TourStopsController }) => {
             </div>
           )}
           <div style={{ display: 'flex', gap: 6, marginTop: 'auto' }}>
-            <span className="bo-tx__btn bo-tx__btn--primary bo-tx__grow" style={{ textAlign: 'center' }}>{i18n.t(ST.preview.checkIn)}</span>
-            <span className="bo-tx__btn bo-tx__grow" style={{ textAlign: 'center' }}>{i18n.t(ST.preview.next)}</span>
+            <span className="bo-tx__btn bo-tx__btn--primary" style={{ flex: '1 1 0', minWidth: 0, justifyContent: 'center', whiteSpace: 'nowrap', fontSize: 11, padding: '7px 6px' }}>{i18n.t(ST.preview.checkIn)}</span>
+            <span className="bo-tx__btn" style={{ flex: '1 1 0', minWidth: 0, justifyContent: 'center', whiteSpace: 'nowrap', fontSize: 11, padding: '7px 6px' }}>{i18n.t(ST.preview.next)}</span>
           </div>
         </div>
       </div>
@@ -553,7 +556,7 @@ const PathPanel = ({ c }: { c: TourStopsController }) => {
             ))}
           </select>
         </div>
-        <button type="button" className="bo-ts__swap" style={{ gridRow: '1 / span 2' }} aria-label={i18n.t(ST.path.swap)} title={i18n.t(ST.path.swap)} onClick={() => c.setPath({ ...c.path, from: c.path.to, to: c.path.from })}>
+        <button type="button" className="bo-ts__swap" aria-label={i18n.t(ST.path.swap)} title={i18n.t(ST.path.swap)} onClick={() => c.setPath({ ...c.path, from: c.path.to, to: c.path.from })}>
           ⇅
         </button>
         <div className="bo-ts__end" style={{ borderBottom: 'none' }}>
@@ -587,8 +590,8 @@ const PathPanel = ({ c }: { c: TourStopsController }) => {
                 {index + 1}
               </span>
               <span>
-                <b style={{ color: 'var(--bo-ink)' }}>{step.title}</b>
-                {step.sub ? ` · ${step.sub}` : ''}
+                <b style={{ color: 'var(--bo-ink)' }}>{plain(step.title)}</b>
+                {step.sub ? ` · ${plain(step.sub)}` : ''}
               </span>
             </div>
           ))}

@@ -170,6 +170,8 @@ export interface RouteEndpointOption {
   group: string;
   levelId: string | null;
   building: string | null;
+  /** The record's floor, sent as `from_floor` / `to_floor` so a unit on a stacked floorplate is not ambiguous. */
+  floor: number | null;
 }
 
 /**
@@ -182,13 +184,15 @@ export const generateRouteEndpoints = (map: PropertyMap, items: StopListItem[], 
   const level = levels.find((row) => row.id === levelId) ?? null;
   const out: RouteEndpointOption[] = [];
   if (map.graph.tour && (map.graph.tour.xPlot > 0 || map.graph.tour.yPlot > 0)) {
-    out.push({ key: `tour_start:${map.graph.tour.id}`, label: i18n.t(ST.kind.tour), group: i18n.t(ST.kind.tour), levelId: null, building: map.graph.tour.building });
+    out.push({ key: `tour_start:${map.graph.tour.id}`, label: i18n.t(ST.kind.tour), group: i18n.t(ST.kind.tour), levelId: null, building: map.graph.tour.building, floor: null });
   }
   items
     .filter((item) => !item.hidden && item.card.plotted && (item.kind === 'unit' || item.kind === 'amenity'))
-    .forEach((item) => out.push({ key: `${item.kind}:${item.card.key.startsWith('stop:') ? item.row?.stopId ?? 0 : 0}`, label: item.name, group: item.kindLabel, levelId: item.levelId, building: item.building }));
-  map.graph.elevators.forEach((elevator) => out.push({ key: `elevator:${elevator.id}`, label: elevator.name ?? i18n.t(ST.kind.elevator), group: i18n.t(ST.kind.elevator), levelId: null, building: elevator.building }));
-  map.graph.buildingStartingPoints.forEach((point) => out.push({ key: `bsp:${point.id}`, label: point.name ?? i18n.t(ST.kind.building_starting_point), group: i18n.t(ST.kind.building_starting_point), levelId: null, building: point.building }));
+    .forEach((item) =>
+      out.push({ key: `${item.kind}:${item.card.key.startsWith('stop:') ? item.row?.stopId ?? 0 : 0}`, label: item.name, group: item.kindLabel, levelId: item.levelId, building: item.building, floor: item.row?.record?.floor ?? null })
+    );
+  map.graph.elevators.forEach((elevator) => out.push({ key: `elevator:${elevator.id}`, label: elevator.name ?? i18n.t(ST.kind.elevator), group: i18n.t(ST.kind.elevator), levelId: null, building: elevator.building, floor: null }));
+  map.graph.buildingStartingPoints.forEach((point) => out.push({ key: `bsp:${point.id}`, label: point.name ?? i18n.t(ST.kind.building_starting_point), group: i18n.t(ST.kind.building_starting_point), levelId: null, building: point.building, floor: point.floor }));
   const valid = out.filter((row) => !row.key.endsWith(':0'));
   if (scope === 'plate' && level) return valid.filter((row) => row.levelId == null || row.levelId === level.id);
   if (scope === 'floors' && level) return valid.filter((row) => row.building == null || row.building === level.building || level.building == null);

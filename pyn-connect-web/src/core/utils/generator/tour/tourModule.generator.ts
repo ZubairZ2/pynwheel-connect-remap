@@ -54,11 +54,13 @@ export interface TourChecklist {
   progress: string;
 }
 
-export const generateTourChecklist = (args: { propId: string; stops: StopCard[]; elevators: ElevatorCard[]; startPointsMissing: boolean; locks: LockInventory | null }): TourChecklist => {
-  const { propId, stops, elevators, startPointsMissing, locks } = args;
+export const generateTourChecklist = (args: { propId: string; stops: StopCard[]; elevators: ElevatorCard[]; startPointsMissing: boolean; locks: LockInventory | null; items: StopListItem[] }): TourChecklist => {
+  const { propId, stops, elevators, startPointsMissing, locks, items } = args;
   const unplotted = stops.filter((stop) => !stop.plotted).length;
   const gated = elevators.filter((elevator) => elevator.gated).length;
   const lockCount = locks ? locks.counts.mapped + locks.counts.manual : stops.filter((stop) => stop.lockLabel).length + gated;
+  // Locked stops on this tour without a device or code (the rows' `no_lock` issue), not the property-wide holders.
+  const noLock = items.filter((item) => item.issues.some((issue) => issue.key === 'no_lock')).length;
   const K = C.checklist;
   const mapHref = mapEditorRoute(propId);
 
@@ -99,7 +101,7 @@ export const generateTourChecklist = (args: { propId: string; stops: StopCard[];
       id: 'locks',
       num: 5,
       title: i18n.t(K.locks),
-      done: lockCount > 0 && (locks?.counts.withoutLock ?? 0) === 0,
+      done: lockCount > 0 && noLock === 0,
       state: lockCount ? t(K.locksDone, { count: lockCount }) : i18n.t(K.locksTodo),
       cta: { label: i18n.t(O.openLocks), tab: 'locks' }
     },
@@ -123,10 +125,10 @@ export interface TourKpi {
   tone: 'ink' | 'warn' | 'ok';
 }
 
-/** The six numbers of the overview: the local route, the stops' setup gaps, today's visitors and the locks. */
-export const generateTourKpis = (summary: TourSummary, items: StopListItem[], visitors: VisitorsList | null, locks: LockInventory | null): TourKpi[] => {
+/** The six numbers of the overview: the local route, the stops' setup gaps, today's visitors and the locked stops without a lock. */
+export const generateTourKpis = (summary: TourSummary, items: StopListItem[], visitors: VisitorsList | null, rowsLoaded: boolean): TourKpi[] => {
   const attention = items.filter((item) => item.issues.length > 0).length;
-  const withoutLock = locks?.counts.withoutLock ?? null;
+  const withoutLock = rowsLoaded ? items.filter((item) => item.issues.some((issue) => issue.key === 'no_lock')).length : null;
   return [
     { id: 'stops', label: i18n.t(C.kpis.stops), value: summary.stops, tone: 'ink' },
     { id: 'hidden', label: i18n.t(C.kpis.hidden), value: summary.stops - summary.visible, tone: 'ink' },

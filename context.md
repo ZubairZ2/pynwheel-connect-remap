@@ -1198,3 +1198,54 @@ Branch `feature/new-cms-design-oct-17`; PYN_CONNECT_PROGRESS.md §40. Frontend o
   for `salahudin@pynwheel.com` (user 1854) via `<scratchpad>/mint.rb` (§7 of the progress doc), screenshots via
   `<scratchpad>/shots.mjs`. Running `next dev` from the working tree works as long as `.next` is removed after a
   `next build`.
+
+## 36. Connect: the Tour Setup modules on the Rails Connect endpoints — implementation knowledge (October 17, 2026)
+
+PYN_CONNECT_PROGRESS.md §41 has the inventory; this is what to remember when touching it.
+
+### Endpoints (`/communities/:id/connect/...`, JSON, `Connect::ReadsJson` / `WritesJson`)
+
+- Locks: `GET locks`, `GET locks/auto_match`; `PUT locks/map|unmap|manual_code|enabled`, `POST locks/auto_match|sync|test`,
+  `DELETE locks/purge`. Targets are sent as `target_type` (unit / amenity / elevator / building_starting_point / tour)
+  + `target_id`; a door target resolves to its unit or amenity (`targetParamType` / `targetParamId`).
+- Stops: `GET stops`, `PUT stops/:tour_stop_id` with `name`, `description`, `instructions`, `video_link`,
+  `virtual_tour_url` (only the fields the row's `editable` list allows are accepted).
+- Visitors: `GET visitors` (status / type / range / q / page), `GET visitors/:id`, `GET visitors/export.csv`;
+  `POST visitors/bookings`, `PUT visitors/bookings/:id/reschedule`, `DELETE visitors/bookings/:id/cancel`,
+  `POST visitors/:id/reset_stops`, `PUT visitors/:id/id_review|reset_verification|remove_pii`, `DELETE visitors/:id/delete`
+  (the last two super admin only).
+- Booking: `GET booking`, `GET booking/availability?date=&days=`; `PUT booking/rules|hours|form`.
+- Connect's BFF: `/api/properties/:id/tour/<path>` — GET for the reads (an allowlist), POST for the writes (a table
+  maps each path to the Rails verb). Answers `{ ok, data, meta }`; failures use the write-outcome vocabulary
+  (`unauthorized`, `forbidden`, `csrf`, `disabled`, `missing`, `stale`, `invalid` with `errors[]`, `failed`).
+
+### Rules worth knowing
+
+- A booking's status is derived, never stored: completed (`is_tour_completed`), upcoming (booked time + grace period
+  still ahead; unscheduled bookings stay upcoming), missed (past), cancelled (a PaperTrail `destroy` version — read
+  with `YAML.safe_load` and the permitted classes in `Visitors::Cancelled`, never `reify`). In-progress comes from
+  `tour_histories` (not left, no abandoned stop, arrived within the stay limit).
+- The capacity window is slot ± (interval − 1) minutes, so a 10:15 slot is not full for 10:00 bookings on a 30-minute
+  interval; `limit_max_tour` only removes the virtual type (legacy behaviour, kept).
+- `Bookings::Create` strips the phone to digits before `normalize_phone`, reuses an upcoming booking for the same
+  phone / email (the legacy "one active booking per person") and sends the legacy mail (SuckerPunch) and SMS
+  (Sidekiq) — stub `ScheduledTourMailerJob.perform_async` and use Sidekiq fake mode in tests.
+- Lock holders: a unit's door (or an amenity's first door) carries the lock; `Locks::Inventory` lists every record
+  with `lock_provider` set, so `counts.withoutLock` is property-wide. The Overview and the Stops tab count the tour's
+  stops with the `no_lock` issue instead.
+- The shortest-path test uses `Wayfinding::RouteService` ids (`unit:5`, `amenity:7`, `elevator:3`, `bsp:2`,
+  `tour_start:<tour id>`); a place on a stacked floorplate is `ambiguous_floor` without `from_floor` / `to_floor`.
+  Legs carry `level: "floorplate:12"`, the same id Connect's `MapLevel` uses, so a leg draws on its level.
+- The route order, hide / show, add and remove stay local until the page's Save (`TourSetup::Save`); the drawer's
+  content and lock writes go to the CMS at once.
+
+### Verifying (what worked on Oct 17)
+
+- Verify pair: Rails on :3100 against `pynwheel_audit_clone` with `PYN_CONNECT_WRITES=on API_ACCESS=true`
+  (launch `rails-new-audit`), Connect `next dev` on :3005 with `PYNWHEEL_CMS_URL=http://127.0.0.1:3100`
+  (launch `connect-design-verify`). Mint the super admin (user 2181 in the clone) with the session script; a Devise
+  session minted an hour earlier is refused (timeout) — mint right before the run.
+- `PYN_CONNECT_E2E_RAILS_COOKIE`, `PYN_CONNECT_E2E_USER`, `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3005`,
+  `PYN_CONNECT_E2E_MODULES_PROPERTY` (default 1618 Hazel), `PYN_CONNECT_E2E_TOUR_PROPERTY=2934` for the older spec.
+- Rails tests: `DATABASE_URL=postgres://<user>@localhost/pynwheel_test bundle exec rails test` — without it the
+  runner stops with "The `test` database is not configured".

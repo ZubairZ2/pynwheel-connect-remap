@@ -37,10 +37,10 @@ export const OverviewTab = ({ controller, propId, mapHref, overview, onOpenStop 
   const { stops, elevators, startPoints, summary, actions, state } = controller;
   const items = useMemo(() => generateStopItems(stops, state, overview.stops), [stops, state, overview.stops]);
   const checklist = useMemo(
-    () => generateTourChecklist({ propId, stops, elevators, startPointsMissing: startPoints.missing, locks: overview.locks }),
-    [propId, stops, elevators, startPoints.missing, overview.locks]
+    () => generateTourChecklist({ propId, stops, elevators, startPointsMissing: startPoints.missing, locks: overview.locks, items }),
+    [propId, stops, elevators, startPoints.missing, overview.locks, items]
   );
-  const kpis = useMemo(() => generateTourKpis(summary, items, overview.visitors, overview.locks), [summary, items, overview.visitors, overview.locks]);
+  const kpis = useMemo(() => generateTourKpis(summary, items, overview.visitors, overview.stops != null), [summary, items, overview.visitors, overview.stops]);
   const attention = useMemo(() => generateTourAttention(items), [items]);
   const onSite = useMemo(() => (overview.visitors ? generateOnSite(overview.visitors) : []), [overview.visitors]);
 

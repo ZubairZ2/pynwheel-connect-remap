@@ -5,8 +5,8 @@ import { expect, test, type Page } from '@playwright/test';
  * session (PYN_CONNECT_PROGRESS.md §7). Skips itself without the session env
  * (PYN_CONNECT_E2E_RAILS_COOKIE / PYN_CONNECT_E2E_USER). The default property,
  * 2934 (Dummy-High-Rise-0012), has 20 stops on its community tour, 4
- * elevators (one with a Latch bank, one with a gallery photo) and 47 hallway
- * nodes. The last assertion is the one that matters most: only GETs.
+ * elevators (one with a Latch bank, one with a gallery photo). The last
+ * assertion is the one that matters most: only GETs.
  */
 const railsCookie = process.env.PYN_CONNECT_E2E_RAILS_COOKIE;
 const user = process.env.PYN_CONNECT_E2E_USER;
@@ -30,7 +30,7 @@ test.describe('Tour Setup (real data)', () => {
     });
   };
 
-  test('lists the real stops, elevators and routing and stays read-only through every action', async ({ page }) => {
+  test('lists the real stops and elevators and stays read-only through every action', async ({ page }) => {
     test.setTimeout(180_000);
     const writes: string[] = [];
     const errors: string[] = [];
@@ -42,12 +42,12 @@ test.describe('Tour Setup (real data)', () => {
     await page.goto(`/properties/${propertyId}/tour-setup`);
     await hydrated(page);
 
-    // Header and the three tabs with real counts.
+    // Header and the tabs with real counts (Overview · Stops · Elevators · Locks · Visitors · Live Chat · Settings).
     await expect(page.getByRole('heading', { level: 2, name: 'Tour Setup' })).toBeVisible();
-    const stopsTab = page.getByRole('tab', { name: /^Tour Stops/ });
-    const elevatorsTab = page.getByRole('tab', { name: /^Elevators & Locks/ });
-    const routingTab = page.getByRole('tab', { name: /^Routing/ });
+    const stopsTab = page.getByRole('tab', { name: /^Stops/ });
+    const elevatorsTab = page.getByRole('tab', { name: /^Elevators/ });
     await expect(stopsTab).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Locks' })).toBeVisible();
     const stopCount = Number((await stopsTab.locator('.bo-tour__tabcount').innerText()).trim());
     expect(stopCount).toBeGreaterThan(0);
 
@@ -56,33 +56,13 @@ test.describe('Tour Setup (real data)', () => {
     await expect(page.getByText('Set up the tour')).toBeVisible();
     await stopsTab.click();
 
-    // Stops: cards, reorder, hide, edit, remove, add — all local.
-    const stops = page.locator('.bo-tour__stop');
+    // Stops: the grouped list (one row per stop) with the route preview beside it; the module spec covers the rest.
+    const stops = page.getByTestId('stop-row');
     await expect(stops).toHaveCount(stopCount);
-    const firstName = await stops.first().locator('.bo-tour__stopname').innerText();
-    await stops.first().getByRole('button', { name: 'Move down' }).click();
-    await expect(stops.nth(1).locator('.bo-tour__stopname')).toHaveText(firstName);
-    await stops.nth(1).getByRole('button', { name: 'Move up' }).click();
-    await expect(stops.first().locator('.bo-tour__stopname')).toHaveText(firstName);
-    await stops.first().getByRole('button', { name: 'Hide' }).click();
-    await expect(stops.first()).toContainText('Hidden from tour');
-    await stops.first().getByRole('button', { name: 'Show' }).click();
-    await stops.first().locator('.bo-tour__talk').fill('Local talking point');
-    await expect(stops.first().locator('.bo-tour__talk')).toHaveValue('Local talking point');
-    await stops.first().getByRole('button', { name: 'Edit' }).click();
-    await expect(page.getByRole('dialog')).toContainText('Edit Tour Stop');
-    await page.getByRole('dialog').getByRole('button', { name: 'Save Changes' }).click();
-    await expect(page.getByRole('dialog')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Add Stop' }).first().click();
-    await expect(page.getByRole('dialog')).toContainText('Add Tour Stop');
-    await page.getByRole('dialog').getByRole('button', { name: 'Add Stop' }).click();
-    await expect(stops).toHaveCount(stopCount + 1);
-    await expect(stopsTab.locator('.bo-tour__tabcount')).toHaveText(String(stopCount + 1));
-    await stops.last().getByRole('button', { name: 'Remove' }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Remove Stop' }).click();
-    await expect(stops).toHaveCount(stopCount);
-    // View / Plot on Plan opens the map with the stop.
-    await expect(stops.first().getByRole('link', { name: /on Plan/ })).toHaveAttribute('href', /\/map\?/);
+    await expect(page.getByTestId('route-preview')).toBeVisible();
+    await stops.first().click();
+    await expect(page.getByTestId('stop-drawer')).toBeVisible();
+    await page.getByTestId('stop-drawer').getByRole('button', { name: 'Close' }).click();
 
     // Elevators: real cards, gating toggle, add bank, remove — all local.
     await elevatorsTab.click();
@@ -99,19 +79,6 @@ test.describe('Tour Setup (real data)', () => {
     await page.locator('.bo-tour__elevator', { hasText: 'Local Bank' }).getByRole('button', { name: /^Delete/ }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Remove Bank' }).click();
     await expect(page.locator('.bo-tour__elevator', { hasText: 'Local Bank' })).toHaveCount(0);
-
-    // Routing: starting points from the CMS, and a local multi-floor route between two real stops.
-    await routingTab.click();
-    await expect(page.getByText('Building Starting Points')).toBeVisible();
-    const from = page.getByRole('combobox', { name: 'From' });
-    const to = page.getByRole('combobox', { name: 'To' });
-    const options = await from.locator('option').count();
-    if (options > 2) {
-      await from.selectOption({ index: 1 });
-      await to.selectOption({ index: 2 });
-      await page.getByRole('button', { name: 'Compute Multi-Floor Route' }).click();
-      await expect(page.locator('.bo-tour__routeresult')).not.toHaveText(/Pick two stops/);
-    }
 
     // Publish: dialog only.
     await page.getByRole('button', { name: 'Publish to Touch App' }).click();
