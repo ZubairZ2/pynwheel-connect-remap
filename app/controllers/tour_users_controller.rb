@@ -13,28 +13,6 @@ class TourUsersController < ApplicationController
     tour_ids = CustomizeTourService.new(@community, nil).get_community_tours_ids
     user_ids = TourHistory.where(tour_id: tour_ids).pluck(:tour_user_id).uniq if @community.present? && @community.community_tour.present?
     @tour_users = user_ids.present? ? TourUser.where(id: user_ids) : []
-    # The list shows each visitor's last arrival on the main tour: one query
-    # for every visitor instead of two per row (the view used to ask
-    # `user.tour_histories.where(...).last` twice per visitor).
-    @last_arrivals = {}
-    # The per-visitor flags the list shows (visited, lengthy stay, ID mismatch,
-    # abandoned) used to be four queries per row, and `community_tour` a query
-    # per use; they are read once here with the same conditions as before.
-    @community_tour = @community.community_tour
-    @tour_setting = @community_tour&.tour_setting
-    @visit_flags = Hash.new { |hash, key| hash[key] = { visited: false, lengthy: false, mismatch: false, abandoned: 0 } }
-    @history_total = 0
-    if user_ids.present? && @community_tour
-      TourHistory.where(tour_id: @community_tour.id, tour_user_id: user_ids).order(:id).pluck(:tour_user_id, :arrived).each { |uid, arrived| @last_arrivals[uid] = arrived }
-      TourHistory.where(tour_id: @community_tour.id, tour_user_id: user_ids).pluck(:tour_user_id, :history, :lengthy_stay_email_sent, :id_mismatch, :abandoned_tour_at_stop).each do |uid, history, lengthy, mismatch, abandoned|
-        flags = @visit_flags[uid]
-        flags[:visited] ||= history == false
-        flags[:lengthy] ||= lengthy == true
-        flags[:mismatch] ||= mismatch == true
-        flags[:abandoned] += 1 if abandoned == true
-      end
-      @history_total = TourHistory.count
-    end
   end
   
   def show

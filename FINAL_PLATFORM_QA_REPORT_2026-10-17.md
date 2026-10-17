@@ -595,3 +595,14 @@ the branch was checked for anything that could change what the legacy code reads
 - **Lock, stop, booking and settings writes** go through the same helpers and columns the legacy forms use
   (`AssignLocksHelper`, `MapLocksJob#parse_stop`, `igloohome_guests`, `schedual_tours`, `tour_users`, `opening_hours`,
   `tour_settings`, `tours`, `scheduler_widget_settings`), as before this branch.
+
+## 31. Owner Decision: Legacy HTML Application Left As Is (October 18, 2026)
+
+At the owner's request the legacy HTML/ERB application is out of scope for this branch: the legacy-side changes described
+in §24 (item 6), §25 and §29 were reverted to their `main` versions before the merge — the Elevators partial, the
+`/communities` redirect, the visitor detail view, the visitors list query rewrite in `TourUsersController` and its view,
+and the `partners` test fixture. The three pre-existing legacy 500s (photo-less elevators on 1618 and 1411, the visitor
+view on 1412), the legacy visitors list's query count and the Partner Configuration tests therefore stay exactly as
+they are on `main`. The branch now touches the legacy side only through code the Connect backend shares with it:
+`SchedualTours::Capacity` (the booking rule, proven identical on 1,026 cases, §30), the `unknown_start` message in the
+wayfinding error table, and the two `tour_histories` indexes.
