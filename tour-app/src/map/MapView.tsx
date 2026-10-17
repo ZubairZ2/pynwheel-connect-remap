@@ -48,6 +48,10 @@ interface Props {
   fitKey?: string;
   followWalker?: boolean;
   onTapNode?: (node: GraphNode) => void;
+  /** Pins on chosen stops (Build Your Tour): drawn at the node's centre, ringed when focused. */
+  pins?: { node: string; on: boolean; focus: boolean; label?: string }[];
+  /** Centre the map on this node when it changes (and it stands on this level). */
+  focusNode?: string | null;
   children?: ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -83,7 +87,7 @@ const BASE_ERROR_TEXT: Record<BaseErrorKind, { title: string; body: string }> = 
   none: { title: 'No floor plan', body: 'This level has no floor plan in Pynwheel yet.' }
 };
 
-export const MapView = ({ level, floor, nodes, edges, units, amenities, route, walker, highlight, showNetwork = false, fitTo = 'route', fitKey, followWalker = false, onTapNode, children, className, style, loading }: Props) => {
+export const MapView = ({ level, floor, nodes, edges, units, amenities, route, walker, highlight, showNetwork = false, fitTo = 'route', fitKey, followWalker = false, onTapNode, pins, focusNode, children, className, style, loading }: Props) => {
   const base = useLevelBase(level);
   const frameWidth = base.frame.width || level.width;
   const frameHeight = base.frame.height || level.height;
@@ -151,6 +155,24 @@ export const MapView = ({ level, floor, nodes, edges, units, amenities, route, w
     const margin = 48;
     if (sx < margin || sy < margin || sx > el.clientWidth - margin || sy > el.clientHeight - margin) centerOn(walker.x, walker.y);
   }, [walker, followWalker, level.id, viewport, centerOn, container]);
+
+  // Centre on a focused node (Build Your Tour's "On map").
+  const lastFocus = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focusNode || lastFocus.current === focusNode) {
+      if (!focusNode) lastFocus.current = null;
+      return;
+    }
+    const n = levelNodes.find((x) => x.id === focusNode) ?? nodes.find((x) => x.id === focusNode && x.level === level.id);
+    if (!n) return;
+    lastFocus.current = focusNode;
+    const [x, y] = centreOf(n, floor);
+    const id = window.setTimeout(() => centerOn(x, y), 80);
+    return () => window.clearTimeout(id);
+  }, [focusNode, levelNodes, nodes, level.id, floor, centerOn]);
+
+  const pinsHere = useMemo(() => (pins ?? []).map((p) => ({ ...p, node: nodes.find((n) => n.id === p.node && n.level === level.id && onFloor(floor, n.floor)) ?? null })).filter((p) => p.node), [pins, nodes, level.id, floor]);
+  const pinsKey = pinsHere.map((p) => `${p.node!.id}:${p.on ? 1 : 0}${p.focus ? 'f' : ''}`).join(',');
 
   const markerScale = Math.max(0.55, Math.min(1.6, 1 / viewport.scale));
   const highlightKey = `${highlight?.from ?? ''}|${highlight?.to ?? ''}|${highlight?.current ?? ''}`;
@@ -247,6 +269,21 @@ export const MapView = ({ level, floor, nodes, edges, units, amenities, route, w
               </text>
             </g>
           ))}
+          {/* Chosen-stop pins (Build Your Tour) */}
+          {pinsHere.map((p) => {
+            const [x, y] = centreOf(p.node!, floor);
+            return (
+              <g key={`pin-${p.node!.id}`} transform={`translate(${x} ${y}) scale(${markerScale})`} className={`pw-map__pin${p.on ? ' pw-map__pin--on' : ''}${p.focus ? ' pw-map__pin--focus' : ''}`} onClick={() => wasTap() && onTapNode?.(p.node!)}>
+                {p.focus ? <circle r={16} className="pw-map__pinring" /> : null}
+                <circle r={p.focus ? 10 : 7} />
+                {p.focus && p.label ? (
+                  <text y={-20} textAnchor="middle" className="pw-map__pinlabel">
+                    {p.label.replace(/ \*$/, '')}
+                  </text>
+                ) : null}
+              </g>
+            );
+          })}
           {routeHere.ends.map((e) => (
             <g key={e.which} transform={`translate(${e.at[0]} ${e.at[1]}) scale(${markerScale})`} className="pw-map__end">
               {e.which === 'from' ? <circle r={10} fill={FROM_COLOR} stroke="#fff" strokeWidth={3} /> : <rect x={-9} y={-9} width={18} height={18} rx={3} fill={TO_COLOR} stroke="#fff" strokeWidth={3} />}
@@ -255,7 +292,8 @@ export const MapView = ({ level, floor, nodes, edges, units, amenities, route, w
       </>
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- wasTap reads a ref; the rest are the layer inputs
-  }, [level, floor, geometry, levelUnits, levelAmenities, levelNodes, levelEdges, showNetwork, routeHere, highlightKey, markerScale, onTapNode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pinsKey stands for pinsHere
+  }, [level, floor, geometry, levelUnits, levelAmenities, levelNodes, levelEdges, showNetwork, routeHere, highlightKey, markerScale, onTapNode, pinsKey]);
 
   // The plan is painted once into its own compositing layer: the animated route dashes, the walker's
   // pulse and the per-frame walker updates repaint the overlay only, never the (possibly multi-megabyte)

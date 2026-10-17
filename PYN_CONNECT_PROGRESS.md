@@ -2443,7 +2443,51 @@ Changed: `connectRoutes.ts`, `strings.ts`, `i18n/index.ts`, `globals.css`, `navi
   0 non-GET requests.** Compared by eye against the design markup: spacing, tiles, chips, pills and the segmented
   control match; the two deviations above are the only structural differences.
 
-## 41. Connect: Tour Setup modules — Stops, Locks, Visitors, Scheduling & Booking on the existing Rails logic (October 17, 2026)
+## 41. Self Tour App: the Claude Design refresh with every tweak as a demo scenario (October 17, 2026)
+
+Brief `app_ui_redesign_17_oct.md`; design "Pynwheel Self Tour App.dc.html" (Claude Design project `13d18a36-ed41-492e-b118-e69e26e4636a`,
+the October 16 version) with `UnlockScreen.dc.html` and the Pynwheel design system; branch `feature/self-tour-app-design-refresh` from
+`main` (`cf51ffec8`) in an isolated worktree so the CMS session in the main tree was never touched. **Frontend only:** the diff is
+`tour-app/src/` plus these docs — no Rails, API, schema, Capacitor-native or shared-CMS change, no new request. Nothing is committed or
+pushed (branch + PR, never to `main`). Write-up: `tour-app-implementation.md` §19; report `tour-app-design-refresh-report.md`;
+knowledge: context.md §36.
+
+### What was built
+
+- Every design screen on the existing app: onboarding (legacy slide images), Get Started with profile confirmation and guest mode,
+  the Home with the seven tour-status card variants and the location row, Schedule Self-Tour, Verify Identity (CheckpointID
+  wordmark), check-in (seven variants), Before You Start / Return to Start, Build Your Tour (four layouts around the real map and
+  stops), Guided Navigation (real directions, Avoid stairs, audio guide, Play Route, safety bar), the unified Stop screen (real lock
+  card, facts, plan, photos, narration, reactions, concierge, demo pricing), Tour Complete and Summary, Properties / Explore, Profile,
+  and twenty-odd sheets.
+- The artifact's seven Tweaks (tour status, location, ID verified, agent online, upcoming tours, starting points, Build layout) are
+  **Settings › Demo scenarios**: runtime state the owner can switch on the phone; `auto` follows the app's own state. Demo values carry `*`.
+- Preserved and re-verified on real data: login / logout, the property list, Build Your Tour on real stops, distances and route
+  generation, the SVG / image plans, Play Route, floor changes, the lock card (door code / Bluetooth / unsupported), Wayfinding, AR.
+
+### Tests and verification
+
+- `tsc` clean; vitest **62 / 62** (10 files, 9 new scenario tests); `vite build` clean.
+- Dummy data source in the browser pane (375×812): every screen and sheet, all 7 tour-status and all 7 location scenarios, agent
+  online, multiple upcoming tours, multiple starting points, the 4 Build layouts, Properties / Explore, guest mode and the guest gate,
+  Find Shortest Path, the AR flow.
+- Real API (Vite :3014 → Rails :3000 on `pynwheel_development`, headless Playwright with the dev-only verification Super Admin):
+  sign-in, 803 properties, Explore, Schedule, the Today card, both check-in variants, virtual and in-person tours on **Hazel (1618)** —
+  seven real stops, real plan, `POST /tour-route`, Guided, Play Route, the Zerv lobby and the igloohome unit 1508 (Get Door Code card
+  shown, not pressed), the Skip sheet. 0 console errors; only the existing `/api/tour/v1` endpoints were called.
+- Bugs fixed on the way: Explore unreachable for a member without a property (a real listing could not be chosen), the guest gate
+  flashing on Explore › Schedule, "Code accepted" shown for locks the app cannot open, the Upcoming list disagreeing with the card
+  under the demo tour scenario, Keep Browsing leaving a pending action behind; plus the six from the first pass (Add Stops staleness,
+  the Sheet × swallowed by the drag handler, Avoid stairs dropping a stop, skipped stops counted as visited, a hard-coded doors count,
+  the invisible CheckpointID wordmark).
+
+### Left open
+
+iOS / Android builds were not run; the real door-code request was not issued; the design's chat, booking, apply, hold, verification,
+survey and share actions stay local until the CMS has endpoints; a real listing's Explore hero is the generic site plan (no image in
+the listing payload).
+
+## 42. Connect: Tour Setup modules — Stops, Locks, Visitors, Scheduling & Booking on the existing Rails logic (October 17, 2026)
 
 Branch `feature/tour-setup-stops-locks-visitors-booking`, from the brief `stops_LOCKS_SCHDULING.MD` (committed with the
 work) and the Oct 13 Back Office design (`TourModule.dc.html`). The legacy CMS keeps running on the shared database:

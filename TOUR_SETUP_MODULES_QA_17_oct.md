@@ -2,7 +2,7 @@
 
 Branch `feature/tour-setup-stops-locks-visitors-booking`. Brief: `stops_LOCKS_SCHDULING.MD`. Design: the Oct 13 Back
 Office design (`Pynwheel Admin - Back Office`, `TourModule.dc.html`). Implementation notes: `PYN_CONNECT_PROGRESS.md`
-§41, `context.md` §36, `gaps_tour_setup_feature.md` (Oct 17 update).
+§42, `context.md` §37, `gaps_tour_setup_feature.md` (Oct 17 update).
 
 ## Module status
 

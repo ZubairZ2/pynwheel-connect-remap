@@ -180,6 +180,6 @@ M15; then Tour Setup reads the stops model.
   `directional_text` for amenities, elevators and entry points) through `Stops::UpdateContent`; the Tour App reads
   the same column.
 - **T3 (distance per stop)**: still unavailable — no column; the dwell time is saved with the route.
-- **Locks, Visitors, Scheduling, Booking form and link**: real, through the Connect endpoints (PYN_CONNECT_PROGRESS.md §41).
+- **Locks, Visitors, Scheduling, Booking form and link**: real, through the Connect endpoints (PYN_CONNECT_PROGRESS.md §42).
 - **CRM & Sync**: read-only by decision (out of scope for this phase).
 - **Publishing from Connect**: still a dialog that says it is unavailable.

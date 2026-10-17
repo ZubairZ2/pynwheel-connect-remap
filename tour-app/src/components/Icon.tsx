@@ -62,7 +62,30 @@ export type IconName =
   | 'unit'
   | 'amenity'
   | 'warning'
-  | 'refresh';
+  | 'refresh'
+  | 'phone'
+  | 'chat'
+  | 'camera'
+  | 'heart'
+  | 'mic'
+  | 'share'
+  | 'shield'
+  | 'qr'
+  | 'clock'
+  | 'trash'
+  | 'expand'
+  | 'shrink'
+  | 'map'
+  | 'navigation'
+  | 'bell'
+  | 'eye'
+  | 'key'
+  | 'gate'
+  | 'file'
+  | 'creditcard'
+  | 'bluetooth'
+  | 'volume'
+  | 'logout';
 
 interface Props {
   name: IconName;
@@ -125,7 +148,30 @@ const STROKED: Record<string, string> = {
   refresh: 'M21 12a9 9 0 1 1-3-6.7M21 3v6h-6',
   next: 'M5 4l10 8-10 8zM19 4v16',
   prev: 'M19 4L9 12l10 8zM5 4v16',
-  help: 'M12 12m-10 0a10 10 0 1 0 20 0a10 10 0 1 0-20 0M12 11v5'
+  help: 'M12 12m-10 0a10 10 0 1 0 20 0a10 10 0 1 0-20 0M12 11v5',
+  phone: 'M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z',
+  chat: 'M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z',
+  camera: 'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 13m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0',
+  heart: 'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z',
+  mic: 'M9 2h6v12H9zM5 10v1a7 7 0 0 0 14 0v-1M12 18v4',
+  share: 'M18 5m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0M6 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0M18 19m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0M8.6 13.5l6.8 4M15.4 6.5l-6.8 4',
+  shield: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+  qr: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3',
+  clock: 'M12 12m-10 0a10 10 0 1 0 20 0a10 10 0 1 0-20 0M12 6v6l4 2',
+  trash: 'M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2',
+  expand: 'M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7',
+  shrink: 'M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7',
+  map: 'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14',
+  navigation: 'M3 11l19-9-9 19-2-8z',
+  bell: 'M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0',
+  eye: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0',
+  key: 'M21 2l-2 2M15.5 7.5l3 3L22 6l-3-3zM15.5 7.5L9 14M8 15a4 4 0 1 0 0 6 4 4 0 0 0 0-6z',
+  gate: 'M3 4h18v16H3zM7.5 4v16M12 4v16M16.5 4v16',
+  file: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6',
+  creditcard: 'M2 5h20v14H2zM2 10h20',
+  bluetooth: 'M7 7l10 10-5 5V2l5 5L7 17',
+  volume: 'M11 5L6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7',
+  logout: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9'
 };
 
 const FILLED: Record<string, string> = {
