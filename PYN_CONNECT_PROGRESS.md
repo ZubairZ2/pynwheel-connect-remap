@@ -2486,3 +2486,119 @@ knowledge: context.md §36.
 iOS / Android builds were not run; the real door-code request was not issued; the design's chat, booking, apply, hold, verification,
 survey and share actions stay local until the CMS has endpoints; a real listing's Explore hero is the generic site plan (no image in
 the listing payload).
+
+## 42. Connect: Tour Setup modules — Stops, Locks, Visitors, Scheduling & Booking on the existing Rails logic (October 17, 2026)
+
+Branch `feature/tour-setup-stops-locks-visitors-booking`, from the brief `stops_LOCKS_SCHDULING.MD` (committed with the
+work) and the Oct 13 Back Office design (`TourModule.dc.html`). The legacy CMS keeps running on the shared database:
+nothing here changes a legacy action, a model callback or a table (no migrations); every new behaviour is a new
+JSON controller under `Connect::` that calls the services the legacy screens already use.
+
+### Backend (commit 89dda9ace)
+
+- `Connect::ReadsJson` (loads `@community`, 404 unless `User#can_access_community?`, never writes `community_code`
+  on a read) and `Connect::BaseController` (`WritesJson` + `ReadsJson`, `Connect::DomainError` → envelope,
+  `require_super_admin!`). Writes keep the CSRF check and the `PYN_CONNECT_WRITES` kill switch.
+- Locks (`Connect::LocksController`, `app/services/locks/*`): `Vendors` (igloohome, Latch, Zerv, Dwelo / EdgeState
+  through `remote_locks`), `Targets` (unit / amenity / door / elevator / entry point / tour), `Inventory` (providers,
+  devices, manual codes, locked holders without a lock, issued codes), `Assign` (map / unmap / manual code through
+  `AssignLocksHelper`), `AutoMatch` (`MapLocksJob#parse_stop`, preview then apply), `Purge`, `Sync` (vendor services,
+  Latch queues `ImportLatchLocksWorker`). Manual code = `lock_provider 'Manual'` + `access_code` on the door that
+  holds the lock, else the record.
+- Stops (`Connect::StopsController`, `Stops::Rows`, `Stops::UpdateContent`): one row per `tour_stop` with the record's
+  content, pin, lock state and setup gaps (`no_pin`, `no_image`, `no_instructions`, `no_lock`); the drawer's save
+  writes the record's own columns (unit `description` / `stop_description` / `virtual_tour_url`, amenity
+  `description` / `directional_text` / `video_link`, elevator and entry point `name` / `description` /
+  `directional_text`) with `update_columns`, bumps the tour's version, and audits a PaperTrail row.
+- Visitors (`Connect::VisitorsController`, `app/services/visitors/*`, `app/services/bookings/*`): status is derived
+  (`is_tour_completed`, booked time + grace period, `tour_histories` for in-progress, PaperTrail destroy versions
+  for cancelled — read with `YAML.safe_load` and the legacy permitted classes), `Visitors::Query` (status / type /
+  range / search, on-site and coming-today), `Profile`, `Export` (CSV), `Privacy` (remove PII, hide history incl.
+  the main tour, reset verification, delete), `IdReview`; `Bookings::Availability` (the widget's slot rules:
+  `collect_time_slots`, `fetch_tour_type_according_to_time`, capacity window slot ± (interval − 1) minutes),
+  `Bookings::Create` (`created_by 'Staff'`, reuses an upcoming booking for the same phone / email, CRM pushes and
+  the mail / SMS notifications moved verbatim into `SchedualTours::Notifications`), `Bookings::Reschedule`.
+- Booking settings (`Connect::BookingController`, `Scheduling::Settings`): gates (property active, Tour on,
+  scheduler on, a tour type on), widget live, CRM, tour types, slot interval, capacity, behaviour, visiting and
+  agent hours, form, button, signed link + embed HTML; `update_rules!`, `update_hours!` (replaces a lane's rows as
+  the legacy form does), `update_form!` with the legacy bounds.
+- Legacy delegations only where the new service replaces duplicated code: `TourUsersController`
+  (`delete_tour_user_all_attributes`, `update_tour_user_attributes` → `Visitors::Privacy`),
+  `ToursController#flag_id_mismatch` → `Visitors::IdReview`, `SchedualToursController#check_limit` →
+  `SchedualTours::Capacity`. Same inputs, same rows written.
+
+### Frontend (commit 20aa23ae1 and follow-ups)
+
+Tours page tabs: **Overview · Stops · Elevators · Locks · Visitors · Live Chat · Settings** (`?tab=routing` opens
+Stops, where the route preview now lives). One BFF route, `/api/properties/:id/tour/[...path]`, maps every module
+read and write to the Rails endpoints and answers `{ ok, data (camelCased), meta }` or the write-outcome vocabulary.
+
+- **Stops**: stops grouped by building in the tour's order, drag-and-drop ordering (saved with the Save button
+  through `TourSetup::Save`), "Only stops that need attention", eye toggle, the drawer (Content saved to the record,
+  Lock: smart lock from the inventory / manual code / none, Preview of the stop in the Tour App), Add stops
+  (multi-select of pinned units and amenities, local until Save), and with nothing selected the read-only route
+  preview (floor image, hallway paths, numbered pins, the found route) with TEST SHORTEST PATH on the saved graph
+  (`/api/properties/:id/wayfinding-path`, scopes This Floor / Floors / Buildings, step-free; a place on a stacked
+  floorplate sends its floor, else the previewed level's lowest floor).
+- **Locks**: provider cards (account, locks, what the visitor gets, health data, test / sync / purge / open in the
+  CMS), lock inventory with filters, bulk unmap, auto-match preview and apply, map / change / unmap, manual codes,
+  "Locked stops without a lock", issued codes; a kill switch to turn locks off for the property.
+- **Visitors**: on-site now, bookings & visits with status chips and counts, search / range / type filters, pages,
+  CSV export, New booking (type, 7-day slot grid from `booking/availability`, SMS opt-in, "what happens"), the
+  profile (ID check with review / reset, contact, bookings, privacy for super admins, visit sessions with stops and
+  door events, timeline, chat log), reschedule, cancel, reset stops.
+- **Settings**: Scheduling → Tour types & slots (widget state and gates, types, slot length, capacity, behaviour),
+  Visiting hours (two lanes, inline range editor, apply to weekdays, validation as the CMS does it); Booking & CRM →
+  Booking form (fields, button appearance, prospect preview on the live availability), Booking link (preview,
+  embed code, direct link, copy, open, where prospects find it), CRM & sync (read-only, deferred). Route &
+  navigation keeps the stored flags; the other groups say they are not in Connect yet.
+- **Overview**: six KPIs (stops, hidden, stops needing attention, on site now, coming today, locked stops without a
+  lock), the attention list (opens the stop's drawer or the map), live visitors; the checklist's lock step points at
+  the Locks tab.
+
+### Deliberate decisions and gaps
+
+- **CRM & Sync** is shown read-only (provider, lead sync, availability feed) and marked out of scope, as the brief
+  asks.
+- **Cancelled bookings** come from PaperTrail destroy versions because `schedual_tours` has no status column and the
+  legacy app destroys the row; the Cancelled chip therefore lists what the legacy app recorded, nothing more.
+- **Booking link** needs the CMS's `HOST_URL`; locally none is configured, so the panel says so instead of building a
+  wrong URL.
+- **igloohome v1** accounts have no API: sync and test are not offered; locks come from the CSV / single-lock form
+  in the CMS (said on the card). Alliance's two properties (company 198) have no lock provider and 818 has six
+  stops, 8005 none: the Locks tab shows the "connect a provider" state and the Stops tab the empty state.
+- **Health** is only stored for Zerv (`is_device_active`); every other provider shows "Not reported".
+- Talking point / directions and photos are the record's; the drawer saves text to the record and points at
+  Inventory for photos. Distance per stop and publishing from Connect stay unavailable (T3, T6 in the gaps doc).
+
+### Files
+
+Rails: `app/controllers/connect/{base,locks,stops,visitors,booking}_controller.rb`,
+`app/controllers/concerns/connect/reads_json.rb`, `app/controllers/concerns/schedual_tours/{notifications,capacity}.rb`,
+`app/services/connect/domain_error.rb`, `app/services/locks/*`, `app/services/stops/*`, `app/services/visitors/*`,
+`app/services/bookings/*`, `app/services/scheduling/settings.rb`, `config/routes.rb`,
+`test/controllers/connect/{locks,stops,visitors,booking}_controller_test.rb`.
+Connect: `src/app/api/properties/[propId]/tour/[...path]/route.ts`, `models/data/tourModules.data.ts`,
+`repository/remote/api/tourModules.api.ts`, `utils/tour/tourApi.client.ts`,
+`utils/generator/tour/{tourLocks,tourStops,tourVisitors,tourBooking}.generator.ts`,
+`hooks/tour/{useTourLocks,useTourStops,useTourVisitors,useTourBooking,useTourOverview}.ts`,
+`screens/properties/tour/{LocksTab,StopsTab,VisitorsTab,BookingPanels}.tsx`; changed `tourSetup.screen.tsx`,
+`tour/tourModuleTabs.tsx`, `tourModule.generator.ts`, `tourSetup.generator.ts` (`TourTab`, `tourTabOf`),
+`useTourSetup.ts` (`moveStopTo`, `addStops`), `urls.ts`, `connectRoutes.ts`, `strings.ts` / `i18n` (the
+`tourModules` section is generated by a script kept in the session notes), `globals.css` (`.bo-tx*`, `.bo-ts*`),
+`tests/e2e/{tourModules,tourSetup}.spec.ts`.
+
+### Tests and verification
+
+- Rails: `test/controllers/connect` → **31 runs, 244 assertions, 0 failures**; the whole suite → 256 runs, 1314
+  assertions, 1 failure, 3 errors, all four in `PartnerConfigurationsControllerTest` (pre-existing, unchanged from
+  the Oct 17 baseline). The suite needs the test database through `DATABASE_URL` (`database.yml` has no `test`
+  entry).
+- `tsc --noEmit` clean.
+- Playwright against the verify pair (CMS :3100 on `pynwheel_audit_clone` with `PYN_CONNECT_WRITES=on`, this branch's
+  `next dev` on :3005, minted super-admin session): `tourModules.spec` (overview, stops, locks, visitors, settings)
+  and `tourSetup.spec` → **7 passed**, every test ending on "only GETs left the page".
+- Browser pass on Hazel 1618 (the clone): overview with live KPIs; stops list, drawer (content / lock / preview),
+  route preview and shortest path; locks (igloohome v1: 4 locks mapped, Zerv: 6 locks mapped, 10 inventory rows,
+  issued codes); visitors (277 rows, status chips, profile, New booking with Funnel-managed availability);
+  settings (live widget with its gates, hours, form with prospect preview, link).

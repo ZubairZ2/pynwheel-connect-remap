@@ -10,7 +10,7 @@ import { demoActions } from '~/core/store/demo/demo.slice';
 import { useAppDispatch } from '~/core/store/hooks';
 import { t } from '~/core/utils/generator/inventory/inventoryText';
 import { generateMapLevels } from '~/core/utils/generator/map/mapLevels.generator';
-import { parsePinKey } from '~/core/utils/generator/map/mapState';
+import { parsePinKey, type PinRef } from '~/core/utils/generator/map/mapState';
 import {
   T,
   buildTourSetupPayload,
@@ -87,6 +87,56 @@ export const useTourSetup = (map: PropertyMap, initialTab: TourTab = 'overview')
         const hidden = current.stops.filter((stop) => stop.removed);
         return { stops: [...order, ...hidden] };
       }),
+    [patch]
+  );
+
+  /** Drops a stop at a position among the shown stops (drag and drop on the Stops tab). */
+  const moveStopTo = useCallback(
+    (key: string, toIndex: number) =>
+      patch((current) => {
+        const shown = current.stops.filter((stop) => !stop.removed);
+        const index = shown.findIndex((stop) => stop.key === key);
+        if (index < 0) return {};
+        const order = [...shown];
+        const [moved] = order.splice(index, 1);
+        order.splice(Math.max(0, Math.min(toIndex, order.length)), 0, moved);
+        if (order.every((stop, i) => stop.key === shown[i].key)) return {};
+        const hidden = current.stops.filter((stop) => stop.removed);
+        return { stops: [...order, ...hidden] };
+      }),
+    [patch]
+  );
+
+  /** Adds several units or amenities as stops at once (the Add stops modal); each is local until Save. */
+  const addStops = useCallback(
+    (ids: string[]): number => {
+      const refs = ids.map(parsePinKey).filter((ref): ref is PinRef => ref != null);
+      if (!refs.length) return 0;
+      patch((current) => {
+        const taken = new Set(current.stops.filter((stop) => !stop.removed).map((stop) => `${stop.kind}:${stop.recordId}`));
+        const fresh = refs.filter((ref) => !taken.has(`${ref.kind}:${ref.id}`));
+        return {
+          stops: [
+            ...current.stops,
+            ...fresh.map(
+              (ref, index): LocalStop => ({
+                key: `local:${current.nextLocal + index}`,
+                kind: ref.kind,
+                recordId: ref.id,
+                sort: null,
+                visible: true,
+                talkingPoint: '',
+                duration: '',
+                removed: false,
+                local: true
+              })
+            )
+          ],
+          nextLocal: current.nextLocal + fresh.length
+        };
+      });
+      return refs.length;
+    },
     [patch]
   );
 
@@ -409,6 +459,8 @@ export const useTourSetup = (map: PropertyMap, initialTab: TourTab = 'overview')
       save,
       setTab: (tab: TourTab) => patch(() => ({ tab })),
       moveStop,
+      moveStopTo,
+      addStops,
       setTalkingPoint,
       toggleVisible,
       removeStop,

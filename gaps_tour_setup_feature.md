@@ -171,3 +171,15 @@ M15; then Tour Setup reads the stops model.
 - **T6 Route Preview as the CMS would route** — resolved on the backend: `shortest_path.json?from=&to=` is the CMS's own answer, from the same service the Tour App's `route.json` uses; the Tour Setup preview still runs `stopRoute.ts` locally until it is pointed at it.
 - **T7** — unchanged (resolved September 27).
 - **T8 Additional Stops on Tour Setup** — partly: the stops persist on the map (`wayfinding_stops`); Tour Setup lists them once they become tour stops (phase 2 of the report).
+
+## October 17, 2026 update — what the Tour Setup modules closed
+
+- **T1 (saving the route)**: closed on Oct 4 (`TourSetup::Save`); the Oct 17 Stops tab reorders by drag and drop and
+  adds several stops at once through the same payload.
+- **T2 (talking point)**: closed. The stop drawer's Directions saves to the record (`stop_description` for units,
+  `directional_text` for amenities, elevators and entry points) through `Stops::UpdateContent`; the Tour App reads
+  the same column.
+- **T3 (distance per stop)**: still unavailable — no column; the dwell time is saved with the route.
+- **Locks, Visitors, Scheduling, Booking form and link**: real, through the Connect endpoints (PYN_CONNECT_PROGRESS.md §42).
+- **CRM & Sync**: read-only by decision (out of scope for this phase).
+- **Publishing from Connect**: still a dialog that says it is unavailable.

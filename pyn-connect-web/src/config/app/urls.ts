@@ -46,6 +46,14 @@ export const CORE_URLS = {
     saveTourSetup: (propertyId: number) => `/communities/${propertyId}/tours/save_setup.json`,
     /** The Unit / Amenity "Show in Stops List" toggle (`ToursController#stop_list`, TourStops::Membership). PUT. */
     stopList: (propertyId: number) => `/communities/${propertyId}/tours/stop_list.json`
+  },
+  /**
+   * The Tour Setup modules (October 2026): Locks, Stops, Visitors and Booking
+   * on their own JSON routes (`Connect::LocksController` …). `path` is the
+   * module path the route handler allows ("locks", "visitors/12", …).
+   */
+  connect: {
+    path: (propertyId: number, path: string, query?: string) => `/communities/${propertyId}/connect/${path}.json${query ? `?${query}` : ''}`
   }
 } as const;
 
@@ -74,7 +82,9 @@ export const APP_API = {
    * GET, read-only.
    */
   planSvg: (propertyId: number, level: { kind: 'floorplate' | 'sitemap'; id: number } | { background: true }) =>
-    'background' in level ? `/api/properties/${propertyId}/plan-svg?background=1` : `/api/properties/${propertyId}/plan-svg?${level.kind}=${level.id}`
+    'background' in level ? `/api/properties/${propertyId}/plan-svg?background=1` : `/api/properties/${propertyId}/plan-svg?${level.kind}=${level.id}`,
+  /** The Tour Setup modules: GET reads a path, POST writes it (the handler maps the Rails verb). */
+  tourModule: (propertyId: number, path: string, query?: string) => `/api/properties/${propertyId}/tour/${path}${query ? `?${query}` : ''}`
 } as const;
 
 /**
@@ -85,7 +95,9 @@ export const APP_API = {
 export const legacyCmsURLs = {
   /** CommunitiesController#edit, the legacy "Property Details" form. */
   propertyDetails: (companyId: number, propertyId: number): string | null =>
-    legacyCmsURL(`/companies/${companyId}/communities/${propertyId}/edit`)
+    legacyCmsURL(`/companies/${companyId}/communities/${propertyId}/edit`),
+  /** DwelosController#new, the legacy "Smart Locks" page (provider connection, lock import, mapping). */
+  locks: (propertyId: number): string | null => legacyCmsURL(`/communities/${propertyId}/dwelos/new`)
 };
 
 const legacyCmsURL = (path: string): string | null => {

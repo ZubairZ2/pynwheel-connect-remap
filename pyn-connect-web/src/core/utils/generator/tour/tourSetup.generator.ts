@@ -51,12 +51,20 @@ export interface LocalPhoto {
 }
 
 /**
- * The Tours page's tabs (Back Office design, Oct 13, 2026): the overview and
- * the three real-data tabs, then visitors, live chat and settings.
+ * The Tours page's tabs (Back Office design, Oct 13, 2026): the overview,
+ * the stops (with the route preview and the shortest-path test that used to
+ * be the Routing tab), the elevators, the locks, the visitors, live chat and
+ * the settings (scheduling, booking form, booking link).
  */
-export type TourTab = 'overview' | 'stops' | 'elevators' | 'routing' | 'visitors' | 'chat' | 'settings';
+export type TourTab = 'overview' | 'stops' | 'elevators' | 'locks' | 'visitors' | 'chat' | 'settings';
 
-export const TOUR_TABS: TourTab[] = ['overview', 'stops', 'elevators', 'routing', 'visitors', 'chat', 'settings'];
+export const TOUR_TABS: TourTab[] = ['overview', 'stops', 'elevators', 'locks', 'visitors', 'chat', 'settings'];
+
+/** `?tab=` of the Tours page; `routing` (the former tab) opens the stops, where the route preview now lives. */
+export const tourTabOf = (value: string | undefined): TourTab | undefined => {
+  if (value === 'routing') return 'stops';
+  return isTourTab(value) ? value : undefined;
+};
 
 export const isTourTab = (value: string | undefined): value is TourTab => !!value && (TOUR_TABS as string[]).includes(value);
 

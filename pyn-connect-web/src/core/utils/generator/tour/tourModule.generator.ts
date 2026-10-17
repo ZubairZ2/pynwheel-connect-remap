@@ -1,21 +1,24 @@
 import { mapEditorRoute } from '~/config/app/connectRoutes';
 import { CORE_STRINGS } from '~/config/app/strings';
-import type { Variant } from '~/core/models/data/connect/common.data';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
+import type { LockInventory, VisitorsList } from '~/core/models/data/tourModules.data';
 import { i18n } from '~/resources/i18n';
-import { DAYS, DAY_KEYS, DEF_HOURS, SEED_BOOKINGS, SYNC_STYLE, TOUR_TYPES, TYPE_LABEL } from '~/data/mock/scheduling.mock';
 import { t } from '../inventory/inventoryText';
 import type { PillVariant } from '../listing.types';
+import type { StopListItem } from './tourStops.generator';
 import { T, type ElevatorCard, type StopCard, type TourSummary, type TourTab } from './tourSetup.generator';
 
 /**
- * The Tours page's module tabs (Back Office design, Oct 13, 2026 — Tour
- * Module): the overview's checklist, KPIs and attention list come from the
- * real tour (stops, elevators, start points, graph settings); Visitors and
- * the scheduling settings are the demo data set and say so.
+ * The Tours page's Overview and Settings (Back Office design, Oct 13, 2026 —
+ * Tour Module): the overview's checklist, KPIs and attention list come from
+ * the real tour (stops with their CMS rows, elevators, start points, the lock
+ * inventory, today's visitors); the Settings rail lists the booking sections
+ * (real, in BookingPanels) next to the route group and the groups Connect has
+ * no page for yet.
  */
 
 const C = CORE_STRINGS.tours;
+const O = CORE_STRINGS.tourModules.overview;
 
 export interface TourHeadPill {
   id: string;
@@ -51,11 +54,13 @@ export interface TourChecklist {
   progress: string;
 }
 
-export const generateTourChecklist = (args: { propId: string; stops: StopCard[]; elevators: ElevatorCard[]; startPointsMissing: boolean }): TourChecklist => {
-  const { propId, stops, elevators, startPointsMissing } = args;
+export const generateTourChecklist = (args: { propId: string; stops: StopCard[]; elevators: ElevatorCard[]; startPointsMissing: boolean; locks: LockInventory | null; items: StopListItem[] }): TourChecklist => {
+  const { propId, stops, elevators, startPointsMissing, locks, items } = args;
   const unplotted = stops.filter((stop) => !stop.plotted).length;
   const gated = elevators.filter((elevator) => elevator.gated).length;
-  const locks = stops.filter((stop) => stop.lockLabel).length + gated;
+  const lockCount = locks ? locks.counts.mapped + locks.counts.manual : stops.filter((stop) => stop.lockLabel).length + gated;
+  // Locked stops on this tour without a device or code (the rows' `no_lock` issue), not the property-wide holders.
+  const noLock = items.filter((item) => item.issues.some((issue) => issue.key === 'no_lock')).length;
   const K = C.checklist;
   const mapHref = mapEditorRoute(propId);
 
@@ -96,9 +101,9 @@ export const generateTourChecklist = (args: { propId: string; stops: StopCard[];
       id: 'locks',
       num: 5,
       title: i18n.t(K.locks),
-      done: locks > 0,
-      state: locks ? t(K.locksDone, { count: locks }) : i18n.t(K.locksTodo),
-      cta: { label: i18n.t(K.openElevators), tab: 'elevators' }
+      done: lockCount > 0 && noLock === 0,
+      state: lockCount ? t(K.locksDone, { count: lockCount }) : i18n.t(K.locksTodo),
+      cta: { label: i18n.t(O.openLocks), tab: 'locks' }
     },
     {
       id: 'publish',
@@ -116,65 +121,38 @@ export const generateTourChecklist = (args: { propId: string; stops: StopCard[];
 export interface TourKpi {
   id: string;
   label: string;
-  value: number;
+  value: string | number;
   tone: 'ink' | 'warn' | 'ok';
 }
 
-export const generateTourKpis = (summary: TourSummary, stops: StopCard[], elevators: ElevatorCard[]): TourKpi[] => {
-  const unplotted = stops.filter((stop) => !stop.plotted).length;
-  const unlocked = elevators.filter((elevator) => !elevator.gated).length;
+/** The six numbers of the overview: the local route, the stops' setup gaps, today's visitors and the locked stops without a lock. */
+export const generateTourKpis = (summary: TourSummary, items: StopListItem[], visitors: VisitorsList | null, rowsLoaded: boolean): TourKpi[] => {
+  const attention = items.filter((item) => item.issues.length > 0).length;
+  const withoutLock = rowsLoaded ? items.filter((item) => item.issues.some((issue) => issue.key === 'no_lock')).length : null;
   return [
     { id: 'stops', label: i18n.t(C.kpis.stops), value: summary.stops, tone: 'ink' },
     { id: 'hidden', label: i18n.t(C.kpis.hidden), value: summary.stops - summary.visible, tone: 'ink' },
-    { id: 'attention', label: i18n.t(C.kpis.attention), value: unplotted, tone: unplotted ? 'warn' : 'ok' },
-    { id: 'unmapped', label: i18n.t(C.kpis.unmapped), value: unlocked, tone: unlocked ? 'warn' : 'ok' }
+    { id: 'attention', label: i18n.t(O.attention), value: attention, tone: attention ? 'warn' : 'ok' },
+    { id: 'onsite', label: i18n.t(O.onSite), value: visitors ? visitors.onSite.length : '—', tone: 'ink' },
+    { id: 'coming', label: i18n.t(O.comingToday), value: visitors ? visitors.comingToday : '—', tone: 'ink' },
+    { id: 'unmapped', label: i18n.t(O.unmapped), value: withoutLock ?? '—', tone: withoutLock ? 'warn' : withoutLock === 0 ? 'ok' : 'ink' }
   ];
 };
 
-/** Stops the tour cannot route to: not plotted on any plan. */
-export const generateTourAttention = (stops: StopCard[]): StopCard[] => stops.filter((stop) => !stop.plotted);
-
-/* ── visitors (demo) ─────────────────────────────────────────────────── */
-
-export interface DemoVisitorRow {
-  id: string;
-  when: string;
-  visitor: string;
-  email: string;
-  type: string;
-  status: string;
-  statusVariant: Variant;
-  crm: string;
-}
-
-export const generateDemoVisitorRows = (): DemoVisitorRow[] =>
-  SEED_BOOKINGS.map((booking) => {
-    const sync = SYNC_STYLE[booking.sync] ?? SYNC_STYLE.pending;
-    return {
-      id: booking.id,
-      when: `${DAYS[booking.day] ?? ''} · ${booking.time}`,
-      visitor: booking.visitor,
-      email: booking.email,
-      type: TYPE_LABEL[booking.type],
-      status: sync.label,
-      statusVariant: sync.v,
-      crm: booking.crm
-    };
-  });
+/** Stops with a setup gap (no pin, no photo, no directions, a locked door without a lock), in route order. */
+export const generateTourAttention = (items: StopListItem[]): StopListItem[] => items.filter((item) => item.issues.length > 0);
 
 /* ── settings ────────────────────────────────────────────────────────── */
 
 export type TourSettingRow = { label: string; kind: 'toggle'; on: boolean } | { label: string; kind: 'value'; value: string };
 
 export interface TourSettingsGroup {
-  id: 'navigation' | 'scheduling' | 'booking' | 'access' | 'experience' | 'messages';
+  id: 'navigation' | 'access' | 'experience' | 'messages';
   title: string;
   sub: string;
-  /** Real rows come from the CMS; demo rows are the demo data set; unavailable groups have neither. */
-  source: 'real' | 'demo' | 'unavailable';
+  /** Real rows come from the CMS; unavailable groups have no page in Connect yet. */
+  source: 'real' | 'unavailable';
   rows: TourSettingRow[];
-  hours: { day: string; label: string }[];
-  tourTypes: { id: string; label: string; note: string; on: boolean; caps: string }[];
 }
 
 export const generateTourSettingsGroups = (map: PropertyMap): TourSettingsGroup[] => {
@@ -182,29 +160,7 @@ export const generateTourSettingsGroups = (map: PropertyMap): TourSettingsGroup[
   const settings = map.graph.settings;
   const tour = map.graph.tour;
   const notSet = i18n.t(S.notSet);
-  const group = (id: TourSettingsGroup['id'], title: string, sub: string, source: TourSettingsGroup['source'], rows: TourSettingRow[] = []): TourSettingsGroup => ({
-    id,
-    title,
-    sub,
-    source,
-    rows,
-    hours: [],
-    tourTypes: []
-  });
-
-  const scheduling = group('scheduling', i18n.t(S.scheduling), i18n.t(S.schedulingSub), 'demo');
-  scheduling.hours = DAY_KEYS.map((day) => {
-    const hours = DEF_HOURS[day];
-    return { day, label: hours.on ? `${hours.open} – ${hours.close}` : i18n.t(S.closed) };
-  });
-  scheduling.tourTypes = TOUR_TYPES.map((type) => ({
-    id: type.id,
-    label: type.label,
-    note: type.note,
-    on: type.on,
-    caps: `${type.dailyCap} / day · ${type.slotCap} / slot`
-  }));
-
+  const group = (id: TourSettingsGroup['id'], title: string, sub: string, source: TourSettingsGroup['source'], rows: TourSettingRow[] = []): TourSettingsGroup => ({ id, title, sub, source, rows });
   return [
     group('navigation', i18n.t(S.navigation), i18n.t(S.navigationSub), 'real', [
       { label: i18n.t(S.autoWayfinding), kind: 'toggle', on: settings.autoWayfinding },
@@ -214,8 +170,6 @@ export const generateTourSettingsGroups = (map: PropertyMap): TourSettingsGroup[
       { label: i18n.t(S.defaultFloor), kind: 'value', value: settings.defaultMapFloor == null ? notSet : String(settings.defaultMapFloor) },
       { label: i18n.t(S.routeColor), kind: 'value', value: tour?.dottedLineColor ?? notSet }
     ]),
-    scheduling,
-    group('booking', i18n.t(S.booking), i18n.t(S.bookingSub), 'unavailable'),
     group('access', i18n.t(S.access), i18n.t(S.accessSub), 'unavailable'),
     group('experience', i18n.t(S.experience), i18n.t(S.experienceSub), 'unavailable'),
     group('messages', i18n.t(S.messages), i18n.t(S.messagesSub), 'unavailable')

@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 import { mapEditorRoute, propIntegrationsRoute, propRoute, tourContentRoute } from '~/config/app/connectRoutes';
-import { APP_ROUTES } from '~/config/app/urls';
+import { APP_ROUTES, legacyCmsURLs } from '~/config/app/urls';
 import { i18n } from '~/resources/i18n';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { SafeImage } from '~/core/components/atoms/SafeImage';
@@ -13,6 +13,8 @@ import { Breadcrumb } from '~/core/components/molecules/Breadcrumb';
 import { Modal } from '~/core/components/molecules/Modal';
 import { SetupSwitcher } from '~/core/components/molecules/SetupSwitcher';
 import { useTourSetup, type TourSetupController } from '~/core/hooks/useTourSetup';
+import { useTourBooking } from '~/core/hooks/tour/useTourBooking';
+import { useTourOverview } from '~/core/hooks/tour/useTourOverview';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
 import { CORE_STRINGS } from '~/config/app/strings';
 import { t } from '~/core/utils/generator/inventory/inventoryText';
@@ -21,7 +23,10 @@ import { M } from '~/core/utils/generator/map/mapText';
 import { generateSetupSwitcher } from '~/core/utils/generator/productSetup.generator';
 import { generateTourHeadPills } from '~/core/utils/generator/tour/tourModule.generator';
 import { T, type StopCard, type TourTab } from '~/core/utils/generator/tour/tourSetup.generator';
-import { ChatTab, OverviewTab, SettingsTab, VisitorsTab } from './tour/tourModuleTabs';
+import { LocksTab } from './tour/LocksTab';
+import { StopsTab } from './tour/StopsTab';
+import { VisitorsTab } from './tour/VisitorsTab';
+import { ChatTab, OverviewTab, SettingsTab } from './tour/tourModuleTabs';
 
 interface Props {
   /** Null when the property was not found, or could not be loaded (then `error` says so). */
@@ -33,11 +38,11 @@ interface Props {
 
 /**
  * Tour Setup on real data: the Back Office design's Tours page (Oct 13, 2026)
- * around the plotting design's `tourSetup` screen. Overview, Tour Stops,
- * Elevators & Locks and Routing read the community tour's stops, the
- * property's elevators and its pathway graph; Visitors and the scheduling
- * settings are the demo data set and say so. Every write action opens its UI
- * and changes the page's local state; only Save (when enabled) sends anything.
+ * around the plotting design's `tourSetup` screen. Overview, Stops (with the
+ * route preview), Elevators, Locks, Visitors and Settings (scheduling, the
+ * booking form and link) read the CMS; the route order lives on the page
+ * until Save, while the stop drawer, the lock, visitor and booking actions
+ * write through the Connect endpoints (when writes are enabled).
  */
 export const TourSetupScreen = ({ map, error, initialTab }: Props) =>
   map ? <TourSetup map={map} initialTab={initialTab} /> : <TourUnavailable error={error ?? null} />;
@@ -55,18 +60,32 @@ const mapHref = (propId: string, card: StopCard): string => {
 const TourSetup = ({ map, initialTab }: { map: PropertyMap; initialTab?: TourTab }) => {
   const controller = useTourSetup(map, initialTab);
   const { state, summary, actions, stops, elevators } = controller;
-  const propId = String(map.inventory.property.id);
+  const propertyId = map.inventory.property.id;
+  const propId = String(propertyId);
+  const booking = useTourBooking(propertyId, state.tab === 'visitors' || state.tab === 'settings');
+  const overview = useTourOverview(propertyId, state.tab === 'overview');
+  const [stopFocus, setStopFocus] = useState<string | null>(null);
+  const [addSignal, setAddSignal] = useState(0);
+  const TB = CORE_STRINGS.tourModules.tabs;
   const tabs: { id: TourTab; label: string; count: number | null }[] = [
-    { id: 'overview', label: i18n.t(CORE_STRINGS.tours.tabs.overview), count: null },
-    { id: 'stops', label: i18n.t(T.tabs.stops), count: summary.stops },
-    { id: 'elevators', label: i18n.t(T.tabs.elevators), count: summary.elevators },
-    { id: 'routing', label: i18n.t(T.tabs.routing), count: summary.connections },
-    { id: 'visitors', label: i18n.t(CORE_STRINGS.tours.tabs.visitors), count: null },
-    { id: 'chat', label: i18n.t(CORE_STRINGS.tours.tabs.chat), count: null },
-    { id: 'settings', label: i18n.t(CORE_STRINGS.tours.tabs.settings), count: null }
+    { id: 'overview', label: i18n.t(TB.overview), count: null },
+    { id: 'stops', label: i18n.t(TB.stops), count: summary.stops },
+    { id: 'elevators', label: i18n.t(TB.elevators), count: summary.elevators },
+    { id: 'locks', label: i18n.t(TB.locks), count: null },
+    { id: 'visitors', label: i18n.t(TB.visitors), count: null },
+    { id: 'chat', label: i18n.t(TB.chat), count: null },
+    { id: 'settings', label: i18n.t(TB.settings), count: null }
   ];
   const pills = generateTourHeadPills(summary, stops, elevators, controller.unsaved);
   const stopHref = (card: StopCard) => mapHref(propId, card);
+  const openStop = (key: string) => {
+    setStopFocus(key);
+    actions.setTab('stops');
+  };
+  const openAddStops = () => {
+    actions.setTab('stops');
+    setAddSignal((current) => current + 1);
+  };
 
   return (
     <div className="bo-inv bo-tour bo-tm">
@@ -98,7 +117,7 @@ const TourSetup = ({ map, initialTab }: { map: PropertyMap; initialTab?: TourTab
           <Link href={mapEditorRoute(propId)} className="bo-inv__ghost">
             {i18n.t(T.header.mapPlotting)}
           </Link>
-          <button type="button" className="bo-inv__plot" onClick={actions.openAddStop}>
+          <button type="button" className="bo-inv__plot" onClick={openAddStops}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
@@ -135,6 +154,7 @@ const TourSetup = ({ map, initialTab }: { map: PropertyMap; initialTab?: TourTab
             aria-selected={state.tab === tab.id}
             className={`bo-tour__tab${state.tab === tab.id ? ' bo-tour__tab--on' : ''}`}
             onClick={() => actions.setTab(tab.id)}
+            data-testid={`tour-tab-${tab.id}`}
           >
             {tab.label}
             {tab.count != null && <span className="bo-tour__tabcount">{tab.count}</span>}
@@ -142,127 +162,18 @@ const TourSetup = ({ map, initialTab }: { map: PropertyMap; initialTab?: TourTab
         ))}
       </div>
 
-      {state.tab === 'overview' && <OverviewTab controller={controller} propId={propId} mapHref={stopHref} />}
-      {state.tab === 'stops' && <StopsTab controller={controller} propId={propId} />}
+      {state.tab === 'overview' && <OverviewTab controller={controller} propId={propId} mapHref={stopHref} overview={overview} onOpenStop={openStop} />}
+      {state.tab === 'stops' && (
+        <StopsTab controller={controller} propertyId={propertyId} propId={propId} mapHref={stopHref} focusKey={stopFocus} openAddSignal={addSignal} onOpenLocks={() => actions.setTab('locks')} />
+      )}
       {state.tab === 'elevators' && <ElevatorsTab controller={controller} propId={propId} />}
-      {state.tab === 'routing' && <RoutingTab controller={controller} propId={propId} />}
-      {state.tab === 'visitors' && <VisitorsTab />}
+      {state.tab === 'locks' && <LocksTab propertyId={propertyId} legacyUrl={legacyCmsURLs.locks(propertyId)} />}
+      {state.tab === 'visitors' && <VisitorsTab propertyId={propertyId} settings={booking.settings} />}
       {state.tab === 'chat' && <ChatTab propId={propId} />}
-      {state.tab === 'settings' && <SettingsTab controller={controller} />}
+      {state.tab === 'settings' && <SettingsTab controller={controller} booking={booking} propertyName={map.inventory.property.name} />}
 
       <TourDialogs controller={controller} />
     </div>
-  );
-};
-
-const StopsTab = ({ controller, propId }: { controller: TourSetupController; propId: string }) => {
-  const { stops, summary, actions } = controller;
-  return (
-    <>
-      <div className="bo-tour__bar">
-        <div className="bo-tour__bartext">
-          <div className="bo-tour__bartitle">{i18n.t(T.stops.title)}</div>
-          <div className="bo-tour__barsub">
-            {i18n.t(T.stops.subtitle)} · {summary.poolLabel}
-          </div>
-        </div>
-      </div>
-      <div className="bo-tour__list" data-testid="tour-stops">
-        {stops.map((stop) => (
-          <article key={stop.key} className={`bo-tour__stop${stop.visible ? '' : ' bo-tour__stop--hidden'}`}>
-            {stop.image && (
-              <div className="bo-tour__stopimage">
-                <SafeImage className="bo-tour__stopimg" src={stop.image} alt="" fallback={i18n.t(T.elevators.photoUnavailable)} />
-              </div>
-            )}
-            <div className="bo-tour__stopbody">
-              <div className="bo-tour__stophead">
-                <Icon name={stop.icon} style={{ color: 'var(--bo-accent)', display: 'flex' }} />
-                <div className="bo-tour__stopname">{stop.name}</div>
-                <span className="bo-tour__tag">{stop.kindLabel}</span>
-                <StatusPill variant={stop.plotVariant} label={stop.plotLabel} />
-                {!stop.visible && <StatusPill variant="neutral" label={i18n.t(T.stops.hiddenPill)} />}
-                {stop.local && <StatusPill variant="info" label={i18n.t(T.stops.localPill)} />}
-                <Link href={mapHref(propId, stop)} className="bo-tour__smallbtn">
-                  {stop.viewLabel}
-                </Link>
-                <div className="bo-tour__stopactions">
-                  <button type="button" className="bo-tour__iconbtn" aria-label={i18n.t(T.stops.moveUp)} disabled={stop.first} onClick={() => actions.moveStop(stop.key, -1)}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="18 15 12 9 6 15" />
-                    </svg>
-                  </button>
-                  <button type="button" className="bo-tour__iconbtn" aria-label={i18n.t(T.stops.moveDown)} disabled={stop.last} onClick={() => actions.moveStop(stop.key, 1)}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </button>
-                  <button type="button" className="bo-tour__smallbtn" onClick={() => actions.toggleVisible(stop.key)}>
-                    {i18n.t(stop.visible ? T.stops.hide : T.stops.show)}
-                  </button>
-                  <button type="button" className="bo-tour__smallbtn" onClick={() => actions.openEditStop(stop.key)}>
-                    {i18n.t(T.stops.edit)}
-                  </button>
-                  <button type="button" className="bo-tour__iconbtn bo-tour__iconbtn--danger" aria-label={i18n.t(T.stops.remove)} onClick={() => actions.removeStop(stop.key)}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="3 6 5 6 21 6" />
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <div className="bo-tour__meta">
-                <span>
-                  <Icon name="pin" style={{ display: 'flex', color: 'var(--bo-subtle)' }} />
-                  {stop.floorLabel}
-                </span>
-                <span>
-                  <Icon name="properties" style={{ display: 'flex', color: 'var(--bo-subtle)' }} />
-                  {stop.whereLabel}
-                </span>
-                <span className="bo-tour__metasource">{stop.sourceLabel}</span>
-                <span title={i18n.t(T.stops.distanceNote)}>
-                  <Icon name="ruler" style={{ display: 'flex', color: 'var(--bo-subtle)' }} />
-                  {t(T.stops.distance, { value: stop.distance })}
-                </span>
-                <span title={i18n.t(T.stops.durationNote)}>
-                  <Icon name="clock" style={{ display: 'flex', color: 'var(--bo-subtle)' }} />
-                  {t(T.stops.duration, { value: stop.duration })}
-                </span>
-                <span>
-                  <Icon name="node" style={{ display: 'flex', color: 'var(--bo-subtle)' }} />
-                  {stop.nodeLabel}
-                </span>
-                {stop.lockLabel && (
-                  <span>
-                    <Icon name="lock" style={{ display: 'flex', color: 'var(--bo-subtle)' }} />
-                    {stop.lockLabel}
-                  </span>
-                )}
-              </div>
-              <div>
-                <div className="bo-tour__talklabel">
-                  <Icon name="ai" style={{ display: 'flex' }} />
-                  {i18n.t(T.stops.talkingPoint)}
-                </div>
-                <textarea
-                  className="bo-tour__talk"
-                  value={stop.talkingPoint}
-                  placeholder={i18n.t(T.stops.talkingPlaceholder)}
-                  aria-label={`${i18n.t(T.stops.talkingPoint)} · ${stop.name}`}
-                  onChange={(event) => actions.setTalkingPoint(stop.key, event.target.value)}
-                />
-              </div>
-            </div>
-          </article>
-        ))}
-        {stops.length === 0 && (
-          <div className="bo-tour__emptycard">
-            {i18n.t(T.stops.emptyBefore)} <b>{i18n.t(T.header.addStop)}</b> {i18n.t(T.stops.emptyAfter)}
-          </div>
-        )}
-      </div>
-    </>
   );
 };
 
@@ -405,67 +316,6 @@ const ElevatorsTab = ({ controller, propId }: { controller: TourSetupController;
         </article>
       ))}
       {elevators.length === 0 && <div className="bo-tour__emptycard">{i18n.t(T.elevators.empty)}</div>}
-    </div>
-  );
-};
-
-const RoutingTab = ({ controller, propId }: { controller: TourSetupController; propId: string }) => {
-  const { state, endpoints, startPoints, summary, actions } = controller;
-  const tone = state.routeResult?.tone ?? 'muted';
-  return (
-    <div className="bo-tour__routing" data-testid="tour-routing">
-      <section className="bo-tour__card">
-        <div className="bo-tour__cardtitle">{i18n.t(T.routing.title)}</div>
-        <div className="bo-tour__cardsub">{i18n.t(T.routing.subtitle)}</div>
-        <div className="bo-tour__stack">
-          <select className="bo-field" value={state.routeFrom} aria-label={i18n.t(T.routing.from)} onChange={(event) => actions.setRouteFrom(event.target.value)}>
-            <option value="">{i18n.t(T.routing.fromPick)}</option>
-            {endpoints.map((endpoint) => (
-              <option key={endpoint.key} value={endpoint.key}>
-                {i18n.t(T.routing.from)}: {endpoint.label}
-              </option>
-            ))}
-          </select>
-          <select className="bo-field" value={state.routeTo} aria-label={i18n.t(T.routing.to)} onChange={(event) => actions.setRouteTo(event.target.value)}>
-            <option value="">{i18n.t(T.routing.toPick)}</option>
-            {endpoints.map((endpoint) => (
-              <option key={endpoint.key} value={endpoint.key}>
-                {i18n.t(T.routing.to)}: {endpoint.label}
-              </option>
-            ))}
-          </select>
-          <button type="button" className="bo-tour__compute" onClick={actions.computeRoute} disabled={endpoints.length < 2}>
-            {i18n.t(T.routing.compute)}
-          </button>
-          <div className={`bo-tour__routeresult bo-tour__routeresult--${tone}`} role="status">
-            {state.routeResult?.text ?? (endpoints.length < 2 ? i18n.t(T.routing.needTwo) : i18n.t(T.routing.idle))}
-          </div>
-          <p className="bo-tour__note">
-            {t(T.routing.graphNote, { nodes: controller.map.graph.hallways.length, connections: summary.connections })}
-          </p>
-        </div>
-      </section>
-      <section className="bo-tour__card">
-        <div className="bo-tour__cardhead">
-          <div>
-            <div className="bo-tour__cardtitle">{i18n.t(M.starts.title)}</div>
-            <div className="bo-tour__cardsub">{i18n.t(T.routing.startSubtitle)}</div>
-          </div>
-          <Link href={mapEditorRoute(propId)} className="bo-tour__smallbtn bo-tour__smallbtn--md">
-            {i18n.t(T.routing.openMap)}
-          </Link>
-        </div>
-        {startPoints.rows.map((row) => (
-          <div key={row.building} className="bo-map__listrow">
-            <div className="bo-map__listtext">
-              <div className="bo-map__listtitle">{row.building}</div>
-              <div className="bo-map__listsub">{row.name}</div>
-            </div>
-            <StatusPill variant={row.variant} label={row.state} />
-          </div>
-        ))}
-        {startPoints.missing && <div className="bo-map__warnbox">{i18n.t(M.starts.missing)}</div>}
-      </section>
     </div>
   );
 };
