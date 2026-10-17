@@ -572,3 +572,26 @@ items that need the owner's environment or hardware are the only ones left (§25
   path data), 0 × 500; no legacy page writes on read.
 - The clone's Hazel lock row was switched to door-code mode for the mocked run and restored from its backup (v1, nil
   client fields, original timestamp) afterwards; no vendor call was made.
+
+## 30. Shared-Database Coexistence Check (October 18, 2026)
+
+The legacy HTML/ERB application (Heroku `pynwheel`) and the Next.js Connect server share one production database, so
+the branch was checked for anything that could change what the legacy code reads or writes.
+
+- **Schema:** the only change is migration `20261018090000`, two indexes on `tour_histories` (`community_id`,
+  `tour_id`), built `CONCURRENTLY`; no table, column, default or constraint changes (`git diff main -- db/schema.rb`
+  shows the two index lines and the version only). Every Connect write still uses the legacy columns.
+- **Old code on the new schema:** a worktree of `main` (`e86a28024`, the code the legacy app runs) drove the legacy
+  pages in-process against the migrated clone: 82 × 200, its only 500s being the three pre-existing page crashes the
+  branch fixes (photo-less elevators on 1618 and 1411, the visitor view on 1412). The indexes are invisible to it.
+- **Old versus new code, same data:** the 85 requests of the harness compared tag by tag between `main` and the
+  branch: the 15 JSON endpoints (`shortest_path.json`, the legacy mobile `wayfinding.json`, the bookings datatable)
+  are byte-identical; all 67 HTML pages that answer 200 on both differ by less than 400 bytes (CSRF tokens and
+  timestamps); the only status differences are the three 500 → 200 fixes; no legacy page writes on read (the 10
+  statements on both sides are the mobile API's `impressions` log).
+- **Rules the legacy widget shares:** `SchedualTours::Capacity.check_limit` (used by the legacy scheduler widget's
+  `SchedualToursController#check_limit`) was refactored into `limits_for`; the old method body from `main` and the new
+  one were run side by side on 171 configured properties × 6 count patterns (1,026 cases): 0 mismatches.
+- **Lock, stop, booking and settings writes** go through the same helpers and columns the legacy forms use
+  (`AssignLocksHelper`, `MapLocksJob#parse_stop`, `igloohome_guests`, `schedual_tours`, `tour_users`, `opening_hours`,
+  `tour_settings`, `tours`, `scheduler_widget_settings`), as before this branch.

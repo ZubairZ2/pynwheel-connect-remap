@@ -1319,3 +1319,6 @@ Tour App route takes `start_stop_id`, the TourApi lock endpoints gate on `multip
 closed by two implementation passes (tsc, vitest 77/77, Playwright 7/7, the headless journeys green). The plugin's
 Swift package resolves (RxSwift 5.1.3, rxbluetoothkit 6.1.2, DFU 4.11.1). Left to the owner: merge + deploy, run the
 index migration on production, set `HOST_URL`, wire the iOS plugin into CapApp-SPM, provide Bluetooth hardware.
+- Coexistence evidence for the shared database (report §30): a `main` worktree on the migrated clone serves the legacy
+  pages unchanged (only the three pre-existing 500s), JSON endpoints byte-identical between main and the branch, and the
+  legacy widget's `check_limit` rule identical to the refactor on 1,026 cases.
