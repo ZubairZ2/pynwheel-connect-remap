@@ -68,6 +68,7 @@ function normalizeFeedUnits(units) {
     id: u.id,
     communityId: u.community_id,
     doorName: apartmentNumber(u.marketing_name) || String(u.marketing_name || "").trim(),
+    isBedroom: !!apartmentNumber(u.marketing_name),
     baseName: normalize(u.marketing_name),
     shortName: normalize(extractShortName(u.marketing_name)),
     floor: normalize(u.floor),
@@ -83,7 +84,8 @@ function buildingKeysForUnit(u) {
   const keys = [];
   const building = String(u.building || "").trim();
   if (building) keys.push(canonicalKey(building), canonicalKey(extractShortName(building)));
-  const nameParts = String(u.marketing_name || "").split(/[-_\s\/\.]+/).filter(Boolean);
+  const door = apartmentNumber(u.marketing_name) || u.marketing_name;
+  const nameParts = String(door || "").split(/[-_\s\/\.]+/).filter(Boolean);
   if (nameParts.length > 1) keys.push(canonicalKey(nameParts[nameParts.length - 2]));
   return [...new Set(keys.filter(Boolean))];
 }
@@ -152,10 +154,14 @@ function processSvgByBuildings(unitsGroup, filteredUnits) {
     const floorGroups = Array.from(buildingGroup.querySelectorAll("g[id]"))
       .filter(g => floorPrefix.test(g.id));
 
-    // A building drawn as one floor holds all its units, whatever floor the feed says.
+    // A building drawn as one floor takes the units on that floor plus any with
+    // no floor; if the feed's floors don't line up with the map at all, it takes
+    // every unit in the building rather than none.
     if (floorGroups.length <= 1) {
+      const floorName = floorGroups[0] ? groupNumber(floorGroups[0], floorPrefix) : "";
+      const onFloor = buildingUnits.filter(u => !u.floor || canonicalKey(u.floor) === floorName);
       const svgUnits = extractSvgUnits(floorGroups[0] || buildingGroup);
-      Object.assign(pointerData, matchUnitsToSvg(buildingUnits, svgUnits));
+      Object.assign(pointerData, matchUnitsToSvg(onFloor.length ? onFloor : buildingUnits, svgUnits));
       return;
     }
 
@@ -408,12 +414,13 @@ function matchUnitsToSvg(units, svgUnits) {
     });
   };
 
-  // A lone unit is its own target. Where several units share a door, any that
-  // carry their own label on the map ("101A" and "101B" as separate apartments)
-  // keep it; the rest are plotted together on the door.
+  // A unit with no bedroom letter is its own target. Bedrooms are matched by
+  // their door ("0121-A" -> "0121"), even a lone one, since the letter is never
+  // on the map. Any bedroom that does carry its own label ("101A" and "101B" as
+  // separate apartments) keeps it; the rest are plotted together on the door.
   const targets = [];
   groupUnitsByDoor(units).forEach(members => {
-    if (members.length === 1) {
+    if (members.length === 1 && !members[0].isBedroom) {
       targets.push(members[0]);
       return;
     }
