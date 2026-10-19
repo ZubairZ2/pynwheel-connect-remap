@@ -71,8 +71,21 @@ function normalizeFeedUnits(units) {
     baseName: normalize(u.marketing_name),
     shortName: normalize(extractShortName(u.marketing_name)),
     floor: normalize(u.floor),
-    building: normalize(u.building)
+    building: normalize(u.building),
+    buildingKeys: buildingKeysForUnit(u)
   }));
+}
+
+// Building numbers a unit may sit under on the map, most trusted first. Map groups
+// are "Building_1" while feeds say "01" or "1108484-01", and some leave building
+// blank and only carry it in the name ("1108484-01-0101", "10-0101").
+function buildingKeysForUnit(u) {
+  const keys = [];
+  const building = String(u.building || "").trim();
+  if (building) keys.push(canonicalKey(building), canonicalKey(extractShortName(building)));
+  const nameParts = String(u.marketing_name || "").split(/[-_\s\/\.]+/).filter(Boolean);
+  if (nameParts.length > 1) keys.push(canonicalKey(nameParts[nameParts.length - 2]));
+  return [...new Set(keys.filter(Boolean))];
 }
 
 function processSvgForAutoPlotting(svgElement, filteredUnits) {
@@ -110,29 +123,45 @@ function hasPointerData(pointerData) {
   return pointerData && Object.keys(pointerData).length > 0;
 }
 
+function groupNumber(group, prefix) {
+  return canonicalKey(group.id.replace(prefix, "").split(/[\s_]/)[0]);
+}
+
 function processSvgByBuildings(unitsGroup, filteredUnits) {
   const pointerData = {};
+  const buildingPrefix = /^building[\s_]?/i;
+  const floorPrefix = /^floor[\s_]?/i;
 
   const buildingGroups = Array.from(unitsGroup.querySelectorAll("g[id]"))
-    .filter(g => /^building[\s_]?/i.test(g.id));
+    .filter(g => buildingPrefix.test(g.id));
+  const mapBuildings = new Set(buildingGroups.map(g => groupNumber(g, buildingPrefix)));
+
+  // Each unit goes to the first of its building keys the map actually has, so a
+  // unit is never matched under two buildings that both label their doors "101".
+  const unitsByBuilding = new Map();
+  filteredUnits.forEach(unit => {
+    const key = unit.buildingKeys.find(k => mapBuildings.has(k));
+    if (!key) return;
+    if (!unitsByBuilding.has(key)) unitsByBuilding.set(key, []);
+    unitsByBuilding.get(key).push(unit);
+  });
 
   buildingGroups.forEach(buildingGroup => {
-    const buildingName = normalize(buildingGroup.id.replace(/^building[\s_]?/i, "").split(/[\s_]/)[0]);
-    const buildingUnits = filteredUnits.filter(u => normalize(u.building) === buildingName);
+    const buildingUnits = unitsByBuilding.get(groupNumber(buildingGroup, buildingPrefix)) || [];
 
     const floorGroups = Array.from(buildingGroup.querySelectorAll("g[id]"))
-      .filter(g => /^floor[\s_]?/i.test(g.id));
+      .filter(g => floorPrefix.test(g.id));
 
-    if (floorGroups.length === 0) {
-      // Fallback: building without floors
-      const svgUnits = extractSvgUnits(buildingGroup);
+    // A building drawn as one floor holds all its units, whatever floor the feed says.
+    if (floorGroups.length <= 1) {
+      const svgUnits = extractSvgUnits(floorGroups[0] || buildingGroup);
       Object.assign(pointerData, matchUnitsToSvg(buildingUnits, svgUnits));
       return;
     }
 
     floorGroups.forEach(floorGroup => {
-      const floorName = normalize(floorGroup.id.replace(/^floor[\s_]?/i, "").split(/[\s_]/)[0]);
-      const floorUnits = buildingUnits.filter(u => normalize(u.floor) === floorName);
+      const floorName = groupNumber(floorGroup, floorPrefix);
+      const floorUnits = buildingUnits.filter(u => canonicalKey(u.floor) === floorName);
       const svgUnits = extractSvgUnits(floorGroup);
       Object.assign(pointerData, matchUnitsToSvg(floorUnits, svgUnits));
     });
