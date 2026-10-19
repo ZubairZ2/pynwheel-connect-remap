@@ -54,10 +54,20 @@ function getPolygonCentroid(points) {
   return { x: sum.x / points.length, y: sum.y / points.length };
 }
 
+// The apartment a bedroom belongs to: "207-B" -> "207", "12b" -> "12". Same rule
+// as SdkUnitSpaceGrouper.apartment_number, so auto plot groups bedrooms onto the
+// door the map later shows them under. Names ending in a number ("2-101", "103")
+// are their own door.
+function apartmentNumber(name) {
+  const match = String(name || "").trim().match(/^(.*\d)[^A-Za-z0-9]?[A-Za-z]{1,2}$/);
+  return match ? match[1] : null;
+}
+
 function normalizeFeedUnits(units) {
   return units.map(u => ({
     id: u.id,
     communityId: u.community_id,
+    doorName: apartmentNumber(u.marketing_name) || String(u.marketing_name || "").trim(),
     baseName: normalize(u.marketing_name),
     shortName: normalize(extractShortName(u.marketing_name)),
     floor: normalize(u.floor),
@@ -155,7 +165,9 @@ function processSvgUnitsOnly(unitsGroup, filteredUnits) {
 }
 
 function extractSvgUnits(svgParent) {
-  return Array.from(svgParent.querySelectorAll("polygon")).map(polygon => {
+  // ".cloned" polygons are the plot markers drawn over already-plotted units,
+  // not part of the map itself.
+  return Array.from(svgParent.querySelectorAll("polygon:not(.cloned)")).map(polygon => {
     const parentG = polygon.closest("g");
     const label = parentG?.querySelector("text")?.textContent?.trim() || "";
     const points = parsePoints(polygon.getAttribute("points"));
@@ -327,18 +339,67 @@ function matchByNumberSuffix(units, svgUnits, claimed, assign) {
   });
 }
 
+// Student housing stores each bedroom as its own unit ("207-A".."207-D"), all
+// plotted on the one polygon labelled "207". Groups units by door so the door is
+// matched once and every bedroom shares its marker.
+function groupUnitsByDoor(units) {
+  const doors = new Map();
+  units.forEach(unit => {
+    const key = [unit.building, unit.floor, canonicalKey(unit.doorName)].join("|");
+    if (!doors.has(key)) doors.set(key, []);
+    doors.get(key).push(unit);
+  });
+  return Array.from(doors.values());
+}
+
+function doorTarget(members) {
+  const { doorName, floor, building } = members[0];
+  return {
+    id: `door:${members[0].id}`,
+    baseName: normalize(doorName),
+    shortName: normalize(extractShortName(doorName)),
+    floor,
+    building
+  };
+}
+
 function matchUnitsToSvg(units, svgUnits) {
   const pointerData = {};
-  const claimed = new Set(); // each SVG polygon may be assigned to only one unit
+  const claimed = new Set(); // each SVG polygon may be assigned to only one door
 
   svgUnits = svgUnits
     .map(u => ({ ...u, normalized: normalize(u.normalized) }))
     .map(u => ({ ...u, canonical: canonicalKey(u.normalized) }));
 
-  const assign = (unit, svgUnit) => {
+  const membersByTarget = new Map();
+  const assign = (target, svgUnit) => {
     claimed.add(svgUnit);
-    pointerData[unit.id] = formatPointerData(svgUnit);
+    (membersByTarget.get(target) || [target]).forEach(unit => {
+      pointerData[unit.id] = formatPointerData(svgUnit);
+    });
   };
+
+  // A lone unit is its own target. Where several units share a door, any that
+  // carry their own label on the map ("101A" and "101B" as separate apartments)
+  // keep it; the rest are plotted together on the door.
+  const targets = [];
+  groupUnitsByDoor(units).forEach(members => {
+    if (members.length === 1) {
+      targets.push(members[0]);
+      return;
+    }
+    const onDoor = members.filter(unit => {
+      const match = svgUnits.find(u => !claimed.has(u) &&
+        ((u.normalized && u.normalized === unit.baseName) || (u.canonical && u.canonical === canonicalKey(unit.baseName))));
+      if (match) assign(unit, match);
+      return !match;
+    });
+    if (onDoor.length) {
+      const target = doorTarget(onDoor);
+      membersByTarget.set(target, onDoor);
+      targets.push(target);
+    }
+  });
 
   // Pass 1 — exact matching for every unit before any fuzzy guessing, so a
   // fuzzy guess can never steal a polygon that another unit matches exactly.
@@ -347,7 +408,7 @@ function matchUnitsToSvg(units, svgUnits) {
     unit => [unit.shortName],
     unit => exactKeysForUnit(unit)
   ];
-  let remaining = units;
+  let remaining = targets;
   tiers.forEach((keysFor, tierIndex) => {
     const field = tierIndex < 2 ? "normalized" : "canonical";
     remaining = remaining.filter(unit => {
