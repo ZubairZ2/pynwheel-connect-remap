@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
 import { StatusPill } from '~/core/components/atoms/StatusPill';
@@ -8,13 +10,23 @@ import { useTourVisitors, type TourVisitorsController } from '~/core/hooks/tour/
 import type { BookingSettings } from '~/core/models/data/tourModules.data';
 import { t } from '~/core/utils/generator/inventory/inventoryText';
 import { formatWhen } from '~/core/utils/generator/tour/tourLocks.generator';
-import { V, VISITOR_RANGES, VISITOR_TYPES, bookingSends, cancelSends, idPill, statusPill, typeLabelOf } from '~/core/utils/generator/tour/tourVisitors.generator';
+import { V, VISITOR_RANGES, VISITOR_TYPES, bookingSends, cancelSends, feedbackText, idCheckText, idPill, propertyCodeText, statusPill, typeLabelOf } from '~/core/utils/generator/tour/tourVisitors.generator';
 
 const X = CORE_STRINGS.tourModules.common;
 
-/** The Visitors tab: bookings and visits of the property, one visitor's profile, and the booking and privacy actions. */
-export const VisitorsTab = ({ propertyId, settings }: { propertyId: number; settings: BookingSettings | null }) => {
+/**
+ * The Visitors tab: bookings and visits of the property, one visitor's profile, and the booking and privacy actions.
+ * `listSignal` changes when the Visitors tab is clicked while already open: the profile closes and the list shows again.
+ */
+export const VisitorsTab = ({ propertyId, settings, listSignal = 0 }: { propertyId: number; settings: BookingSettings | null; listSignal?: number }) => {
   const c = useTourVisitors(propertyId, true, settings);
+  const { closeProfile } = c;
+  const seenSignal = useRef(listSignal);
+  useEffect(() => {
+    if (seenSignal.current === listSignal) return;
+    seenSignal.current = listSignal;
+    closeProfile();
+  }, [closeProfile, listSignal]);
   if (c.error) {
     return (
       <div className="bo-tx" data-testid="tour-visitors">
@@ -247,13 +259,7 @@ const Profile = ({ c, settings }: { c: TourVisitorsController; settings: Booking
                 <Photo url={v.selfieUrl} label={i18n.t(V.profile.selfie)} />
                 <Photo url={v.idCardUrl} label={i18n.t(V.profile.idCard)} />
               </div>
-              <div className="bo-tx__meta">
-                {v.idCheck.state === 'verified'
-                  ? t(V.profile.idVerified, { provider: v.idCheck.provider ?? '' })
-                  : v.idCheck.state === 'mismatch'
-                    ? i18n.t(V.profile.idMismatch)
-                    : i18n.t(V.profile.idNever)}
-              </div>
+              <div className="bo-tx__meta" data-testid="id-check-text">{idCheckText(p)}</div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {c.canEdit && (
                   <button type="button" className="bo-tx__btn bo-tx__btn--accent" onClick={c.actions.openIdReview}>
@@ -288,10 +294,37 @@ const Profile = ({ c, settings }: { c: TourVisitorsController; settings: Booking
                 </div>
                 <div className="bo-tx__meta">{booking.type} · {booking.source}</div>
                 <div className="bo-tx__meta">{booking.reminders}</div>
+                {(booking.bedrooms || booking.moveIn) && (
+                  <div className="bo-tx__meta">{[booking.bedrooms ? t(V.profile.bookingBeds, { count: booking.bedrooms }) : null, booking.moveIn ? t(V.profile.bookingMoveIn, { date: booking.moveIn }) : null].filter(Boolean).join(' · ')}</div>
+                )}
+                {booking.changes.map((change) => (
+                  <div key={change} className="bo-tx__meta" data-testid="booking-change">{change}</div>
+                ))}
+                {booking.crm.map((push) => (
+                  <div key={push} className="bo-tx__meta" data-testid="booking-crm">{push}</div>
+                ))}
+                {booking.cancelled && <div className="bo-tx__meta">{booking.cancelled}</div>}
                 {booking.customized && <span style={{ font: '700 10.5px var(--bo-font)', color: '#7B3A87' }}>{i18n.t(V.profile.customized)}</span>}
               </div>
             ))}
             {c.bookingCards.length === 0 && <div className="bo-tx__cardbody bo-tx__meta">{i18n.t(V.profile.noBookings)}</div>}
+          </div>
+          <div className="bo-tx__card" data-testid="visitor-feedback">
+            <div className="bo-tx__cardbody" style={{ gap: 8 }}>
+              <span className="bo-tx__cardtitle">{i18n.t(V.profile.feedback)}</span>
+              <div className="bo-tx__meta">{feedbackText(p) ?? i18n.t(V.profile.feedbackNone)}</div>
+              {(p.crmPushes ?? []).length > 0 && (
+                <>
+                  <div className="bo-tx__statlabel">{i18n.t(V.profile.crmPushes)}</div>
+                  {(p.crmPushes ?? []).map((push, index) => (
+                    <div key={`${push.label}-${index}`} className="bo-tx__meta">
+                      {t(V.profile.guestCard, { crm: push.label, when: formatWhen(push.at, p.timeZone) })}
+                      {push.status ? ` · ${push.status}` : ''}
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
           </div>
           {c.isSuperAdmin && (
             <div className="bo-tx__card" style={{ borderColor: '#F9DCE0' }}>
@@ -327,17 +360,30 @@ const Profile = ({ c, settings }: { c: TourVisitorsController; settings: Booking
                   <span className="bo-tx__grow bo-tx__meta" style={{ fontSize: 12 }}>{c.session.line}</span>
                   {c.session.lengthy && <StatusPill variant="warn" label={i18n.t(V.lengthy)} />}
                   {c.session.abandonedAt && <span className="bo-tx__meta bo-tx__warn">{c.session.abandonedAt}</span>}
+                  {c.session.verified && <span className="bo-tx__meta">{c.session.verified}</span>}
+                  {c.session.pill.variant === 'ok' && propertyCodeText(p) && <span className="bo-tx__meta" data-testid="property-code">{propertyCodeText(p)}</span>}
                 </div>
                 <div className="bo-tx__cardbody">
                   <div className="bo-tx__statlabel">{i18n.t(V.profile.stopsVisited)}</div>
                   {c.session.stops.length === 0 && <div className="bo-tx__meta">{i18n.t(V.profile.noStops)}</div>}
                   {c.session.stops.map((stop) => (
-                    <div key={stop.n} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <div key={stop.n} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }} data-testid="session-stop">
                       <span className="bo-tx__avatar" style={{ width: 18, height: 18, fontSize: 9.5 }}>{stop.n}</span>
                       <div className="bo-tx__grow">
                         <div className="bo-tx__name">{stop.name}</div>
                         <div className="bo-tx__meta">{[stop.times, stop.pin].filter(Boolean).join(' · ')}</div>
-                        {stop.note && <div className="bo-tx__meta" style={{ fontStyle: 'italic' }}>“{stop.note}”</div>}
+                        {stop.instruction && <div className="bo-tx__meta">{stop.instruction}</div>}
+                        {stop.notes.map((note) => (
+                          <div key={note} className="bo-tx__meta" style={{ fontStyle: 'italic' }}>“{note}”</div>
+                        ))}
+                        {stop.photos.length > 0 && (
+                          <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }} aria-label={i18n.t(V.profile.photos)}>
+                            {stop.photos.map((url) => (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img key={url} src={url} alt={i18n.t(V.profile.photos)} loading="lazy" style={{ height: 64, width: 64, objectFit: 'cover', borderRadius: 6, background: '#eef0f4' }} />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -353,8 +399,65 @@ const Profile = ({ c, settings }: { c: TourVisitorsController; settings: Booking
               </>
             )}
           </div>
+          <div className="bo-tx__card" data-testid="visitor-access">
+            <div className="bo-tx__cardhead">
+              <div className="bo-tx__grow">
+                <span className="bo-tx__cardtitle">{i18n.t(V.profile.access)}</span>
+                <div className="bo-tx__cardsub">{i18n.t(V.profile.accessSub)}</div>
+              </div>
+              {p.sessions.length > 0 && (
+                <>
+                  <button type="button" className={`bo-tx__chip${c.accessScope === 'visit' ? ' bo-tx__chip--on' : ''}`} onClick={() => c.setAccessScope('visit')}>{i18n.t(V.profile.accessThisVisit)}</button>
+                  <button type="button" className={`bo-tx__chip${c.accessScope === 'all' ? ' bo-tx__chip--on' : ''}`} onClick={() => c.setAccessScope('all')}>
+                    {i18n.t(V.profile.accessAll)}
+                    <span className="bo-tx__chipn">{c.accessTotal}</span>
+                  </button>
+                </>
+              )}
+              {p.codesVisible !== false && c.accessRows.some((row) => row.hasCode) && (
+                <button type="button" className="bo-tx__btn" onClick={c.toggleCodes} data-testid="toggle-codes">{i18n.t(c.revealCodes ? V.profile.hideCodes : V.profile.showCodes)}</button>
+              )}
+            </div>
+            {c.accessRows.length === 0 && <div className="bo-tx__cardbody bo-tx__meta">{i18n.t(c.accessTotal === 0 ? V.profile.accessEmpty : V.profile.accessEmptyVisit)}</div>}
+            {c.accessRows.length > 0 && (
+              <table className="bo-tx__table">
+                <thead>
+                  <tr>
+                    <th>{i18n.t(V.profile.accessTable.stop)}</th>
+                    <th>{i18n.t(V.profile.accessTable.provider)}</th>
+                    <th>{i18n.t(V.profile.accessTable.code)}</th>
+                    <th>{i18n.t(V.profile.accessTable.window)}</th>
+                    <th>{i18n.t(V.profile.accessTable.status)}</th>
+                    <th>{i18n.t(V.profile.accessTable.issued)}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {c.accessRows.map((row) => (
+                    <tr key={row.id} data-testid="access-row">
+                      <td>
+                        <div className="bo-tx__name">{row.stop}</div>
+                        {row.reason && <div className="bo-tx__meta bo-tx__warn">{row.reason}</div>}
+                      </td>
+                      <td>{row.provider} · {row.method}</td>
+                      <td style={{ fontVariantNumeric: 'tabular-nums' }}>{row.code}</td>
+                      <td>{row.window}</td>
+                      <td><StatusPill variant={row.pill.variant} label={row.pill.label} /></td>
+                      <td>{row.issued}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {p.codesVisible === false && c.accessRows.some((row) => row.hasCode) && <div className="bo-tx__cardbody bo-tx__meta">{i18n.t(V.profile.accessHidden)}</div>}
+          </div>
           <div className="bo-tx__card">
-            <div className="bo-tx__cardhead"><span className="bo-tx__cardtitle">{i18n.t(V.profile.timeline)}</span></div>
+            <div className="bo-tx__cardhead">
+              <div className="bo-tx__grow">
+                <span className="bo-tx__cardtitle">{i18n.t(V.profile.timeline)}</span>
+                <div className="bo-tx__cardsub">{i18n.t(V.profile.timelineNote)}</div>
+              </div>
+            </div>
+            {p.timeline.length === 0 && <div className="bo-tx__cardbody bo-tx__meta">{i18n.t(V.profile.noTimeline)}</div>}
             {p.timeline.map((event, index) => (
               <div key={`${event.at}-${index}`} style={{ padding: '9px 18px', borderBottom: '1px solid var(--bo-line-2)' }}>
                 <div className="bo-tx__name">{event.title}</div>

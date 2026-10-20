@@ -1352,3 +1352,42 @@ index migration on production, set `HOST_URL`, wire the iOS plugin into CapApp-S
   written — pick a non-CRM, card-free, widget-live property (Oeuvre 229 on both databases) for widget bookings.
 - **Playwright + React state:** wait for the section's "Saving…" / "Unsaved changes" to disappear before navigating after a save;
   a `router.replace` during an in-flight write left the next save blocked in one run.
+
+## 40. Visitors module on the October 20 design — implementation knowledge (October 21, 2026)
+
+- **The visitor graph is five tables, not one.** `tour_users` (identity, matched by phone **and** email through
+  `TourUserSearcherService`), `schedual_tours` (bookings; no status column; a cancellation destroys the row and only the
+  PaperTrail destroy version remains), `tour_histories` (visit sessions; `tour_state` is "abandoned" until the app posts an
+  end), `visited_stops` (one row per event / photo / note, keyed by `tour_key`; `event_date` + `event_time` are two columns
+  holding the **device's wall clock**, which the legacy page prints as-is — build the instant with `zone.local`, never as UTC),
+  and the vendor guest tables (`igloohome_guests`, `latch_guests` with a window, `zerv_guests` with `res_errors`, `as_guests`,
+  `igloo_guests`) which carry no session link — Connect matches them to a visit by time.
+- **Production keeps the version history, the local dumps do not.** `versions` in production: 917,935 rows since 2020-11-06
+  (SchedualTour destroy 15,717 / update 24,801); `pynwheel_prod` / `pynwheel_audit_clone` hold only the 164 Connect-era rows.
+  So the Cancelled chip and the reschedule history (`Visitors::Changes`, diffing consecutive `update` objects — there is no
+  `object_changes` column) work in production and look empty locally except for Connect-made changes.
+- **PaperTrail's `time` column trap:** the serialized `ActiveRecord::Type::Time::Value` that `YAML.safe_load` rebuilds casts to
+  nil on assignment; `Visitors::Cancelled.plain_time` takes its `@utc` ivar. Every cancelled booking read "unscheduled" before.
+- **`stop_pin` is not always a code.** The legacy app stores whatever the stop showed minus "Use code … to enter.": Zerv stops
+  carry "Tap the unlock button below…". `Visitors::Status.stop_code` / `stop_instruction` split them by shape.
+- **Vendor statuses as stored:** Zerv and Latch write `active` and `deleted` (the key is removed after the tour); Latch alone
+  stores a validity window; igloohome / RemoteLock store none — the UI says "Not recorded" rather than computing one.
+- **The new Tour App writes no visit rows** (no `tour_histories` / `visited_stops` / unlock) and issues igloohome codes with
+  `tour_user_id` NULL; only its bookings ("Tour App") reach Visitors. The legacy app's API (`/api/v1/tours/tour_user_login`,
+  `/api/v1/save_tour_history` with `tour_stop_id` = `id|time|type|pin`, `API_ACCESS=true` locally) is the walk-in path.
+- **Source webhooks are open locally:** PERQ (`ClientID` = `credentials.perq_property_id`, `is_perq_allowed`) and Salesforce
+  (`neighborhoodName` picks the *last* community with that name — two "Mansion Grove" rows) have no auth beyond their params.
+  Apartments.com (`POST /api/v1/schedule_tour`) needs the vendor key.
+- **Widget by hand:** `GET /scheduler_widget/test_widget?community_id&community_code` (JWT with `Community.widget_signing_key`,
+  `SECRET_KEY_BASE_v2` locally) for the CSRF meta + cookie, `GET /schedual_tours/get_tour_type?community_id&date=MM/DD/YYYY&time=10:01 AM&day=Wednesday&tour_type&user_time_zone`
+  for the placeholder id, then `POST /create_tour_user_from` with `tour_user[...]`, `sched_tour_id`, `tour_type`, `country_code`.
+  Oeuvre 229's slots sit at :01 / :16 / :31 / :46.
+- **Running Rails from a worktree:** a backgrounded `cd <worktree> && bundle exec rails server` booted from the main checkout
+  (puma title `[pynwheel-staging]`, old code, and the main checkout's `tmp/local_secret.txt`, so a session minted in the
+  worktree answered 401). Start it with absolute paths and `BUNDLE_GEMFILE=<worktree>/Gemfile … ruby <worktree>/bin/rails server`
+  and check `ps` shows `[complete-visitors-module]`. The form sign-in (throwaway password on clone user 2181) is the reliable
+  session; Connect stores the whole `name=value` Rails cookie URL-encoded in `pyn_connect_rails_session` — decode it and send it
+  as the entire `Cookie` header for direct Rails calls; a Connect write needs the session the read's `Set-Cookie` answered
+  (use a cookie jar) with `X-CSRF-Token` from the read's meta.
+- **Guest-table rows in tests:** the models declare a required `pynwheel_access_user` the legacy writers never set — create
+  them with `save!(validate: false)`.

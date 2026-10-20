@@ -1,0 +1,34 @@
+{
+ "log": [
+  {
+   "step": "liu 16212",
+   "sessions": 1,
+   "stops": [
+    "1\nThe Lobby\nArrived 1:54 PM · next stop 1:57 PM\nTap the unlock button below when you are near the fob reader",
+    "2\nFitness Centre\nArrived 1:57 PM · next stop 1:58 PM\nTap the unlock button below when you are near the fob reader",
+    "3\nElevator 2\nArrived 1:58 PM · next stop 2:19 PM\nTap the unlock button below when you are near the fob reader",
+    "4\n1508\nArrived 2:19 PM · next stop 2:25 PM",
+    "5\nPenthouse West Lounge\nArrived 2:25 PM · next stop 2:26 PM",
+    "6\nPenthouse South Lounge\nArrived 2:26 PM · next stop 2:26 PM",
+    "7\nPenthouse North Lounge\nArrived 2:26 PM"
+   ],
+   "access": 8,
+   "timeline": [
+    "Feedback dismissed",
+    "Tour completed",
+    "Tour ended",
+    "Arrived at Penthouse North Lounge",
+    "Arrived at Penthouse South Lounge",
+    "Arrived at Penthouse West Lounge",
+    "Arrived at 1508",
+    "Arrived at Elevator 2"
+   ]
+  },
+  {
+   "step": "app booking",
+   "bookings": "Bookings\nThu, Nov 5 · 10:16 AM\nUpcoming\nApp Guided Tour · Created by Tour App\nDay before · Pending · Hour before · Pending\n1 bedrooms wanted"
+  }
+ ],
+ "errors": [],
+ "writes": []
+}

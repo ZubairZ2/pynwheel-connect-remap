@@ -1,0 +1,139 @@
+{
+ "log": [
+  {
+   "id": 1618,
+   "chips": [
+    "All 280",
+    "Upcoming 5",
+    "In progress 0",
+    "Completed 115",
+    "Missed 160",
+    "Cancelled 0"
+   ],
+   "rows": 25,
+   "onsite": 0
+  },
+  {
+   "id": 1411,
+   "chips": [
+    "All 12",
+    "Upcoming 1",
+    "In progress 0",
+    "Completed 11",
+    "Missed 0",
+    "Cancelled 0"
+   ],
+   "rows": 12,
+   "onsite": 0
+  },
+  {
+   "id": 229,
+   "chips": [
+    "All 37",
+    "Upcoming 4",
+    "In progress 0",
+    "Completed 26",
+    "Missed 6",
+    "Cancelled 0"
+   ],
+   "rows": 25,
+   "onsite": 1
+  },
+  {
+   "id": 1412,
+   "chips": [
+    "All 1",
+    "Upcoming 0",
+    "In progress 0",
+    "Completed 1",
+    "Missed 0",
+    "Cancelled 0"
+   ],
+   "rows": 1,
+   "onsite": 0
+  },
+  {
+   "id": 818,
+   "chips": [
+    "All 0",
+    "Upcoming 0",
+    "In progress 0",
+    "Completed 0",
+    "Missed 0",
+    "Cancelled 0"
+   ],
+   "rows": 0,
+   "onsite": 0
+  },
+  {
+   "id": 8005,
+   "chips": [
+    "All 0",
+    "Upcoming 0",
+    "In progress 0",
+    "Completed 0",
+    "Missed 0",
+    "Cancelled 0"
+   ],
+   "rows": 0,
+   "onsite": 0
+  },
+  {
+   "step": "completed chip",
+   "rows": 25,
+   "first": "Wed, Sep 16\n11:00 AM\n\t\nJC\nCyphers, Jennifer\njennifer@pynwheel.con · +13039900834\n\tApp Guided Tour\t\nCompleted\t\n\t\nNever verified\tBooking form"
+  },
+  {
+   "step": "missed chip",
+   "rows": 25
+  },
+  {
+   "step": "search nugent",
+   "rows": 1
+  },
+  {
+   "step": "profile 13024",
+   "id": "Verified with Authenteq on May 25, 2023 · lapsed after 30 days, the app asks again",
+   "sessions": 22,
+   "stops": 1,
+   "access": 0,
+   "accessHead": "Access codes issued | What the lock providers issued to this visitor here. Issuing, validity and an actual unlock are different facts; unlock events are listed with the visit. | This visit | All | 115",
+   "feedback": "Visitor feedback | 1 / 5 · “Not very good”",
+   "timeline": 80
+  },
+  {
+   "step": "access all",
+   "access": 115
+  },
+  {
+   "step": "profile 14793",
+   "id": "ID verification is off for this property",
+   "sessions": 34,
+   "stops": 2,
+   "access": 1,
+   "accessHead": "Access codes issued | What the lock providers issued to this visitor here. Issuing, validity and an actual unlock are different facts; unlock events are listed with the visit. | This visit | All | 39",
+   "feedback": "Visitor feedback | 5 / 5",
+   "timeline": 80,
+   "photos": 0
+  },
+  {
+   "step": "onsite 229",
+   "cards": [
+    "WQ\nQA1792536851, Walkin\nWalk-in · last at Game Room 3:59 PM · started 4:54 PM\n3 min"
+   ]
+  },
+  {
+   "step": "profile walkin",
+   "id": "ID verification is off for this property",
+   "sessions": 1,
+   "stops": 2,
+   "access": 0,
+   "accessHead": "Access codes issued | What the lock providers issued to this visitor here. Issuing, validity and an actual unlock are different facts; unlock events are listed with the visit. | This visit | All | 0",
+   "feedback": "Visitor feedback | No feedback from this visitor.",
+   "timeline": 3,
+   "status": "In progress"
+  }
+ ],
+ "errors": [],
+ "writes": []
+}

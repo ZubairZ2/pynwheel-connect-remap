@@ -32,7 +32,7 @@ module Connect
     end
 
     def show
-      render_connect(Visitors::Profile.new(@community, visitor!, base_url: request.base_url).as_json)
+      render_connect(profile_for(visitor!))
     end
 
     def export
@@ -128,7 +128,7 @@ module Connect
         return true if @community.schedual_tours.where(tour_user_id: visitor.id).exists?
         return true if TourHistory.where(tour_user_id: visitor.id).where(tour_id: Tour.where(community_id: @community.id).select(:id)).or(TourHistory.where(tour_user_id: visitor.id, community_id: @community.id)).exists?
 
-        Visitors::Cancelled.for(@community).any? { |booking| booking.tour_user_id == visitor.id }
+        Visitors::Cancelled.for(@community, tour_user_id: visitor.id).any? { |booking| booking.tour_user_id == visitor.id }
       end
 
       def refuse_visitor_detail_role!
@@ -142,7 +142,13 @@ module Connect
       end
 
       def profile_for(visitor)
-        Visitors::Profile.new(@community, visitor, base_url: request.base_url).as_json
+        Visitors::Profile.new(@community, visitor, base_url: request.base_url, include_codes: codes_visible?).as_json
+      end
+
+      # Access and property codes are sent to users who may edit the property
+      # (the legacy Locks and Visitors pages show them to the same people).
+      def codes_visible?
+        current_user&.can_edit_map?(@community) == true
       end
 
       def render_write(data)

@@ -759,3 +759,11 @@ The Schedule screen's data, on the same services Connect's Settings and Visitors
 
 App side: `PynwheelApiTourRepository.getBookingSettings / getAvailability / requestBooking`, parsers `parseBookingSettings`,
 `parseAvailability`, `parseBookingResult`. Tests: `test/controllers/api/tour_app/v1/bookings_test.rb`.
+
+### October 21, 2026 — what Connect Visitors sees of the app
+
+A booking made here appears in Connect › Visitors with source "Tour App" (`created_by`). The app records **no visit**:
+no `tour_histories`, `visited_stops` or unlock rows, and `TourApi::Locks.record_issue!` writes `igloohome_guests` with
+`tour_user_id` NULL (the app's user is a CMS user), so an app tour has no session, stops or attributable access rows in
+Visitors. The legacy app's `/api/v1/save_tour_history` family is the path those rows come from today (see
+`VISITORS_MODULE_FULL_QA.md` §12).

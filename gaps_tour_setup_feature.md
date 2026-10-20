@@ -213,3 +213,20 @@ Still legacy-only: the igloohome and RemoteLock OAuth code-grant sign-ins (the c
 - Still open: `HOST_URL` on the Connect-facing Rails instance; prospect authentication for the Tour App API (super admins
   only); the legacy widget keeps the CRM's slots on Funnel / Knock / Yardi properties, so the new server-side slot check
   runs on Pynwheel-managed calendars only. Report: `TOUR_SETTINGS_SCHEDULING_BOOKING_QA.md`.
+
+## October 21, 2026 update — Visitors module (branch `feature/complete-visitors-module`)
+
+Closed: abandoned visits as their own status; access codes issued (igloohome / Latch / Zerv / RemoteLock / Igloo) per
+visitor and per visit; booking slot history from PaperTrail; feedback and guest cards; grouped stop events with photos and
+notes; lapsed ID verification; the property code; a recorded-events timeline; the cancelled booking time (bug).
+Still open: the new Tour App does not record visits (no `tour_histories` / `visited_stops` / unlock rows; its igloohome
+codes carry no `tour_user_id`); reminder send times are not stored; validity windows exist only for Latch; door-unlock
+events only for RemoteLock / Dwelo; the Apartments.com partner API was not executed locally.
+
+### Known gap — the new Tour App and Visitors (October 21, 2026)
+
+The new Tour App books but records no visit, stop or unlock rows (no `tour_histories`, `visited_stops` or
+`lock_histories`), and its igloohome codes carry no visitor id (`igloohome_guests.tour_user_id` is NULL because the app's
+user is a CMS user), so its tours never appear as sessions in Connect › Visitors. That is a product gap for the app
+(it needs to post an arrival, its stops and an end, as the legacy app does through `/api/v1/save_tour_history`, or
+through new `Api::TourApp::V1` endpoints), not something the Visitors branch can fill.

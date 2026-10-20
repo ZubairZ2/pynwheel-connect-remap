@@ -2759,3 +2759,40 @@ preview, and the booking link built as the legacy page builds it: `HOST_URL`, el
 (`Scheduling::Settings.new(community, base_url: request.base_url)`, `link.host_source`), query `community_id`/`community_code`/`direct`,
 opening the CMS's public widget without sign-in. The Connect route `src/app/scheduler_widget/test_widget/route.ts` (302 to the
 CMS widget) remains for links shared on the Connect host. Report §10.
+
+## 46. Visitors module: every source, the full lifecycle, access codes and the audit timeline (October 21, 2026)
+
+Branch `feature/complete-visitors-module` (worktree). Brief: "Complete Visitors module…" (October 21). Design: the October 20
+export, `TourModule.dc.html` Visitors block. Report: `VISITORS_MODULE_FULL_QA.md`; knowledge: context.md §40.
+
+**Backend (Connect module only, no migration, no legacy file):**
+- `Visitors::Status`: `abandoned` as a row status (the Completed chip counts it, as the design's `vStat` does), `tour_type_key`
+  (remote_tour → virtual), `id_check` with provider / verified_at / valid_until and a lapsed state, `stop_instant` (date + time
+  columns as the property's wall clock), `stop_code` / `stop_instruction`.
+- `Visitors::Query`: `status=completed` lists completed + abandoned, `status=abandoned` alone, `counts.abandoned`; phone-digit
+  search; "Code failed" flag (`Visitors::Access.failed_visitor_ids`, four queries); on-site rows carry the last recorded stop's
+  time; the cancelled read is narrowed per visitor.
+- `Visitors::Profile` (`include_codes:` from `User#can_edit_map?`): verification details, the restricted-access property code
+  with its expiry, booking `history` (`Visitors::Changes`, from PaperTrail `update` versions) and `crm_pushes`, stops grouped
+  per stop with photos / notes / code / instruction / next arrival, `access_ids` per session (matched by time), `access`
+  (`Visitors::Access`: igloohome, Latch, Zerv, RemoteLock / Dwelo, Igloo rows; codes only for editors), `feedback`,
+  `crm_pushes` (`prospects`), a timeline of recorded events with `kind` (bookings, reschedules, CRM appointments,
+  cancellations, missed, visit start / lengthy / end / abandon, stop arrivals, door events, access issuance grouped per
+  minute, ID verification, feedback, guest cards, Connect privacy audits), 80-event cap.
+- `Visitors::Cancelled`: **fix** — the serialized `time` column cast to nil, so every cancelled booking read "unscheduled".
+- `Visitors::Export`: Abandoned label, Visits and Bookings columns.
+
+**Frontend:** `VisitorStatus` + `abandoned`, `VisitorAccess`, `SessionStop`, `BookingChange`; `generateAccessRows`
+(masked codes, "Key in the app", "Not recorded"), `idCheckText`, `propertyCodeText`, `feedbackText`; the profile gained
+the Access codes card (This visit / All, Show codes), the feedback / guest-cards card, booking change / CRM / cancellation
+lines, grouped stops with photos, the property code line and a timeline note; 54 strings; 12 vitest tests.
+
+**Verified** on `pynwheel_audit_clone` (Rails :3103 from the worktree, Connect :3008, form sign-in as 2181): six sources
+driven end to end (widget booking 25524, legacy-app walk-in 16262 / history 22684 on site → completed, Tour App booking
+25522, Connect booking 25523 → rescheduled → cancelled, PERQ 25520, Salesforce 25521), privacy actions, cross-property 404,
+Hazel (280 visitors, 45 abandoned), Rob Nugent (115 accesses, lapsed Authenteq, Funnel, feedback), John Hall (34 sessions,
+Latch windows), Chang Liu (7 stops with codes and next-stop times). Tests: visitors 17 runs (6 new), Connect controllers
+and Tour API green, full suite 308 runs with the one pre-existing partner-screen failure, vitest 26, tsc clean, Playwright
+real-data visitors spec 2 passed, headless pass 0 errors / 0 writes, 12 legacy pages 200 in-process. Production read-only
+(one query). Gaps: the new Tour App records no visits; reminder times not stored; windows only for Latch; unlock events
+only from RemoteLock; Apartments.com not executed.

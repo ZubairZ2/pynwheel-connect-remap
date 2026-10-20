@@ -221,7 +221,12 @@ export interface StopRows {
 
 /* ── visitors ──────────────────────────────────────────────────────── */
 
-export type VisitorStatus = 'upcoming' | 'in_progress' | 'completed' | 'missed' | 'cancelled';
+/**
+ * A visitor's row status (Visitors::Status): the design's five plus
+ * `abandoned`, a visit the app never ended. The Completed chip counts the
+ * abandoned rows too (`counts.completed`), and `counts.abandoned` says how many.
+ */
+export type VisitorStatus = 'upcoming' | 'in_progress' | 'completed' | 'abandoned' | 'missed' | 'cancelled';
 export type VisitorType = 'self' | 'guided' | 'virtual' | 'walkin';
 
 export interface VisitorFlag {
@@ -230,11 +235,13 @@ export interface VisitorFlag {
   variant: 'ok' | 'warn' | 'crit' | 'info' | 'neutral';
 }
 
+/** `expired`: verified more than 30 days ago (the app asks again). */
 export interface VisitorIdCheck {
-  state: 'verified' | 'mismatch' | 'never';
+  state: 'verified' | 'expired' | 'mismatch' | 'never';
   label: string;
   at?: string | null;
   provider?: string | null;
+  validUntil?: string | null;
 }
 
 export interface VisitorRow {
@@ -246,9 +253,13 @@ export interface VisitorRow {
   removed: boolean;
   whenAt: string;
   status: VisitorStatus;
+  statusLabel?: string;
   type: VisitorType;
   typeLabel: string;
   tours: number;
+  visits?: number;
+  bookings?: number;
+  lastVisitAt?: string | null;
   flags: VisitorFlag[];
   idCheck: VisitorIdCheck;
   source: string;
@@ -264,7 +275,9 @@ export interface OnSiteVisitor {
   startedAt: string;
   elapsedMinutes: number | null;
   lengthy: boolean;
+  /** The last stop the app reported, and when: a recorded event, not a live position. */
   lastStop: string | null;
+  lastStopAt?: string | null;
   onsite: boolean;
   historyId: number;
 }
@@ -300,16 +313,59 @@ export interface VisitorBooking {
   desiredBedroom: number | null;
   desiredMoveInDate: string | null;
   cancelledAt: string | null;
+  cancelledBy?: string | null;
   crm: Record<string, string>;
+  /** The slot changes PaperTrail recorded for this booking (Visitors::Changes), oldest first. */
+  history?: BookingChange[];
+  /** The CRM appointments the integrations wrote on the booking. */
+  crmPushes?: { provider: string; label: string; id: string; prospectId?: string | null; name?: string | null }[];
+}
+
+export interface BookingSlot {
+  tourDate: string | null;
+  tourTime: string | null;
+  at: string | null;
+}
+
+export interface BookingChange {
+  from: BookingSlot;
+  to: BookingSlot;
+  at: string;
+  /** The CMS user id when staff moved it; null for the visitor's own widget reschedule. */
+  by: string | null;
+}
+
+/** One stop the app reported in a session, with everything recorded there. */
+export interface SessionStop {
+  id: number;
+  tourStopId: number | null;
+  name: string;
+  stopType: string | null;
+  /** First recorded event at the stop; the app records arrivals, never departures. */
+  at: string | null;
+  /** First event at the following stop, when there is one. */
+  nextAt?: string | null;
+  events?: number;
+  /** A door code the app showed at the stop (code-shaped values only). */
+  pin: string | null;
+  pins?: string[];
+  /** A vendor instruction the app showed instead of a code ("Tap the unlock button…"). */
+  instruction?: string | null;
+  note: string | null;
+  notes?: string[];
+  photos?: string[];
+  imageUrl: string | null;
 }
 
 export interface VisitorSession {
   id: number;
   status: 'in_progress' | 'completed' | 'abandoned';
+  statusLabel?: string;
   arrived: string | null;
   left: string | null;
   elapsedMinutes: number | null;
   lengthy: boolean;
+  lengthyAt?: string | null;
   onsite: boolean;
   tourType: string | null;
   tourStatus: string | null;
@@ -317,8 +373,31 @@ export interface VisitorSession {
   idMismatch: boolean;
   abandonedAtStop: string | null;
   lockAccessTime: string | null;
-  stops: { id: number; tourStopId: number | null; name: string; stopType: string | null; at: string | null; pin: string | null; note: string | null; imageUrl: string | null }[];
+  desiredBedroom?: number | null;
+  counters?: { availability: number; apply: number; price: number; notes: number; camera: number; pages: number };
+  stops: SessionStop[];
   lockEvents: { event: string | null; at: string | null; stopName: string | null; stopType: string | null }[];
+  /** `VisitorAccess.id`s issued while this visit was recorded (matched by time). */
+  accessIds?: string[];
+}
+
+/** A guest access a lock vendor issued to the visitor at this property (Visitors::Access). */
+export interface VisitorAccess {
+  id: string;
+  vendor: string;
+  vendorLabel: string;
+  method: string;
+  methodLabel: string;
+  target: LockTarget | null;
+  targetName: string | null;
+  /** Vendor statuses as stored: Zerv and Latch write  and  (the key is removed after the tour). */
+  status: 'issued' | 'active' | 'expired' | 'failed' | 'revoked' | 'inactive' | 'deleted' | string;
+  reason: string | null;
+  window: { from: string; to: string } | null;
+  issuedAt: string;
+  codePresent: boolean;
+  /** Only when the CMS let this user see codes (`codesVisible`). */
+  code: string | null;
 }
 
 export interface VisitorProfile {
@@ -330,13 +409,20 @@ export interface VisitorProfile {
     idCardUrl: string | null;
     idMismatch: boolean;
     verificationType: string | null;
+    verificationRequired?: boolean;
+    verifiedBy?: string | null;
+    propertyCode?: { enabled: boolean; status: 'none' | 'active' | 'expired'; code: string | null; generatedAt: string | null; expiresAt: string | null };
     createdAt: string;
   };
   bookings: VisitorBooking[];
   sessions: VisitorSession[];
-  timeline: { at: string; title: string; sub: string | null }[];
+  access?: VisitorAccess[];
+  feedback?: { rating: number | null; comment: string | null; cancelled: boolean; at: string } | null;
+  crmPushes?: { provider: string | null; label: string; at: string; status: string | null; bookingId: string | null }[];
+  timeline: { at: string; title: string; sub: string | null; kind?: string }[];
   chat: { available: boolean; chatroomId?: number; messages?: { who: string | null; text: string | null; at: string }[] };
   canResetStops: boolean;
+  codesVisible?: boolean;
   timeZone: string;
 }
 

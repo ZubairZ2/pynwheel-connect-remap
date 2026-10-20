@@ -126,3 +126,15 @@ only, through the read-only URL, and only to confirm facts; no production row wa
   state; nothing is sent or saved.
 - The legacy widget's submit now checks the slot on the server; the Tour App books through the CMS.
 - Results and evidence: `TOUR_SETTINGS_SCHEDULING_BOOKING_QA.md` (§6 tests, §7 matrix on the clone and on development).
+
+## Update — October 21, 2026 (Visitors: every source, the lifecycle, access codes, timeline — branch `feature/complete-visitors-module`)
+
+- The Visitors tab now shows an abandoned visit as "Abandoned" (counted under the Completed chip, filterable alone), the
+  access codes the vendors issued to the visitor (matched to the visit by time, masked until an editor reveals them), the
+  visitor's feedback and guest cards, each booking's slot changes / CRM appointment / cancellation, stops grouped with
+  their photos, notes and codes, the property code with its expiry, a lapsed-verification state, and a timeline of
+  recorded events only. Report `VISITORS_MODULE_FULL_QA.md`.
+- Six creation sources were driven end to end on the clone (public widget, legacy app walk-in, new Tour App booking,
+  Connect booking, PERQ, Salesforce); Apartments.com was inventoried only.
+- Fixed: cancelled bookings read their booked time as nil from the PaperTrail version ("unscheduled" on the Cancelled rows).
+- Known gap: the new Tour App books but records no visit, stop or unlock rows, so its tours do not appear as sessions.

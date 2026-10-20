@@ -8,7 +8,7 @@ import type { Availability, BookingSettings, TourModuleMeta, VisitorProfile, Vis
 import { demoActions } from '~/core/store/demo/demo.slice';
 import { useAppDispatch } from '~/core/store/hooks';
 import { t } from '~/core/utils/generator/inventory/inventoryText';
-import { V, generateBookingCards, generateOnSite, generateSessionView, generateSlotPicker, generateStatusChips, generateVisitorRows, selectableTypes } from '~/core/utils/generator/tour/tourVisitors.generator';
+import { V, generateAccessRows, generateBookingCards, generateOnSite, generateSessionView, generateSlotPicker, generateStatusChips, generateVisitorRows, selectableTypes } from '~/core/utils/generator/tour/tourVisitors.generator';
 import { tourExportUrl, tourGet, tourPost } from '~/core/utils/tour/tourApi.client';
 import { writeErrorText } from './useTourLocks';
 
@@ -52,6 +52,10 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
   const [profile, setProfile] = useState<VisitorProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [sessionId, setSessionId] = useState<number | null>(null);
+  /** Access codes stay masked until the user asks; the CMS only sends them to users who may edit the property. */
+  const [revealCodes, setRevealCodes] = useState(false);
+  /** The access table scope: the selected visit (matched by time) or every access issued here. */
+  const [accessScope, setAccessScope] = useState<'visit' | 'all'>('visit');
   const [dialog, setDialog] = useState<VisitorsDialog>(null);
   const [availability, setAvailability] = useState<Availability | null>(null);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
@@ -96,6 +100,8 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
     async (id: number) => {
       setProfileLoading(true);
       setSessionId(null);
+      setRevealCodes(false);
+      setAccessScope('visit');
       const result = await tourGet<VisitorProfile>(propertyId, `visitors/${id}`);
       if (result.ok) {
         setProfile(result.data);
@@ -303,6 +309,13 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
     if (!availability || !dialog || (dialog.kind !== 'newBooking' && dialog.kind !== 'reschedule')) return null;
     return generateSlotPicker(availability.days, dialog.date, dialog.tourType);
   }, [availability, dialog]);
+  // The access table: the accesses issued during the selected visit (by time) or all of them; codes masked until revealed.
+  const accessRows = useMemo(() => {
+    if (!profile) return [];
+    const all = profile.access ?? [];
+    const scoped = accessScope === 'visit' && session ? all.filter((row) => session.accessIds.includes(row.id)) : all;
+    return generateAccessRows(scoped, profile.timeZone, revealCodes && profile.codesVisible !== false);
+  }, [accessScope, profile, revealCodes, session]);
 
   return {
     list,
@@ -326,6 +339,12 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
     session,
     sessionId,
     setSessionId,
+    accessRows,
+    accessScope,
+    setAccessScope,
+    accessTotal: profile?.access?.length ?? 0,
+    revealCodes,
+    toggleCodes: () => setRevealCodes((current) => !current),
     dialog,
     setDialog,
     availability,
