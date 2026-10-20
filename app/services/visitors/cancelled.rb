@@ -16,10 +16,14 @@ module Visitors
 
     module_function
 
-    def for(community, limit: 500)
+    # `tour_user_id:` narrows the versions to one visitor's (the profile and
+    # the per-visitor checks read a handful of documents, not the property's
+    # last 500).
+    def for(community, limit: 500, tour_user_id: nil)
       scope = PaperTrail::Version.where(item_type: 'SchedualTour', event: 'destroy')
                                  .where("community_id = ? OR object LIKE ?", community.id, "%\ncommunity_id: #{community.id}\n%")
-                                 .order(id: :desc).limit(limit)
+      scope = scope.where("object LIKE ?", "%\ntour_user_id: #{tour_user_id.to_i}\n%") if tour_user_id.present?
+      scope = scope.order(id: :desc).limit(limit)
       scope.filter_map do |version|
         booking = read(version)
         next nil unless booking && booking.community_id == community.id && booking.tour_user_id.present?
@@ -50,8 +54,22 @@ module Visitors
 
       known = attributes.slice(*SchedualTour.column_names)
       booking = SchedualTour.new
-      known.each { |column, value| booking[column] = value }
+      known.each { |column, value| booking[column] = plain_time(value) }
       booking
+    end
+
+    # PaperTrail writes the `time` column as a serialized
+    # ActiveRecord::Type::Time::Value; the object YAML rebuilds casts to nil
+    # on assignment (the booked time of every cancelled booking read as
+    # "unscheduled" until October 21, 2026). Its UTC instant is a plain Time
+    # the column accepts.
+    def plain_time(value)
+      return value unless value.is_a?(ActiveSupport::TimeWithZone) || value.class.name == 'ActiveRecord::Type::Time::Value'
+
+      utc = value.instance_variable_get(:@utc) || value.instance_variable_get(:@time)
+      utc.respond_to?(:to_time) ? utc.to_time : value
+    rescue StandardError
+      value
     end
   end
 end

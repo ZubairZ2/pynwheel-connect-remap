@@ -57,7 +57,9 @@ class Connect::VisitorsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'PERQ', rows[@bob.id]['source']
     assert_equal 'self', rows[@ann.id]['type']
     assert_equal 'Never verified', rows[@ann.id]['id_check']['label']
-    assert_equal({ 'all' => 2, 'upcoming' => 1, 'in_progress' => 1, 'completed' => 0, 'missed' => 0, 'cancelled' => 0 }, data['counts'])
+    assert_equal({ 'all' => 2, 'upcoming' => 1, 'in_progress' => 1, 'completed' => 0, 'abandoned' => 0, 'missed' => 0, 'cancelled' => 0 }, data['counts'])
+    assert_equal 1, rows[@bob.id]['visits']
+    assert_nil data['on_site'].first['last_stop'], 'no stop reported yet'
     assert_equal 1, data['on_site'].size
     assert_equal @bob.id, data['on_site'].first['id']
     assert_equal 'America/Denver', data['time_zone']
@@ -120,7 +122,7 @@ class Connect::VisitorsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match %r{text/csv}, response.content_type
     lines = response.body.lines
-    assert_equal 'Date,Time,Last name,First name,Email,Phone,Tour type,Status,ID check,Source,Flags', lines.first.strip
+    assert_equal 'Date,Time,Last name,First name,Email,Phone,Tour type,Status,ID check,Source,Flags,Visits,Bookings', lines.first.strip
     assert_equal 2, lines.size
     assert_includes lines[1], 'ann@example.test'
   end
@@ -248,4 +250,140 @@ class Connect::VisitorsControllerTest < ActionDispatch::IntegrationTest
   ensure
     ENV.delete('PYN_CONNECT_WRITES')
   end
+  test 'an abandoned visit keeps its own status, is counted under Completed, and is filterable on its own' do
+    cal = TourUser.create!(first_name: 'Cal', last_name: 'Ortiz', name: 'Cal Ortiz', email: 'cal@example.test', phone_number: '+13035550107')
+    TourHistory.create!(tour_user: cal, tour_id: @tour.id, community_id: @community.id, arrived: @now - 5.hours, active_app: true, tour_key: 'key-cal', tour_site: 'onsite', tour_status: 'self_tour')
+    sign_in users(:community_assistant)
+    get "#{base}.json"
+    assert_response :success
+    data = body['data']
+    cal_row = data['rows'].find { |r| r['id'] == cal.id }
+    assert_equal 'abandoned', cal_row['status']
+    assert_equal 'Abandoned', cal_row['status_label']
+    assert_equal 'walkin', cal_row['type']
+    assert_equal 'Walk-in', cal_row['source']
+    assert_includes cal_row['flags'].map { |f| f['key'] }, 'abandoned'
+    assert_equal 1, data['counts']['completed'], 'the Completed chip counts the abandoned row'
+    assert_equal 1, data['counts']['abandoned']
+    get "#{base}.json", params: { status: 'completed' }
+    assert_equal [cal.id], body['data']['rows'].map { |r| r['id'] }
+    get "#{base}.json", params: { status: 'abandoned' }
+    assert_equal [cal.id], body['data']['rows'].map { |r| r['id'] }
+    get "#{base}/export.json", params: { status: 'abandoned' }
+    assert_includes response.body, 'Abandoned'
+    get "#{base}/#{cal.id}.json"
+    assert_equal 'abandoned', body['data']['sessions'].first['status']
+    assert body['data']['timeline'].any? { |e| e['title'] == 'Tour started' }
+  end
+
+  test 'issued access codes are listed per visitor, matched to the visit by time, flagged when failed, and masked for non-editors' do
+    unit = units(:plotted_unit)
+    # The guest rows as the lock services write them (no pynwheel_access_user; the legacy writers skip validation too).
+    LatchGuest.new(community_id: @community.id, tour_user_id: @bob.id, latch_link: 'abc | Pool door', guest_of_stop_type: 'Unit', guest_of_stop_id: unit.id,
+                   start_time: (@now - 25.minutes).to_i, end_time: (@now + 35.minutes).to_i, status: 'active', created_at: @now - 25.minutes).save!(validate: false)
+    IgloohomeGuest.new(community_id: @community.id, tour_user_id: @bob.id, guest_pin: '7731', guest_of_stop_type: 'Unit', guest_of_stop_id: unit.id, stop_type: 'Unit', stop_id: unit.id.to_s, created_at: @now - 24.minutes).save!(validate: false)
+    ZervGuest.new(community_id: @community.id, tour_user_id: @bob.id, status: 'active', res_errors: { 'error' => 'device offline' }, created_at: @now - 3.days).save!(validate: false)
+    IgloohomeGuest.new(community_id: @community.id, tour_user_id: @ann.id, guest_pin: '1111', created_at: @now - 3.days).save!(validate: false)
+
+    sign_in users(:community_assistant)
+    get "#{base}.json"
+    assert_includes body['data']['rows'].find { |r| r['id'] == @bob.id }['flags'].map { |f| f['key'] }, 'code_failed'
+    refute_includes body['data']['rows'].find { |r| r['id'] == @ann.id }['flags'].map { |f| f['key'] }, 'code_failed'
+
+    sign_in users(:super_admin)
+    get "#{base}/#{@bob.id}.json"
+    assert_response :success
+    data = body['data']
+    assert_equal true, data['codes_visible']
+    rows = data['access'].index_by { |row| row['vendor'] }
+    assert_equal %w[Igloohome Latch Zerv], rows.keys.sort
+    assert_equal ['active', 'Latch key', '101'], [rows['Latch']['status'], rows['Latch']['method_label'], rows['Latch']['target_name']]
+    assert rows['Latch']['window'].present?
+    assert_equal ['issued', true, '7731', nil], [rows['Igloohome']['status'], rows['Igloohome']['code_present'], rows['Igloohome']['code'], rows['Igloohome']['window']]
+    assert_equal ['failed', true], [rows['Zerv']['status'], rows['Zerv']['reason'].include?('device offline')]
+    session = data['sessions'].first
+    assert_equal 2, session['access_ids'].size, 'only the accesses issued during the visit window'
+    refute_includes session['access_ids'], rows['Zerv']['id']
+    assert data['timeline'].any? { |e| e['title'] == '1 Latch access issued' }, data['timeline'].map { |e| e['title'] }.inspect
+
+    masked = Visitors::Profile.new(@community, @bob, include_codes: false).as_json
+    assert_equal false, masked[:codes_visible]
+    igloo = masked[:access].find { |row| row[:vendor] == 'Igloohome' }
+    assert_equal [true, nil], [igloo[:code_present], igloo[:code]]
+  end
+
+  test 'the stops of a session are grouped per stop with photos, notes, pins and the next arrival' do
+    stop = tour_stops(:unit_stop)
+    other = tour_stops(:unit_stop_floor3)
+    VisitedStop.create!(tour_user_id: @bob.id, tour_id: @tour.id, tour_stop_id: stop.id, tour_key: 'key-bob', event_time: @now - 20.minutes, stop_type: 'unit', stop_pin: '4821')
+    VisitedStop.create!(tour_user_id: @bob.id, tour_id: @tour.id, tour_stop_id: stop.id, tour_key: 'key-bob', event_time: @now - 18.minutes, stop_type: 'unit', description: 'Loved the light')
+    VisitedStop.create!(tour_user_id: @bob.id, tour_id: @tour.id, tour_stop_id: other.id, tour_key: 'key-bob', event_time: @now - 10.minutes, stop_type: 'unit')
+    sign_in users(:community_admin)
+    get "#{base}/#{@bob.id}.json"
+    session = body['data']['sessions'].first
+    assert_equal 2, session['stops'].size
+    first = session['stops'].first
+    assert_equal [stop.id, 2, '4821', ['Loved the light']], [first['tour_stop_id'], first['events'], first['pin'], first['notes']]
+    assert first['next_at'].present?
+    assert_nil session['stops'].last['next_at']
+    arrived = body['data']['timeline'].select { |e| e['title'].start_with?('Arrived at') }
+    assert_equal 2, arrived.size
+  end
+
+  test 'a reschedule is read back from the booking version as history and as a timeline event' do
+    sign_in users(:community_admin)
+    old_date = @upcoming.tour_date.iso8601
+    date = (@now.to_date + 4).iso8601
+    put "#{base}/bookings/#{@upcoming.id}/reschedule.json", as: :json, params: { tour_date: date, tour_time: '13:30' }
+    assert_response :success, response.body
+    get "#{base}/#{@ann.id}.json"
+    booking = body['data']['bookings'].find { |b| b['id'] == @upcoming.id }
+    assert_equal 1, booking['history'].size, booking.inspect
+    change = booking['history'].first
+    assert_equal [old_date, '10:00', date, '13:30'], [change['from']['tour_date'], change['from']['tour_time'], change['to']['tour_date'], change['to']['tour_time']]
+    assert change['by'].present?, 'staff moved it'
+    event = body['data']['timeline'].find { |e| e['title'].start_with?('Rescheduled') }
+    assert_equal 'Changed by staff', event['sub']
+  end
+
+  test 'a remote visit is a virtual tour, a lapsed verification is lapsed, and the property code is reported with its expiry to editors only' do
+    @upcoming.update_columns(property_tour_type: 'remote_tour')
+    @ann.update_columns(is_checkpoint_verified: true, checkpoint_verified_at: @now - 40.days, property_access_code: 482913, property_access_code_generated_at: @now - 5.minutes)
+    @setting.update_columns(enable_restricted_property_access: true)
+    sign_in users(:super_admin)
+    get "#{base}/#{@ann.id}.json"
+    data = body['data']
+    assert_equal 'virtual', data['bookings'].first['tour_type']
+    assert_equal 'expired', data['visitor']['id_check']['state']
+    assert_equal 'CheckpointID', data['visitor']['id_check']['provider']
+    assert data['visitor']['id_check']['valid_until'].present?
+    assert_equal ['active', '482913', true], [data['visitor']['property_code']['status'], data['visitor']['property_code']['code'], data['visitor']['property_code']['enabled']]
+    assert data['visitor']['property_code']['expires_at'].present?
+    assert data['timeline'].any? { |e| e['title'] == 'ID verified by CheckpointID' }
+
+    masked = Visitors::Profile.new(@community, @ann, include_codes: false).as_json
+    assert_nil masked[:visitor][:property_code][:code]
+    assert_equal 'active', masked[:visitor][:property_code][:status]
+
+    get "#{base}.json", params: { type: 'virtual' }
+    assert_equal [@ann.id], body['data']['rows'].map { |r| r['id'] }
+  end
+
+  test 'feedback and the privacy audit appear on the profile and its timeline' do
+    Feedback.create!(tour_user_id: @bob.id, tour_id: @tour.id, rating: 4, comment: 'Great tour', is_cancelled: false)
+    sign_in users(:super_admin)
+    put "#{base}/#{@bob.id}/remove_pii.json", as: :json, params: { fields: %w[phone] }
+    assert_response :success
+    get "#{base}/#{@bob.id}.json"
+    data = body['data']
+    assert_equal [4.0, 'Great tour'], [data['feedback']['rating'].to_f, data['feedback']['comment']]
+    titles = data['timeline'].map { |e| e['title'] }
+    assert_includes titles, 'Feedback left · 4.0 / 5'
+    assert_includes titles, 'Personal data removed'
+    removed = data['timeline'].find { |e| e['title'] == 'Personal data removed' }
+    assert_equal 'Fields: phone · by staff', removed['sub']
+    assert_equal true, data['visitor']['removed']
+    assert_includes data['visitor']['flags'].map { |f| f['key'] }, 'removed'
+  end
+
 end

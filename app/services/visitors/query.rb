@@ -6,8 +6,16 @@ module Visitors
   # its visits — `tour_histories` of the property's tours), with the status,
   # type, flags and source the design shows, filtered and paged in Ruby
   # after the rows are built (the status is derived, not stored).
+  #
+  # Statuses: upcoming, in_progress, completed, abandoned, missed, cancelled
+  # (Visitors::Status). The design's chips are the first five plus Cancelled;
+  # an abandoned visit keeps its own status on the row and is counted under
+  # the Completed chip (`counts.completed` includes it, `counts.abandoned`
+  # says how many), and `status=completed` lists both; `status=abandoned`
+  # lists the abandoned ones alone.
   class Query
-    STATUSES = %w[all upcoming in_progress completed missed cancelled].freeze
+    STATUSES = %w[all upcoming in_progress completed abandoned missed cancelled].freeze
+    CHIP_STATUSES = %w[all upcoming in_progress completed missed cancelled].freeze
     TYPES = %w[all self guided virtual walkin].freeze
     RANGES = %w[all today next7 last7].freeze
     PER_DEFAULT = 25
@@ -32,13 +40,13 @@ module Visitors
     def as_json(*)
       filtered = filtered_rows
       status = status_filter
-      visible = status == 'all' ? filtered : filtered.select { |row| row.status == status }
+      visible = filtered.select { |row| status_matches?(row.status, status) }
       page = [@filters[:page].to_i, 1].max
       per = (@filters[:per].presence || PER_DEFAULT).to_i.clamp(1, PER_MAX)
       paged = visible.slice((page - 1) * per, per) || []
       {
         rows: paged.map { |row| row_json(row) },
-        counts: STATUSES.each_with_object({}) { |key, out| out[key] = key == 'all' ? filtered.size : filtered.count { |row| row.status == key } },
+        counts: counts(filtered),
         pagination: { page: page, per: per, total: visible.size, pages: [(visible.size.to_f / per).ceil, 1].max },
         on_site: on_site_json,
         coming_today: coming_today_count,
@@ -58,9 +66,24 @@ module Visitors
       @rows ||= visitors.map { |visitor| build_row(visitor) }
     end
 
+    # `all` and the chips; `completed` counts the abandoned rows too, as the
+    # design's chip does, and `abandoned` says how many of those there are.
+    def counts(filtered)
+      STATUSES.each_with_object({}) do |key, out|
+        out[key] = key == 'all' ? filtered.size : filtered.count { |row| status_matches?(row.status, key) }
+      end
+    end
+
+    def status_matches?(row_status, wanted)
+      return true if wanted == 'all'
+      return %w[completed abandoned].include?(row_status) if wanted == 'completed'
+
+      row_status == wanted
+    end
+
     def row_json(row)
       visitor = row.visitor
-      removed = visitor.email.to_s == 'Removed at Consumer Request' || visitor.first_name.to_s == 'Removed at Consumer Request'
+      removed = removed?(visitor)
       {
         id: visitor.id,
         name: display_name(visitor),
@@ -70,14 +93,22 @@ module Visitors
         removed: removed,
         when_at: row.when_at,
         status: row.status,
+        status_label: Status::STATUS_LABEL[row.status],
         type: row.type,
         type_label: Status::TYPE_LABEL[row.type],
         tours: row.sessions.size,
+        visits: row.sessions.size,
+        bookings: row.bookings.size,
+        last_visit_at: row.sessions.first&.arrived,
         flags: row.flags,
         id_check: row.id_check,
         source: row.source,
         sms: visitor.is_sms_enabled != false
       }
+    end
+
+    def removed?(visitor)
+      visitor.email.to_s == Privacy::REMOVED || visitor.first_name.to_s == Privacy::REMOVED || visitor.phone_number.to_s == Privacy::REMOVED
     end
 
     private
@@ -102,7 +133,9 @@ module Visitors
         q = @filters[:q].to_s.strip.downcase
         if q.present?
           hay = [row.visitor.name, row.visitor.first_name, row.visitor.last_name, row.visitor.email, row.visitor.phone_number].compact.join(' ').downcase
-          return false unless hay.include?(q)
+          digits = q.gsub(/\D/, '')
+          phone_hit = digits.length >= 4 && row.visitor.phone_number.to_s.gsub(/\D/, '').include?(digits)
+          return false unless hay.include?(q) || phone_hit
         end
         day = row.when_at.in_time_zone(@zone).to_date
         today = now.to_date
@@ -128,7 +161,7 @@ module Visitors
         @bookings ||= begin
           scope = community.schedual_tours.where.not(tour_user_id: nil)
           scope = scope.where(tour_user_id: @visitor_id) if @visitor_id
-          cancelled = Cancelled.for(community)
+          cancelled = Cancelled.for(community, tour_user_id: @visitor_id)
           cancelled = cancelled.select { |booking| booking.tour_user_id == @visitor_id } if @visitor_id
           scope.order(Arel.sql('coalesce(tour_date, created_at) desc, id desc')).limit(BOOKING_LIMIT).to_a + cancelled
         end
@@ -164,6 +197,11 @@ module Visitors
         @histories_by_visitor ||= histories.group_by(&:tour_user_id)
       end
 
+      # Visitors with a failed code issuance at this property (four queries for the whole list).
+      def failed_code_ids
+        @failed_code_ids ||= Access.failed_visitor_ids(community, visitors.map(&:id))
+      end
+
       def build_row(visitor)
         vb = (bookings_by_visitor[visitor.id] || []).sort_by { |b| [-(Status.booked_at(b, @zone) || b.created_at).to_i, -b.id] }
         vs = (histories_by_visitor[visitor.id] || []).reject { |h| h.history == true }
@@ -178,24 +216,28 @@ module Visitors
                             latest_booking = statuses.first
                             latest_visit = vs.first
                             if latest_visit && (latest_booking.nil? || latest_visit.arrived.to_i >= (Status.booked_at(latest_booking[0], @zone) || latest_booking[0].created_at).to_i)
-                              [Status.visit_status(latest_visit, now) == 'abandoned' ? 'abandoned' : 'completed', latest_visit.arrived || latest_visit.created_at]
+                              [Status.visit_status(latest_visit, now), latest_visit.arrived || latest_visit.created_at]
                             elsif latest_booking
                               [latest_booking[1], Status.booked_at(latest_booking[0], @zone) || (latest_booking[0].respond_to?(:cancelled_at) ? latest_booking[0].cancelled_at : latest_booking[0].created_at)]
                             else
                               ['completed', visitor.created_at]
                             end
                           end
-        status = 'completed' if status == 'abandoned'
-        type = if vb.empty? then 'walkin' else Status.tour_type_key(vb.first) end
+        type = if active && vb.empty? then 'walkin'
+               elsif vb.empty? then 'walkin'
+               else Status.tour_type_key(vb.first)
+               end
         flags = []
         vs.each do |h|
           elapsed = Status.visit_elapsed_minutes(h, now)
-          flags << { key: 'lengthy_stay', label: 'Lengthy stay', variant: 'warn' } if Status.visit_status(h, now) == 'in_progress' && elapsed && elapsed > stay_limit
-          flags << { key: 'abandoned', label: 'Tour abandoned', variant: 'warn' } if Status.visit_status(h, now) == 'abandoned' && h.abandoned_tour_at_stop.present?
+          visit = Status.visit_status(h, now)
+          flags << { key: 'lengthy_stay', label: 'Lengthy stay', variant: 'warn' } if visit == 'in_progress' && elapsed && elapsed > stay_limit
+          flags << { key: 'abandoned', label: 'Tour abandoned', variant: 'warn' } if visit == 'abandoned'
         end
+        flags << { key: 'code_failed', label: 'Code failed', variant: 'crit' } if failed_code_ids.include?(visitor.id)
         flags << { key: 'id_mismatch', label: 'ID mismatch', variant: 'crit' } if visitor.id_selfie_mismatch
         flags << { key: 'customized', label: 'Customized tour', variant: 'info' } if upcoming.any? { |b| b.stops_list.present? }
-        flags << { key: 'removed', label: 'Removed at consumer request', variant: 'neutral' } if visitor.email.to_s == 'Removed at Consumer Request'
+        flags << { key: 'removed', label: 'Removed at consumer request', variant: 'neutral' } if removed?(visitor)
         flags.uniq! { |f| f[:key] }
         Row.new(visitor: visitor, bookings: vb, sessions: vs, status: status, when_at: when_at || now, type: type,
                 source: vb.empty? ? 'Walk-in' : Status.source_label(vb.first.created_by), flags: flags, id_check: Status.id_check(visitor, now))
@@ -217,20 +259,23 @@ module Visitors
         rows.select { |row| row.status == 'in_progress' }.map do |row|
           session = row.sessions.find { |h| Status.visit_status(h, now) == 'in_progress' }
           elapsed = Status.visit_elapsed_minutes(session, now)
+          stop_name, stop_at = last_stop(session)
           {
             id: row.visitor.id, name: display_name(row.visitor), initials: initials(row.visitor), type: row.type, type_label: Status::TYPE_LABEL[row.type],
             started_at: session.arrived, elapsed_minutes: elapsed, lengthy: elapsed.to_i > stay_limit,
-            last_stop: last_stop_name(session), onsite: session.tour_site != 'offsite', history_id: session.id
+            last_stop: stop_name, last_stop_at: stop_at, onsite: session.tour_site != 'offsite', history_id: session.id
           }
         end.sort_by { |row| row[:started_at].to_i }
       end
 
-      def last_stop_name(session)
-        return nil if session.tour_key.blank?
+      # The last stop the app reported for the session, and when (the
+      # recorded event, not a live position).
+      def last_stop(session)
+        return [nil, nil] if session.tour_key.blank?
 
         visited = VisitedStop.where(tour_key: session.tour_key).order(:id).last
         stop = visited&.tour_stop_id && TourStop.find_by(id: visited.tour_stop_id)
-        stop&.name.presence
+        [stop&.name.presence, visited && Status.stop_instant(visited, @zone)]
       end
 
       def coming_today_count

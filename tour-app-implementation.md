@@ -593,3 +593,9 @@ package resolution proven. Report §29.
 - Verified headless on the audit clone (Hazel 1618): sign in → Hazel → Schedule a Self-Tour → real slots → Confirm → `POST
   …/bookings` 201 (booking 25519, created_by "Tour App") → "Self-tour confirmed" → the booking in Connect Visitors. Tests:
   `src/store/booking.test.ts`; `npm test` 84 passing.
+
+### October 21, 2026 — Visitors module note
+
+Connect's Visitors tab lists this app's bookings ("Tour App") but cannot show its tours as sessions: the app never posts an
+arrival, stops or an end, and the door codes it issues are not tied to a visitor row. Adding those calls (or a new
+endpoint on `Api::TourApp::V1`) is the open product gap recorded in `VISITORS_MODULE_FULL_QA.md` §12.

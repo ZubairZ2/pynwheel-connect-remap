@@ -213,3 +213,12 @@ Still legacy-only: the igloohome and RemoteLock OAuth code-grant sign-ins (the c
 - Still open: `HOST_URL` on the Connect-facing Rails instance; prospect authentication for the Tour App API (super admins
   only); the legacy widget keeps the CRM's slots on Funnel / Knock / Yardi properties, so the new server-side slot check
   runs on Pynwheel-managed calendars only. Report: `TOUR_SETTINGS_SCHEDULING_BOOKING_QA.md`.
+
+## October 21, 2026 update — Visitors module (branch `feature/complete-visitors-module`)
+
+Closed: abandoned visits as their own status; access codes issued (igloohome / Latch / Zerv / RemoteLock / Igloo) per
+visitor and per visit; booking slot history from PaperTrail; feedback and guest cards; grouped stop events with photos and
+notes; lapsed ID verification; the property code; a recorded-events timeline; the cancelled booking time (bug).
+Still open: the new Tour App does not record visits (no `tour_histories` / `visited_stops` / unlock rows; its igloohome
+codes carry no `tour_user_id`); reminder send times are not stored; validity windows exist only for Latch; door-unlock
+events only for RemoteLock / Dwelo; the Apartments.com partner API was not executed locally.
