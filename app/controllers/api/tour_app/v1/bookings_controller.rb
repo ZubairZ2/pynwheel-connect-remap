@@ -26,7 +26,7 @@ module Api
         end
 
         def settings
-          render json: TourApi::Booking.settings(@property)
+          render json: TourApi::Booking.settings(@property, base_url: request.base_url)
         end
 
         def availability

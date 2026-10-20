@@ -395,7 +395,7 @@ export interface BookingSettings {
     fixedFields: string[];
   } | null;
   button: { text: string; color: string; textColor: string; icon: string | null; width: number; height: number; font: string; fontSize: string } | null;
-  link: { url: string | null; host: string | null; hostSource: 'env' | 'default'; hostConfigured: boolean; live: boolean; reasons: string[]; embedHtml: string | null };
+  link: { url: string | null; host: string | null; hostSource: 'env' | 'request' | 'none'; hostConfigured: boolean; live: boolean; reasons: string[]; embedHtml: string | null };
 }
 
 export interface BookingClosure {

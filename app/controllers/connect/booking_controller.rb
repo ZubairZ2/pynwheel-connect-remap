@@ -55,7 +55,7 @@ module Connect
     private
 
       def settings
-        Scheduling::Settings.new(@community)
+        Scheduling::Settings.new(@community, base_url: request.base_url)
       end
 
       def render_write(data)

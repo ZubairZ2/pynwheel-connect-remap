@@ -2755,5 +2755,7 @@ report §7–§8). Production untouched.
 ### 45a. Design parity follow-up (October 21, 2026)
 Per-card Saved/Discard/Save heads on every settings card (`RULE_CARDS` + `saveRules(card)`, `FormPart = fields | app | button` +
 `saveForm(part)`), the design's − / + `Stepper` with "Allowed a–b." (`BOUNDS` in the generator), a fixed-height scrolling phone
-preview, and a default booking-link host per environment (`Scheduling::Settings::DEFAULT_LINK_HOSTS`, `link.host_source`) with the
-Connect route `src/app/scheduler_widget/test_widget/route.ts` redirecting to the CMS widget. Report §10.
+preview, and the booking link built as the legacy page builds it: `HOST_URL`, else the CMS host answering the request
+(`Scheduling::Settings.new(community, base_url: request.base_url)`, `link.host_source`), query `community_id`/`community_code`/`direct`,
+opening the CMS's public widget without sign-in. The Connect route `src/app/scheduler_widget/test_widget/route.ts` (302 to the
+CMS widget) remains for links shared on the Connect host. Report §10.

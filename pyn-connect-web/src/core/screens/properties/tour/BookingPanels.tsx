@@ -721,7 +721,7 @@ const LinkPanel = ({ c, propertyId, onNavigate }: BookingPanelProps) => {
     <div className="bo-tx" data-testid="booking-link">
       <AvailabilityHeader c={c} propId={String(propertyId)} onNavigate={onNavigate} />
       {!link.url && <div className="bo-tx__bad">{i18n.t(L.noHost)}</div>}
-      {link.url && link.hostSource === 'default' && <div className="bo-tx__info">{t(L.hostDefault, { host: link.host ?? '' })}</div>}
+      {link.url && link.hostSource === 'request' && <div className="bo-tx__info">{t(L.hostDefault, { host: link.host ?? '' })}</div>}
       {link.url && !link.live && <div className="bo-tx__note">{t(L.notLive, { error: link.reasons[0] ?? '' })}</div>}
       <div className="bo-tx__grid2 bo-tx__grid2--link">
         <div className="bo-tx">

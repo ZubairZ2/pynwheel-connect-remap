@@ -7,8 +7,8 @@ module TourApi
   module Booking
     module_function
 
-    def settings(community)
-      full = Scheduling::Settings.new(community).as_json
+    def settings(community, base_url: nil)
+      full = Scheduling::Settings.new(community, base_url: base_url).as_json
       {
         property_id: community.id,
         time_zone: full[:time_zone_effective],

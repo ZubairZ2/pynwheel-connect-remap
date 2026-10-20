@@ -101,9 +101,11 @@ Screens: `evidence/screens/clone_1618_*.png` and `dev_1618_*.png` (rules, hours,
   party size 1–10, font size 8–40, width and height 10–1000). The Capacity card shows the two per-type caps only, as the design;
   `limit_max_tour` stays stored and in the API.
 - The prospect preview is a fixed-height phone (580 px) that scrolls inside instead of growing with its content.
-- Booking link host: when the CMS has no `HOST_URL`, `Scheduling::Settings#link` uses the environment's Connect host
-  (`http://localhost:3001` in development, `https://pyn-system-connect-de8364f794a0.herokuapp.com` in production/staging) and reports
-  `host_source: "default"`; the Connect app answers `GET /scheduler_widget/test_widget` with a 302 to the CMS's widget carrying the
-  signed query, so the link always resolves. The panel shows an info note instead of the red "no HOST_URL" error.
+- Booking link host (corrected the same day): the link is built exactly as the legacy Tour Settings page's "Copy link for
+  Scheduler Page" — `HOST_URL` when the CMS has one, otherwise the CMS host answering the request (`request.base_url`, the legacy
+  page's `root_url`) — with the legacy query `?community_id=&community_code=&direct=true`. It opens the CMS's public widget, which
+  asks for no sign-in (`SchedulerWidget::WidgetsController`); `link.host_source` says `env` or `request`. Locally the link therefore
+  points at the Rails server itself (for example `http://127.0.0.1:3102/scheduler_widget/test_widget?…`). The Connect route
+  `GET /scheduler_widget/test_widget` (a 302 to the CMS widget) stays as a courtesy for links shared on the Connect host.
 - Re-verified on the clone: Settings e2e 8 passed (reads + write round trips on 818, module settings test), Rails booking tests
   19 runs green, the redirect answers 302 to the CMS widget; screens in `qa/tour-settings/evidence/screens2/`.

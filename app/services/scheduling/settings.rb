@@ -37,8 +37,13 @@ module Scheduling
     ICONS = %w[calendar pin clock arrow home].freeze
     COLOR = /\A#[0-9a-fA-F]{6}\z/
 
-    def initialize(community)
+    # `base_url`: the CMS host answering the request (`request.base_url`); the
+    # booking link is built on it when `HOST_URL` is not set, exactly as the
+    # legacy Tour Settings page builds its "Copy link for Scheduler Page" on
+    # `root_url`. The widget it opens needs no sign-in.
+    def initialize(community, base_url: nil)
       @community = community
+      @base_url = base_url.to_s.presence
       @availability = Bookings::Availability.new(community)
     end
 
@@ -158,29 +163,29 @@ module Scheduling
         party_size_limit: setting.app_party_size_limit || 6, ask_unit: setting.app_ask_unit != false, show_text_booking: setting.app_show_text_booking != false }
     end
 
-    # The public host of the booking link: `HOST_URL` when the CMS has one,
-    # otherwise the Connect app of the environment (October 21, 2026), which
-    # forwards `/scheduler_widget/test_widget` to the CMS's widget.
-    DEFAULT_LINK_HOSTS = { production: 'https://pyn-system-connect-de8364f794a0.herokuapp.com', development: 'http://localhost:3001' }.freeze
-
+    # The public host of the booking link: `HOST_URL` when the CMS has one
+    # (as `Community#schedule_tour_url`), otherwise the CMS host answering this
+    # request (the legacy page's `root_url`). Both open the CMS's own public
+    # widget page, which asks for no sign-in.
     def link_host
       configured = ENV['HOST_URL'].to_s.presence
-      return [configured, 'env'] if configured
+      return [configured.sub(%r{/\z}, ''), 'env'] if configured
+      return [@base_url.sub(%r{/\z}, ''), 'request'] if @base_url
 
-      [Rails.env.production? || Rails.env.staging? ? DEFAULT_LINK_HOSTS[:production] : DEFAULT_LINK_HOSTS[:development], 'default']
+      [nil, 'none']
     end
 
     def link
       host, source = link_host
-      url = "#{host}/scheduler_widget/test_widget?community_id=#{community.id}&community_code=#{community.community_code}&schedule_tours_page=true&direct=true"
+      url = host ? "#{host}/scheduler_widget/test_widget?community_id=#{community.id}&community_code=#{community.community_code}&direct=true" : nil
       {
         url: url,
         host: host,
         host_source: source,
         host_configured: source == 'env',
-        live: widget_live?,
+        live: widget_live? && url.present?,
         reasons: gates.reject { |g| g[:ok] }.map { |g| g[:error] } + (community.is_salesforce_community? ? ['Bookings via Salesforce'] : []),
-        embed_html: button ? embed_html(url) : nil
+        embed_html: url && button ? embed_html(url) : nil
       }
     end
 

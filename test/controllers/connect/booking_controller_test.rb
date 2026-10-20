@@ -45,8 +45,9 @@ class Connect::BookingControllerTest < ActionDispatch::IntegrationTest
     assert data['form']['show_desired_move_in_date']
     assert_nil data['button']['icon']
     assert_equal ENV['HOST_URL'].present?, data['link']['host_configured']
-    assert data['link']['url'].start_with?(ENV['HOST_URL'].presence || 'http://localhost:3001'), 'without HOST_URL the link uses the environment default'
-    assert_equal ENV['HOST_URL'].present? ? 'env' : 'default', data['link']['host_source']
+    assert data['link']['url'].start_with?(ENV['HOST_URL'].presence || 'http://pynwheel-staging.herokuapp.com'), 'without HOST_URL the link is built on the CMS host answering the request, as the legacy page does'
+    assert data['link']['url'].end_with?("community_code=#{@community.community_code}&direct=true"), 'the legacy Copy-link query'
+    assert_equal ENV['HOST_URL'].present? ? 'env' : 'request', data['link']['host_source']
   end
 
   test 'availability lists the stepped slots of open days with the types open at each' do
@@ -155,7 +156,7 @@ class Connect::BookingControllerTest < ActionDispatch::IntegrationTest
     assert link['host_configured']
     assert link['live'], link.inspect
     assert link['url'].start_with?("https://cms.example.test/scheduler_widget/test_widget?community_id=#{@community.id}&community_code=")
-    assert_includes link['url'], 'direct=true'
+    assert link['url'].end_with?('&direct=true')
     assert_includes link['embed_html'], 'Schedule a Visit'
     assert_includes link['embed_html'], 'color:#ffffff'
   ensure

@@ -2863,7 +2863,7 @@ const ENGLISH: Record<string, string> = {
   [CORE_STRINGS.tourModules.booking.link.copied]: 'Copied.',
   [CORE_STRINGS.tourModules.booking.link.signed]: 'Every link carries a signed property code. Changing the URL can’t point it at another property.',
   [CORE_STRINGS.tourModules.booking.link.noHost]: 'The CMS has no HOST_URL configured, so no link can be built here.',
-  [CORE_STRINGS.tourModules.booking.link.hostDefault]: 'The CMS has no HOST_URL; the link uses this environment’s Connect host ({host}), which opens the CMS’s booking page.',
+  [CORE_STRINGS.tourModules.booking.link.hostDefault]: 'The CMS has no HOST_URL, so the link is built on the CMS host answering this request ({host}), as the legacy Tour Settings page does. The booking page needs no sign-in.',
   [CORE_STRINGS.tourModules.booking.link.notLive]: 'The link opens, but prospects see “{error}” until it is fixed.',
   [CORE_STRINGS.tourModules.booking.link.whereTitle]: 'Where prospects find it',
   [CORE_STRINGS.tourModules.booking.link.where.button]: 'Embeddable button',
