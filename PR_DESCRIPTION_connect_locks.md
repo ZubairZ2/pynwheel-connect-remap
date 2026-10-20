@@ -24,6 +24,11 @@ The unconnected providers follow the design's "Connect a lock provider" grid (th
 Connect), with the Dormakaba card opening an honest "not connected to the CMS yet" notice (no connector exists)
 and the Launch-only vendors (Schlage, Yale, Other) as chips highlighted when the property has their rows.
 
+The connected card follows the design too: an Igloo "Connection" select, Re-authorize when a token lapsed, and
+Disconnect (typed confirmation) which deletes the vendor's imported locks and takes the vendor off the property
+while keeping the account. The inventory has the "Delete all imported locks" footer and a "Last sync" column;
+Issued codes have status filters and the recent-failures banner.
+
 ## Backend
 
 New `Locks::Accounts` service and six write actions on `Connect::LocksController` (`locks/account`,

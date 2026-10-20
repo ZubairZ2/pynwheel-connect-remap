@@ -102,6 +102,20 @@ vendors". Rebuilt as `generateConnectCards` / `.bo-lp` in `LocksTab`. Two honest
   `Locks::Inventory#launch_only` reports each with `present` (the property has the row or the provider string),
   and the chip is highlighted when present (Hazel has an `other_locks` row). No account form exists for them.
 
+### The connected card, inventory footer and issued-code filters (same day)
+
+The design page (decompressed from the `(2)` export's pako bundle; the grid is in there, my first text search
+missed it) also defines the connected card and the other sub-tabs. Aligned: the Igloo card's "Connection" select
+(switching opens the account dialog with that version preselected; locks stay, as the legacy page keeps them),
+"Re-authorize" when a code-grant token lapsed, and **Disconnect** with a typed DISCONNECT confirmation. Disconnect
+is a real operation: `PUT locks/disconnect` runs `Locks::Purge` (the vendor's rows go, the stops they opened are
+cleared) and removes the vendor from `multiple_locks_provider`; the account row stays and Connect reopens it
+pre-filled. "Delete all imported locks" moved to the inventory footer; the inventory's column is "Last sync" (the
+rows' `updated_at`); Issued codes gained the All / Issued / Failed / Expired / Revoked filters and the
+"failed in the last 7 days" banner. The connect dialog's primary action is "Test & connect" where the vendor can
+be tested. The design's connect fields for Dwelo, Latch and Zerv ("API key" + "Site ID") are the placeholders the
+brief rules out; the real legacy fields stay.
+
 ## Field-parity matrix
 
 | Provider / mode | Legacy fields verified | New form complete | Validation | Persistence | Result |

@@ -22,7 +22,7 @@ type Verb = 'POST' | 'PUT' | 'DELETE';
 const READS: RegExp[] = [/^locks$/, /^locks\/auto_match$/, /^stops$/, /^visitors$/, /^visitors\/\d+$/, /^booking$/, /^booking\/availability$/];
 const CSV: RegExp[] = [/^visitors\/export$/];
 const WRITES: [RegExp, Verb, (path: string) => string][] = [
-  [/^locks\/(map|unmap|manual_code|enabled|account|instructions|instruction_image)$/, 'PUT', (path) => path],
+  [/^locks\/(map|unmap|manual_code|enabled|account|instructions|instruction_image|disconnect)$/, 'PUT', (path) => path],
   [/^locks\/account\/remove_authorization$/, 'PUT', (path) => path],
   [/^locks\/auto_match$/, 'POST', (path) => path],
   [/^locks\/(sync|test|devices|import_csv)$/, 'POST', (path) => path],

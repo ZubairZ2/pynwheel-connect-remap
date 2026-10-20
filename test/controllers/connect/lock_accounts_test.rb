@@ -269,6 +269,23 @@ class Connect::LockAccountsTest < ActionDispatch::IntegrationTest
     assert_equal true, body['data']['launch_only'].find { |c| c['vendor'] == 'Other' }['present']
   end
 
+  test 'disconnect removes the vendor rows and takes the vendor off the property, keeping the account' do
+    put "#{base}/account.json", as: :json, params: { vendor: 'Igloohome', fields: { version: 'v1' } }
+    post "#{base}/devices.json", as: :json, params: { device_name: '101', device_id: 'IGK-9' }
+    put "#{base}/map.json", as: :json, params: { vendor: 'Igloohome', device_id: 'IGK-9', target_type: 'amenity', target_id: amenities(:gym).id }
+    assert_equal 'Igloohome', amenities(:gym).reload.lock_provider
+    put "#{base}/disconnect.json", as: :json, params: { vendor: 'Igloohome' }
+    assert_response :success
+    assert_equal({ 'vendor' => 'Igloohome', 'count' => 1 }, body['data']['disconnected'])
+    assert_equal [], @community.reload.multiple_locks_provider
+    assert_equal 0, @community.igloohome.igloohome_locks.count
+    assert_equal '', amenities(:gym).reload.lock_provider
+    assert_equal 'v1', @community.igloohome.version, 'the account row stays'
+    assert_equal false, provider('Igloohome')['enabled']
+    put "#{base}/disconnect.json", as: :json, params: { vendor: 'Dormakaba' }
+    assert_response :unprocessable_entity
+  end
+
   test 'account writes are refused for read-only roles and foreign properties' do
     sign_in users(:community_assistant)
     put "#{base}/account.json", as: :json, params: { vendor: 'Zerv', fields: { username: 'u', password: 'p' } }

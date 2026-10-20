@@ -26,7 +26,7 @@ module Connect
   # state the database does not hold.
   class LocksController < BaseController
     CONNECT_READ_ACTIONS = %w[index auto_match_preview].freeze
-    CONNECT_WRITE_ACTIONS = %w[map unmap manual_code auto_match_apply sync test purge enabled account remove_authorization instructions instruction_image add_device import_csv].freeze
+    CONNECT_WRITE_ACTIONS = %w[map unmap manual_code auto_match_apply sync test purge enabled account remove_authorization instructions instruction_image add_device import_csv disconnect].freeze
 
     def index
       render_connect(inventory_json)
@@ -103,6 +103,21 @@ module Connect
       result = Locks::Accounts.new(@community).save!(params[:vendor], fields)
       audit(result.created ? 'lock_account_created' : 'lock_account_updated', vendor: result.vendor, fields: result.changes.map(&:to_s))
       render_write(inventory_json.merge(account: { vendor: result.vendor, created: result.created }))
+    end
+
+    # The design's "Disconnect": the vendor's imported locks leave the
+    # inventory (Locks::Purge clears the stops they opened) and the vendor
+    # leaves `multiple_locks_provider`, so neither app issues access for it.
+    # The account row stays: Connect reopens it with its stored values.
+    def disconnect
+      vendor = params[:vendor].to_s
+      raise Connect::DomainError.invalid('unknown_vendor', 'Unknown lock provider.') unless Locks::Vendors.valid?(vendor)
+
+      count = Locks::Vendors.account(@community, vendor) ? Locks::Purge.call(@community, vendor: vendor) : 0
+      providers = Array(@community.multiple_locks_provider)
+      @community.update_columns(multiple_locks_provider: providers - [vendor]) if providers.include?(vendor)
+      audit('lock_disconnect', vendor: vendor, count: count)
+      render_write(inventory_json.merge(disconnected: { vendor: vendor, count: count }))
     end
 
     def remove_authorization

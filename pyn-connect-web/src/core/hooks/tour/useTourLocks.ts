@@ -10,7 +10,10 @@ import { useAppDispatch } from '~/core/store/hooks';
 import { t } from '~/core/utils/generator/inventory/inventoryText';
 import {
   L,
+  failedRecently,
+  filterIssuedRows,
   generateConnectCards,
+  generateIssuedFilters,
   generateIssuedRows,
   generateLaunchOnlyChips,
   generateLockFilters,
@@ -19,7 +22,9 @@ import {
   generateProviderCards,
   generateWithoutLock,
   targetParamId,
+  purgeTargets,
   targetParamType,
+  type IssuedFilter,
   type LockFilter,
   type LocksSub
 } from '~/core/utils/generator/tour/tourLocks.generator';
@@ -59,6 +64,7 @@ export type LocksDialog =
   | { kind: 'account'; vendor: string; draft: AccountDraft; problems: Record<string, string>; submitted: boolean; busy: boolean; error: string | null }
   | { kind: 'removeAuth'; vendor: string; busy: boolean }
   | { kind: 'unavailable'; vendor: string; title: string }
+  | { kind: 'disconnect'; vendor: string; label: string; count: number; mapped: number; input: string; busy: boolean }
   | { kind: 'instructions'; vendor: string; unit: string; amenity: string; uploading: 'unit' | 'amenity' | null; busy: boolean }
   | { kind: 'devices'; vendor: string; name: string; deviceId: string; file: { name: string; text: string } | null; fileError: string | null; result: string | null; busy: boolean }
   | null;
@@ -96,6 +102,7 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
   const [error, setError] = useState<string | null>(null);
   const [sub, setSub] = useState<LocksSub>('providers');
   const [filter, setFilter] = useState<LockFilter>('all');
+  const [issuedFilter, setIssuedFilter] = useState<IssuedFilter>('all');
   const [selected, setSelected] = useState<string[]>([]);
   const [dialog, setDialog] = useState<LocksDialog>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -145,7 +152,11 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
   const rows = useMemo(() => (inventory ? generateLockRows(inventory, filter, timeZone) : []), [inventory, filter, timeZone]);
   const filters = useMemo(() => (inventory ? generateLockFilters(inventory, filter) : []), [inventory, filter]);
   const withoutLock = useMemo(() => (inventory ? generateWithoutLock(inventory) : []), [inventory]);
-  const issued = useMemo(() => (inventory ? generateIssuedRows(inventory.issued, timeZone) : []), [inventory, timeZone]);
+  const issuedAll = useMemo(() => (inventory ? generateIssuedRows(inventory.issued, timeZone) : []), [inventory, timeZone]);
+  const issued = useMemo(() => filterIssuedRows(issuedAll, issuedFilter), [issuedAll, issuedFilter]);
+  const issuedFilters = useMemo(() => generateIssuedFilters(issuedAll, issuedFilter), [issuedAll, issuedFilter]);
+  const issuedFailed = useMemo(() => failedRecently(issuedAll), [issuedAll]);
+  const purgeable = useMemo(() => (inventory ? purgeTargets(inventory) : []), [inventory]);
   const connectCards = useMemo(() => (inventory ? generateConnectCards(inventory) : []), [inventory]);
   const launchOnly = useMemo(() => (inventory ? generateLaunchOnlyChips(inventory) : []), [inventory]);
   const mapTargets = useMemo(
@@ -297,7 +308,7 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
   const providerOf = useCallback((vendor: string): LockProvider | null => inventory?.providers.find((p) => p.vendor === vendor) ?? null, [inventory]);
 
   const openAccount = useCallback(
-    (vendor: string) => {
+    (vendor: string, preset: AccountDraft = {}) => {
       const provider = providerOf(vendor);
       if (!provider) {
         const card = connectCards.find((c) => c.vendor === vendor);
@@ -305,7 +316,7 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
         return;
       }
       if (!canEdit) return refuse();
-      setDialog({ kind: 'account', vendor, draft: accountDraftOf(provider), problems: {}, submitted: false, busy: false, error: null });
+      setDialog({ kind: 'account', vendor, draft: { ...accountDraftOf(provider), ...preset }, problems: {}, submitted: false, busy: false, error: null });
     },
     [canEdit, connectCards, providerOf, refuse]
   );
@@ -346,6 +357,24 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
     },
     [dialog, propertyId, providerOf, test, toast]
   );
+
+  const openDisconnect = useCallback(
+    (vendor: string) => {
+      if (!canEdit || !inventory) return refuse();
+      const provider = providerOf(vendor);
+      if (!provider) return;
+      const rows = inventory.locks.filter((lock) => lock.vendor === vendor);
+      setDialog({ kind: 'disconnect', vendor, label: provider.label, count: rows.length, mapped: rows.filter((lock) => lock.mapped).length, input: '', busy: false });
+    },
+    [canEdit, inventory, providerOf, refuse]
+  );
+
+  const disconnect = useCallback(async () => {
+    if (dialog?.kind !== 'disconnect' || dialog.busy || dialog.input.trim().toUpperCase() !== 'DISCONNECT') return;
+    setDialog({ ...dialog, busy: true });
+    const data = await apply('locks/disconnect', { vendor: dialog.vendor }, t(L.card.disconnected, { provider: dialog.label }));
+    setDialog(data ? null : { ...dialog, busy: false });
+  }, [apply, dialog]);
 
   const openRemoveAuth = useCallback(
     (vendor: string) => {
@@ -486,12 +515,17 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
     filters,
     withoutLock,
     issued,
+    issuedFilter,
+    setIssuedFilter,
+    issuedFilters,
+    issuedFailed,
+    purgeable,
     connectCards,
     launchOnly,
     mapTargets,
     actions: {
       openMap, mapTo, unmap, bulkUnmap, openManual, saveManual, openAutoMatch, toggleProposal, applyAutoMatch, sync, test, openPurge, purge, setEnabled,
-      openAccount, setAccountField, saveAccount, openRemoveAuth, removeAuthorization, openInstructions, saveInstructions, uploadInstructionImage, openDevices, addDevice, pickCsv, importCsv,
+      openAccount, setAccountField, saveAccount, openRemoveAuth, removeAuthorization, openDisconnect, disconnect, openInstructions, saveInstructions, uploadInstructionImage, openDevices, addDevice, pickCsv, importCsv,
       closeDialog: () => setDialog(null)
     }
   };

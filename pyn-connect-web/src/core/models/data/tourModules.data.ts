@@ -155,6 +155,7 @@ export interface LockInventory {
   purged?: { vendor: string; count: number };
   applied?: unknown[];
   account?: { vendor: string; created?: boolean; authorizationRemoved?: boolean };
+  disconnected?: { vendor: string; count: number };
   device?: { vendor: string; id: number; deviceId: string; name: string };
   imported?: { vendor: string; created: number; skippedExisting: number; skippedBlank: number; rows: number };
 }

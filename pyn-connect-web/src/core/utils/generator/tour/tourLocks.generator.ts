@@ -75,6 +75,8 @@ export interface ProviderCard {
   supports: LockProvider['supports'];
   instructions: { unit: string | null; amenity: string | null } | null;
   noApi: boolean;
+  /** A code-grant account whose token lapsed: the design's Re-authorize. */
+  needsAuth: boolean;
   provider: LockProvider;
 }
 
@@ -102,10 +104,14 @@ export const generateProviderCards = (inventory: LockInventory, timeZone?: strin
       supports: provider.supports,
       instructions: provider.instructions,
       noApi: provider.vendor === 'Igloohome' && provider.mode === 'v1',
+      needsAuth: provider.status === 'needs_authorization',
       provider
     };
   });
-  return { connected: cards.filter((card) => card.configured || card.enabled), available: cards.filter((card) => !card.configured && !card.enabled) };
+  // Connected = the vendor is active for the property (`multiple_locks_provider`) or still has imported locks;
+  // a stored account that was disconnected shows in the grid again and Connect reopens it pre-filled.
+  const isConnected = (card: ProviderCard) => card.enabled || card.provider.lockCount > 0;
+  return { connected: cards.filter(isConnected), available: cards.filter((card) => !isConnected(card)) };
 };
 
 export interface LockTableRow {
@@ -250,8 +256,13 @@ export const generateMapTargets = (inventory: LockInventory, device: LockDeviceR
     });
 };
 
+export type IssuedFilter = 'all' | 'issued' | 'failed' | 'expired' | 'revoked';
+export const ISSUED_FILTERS: IssuedFilter[] = ['all', 'issued', 'failed', 'expired', 'revoked'];
+
 export interface IssuedRow {
   key: string;
+  status: string;
+  issuedAt: string;
   visitor: string;
   visitorId: number | null;
   stop: string;
@@ -266,6 +277,8 @@ const ISSUED_VARIANT: Record<string, PillVariant> = { issued: 'ok', active: 'ok'
 export const generateIssuedRows = (issued: IssuedCode[], timeZone?: string | null): IssuedRow[] =>
   issued.map((code, index) => ({
     key: `${code.vendor}:${index}:${code.issuedAt}`,
+    status: code.status,
+    issuedAt: code.issuedAt,
     visitor: code.visitor?.name ?? '—',
     visitorId: code.visitor?.id ?? null,
     stop: code.target ? targetLabel(code.target) : '—',
@@ -296,11 +309,30 @@ export const generateConnectCards = (inventory: LockInventory): ConnectCard[] =>
       return [{ vendor, title: i18n.t(L.connectGrid.titles.Dormakaba), note: i18n.t(L.connectGrid.notes.Dormakaba), isNew: true, available: false }];
     }
     const provider = byVendor.get(vendor);
-    if (!provider || provider.configured || provider.enabled) return [];
+    if (!provider || provider.enabled || provider.lockCount > 0) return [];
     return [{ vendor, title: i18n.t(L.connectGrid.titles[vendor]), note: i18n.t(L.connectGrid.notes[vendor]), isNew: false, available: provider.supports.account }];
   });
 };
 
 export const generateLaunchOnlyChips = (inventory: LockInventory): { vendor: string; label: string; present: boolean }[] =>
   (inventory.launchOnly ?? []).map((row) => ({ vendor: row.vendor, label: row.label, present: row.present }));
+
+const ISSUED_BUCKET: Record<string, IssuedFilter> = { issued: 'issued', active: 'issued', success: 'issued', failed: 'failed', error: 'failed', expired: 'expired', revoked: 'revoked', deleted: 'revoked' };
+
+export const issuedBucket = (status: string): IssuedFilter => ISSUED_BUCKET[status] ?? 'issued';
+
+export const filterIssuedRows = (rows: IssuedRow[], filter: IssuedFilter): IssuedRow[] => (filter === 'all' ? rows : rows.filter((row) => issuedBucket(row.status) === filter));
+
+export const generateIssuedFilters = (rows: IssuedRow[], active: IssuedFilter): { id: IssuedFilter; label: string; count: number; on: boolean }[] =>
+  ISSUED_FILTERS.map((id) => ({ id, label: i18n.t(L.issuedFilters[id]), count: id === 'all' ? rows.length : rows.filter((row) => issuedBucket(row.status) === id).length, on: id === active }));
+
+/** Codes that failed in the last seven days (the design's banner). */
+export const failedRecently = (rows: IssuedRow[], now = Date.now()): number =>
+  rows.filter((row) => issuedBucket(row.status) === 'failed' && now - new Date(row.issuedAt).getTime() <= 7 * 24 * 3600 * 1000).length;
+
+/** The vendors with imported rows, for the inventory's "Delete all imported locks" footer. */
+export const purgeTargets = (inventory: LockInventory): { vendor: string; label: string; count: number }[] =>
+  inventory.providers
+    .filter((provider) => provider.lockCount > 0 && provider.supports.purge)
+    .map((provider) => ({ vendor: provider.vendor, label: provider.label, count: provider.lockCount }));
 

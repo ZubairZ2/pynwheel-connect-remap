@@ -10,6 +10,7 @@ import { Modal } from '~/core/components/molecules/Modal';
 import { useTourLocks, type TourLocksController } from '~/core/hooks/tour/useTourLocks';
 import { t } from '~/core/utils/generator/inventory/inventoryText';
 import { CSV_HINT_COLUMNS, generateAccountForm, instructionImages, stripHtml, type AccountField } from '~/core/utils/generator/tour/lockAccounts.generator';
+import { IGLOO_VERSIONS } from '~/core/utils/generator/tour/lockAccounts.generator';
 import { L, LOCK_SUBS, targetLabel, type ProviderCard } from '~/core/utils/generator/tour/tourLocks.generator';
 
 const X = CORE_STRINGS.tourModules.common;
@@ -122,9 +123,8 @@ const Providers = ({ c, legacyUrl }: { c: TourLocksController; legacyUrl: string
 const ProviderCardView = ({ card, c, legacyUrl }: { card: ProviderCard; c: TourLocksController; legacyUrl: string | null }) => {
   const test = c.testResult?.vendor === card.vendor ? c.testResult : null;
   const supports = card.supports;
-  const count = c.inventory?.locks.filter((lock) => lock.vendor === card.vendor).length ?? 0;
   return (
-    <div className="bo-tx__card" data-testid={`lock-provider-${card.vendor}`}>
+    <div className="bo-tx__card" data-testid={`lock-provider-${card.vendor}`} data-legacy-url={legacyUrl ?? undefined}>
       <div className="bo-tx__cardhead">
         <div className="bo-tx__grow">
           <div className="bo-tx__cardtitle" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -132,10 +132,28 @@ const ProviderCardView = ({ card, c, legacyUrl }: { card: ProviderCard; c: TourL
             <StatusPill variant={card.pill.variant} label={card.pill.label} />
           </div>
           {card.note && <div className="bo-tx__cardsub bo-tx__warn">{card.note}</div>}
-          <div className="bo-tx__cardsub">{card.lastChanged}</div>
         </div>
+        {card.vendor === 'Igloohome' && (
+          <label className="bo-tx__field" style={{ minWidth: 220 }} data-testid="lock-igloo-connection">
+            <span>{i18n.t(L.card.connection)}</span>
+            <select
+              className="bo-tx__select"
+              value={card.mode ?? 'v1'}
+              disabled={!c.canEdit}
+              onChange={(event) => {
+                if (event.target.value !== (card.mode ?? 'v1')) c.actions.openAccount(card.vendor, { version: event.target.value });
+              }}
+            >
+              {IGLOO_VERSIONS.map((version) => (
+                <option key={version} value={version}>
+                  {i18n.t(A.igloo.versions[version])}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <button type="button" className="bo-tx__btn bo-tx__btn--accent" disabled={!supports.account} onClick={() => c.actions.openAccount(card.vendor)}>
-          {i18n.t(card.configured || card.provider.details ? A.edit : A.connect)}
+          {i18n.t(card.provider.details ? A.edit : A.connect)}
         </button>
       </div>
       <div className="bo-tx__cardbody">
@@ -167,12 +185,7 @@ const ProviderCardView = ({ card, c, legacyUrl }: { card: ProviderCard; c: TourL
           </div>
         )}
         <div className="bo-tx__toolbar">
-          <span className="bo-tx__grow" />
-          {legacyUrl && (
-            <a className="bo-tx__btn" href={legacyUrl} target="_blank" rel="noopener noreferrer">
-              {i18n.t(L.provider.openCms)}
-            </a>
-          )}
+          <span className="bo-tx__grow bo-tx__cardsub">{card.lastChanged}</span>
           <button type="button" className="bo-tx__btn" disabled={!supports.instructions || !card.provider.details} onClick={() => c.actions.openInstructions(card.vendor)}>
             {i18n.t(A.instructions.button)}
           </button>
@@ -187,13 +200,13 @@ const ProviderCardView = ({ card, c, legacyUrl }: { card: ProviderCard; c: TourL
           <button type="button" className="bo-tx__btn" disabled={!supports.sync || c.busy === `sync:${card.vendor}`} onClick={() => void c.actions.sync(card.vendor)}>
             {c.busy === `sync:${card.vendor}` ? i18n.t(L.provider.syncing) : i18n.t(L.provider.sync)}
           </button>
-          {supports.removeAuthorization && (
-            <button type="button" className="bo-tx__btn" onClick={() => c.actions.openRemoveAuth(card.vendor)}>
-              {i18n.t(A.removeAuth)}
+          {card.needsAuth && (
+            <button type="button" className="bo-tx__btn bo-tx__btn--accent" onClick={() => c.actions.openAccount(card.vendor)}>
+              {i18n.t(L.card.reauthorize)}
             </button>
           )}
-          <button type="button" className="bo-tx__btn bo-tx__btn--danger" disabled={!supports.purge || count === 0} onClick={() => c.actions.openPurge(card.vendor, card.label, count)}>
-            {i18n.t(L.provider.purge)}
+          <button type="button" className="bo-tx__btn bo-tx__btn--danger" disabled={!c.canEdit} onClick={() => c.actions.openDisconnect(card.vendor)} data-testid={`lock-disconnect-${card.vendor}`}>
+            {i18n.t(L.card.disconnect)}
           </button>
         </div>
       </div>
@@ -299,7 +312,17 @@ const Inventory = ({ c }: { c: TourLocksController }) => {
             })}
           </tbody>
         </table>
-        {c.rows.length === 0 && <div className="bo-tx__empty">{i18n.t(inventory.counts.all === 0 ? L.empty.none : L.empty.filtered)}</div>}
+        {c.rows.length === 0 && <div className="bo-tx__empty">{i18n.t(inventory.counts.all === 0 ? L.card.noLocksYet : L.empty.filtered)}</div>}
+        {c.purgeable.length > 0 && (
+          <div className="bo-tx__toolbar" style={{ padding: '10px 16px', borderTop: '1px solid var(--bo-line-2)' }}>
+            <span className="bo-tx__grow" />
+            {c.purgeable.map((target) => (
+              <button key={target.vendor} type="button" className="bo-tx__btn bo-tx__btn--danger" disabled={!c.canEdit} onClick={() => c.actions.openPurge(target.vendor, target.label, target.count)}>
+                {c.purgeable.length > 1 ? t(L.card.deleteAllFor, { provider: target.label }) : i18n.t(L.card.deleteAll)}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <div className="bo-tx__card" data-testid="locks-without-lock">
         <div className="bo-tx__cardhead">
@@ -339,14 +362,22 @@ const Issued = ({ c }: { c: TourLocksController }) => (
         <div className="bo-tx__cardtitle">{i18n.t(L.issued.title)}</div>
         <div className="bo-tx__cardsub">{i18n.t(L.issued.sub)}</div>
       </div>
+      <div className="bo-tx__chips">
+        {c.issuedFilters.map((chip) => (
+          <button key={chip.id} type="button" className={`bo-tx__chip${chip.on ? ' bo-tx__chip--on' : ''}`} onClick={() => c.setIssuedFilter(chip.id)}>
+            {chip.label}
+            <span className="bo-tx__chipn">{chip.count}</span>
+          </button>
+        ))}
+      </div>
     </div>
+    {c.issuedFailed > 0 && <div className="bo-tx__bad" style={{ margin: '12px 16px 0' }} role="status">{t(L.issuedFilters.failedBanner, { count: c.issuedFailed })}</div>}
     <table className="bo-tx__table">
       <thead>
         <tr>
           <th>{i18n.t(L.issued.visitor)}</th>
           <th>{i18n.t(L.issued.stop)}</th>
           <th>{i18n.t(L.issued.provider)}</th>
-          <th>{i18n.t(L.issued.when)}</th>
           <th>{i18n.t(L.issued.window)}</th>
           <th style={{ textAlign: 'right' }}>{i18n.t(L.issued.status)}</th>
         </tr>
@@ -354,10 +385,12 @@ const Issued = ({ c }: { c: TourLocksController }) => (
       <tbody>
         {c.issued.map((row) => (
           <tr key={row.key}>
-            <td className="bo-tx__name">{row.visitor}</td>
+            <td>
+              <div className="bo-tx__name">{row.visitor}</div>
+              <div className="bo-tx__meta">{row.when}</div>
+            </td>
             <td>{row.stop}</td>
             <td>{row.provider}</td>
-            <td>{row.when}</td>
             <td>{row.window}</td>
             <td style={{ textAlign: 'right' }}>
               <StatusPill variant={row.pill.variant} label={row.pill.label} />
@@ -366,7 +399,7 @@ const Issued = ({ c }: { c: TourLocksController }) => (
         ))}
       </tbody>
     </table>
-    {c.issued.length === 0 && <div className="bo-tx__empty">{i18n.t(L.issued.empty)}</div>}
+    {c.issued.length === 0 && <div className="bo-tx__empty">{i18n.t(c.issuedFilter === 'all' ? L.issued.empty : L.issuedFilters.filteredEmpty)}</div>}
   </div>
 );
 
@@ -544,6 +577,36 @@ const LocksDialogs = ({ c }: { c: TourLocksController }) => {
       >
         <p className="bo-map__dialogtext">{i18n.t(L.connectGrid.unavailableBody)}</p>
       </Modal>
+      <Modal
+        open={dialog?.kind === 'disconnect'}
+        title={dialog?.kind === 'disconnect' ? t(L.card.disconnectTitle, { provider: dialog.label }) : ''}
+        width={480}
+        onClose={close}
+        closeLabel={closeLabel}
+        className="bo-map__dialog"
+        footer={
+          dialog?.kind === 'disconnect' && (
+            <>
+              <button type="button" className="bo-btn bo-btn--secondary" onClick={close}>
+                {i18n.t(X.cancel)}
+              </button>
+              <button type="button" className="bo-btn bo-btn--primary bo-map__btn--danger" disabled={dialog.busy || dialog.input.trim().toUpperCase() !== 'DISCONNECT'} onClick={() => void c.actions.disconnect()}>
+                {i18n.t(L.card.disconnect)}
+              </button>
+            </>
+          )
+        }
+      >
+        {dialog?.kind === 'disconnect' && (
+          <div className="bo-dlg bo-dlg--stacked">
+            <p className="bo-map__dialogtext">{t(L.card.disconnectBody, { count: dialog.count, mapped: dialog.mapped })}</p>
+            <label className="bo-tx__field">
+              {i18n.t(L.card.disconnectMatch)}
+              <input className="bo-tx__input" value={dialog.input} placeholder="DISCONNECT" onChange={(event) => c.setDialog({ ...dialog, input: event.target.value })} />
+            </label>
+          </div>
+        )}
+      </Modal>
       <AccountDialog c={c} />
       <InstructionsDialog c={c} />
       <DevicesDialog c={c} />
@@ -653,14 +716,20 @@ const AccountDialog = ({ c }: { c: TourLocksController }) => {
             <button type="button" className="bo-btn bo-btn--secondary" onClick={close}>
               {i18n.t(X.cancel)}
             </button>
-            {provider && provider.vendor !== 'Igloohome' && (
-              <button type="button" className="bo-btn bo-btn--secondary" disabled={dialog.busy} onClick={() => void c.actions.saveAccount(true)}>
-                {i18n.t(A.saveTest)}
+            {provider && provider.vendor !== 'Igloohome' ? (
+              <>
+                <button type="button" className="bo-btn bo-btn--secondary" disabled={dialog.busy} onClick={() => void c.actions.saveAccount(false)} data-testid="lock-account-save">
+                  {i18n.t(A.save)}
+                </button>
+                <button type="button" className="bo-btn bo-btn--primary" disabled={dialog.busy} onClick={() => void c.actions.saveAccount(true)} data-testid="lock-account-test-connect">
+                  {i18n.t(L.card.testConnect)}
+                </button>
+              </>
+            ) : (
+              <button type="button" className="bo-btn bo-btn--primary" disabled={dialog.busy} onClick={() => void c.actions.saveAccount(false)} data-testid="lock-account-save">
+                {i18n.t(provider?.details ? A.save : A.connect)}
               </button>
             )}
-            <button type="button" className="bo-btn bo-btn--primary" disabled={dialog.busy} onClick={() => void c.actions.saveAccount(false)} data-testid="lock-account-save">
-              {i18n.t(A.save)}
-            </button>
           </>
         )
       }
@@ -668,6 +737,7 @@ const AccountDialog = ({ c }: { c: TourLocksController }) => {
       {open && form && (
         <div className="bo-dlg bo-dlg--stacked" data-testid="lock-account-form">
           {form.intro && <p className="bo-map__dialogtext">{form.intro}</p>}
+          {provider?.vendor === 'Igloohome' && provider.details && dialog.draft.version !== (provider.mode ?? 'v1') && <div className="bo-tx__note">{i18n.t(L.card.switchNote)}</div>}
           {form.sections.map((section) => (
             <div key={section.key} className="bo-dlg__group">
               {section.title && <div className="bo-dlg__grouptitle">{section.title}</div>}

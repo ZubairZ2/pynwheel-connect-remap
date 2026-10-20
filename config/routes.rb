@@ -1072,6 +1072,7 @@ Rails.application.routes.draw do
     put    'locks/instruction_image', to: 'locks#instruction_image'
     post   'locks/devices', to: 'locks#add_device'
     post   'locks/import_csv', to: 'locks#import_csv'
+    put    'locks/disconnect', to: 'locks#disconnect'
     get    'stops', to: 'stops#index'
     put    'stops/:id', to: 'stops#update'
     get    'visitors', to: 'visitors#index'

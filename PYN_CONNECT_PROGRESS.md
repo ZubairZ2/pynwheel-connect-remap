@@ -2673,6 +2673,10 @@ was removed again. Rails `test/controllers/connect` + Tour App locks + upload UR
 (three columns, vendor note, full-width Connect), with a Dormakaba card whose Connect explains that no CMS
 connector exists yet, and the Launch-only vendors (Schlage, Yale, Other; `Locks::Inventory#launch_only`) as chips.
 
+The connected card, inventory footer and issued-code filters were aligned with the same design page: Igloo
+"Connection" select, Re-authorize, Disconnect (`PUT locks/disconnect` = `Locks::Purge` + vendor off
+`multiple_locks_provider`, account kept), "Delete all imported locks" under the table, issued-code status filters.
+
 **Still on the legacy page:** the OAuth code-grant sign-ins (igloohome, RemoteLock), whose callback is the
 legacy `HomeController`.
 

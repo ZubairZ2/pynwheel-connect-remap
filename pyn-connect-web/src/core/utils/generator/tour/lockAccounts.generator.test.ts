@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { LockInventory, LockProvider } from '~/core/models/data/tourModules.data';
 import { accessLabel, accountDraftOf, accountPayload, accountProblems, generateAccountForm, healthLabel, importSummary, instructionText, stripHtml } from './lockAccounts.generator';
-import { generateProviderCards } from './tourLocks.generator';
+import { failedRecently, filterIssuedRows, generateConnectCards, generateIssuedFilters, generateIssuedRows, generateProviderCards, purgeTargets } from './tourLocks.generator';
 
 /** A provider as the CMS answers it (Locks::Inventory#providers), with overrides. */
 const provider = (vendor: string, over: Partial<LockProvider> = {}): LockProvider => ({
@@ -145,3 +145,41 @@ describe('text helpers', () => {
     expect(importSummary({ created: 2, skippedExisting: 1, skippedBlank: 0, rows: 3 })).toBe('2 locks added, 1 already on file, 0 rows skipped (3 rows read).');
   });
 });
+
+describe('the design\'s providers and issued-codes views', () => {
+  const inventory = (providers: LockProvider[], issued: LockInventory['issued'] = []): LockInventory => ({
+    enabled: true,
+    activeProviders: providers.filter((p) => p.enabled).map((p) => p.vendor),
+    providers,
+    launchOnly: [{ vendor: 'Schlage', label: 'Schlage', present: false }],
+    locks: [],
+    manualCodes: [],
+    lockedWithoutLock: [],
+    targets: [],
+    counts: { all: 0, unmapped: 0, mapped: 0, manual: 0, health: 0, withoutLock: 0 },
+    issued
+  });
+
+  it('a disconnected account goes back to the connect grid; a vendor with rows stays connected', () => {
+    const zerv = provider('Zerv', { enabled: false, configured: true, status: 'connected', details: details({ username: 'ops' }) });
+    const igloo = provider('Igloohome', { enabled: false, configured: true, status: 'connected', mode: 'v1', lockCount: 3, details: details({ version: 'v1' }) });
+    const latch = provider('Latch', { enabled: true, configured: true, status: 'needs_authorization' });
+    const inv = inventory([zerv, igloo, latch, provider('Dwelo', { enabled: false }), provider('EdgeState', { enabled: false })]);
+    const cards = generateProviderCards(inv, null);
+    expect(cards.connected.map((c) => c.vendor)).toEqual(['Igloohome', 'Latch']);
+    expect(cards.connected[1].needsAuth).toBe(true);
+    expect(generateConnectCards(inv).map((c) => c.vendor)).toEqual(['Dormakaba', 'Dwelo', 'Zerv', 'EdgeState']);
+    expect(generateConnectCards(inv)[0]).toMatchObject({ isNew: true, available: false });
+    expect(purgeTargets(inv)).toEqual([{ vendor: 'Igloohome', label: 'Igloohome', count: 3 }]);
+  });
+
+  it('issued codes filter by status bucket and count recent failures', () => {
+    const now = Date.parse('2026-10-20T12:00:00Z');
+    const code = (status: string, daysAgo: number) => ({ vendor: 'Igloohome', vendorLabel: 'Igloohome', visitor: null, target: null, status, window: null, issuedAt: new Date(now - daysAgo * 86400000).toISOString() });
+    const rows = generateIssuedRows([code('issued', 0), code('failed', 1), code('failed', 9), code('deleted', 2), code('expired', 3)], 'UTC');
+    expect(generateIssuedFilters(rows, 'failed').map((f) => `${f.id}:${f.count}${f.on ? '*' : ''}`)).toEqual(['all:5', 'issued:1', 'failed:2*', 'expired:1', 'revoked:1']);
+    expect(filterIssuedRows(rows, 'revoked').map((r) => r.status)).toEqual(['deleted']);
+    expect(failedRecently(rows, now)).toBe(1);
+  });
+});
+
