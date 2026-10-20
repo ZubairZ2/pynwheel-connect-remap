@@ -41,6 +41,7 @@ class Community < ApplicationRecord
   has_many :igloohome_guests, dependent: :destroy
   has_many :opening_hours, dependent: :destroy
   has_many :guided_opening_hours, dependent: :destroy
+  has_many :tour_closures, dependent: :destroy
   has_many :schedual_tours, dependent: :destroy
   has_many :building_starting_point, dependent: :destroy
   has_many :tutorials, dependent: :destroy
@@ -334,8 +335,17 @@ class Community < ApplicationRecord
     self&.amenities - self&.community_tour&.amenity_tour_stops rescue []
   end
 
+  # The key that signs the public scheduler links (`community_code`):
+  # `SECRET_KEY_BASE_v2` where it is set (every deployed environment), else the
+  # application's own secret key, so a local CMS without the variable still
+  # produces links its widget can verify (October 21, 2026; before, a missing
+  # variable made every local link fail verification).
+  def self.widget_signing_key
+    ENV['SECRET_KEY_BASE_v2'].presence || Rails.application.secret_key_base
+  end
+
   def community_code
-    (JWT.encode ({"community_id" => self.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256') if self.present?
+    (JWT.encode ({"community_id" => self.id}), Community.widget_signing_key, 'HS256') if self.present?
   end
 
   def schedule_tour_url

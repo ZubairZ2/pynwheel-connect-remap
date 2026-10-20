@@ -80,7 +80,7 @@ namespace :triggered_email do
   end
 
   def get_community_code community
-    (JWT.encode ({"community_id" => community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
+    (JWT.encode ({"community_id" => community.id}), Community.widget_signing_key, 'HS256')
   end
 
 end

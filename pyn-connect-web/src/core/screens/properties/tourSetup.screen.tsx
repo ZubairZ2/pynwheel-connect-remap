@@ -14,6 +14,7 @@ import { Modal } from '~/core/components/molecules/Modal';
 import { SetupSwitcher } from '~/core/components/molecules/SetupSwitcher';
 import { useTourSetup, type TourSetupController } from '~/core/hooks/useTourSetup';
 import { useTourBooking } from '~/core/hooks/tour/useTourBooking';
+import type { BookingSection } from '~/core/utils/generator/tour/tourBooking.generator';
 import { useTourOverview } from '~/core/hooks/tour/useTourOverview';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
 import { CORE_STRINGS } from '~/config/app/strings';
@@ -34,6 +35,8 @@ interface Props {
   error?: string | null;
   /** The tab to open on (`?tab=`); the Overview otherwise. */
   initialTab?: TourTab;
+  /** The Settings section to open on (`?section=`); the booking rules otherwise. */
+  initialSection?: BookingSection;
 }
 
 /**
@@ -44,8 +47,8 @@ interface Props {
  * until Save, while the stop drawer, the lock, visitor and booking actions
  * write through the Connect endpoints (when writes are enabled).
  */
-export const TourSetupScreen = ({ map, error, initialTab }: Props) =>
-  map ? <TourSetup map={map} initialTab={initialTab} /> : <TourUnavailable error={error ?? null} />;
+export const TourSetupScreen = ({ map, error, initialTab, initialSection }: Props) =>
+  map ? <TourSetup map={map} initialTab={initialTab} initialSection={initialSection} /> : <TourUnavailable error={error ?? null} />;
 
 /** The map screen with a stop selected (plotted) or armed for plotting (not yet). */
 const mapHref = (propId: string, card: StopCard): string => {
@@ -57,7 +60,7 @@ const mapHref = (propId: string, card: StopCard): string => {
   return `${mapEditorRoute(propId)}${query ? `?${query}` : ''}`;
 };
 
-const TourSetup = ({ map, initialTab }: { map: PropertyMap; initialTab?: TourTab }) => {
+const TourSetup = ({ map, initialTab, initialSection }: { map: PropertyMap; initialTab?: TourTab; initialSection?: BookingSection }) => {
   const controller = useTourSetup(map, initialTab);
   const { state, summary, actions, stops, elevators } = controller;
   const propertyId = map.inventory.property.id;
@@ -170,7 +173,7 @@ const TourSetup = ({ map, initialTab }: { map: PropertyMap; initialTab?: TourTab
       {state.tab === 'locks' && <LocksTab propertyId={propertyId} legacyUrl={legacyCmsURLs.locks(propertyId)} />}
       {state.tab === 'visitors' && <VisitorsTab propertyId={propertyId} settings={booking.settings} />}
       {state.tab === 'chat' && <ChatTab propId={propId} />}
-      {state.tab === 'settings' && <SettingsTab controller={controller} booking={booking} propertyName={map.inventory.property.name} />}
+      {state.tab === 'settings' && <SettingsTab controller={controller} booking={booking} propertyId={propertyId} propertyName={map.inventory.property.name} initialSection={initialSection} />}
 
       <TourDialogs controller={controller} />
     </div>

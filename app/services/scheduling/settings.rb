@@ -16,16 +16,34 @@ module Scheduling
   #                         tour_settings.show_desired_bedroom, show_desired_move_in_date, charge_user_for_id_verfication
   #   booking button        scheduler_widget_settings
   #   booking link          Community#schedule_tour_url (HOST_URL + the signed property code)
-  # Nothing here invents a rule: a setting the schema does not hold (lead
-  # time, booking horizon, buffers, holidays) is reported as unavailable.
+  # and, since October 20, 2026 (the Settings design's "NEW" controls, additive
+  # columns of migration 20261020120000):
+  #   booking window        tour_settings.buffer_minutes, minimum_notice_minutes, booking_horizon_days
+  #   closures              tour_closures (a date, all day or a window of it)
+  #   app schedule screen   tour_settings.app_after_hours_label, app_allow_shorter_tour,
+  #                         app_party_size_limit, app_ask_unit, app_show_text_booking
+  #   button label          scheduler_widget_settings.btn_text_color, btn_icon
+  # Every rule is applied by Bookings::Availability, which every booking path
+  # (Connect, the Tour App API, the legacy widget's submit) checks against.
   class Settings
     DAYS = %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday].freeze
     INTERVALS = SchedualTours::Capacity::INTERVALS
     HHMM = /\A([01]\d|2[0-3]):[0-5]\d\z/
     GRACE = (10..60)
+    BUFFERS = [0, 5, 10, 15, 30].freeze
+    NOTICES = [0, 60, 120, 240, 1440].freeze
+    HORIZONS = [7, 14, 30, 60, 90].freeze
+    PARTY = (1..10)
+    ICONS = %w[calendar pin clock arrow home].freeze
+    COLOR = /\A#[0-9a-fA-F]{6}\z/
 
-    def initialize(community)
+    # `base_url`: the CMS host answering the request (`request.base_url`); the
+    # booking link is built on it when `HOST_URL` is not set, exactly as the
+    # legacy Tour Settings page builds its "Copy link for Scheduler Page" on
+    # `root_url`. The widget it opens needs no sign-in.
+    def initialize(community, base_url: nil)
       @community = community
+      @base_url = base_url.to_s.presence
       @availability = Bookings::Availability.new(community)
     end
 
@@ -59,7 +77,10 @@ module Scheduling
         time_zone: community.time_zone,
         time_zone_effective: community.get_time_zone,
         hours: { self: hours_of(community.opening_hours), guided: hours_of(community.guided_opening_hours) },
-        unavailable: %w[minimum_notice booking_horizon buffer holidays],
+        window: window,
+        closures: closures,
+        app: app,
+        unavailable: [],
         form: form,
         button: button_json,
         link: link
@@ -96,8 +117,9 @@ module Scheduling
         credit_card_required: tour.credit_card_required == true,
         id_verification_fee: setting.charge_user_for_id_verfication == true,
         visual_id_verification: tour.visual_id_verification == true,
-        show_desired_bedroom: setting.show_desired_bedroom == true,
-        show_desired_move_in_date: setting.show_desired_move_in_date == true,
+        # The legacy page and widget show these two unless the flag is false (a NULL means shown).
+        show_desired_bedroom: setting.show_desired_bedroom != false,
+        show_desired_move_in_date: setting.show_desired_move_in_date != false,
         marketing_source_required: tour.marketing_source_required == true,
         marketing_source_available: community.data_provider == 'realpagesvc',
         discovery_source: discovery_source,
@@ -117,15 +139,50 @@ module Scheduling
     def button_json
       return nil unless button
 
-      { text: button.btn_text, color: button.btn_color, width: button.btn_width, height: button.btn_height, font: button.btn_font, font_size: button.btn_font_size }
+      { text: button.btn_text, color: button.btn_color, text_color: button.btn_text_color.presence || '#ffffff', icon: button.btn_icon.presence,
+        width: button.btn_width, height: button.btn_height, font: button.btn_font, font_size: button.btn_font_size }
+    end
+
+    # The booking window: no buffer, no notice and no horizon by default.
+    def window
+      return nil unless setting
+
+      { buffer_minutes: setting.buffer_minutes.to_i, minimum_notice_minutes: setting.minimum_notice_minutes.to_i, booking_horizon_days: @availability.booking_horizon_days }
+    end
+
+    # The dated closures from yesterday on, soonest first.
+    def closures
+      community.tour_closures.where('date >= ?', @availability.now.to_date - 1).order(:date, :start_time).map { |closure| @availability.closure_json(closure) }
+    end
+
+    # What the Pynwheel Tour app's Schedule screen shows (Settings › Booking form).
+    def app
+      return nil unless setting
+
+      { after_hours_label: setting.app_after_hours_label != false, allow_shorter_tour: setting.app_allow_shorter_tour != false,
+        party_size_limit: setting.app_party_size_limit || 6, ask_unit: setting.app_ask_unit != false, show_text_booking: setting.app_show_text_booking != false }
+    end
+
+    # The public host of the booking link: `HOST_URL` when the CMS has one
+    # (as `Community#schedule_tour_url`), otherwise the CMS host answering this
+    # request (the legacy page's `root_url`). Both open the CMS's own public
+    # widget page, which asks for no sign-in.
+    def link_host
+      configured = ENV['HOST_URL'].to_s.presence
+      return [configured.sub(%r{/\z}, ''), 'env'] if configured
+      return [@base_url.sub(%r{/\z}, ''), 'request'] if @base_url
+
+      [nil, 'none']
     end
 
     def link
-      host = ENV['HOST_URL'].to_s.presence
-      url = host ? community.schedule_tour_url : nil
+      host, source = link_host
+      url = host ? "#{host}/scheduler_widget/test_widget?community_id=#{community.id}&community_code=#{community.community_code}&direct=true" : nil
       {
         url: url,
-        host_configured: host.present?,
+        host: host,
+        host_source: source,
+        host_configured: source == 'env',
         live: widget_live? && url.present?,
         reasons: gates.reject { |g| g[:ok] }.map { |g| g[:error] } + (community.is_salesforce_community? ? ['Bookings via Salesforce'] : []),
         embed_html: url && button ? embed_html(url) : nil
@@ -134,7 +191,7 @@ module Scheduling
 
     def embed_html(url)
       b = button
-      %(<a href="#{url}" target="_blank" style="display:inline-flex;align-items:center;justify-content:center;width:#{b.btn_width}px;height:#{b.btn_height}px;background:#{b.btn_color};color:#fff;font:#{b.btn_font_size} '#{b.btn_font}',sans-serif;border-radius:4px;text-decoration:none;">#{ERB::Util.html_escape(b.btn_text)}</a>)
+      %(<a href="#{url}" target="_blank" style="display:inline-flex;align-items:center;justify-content:center;width:#{b.btn_width}px;height:#{b.btn_height}px;background:#{b.btn_color};color:#{b.btn_text_color.presence || '#fff'};font:#{b.btn_font_size} '#{b.btn_font}',sans-serif;border-radius:4px;text-decoration:none;">#{ERB::Util.html_escape(b.btn_text)}</a>)
     end
 
     # {"Monday" => [{id, open: "09:00", close: "17:00"}], ...} in 24-hour time, every weekday present.
@@ -199,6 +256,22 @@ module Scheduling
       if attrs.key?(:grace_period)
         value = integer(attrs[:grace_period])
         value && GRACE.cover?(value) ? tour_changes[:grace_period] = value : errors << { path: 'grace_period', code: 'invalid', message: 'the grace period is 10 to 60 minutes' }
+      end
+      if attrs.key?(:buffer_minutes)
+        value = integer(attrs[:buffer_minutes])
+        BUFFERS.include?(value) ? setting_changes[:buffer_minutes] = value : errors << { path: 'buffer_minutes', code: 'invalid', message: 'the buffer is 0, 5, 10, 15 or 30 minutes' }
+      end
+      if attrs.key?(:minimum_notice_minutes)
+        value = integer(attrs[:minimum_notice_minutes])
+        NOTICES.include?(value) ? setting_changes[:minimum_notice_minutes] = value : errors << { path: 'minimum_notice_minutes', code: 'invalid', message: 'the minimum notice is 0, 60, 120, 240 or 1440 minutes' }
+      end
+      if attrs.key?(:booking_horizon_days)
+        if attrs[:booking_horizon_days].blank? || attrs[:booking_horizon_days].to_s == '0'
+          setting_changes[:booking_horizon_days] = nil
+        else
+          value = integer(attrs[:booking_horizon_days])
+          HORIZONS.include?(value) ? setting_changes[:booking_horizon_days] = value : errors << { path: 'booking_horizon_days', code: 'invalid', message: 'the booking horizon is 7, 14, 30, 60 or 90 days, or empty' }
+        end
       end
       community_changes[:scheduler_widget] = truthy?(attrs[:scheduler_enabled]) if attrs.key?(:scheduler_enabled)
       raise Wayfinding::Invalid.new(errors) if errors.any?
@@ -281,8 +354,32 @@ module Scheduling
           errors << { path: 'marketing_source_required', code: 'invalid', message: 'only RealPage properties can require a marketing source' }
         end
       end
+      if attrs.key?(:app)
+        a = attrs[:app].to_h.with_indifferent_access
+        %w[after_hours_label allow_shorter_tour ask_unit show_text_booking].each do |key|
+          setting_changes[:"app_#{key}"] = truthy?(a[key]) if a.key?(key)
+        end
+        if a.key?(:party_size_limit)
+          value = integer(a[:party_size_limit])
+          value && PARTY.cover?(value) ? setting_changes[:app_party_size_limit] = value : errors << { path: 'app.party_size_limit', code: 'invalid', message: 'the party size limit is 1 to 10 people' }
+        end
+      end
       if attrs.key?(:button)
         b = attrs[:button].to_h.with_indifferent_access
+        if b.key?(:text_color)
+          color = b[:text_color].to_s.strip
+          COLOR.match?(color) ? button_changes[:btn_text_color] = color.downcase : errors << { path: 'button.text_color', code: 'invalid', message: 'the text colour is a #rrggbb value' }
+        end
+        if b.key?(:icon)
+          icon = b[:icon].to_s.strip
+          if icon.blank? || icon == 'none'
+            button_changes[:btn_icon] = nil
+          elsif ICONS.include?(icon)
+            button_changes[:btn_icon] = icon
+          else
+            errors << { path: 'button.icon', code: 'invalid', message: "the icon is one of #{ICONS.join(', ')}, or none" }
+          end
+        end
         if b.key?(:text)
           text = b[:text].to_s.strip
           text.present? && text.length <= 50 ? button_changes[:btn_text] = text : errors << { path: 'button.text', code: 'invalid', message: 'the button text is 1 to 50 characters' }
@@ -316,6 +413,59 @@ module Scheduling
           (button || tour.create_scheduler_widget_setting).update_columns(button_changes.merge(updated_at: Time.current))
         end
         audit(user, 'booking_form_save', setting: setting_changes.keys, tour: tour_changes.keys, button: button_changes.keys)
+      end
+      reset!
+      as_json
+    end
+
+    # `rows`: [{date: "YYYY-MM-DD", label, closed_all_day, start_time, end_time}];
+    # the property's closures are replaced by the list (past ones are kept).
+    def update_closures!(rows, user: nil)
+      errors = []
+      today = @availability.now.to_date
+      parsed = Array(rows).each_with_index.filter_map do |row, index|
+        row = row.to_h.with_indifferent_access
+        path = "closures[#{index}]"
+        date = begin
+          Date.iso8601(row[:date].to_s)
+        rescue ArgumentError
+          nil
+        end
+        if date.nil?
+          errors << { path: "#{path}.date", code: 'invalid', message: 'the date is YYYY-MM-DD' }
+          next
+        end
+
+        label = row[:label].to_s.strip
+        if label.length > 60
+          errors << { path: "#{path}.label", code: 'invalid', message: 'the label is at most 60 characters' }
+          next
+        end
+
+        all_day = !row.key?(:closed_all_day) || truthy?(row[:closed_all_day])
+        start_time = all_day ? nil : row[:start_time].to_s
+        end_time = all_day ? nil : row[:end_time].to_s
+        unless all_day
+          unless HHMM.match?(start_time) && HHMM.match?(end_time)
+            errors << { path: path, code: 'invalid', message: 'times are HH:MM' }
+            next
+          end
+          unless start_time < end_time
+            errors << { path: path, code: 'invalid', message: 'the closing time must be after the opening time' }
+            next
+          end
+        end
+        { date: date, label: label.presence, closed_all_day: all_day, start_time: start_time, end_time: end_time }
+      end
+      parsed.group_by { |row| [row[:date], row[:start_time]] }.each_value do |rows_at|
+        errors << { path: 'closures', code: 'duplicate', message: "#{rows_at.first[:date].iso8601} is listed twice" } if rows_at.size > 1
+      end
+      raise Wayfinding::Invalid.new(errors) if errors.any?
+
+      ApplicationRecord.transaction do
+        community.tour_closures.where('date >= ?', today - 1).delete_all
+        parsed.each { |row| community.tour_closures.create!(row) }
+        audit(user, 'closures_save', count: parsed.size)
       end
       reset!
       as_json

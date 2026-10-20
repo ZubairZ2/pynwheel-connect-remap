@@ -1,8 +1,8 @@
 import type { Amenity, AmenityIcon, Building, GraphNode, LockBluetoothKey, LockPin, MapLevel, Property, PropertyListing, Route, RouteLeg, RouteStage, RouteStep, StopLock, TourRoute, TourStopPlace, Unit, WayfindingGraph } from '~/models';
 import type { StopKind } from '~/models';
-import type { PropertyBundle, StopDistance } from '../tourRepository';
+import type { AvailabilityDay, AvailabilityWindow, BookingResult, BookingSettings, PropertyBundle, StopDistance } from '../tourRepository';
 import { ApiError } from './apiClient';
-import type { ApiDistancesResponse, ApiGraph, ApiLeg, ApiLevel, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiMapResponse, ApiNode, ApiPropertyDetail, ApiPropertySummary, ApiRoute, ApiRouteStep, ApiStop, ApiStopLock, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
+import type { ApiAvailabilityDay, ApiAvailabilityResponse, ApiBookingCreateResponse, ApiBookingSettings, ApiDistancesResponse, ApiGraph, ApiLeg, ApiLevel, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiMapResponse, ApiNode, ApiPropertyDetail, ApiPropertySummary, ApiRoute, ApiRouteStep, ApiStop, ApiStopLock, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
 
 /**
  * snake_case API JSON → the camelCase models the screens consume. The only
@@ -316,4 +316,70 @@ export const parseDistances = (body: ApiDistancesResponse): Record<string, StopD
     out[node] = d.reachable ? { lengthPx: num(d.distance), lengthFt: numOrNull(d.distance_ft), durationS: numOrNull(d.duration_s), direction: d.direction ?? 'level', unreachable: null } : { lengthPx: 0, lengthFt: null, durationS: null, direction: 'level', unreachable: d.error?.message ?? 'No path connects the tour start to this stop.' };
   });
   return out;
+};
+
+// ---- booking ----
+const bool = (v: unknown, fallback: boolean): boolean => (typeof v === 'boolean' ? v : fallback);
+
+export const parseBookingSettings = (s: ApiBookingSettings): BookingSettings => {
+  const gates = list<{ ok?: unknown; error?: unknown }>(s.gates);
+  const failing = gates.find((g) => g && g.ok === false);
+  return {
+    propertyId: num(s.property_id),
+    timeZone: str(s.time_zone, 'UTC'),
+    bookable: bool(s.bookable, false),
+    schedulerEnabled: bool(s.scheduler_enabled, true),
+    gateError: failing ? strOrNull(failing.error) : null,
+    tourTypes: { selfTour: bool(s.tour_types?.self_tour, false), guidedTour: bool(s.tour_types?.guided_tour, false) },
+    slotIntervalMinutes: num(s.slot_interval_minutes, 15),
+    onlyScheduledTour: bool(s.only_scheduled_tour, false),
+    gracePeriod: numOrNull(s.grace_period),
+    lengthStayLimit: numOrNull(s.length_stay_limit),
+    window: { bufferMinutes: num(s.window?.buffer_minutes), minimumNoticeMinutes: num(s.window?.minimum_notice_minutes), bookingHorizonDays: numOrNull(s.window?.booking_horizon_days) },
+    app: {
+      afterHoursLabel: bool(s.app?.after_hours_label, true),
+      allowShorterTour: bool(s.app?.allow_shorter_tour, true),
+      partySizeLimit: Math.max(1, num(s.app?.party_size_limit, 6)),
+      askUnit: bool(s.app?.ask_unit, true),
+      showTextBooking: bool(s.app?.show_text_booking, true)
+    },
+    form: { showDesiredBedroom: bool(s.form?.show_desired_bedroom, false), showDesiredMoveInDate: bool(s.form?.show_desired_move_in_date, false), creditCardRequired: bool(s.form?.credit_card_required, false) },
+    closures: list<{ date?: unknown; label?: unknown; closed_all_day?: unknown }>(s.closures)
+      .filter((c) => typeof c?.date === 'string')
+      .map((c) => ({ date: str(c.date), label: strOrNull(c.label), closedAllDay: bool(c.closed_all_day, true) })),
+    linkUrl: strOrNull(s.link?.url)
+  };
+};
+
+export const parseAvailabilityDay = (d: ApiAvailabilityDay): AvailabilityDay => ({
+  date: str(d.date),
+  closed: bool(d.closed, false),
+  beyondHorizon: bool(d.beyond_horizon, false),
+  closureLabel: strOrNull(d.closure?.label),
+  slots: list<{ time?: unknown; label?: unknown; types?: unknown; full?: unknown }>(d.slots)
+    .filter((x) => typeof x?.time === 'string' && typeof x?.label === 'string')
+    .map((x) => ({ time: str(x.time), label: str(x.label), types: list<string>(x.types).filter((t) => typeof t === 'string'), full: list<string>(x.full).filter((t) => typeof t === 'string') }))
+});
+
+export const parseAvailability = (a: ApiAvailabilityResponse): AvailabilityWindow => ({
+  timeZone: str(a.time_zone, 'UTC'),
+  now: str(a.now),
+  intervalMinutes: num(a.interval_minutes, 15),
+  lastBookableDate: strOrNull(a.last_bookable_date),
+  days: list<ApiAvailabilityDay>(a.days).filter((d) => typeof d?.date === 'string').map(parseAvailabilityDay)
+});
+
+export const parseBookingResult = (r: ApiBookingCreateResponse): BookingResult => {
+  const b = r?.booking;
+  if (!b || typeof b !== 'object' || typeof b.id !== 'number') throw new ApiError('malformed_response', 'The booking service answered without a booking. Please try again.', 200);
+  return {
+    id: String(b.id),
+    status: str(b.status, 'upcoming'),
+    date: str(b.tour_date),
+    time: str(b.tour_time),
+    timeLabel: str(b.tour_time_label),
+    endTime: strOrNull(b.end_time),
+    tourType: str(b.tour_type, 'self_tour'),
+    rescheduled: bool(b.rescheduled, false)
+  };
 };

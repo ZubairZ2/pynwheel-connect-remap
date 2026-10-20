@@ -1,9 +1,9 @@
 import communityPhoto from '~/assets/images/community-pool.jpg';
 import sitePlan from '~/assets/images/site-plan.png';
-import { AFTER_HOURS_SLOTS, DAY_SLOTS, DEMO, LEASE_TERM_FACTORS } from '~/content/demoFixtures';
+import { DEMO, LEASE_TERM_FACTORS } from '~/content/demoFixtures';
 import type { Unit } from '~/models';
-import type { AppContent, PropertyBundle } from '~/repositories/tourRepository';
-import type { AppState } from './appState';
+import type { AppContent, AvailabilitySlot, BookingSettings, PropertyBundle } from '~/repositories/tourRepository';
+import type { AppState, BookingState } from './appState';
 import { dayKey } from './appState';
 import { slotTime } from './scenarios';
 import { markOf, unitLabel, unitPrice, type TourStopView } from './selectors';
@@ -15,10 +15,46 @@ import { markOf, unitLabel, unitPrice, type TourStopView } from './selectors';
  * functions of the state and the loaded data.
  */
 
-/** The self-tour slots of a day; today's slots that have passed are left out. */
-export const daySlots = (date: string, now = Date.now()): string[] => DAY_SLOTS.filter((t) => date !== dayKey(0, new Date(now)) || slotTime(date, t) > now);
-export const afterSlots = (date: string, now = Date.now()): string[] => AFTER_HOURS_SLOTS.filter((t) => date !== dayKey(0, new Date(now)) || slotTime(date, t) > now);
-export const slotsForDay = (date: string, now = Date.now()): string[] => [...daySlots(date, now), ...afterSlots(date, now)];
+/**
+ * The self-tour slots of a day, from the booking rules the CMS answered: a
+ * slot the self-guided type is open at and not full for, and not already
+ * passed today. "After hours" are the self-only times when the property also
+ * offers agent-guided tours and the app option labels them so.
+ */
+export const bookableSlots = (booking: Pick<BookingState, 'days'>, date: string, now = Date.now()): AvailabilitySlot[] =>
+  (booking.days[date]?.slots ?? []).filter((s) => s.types.includes('self_tour') && !s.full.includes('self_tour') && (date !== dayKey(0, new Date(now)) || slotTime(date, s.label) > now));
+
+export const isAfterHours = (settings: BookingSettings | null, slot: AvailabilitySlot): boolean => !!settings && settings.app.afterHoursLabel && settings.tourTypes.guidedTour && !slot.types.includes('guided_tour');
+
+export const daySlots = (booking: Pick<BookingState, 'days' | 'settings'>, date: string, now = Date.now()): string[] =>
+  bookableSlots(booking, date, now)
+    .filter((s) => !isAfterHours(booking.settings, s))
+    .map((s) => s.label);
+export const afterSlots = (booking: Pick<BookingState, 'days' | 'settings'>, date: string, now = Date.now()): string[] =>
+  bookableSlots(booking, date, now)
+    .filter((s) => isAfterHours(booking.settings, s))
+    .map((s) => s.label);
+export const slotsForDay = (booking: Pick<BookingState, 'days' | 'settings'>, date: string, now = Date.now()): string[] => [...daySlots(booking, date, now), ...afterSlots(booking, date, now)];
+
+/** The slot behind a label of a day, for the booking's `HH:MM`. */
+export const slotByLabel = (booking: Pick<BookingState, 'days'>, date: string, label: string, now = Date.now()): AvailabilitySlot | null => bookableSlots(booking, date, now).find((s) => s.label === label) ?? null;
+
+/** Why a day has no times: closed, a closure, beyond the horizon, or simply nothing left. */
+export const dayNote = (booking: Pick<BookingState, 'days'>, date: string): string | null => {
+  const day = booking.days[date];
+  if (!day) return null;
+  if (day.closureLabel) return `Closed · ${day.closureLabel}`;
+  if (day.beyondHorizon) return 'Too far ahead to book yet';
+  if (day.closed) return 'Closed';
+  return null;
+};
+
+/** The tour lengths the Schedule screen offers: up to three, ending at the length of tour, or just that length. */
+export const tourLengthOptions = (settings: BookingSettings | null): number[] => {
+  const limit = settings?.lengthStayLimit ?? 45;
+  if (settings && !settings.app.allowShorterTour) return [limit];
+  return [...new Set([30, 45, 60].filter((n) => n < limit).concat(limit))].sort((a, b) => a - b);
+};
 
 export interface StartPoint {
   id: string;

@@ -51,6 +51,11 @@ const GUEST_PROPERTY: Property = { id: 0, name: `${DEMO_LISTINGS[0].name}${DEMO}
 const Shell = () => {
   const { state, dispatch, data, hydrated, reload, reloadProperties } = useApp();
   const actions = useAppActions();
+  // The Schedule screen reads the property's booking rules whichever way it was opened (Home, Explore's card, a second visit).
+  useEffect(() => {
+    if (state.screen === 'schedule') void actions.loadBooking();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.screen, state.propertyId]);
   const repository = useRepository();
   const framed = useFramed();
   useChrome(state.screen);
@@ -551,8 +556,12 @@ const Shell = () => {
             done={state.scheduleDone}
             unitOptions={bundle.units.filter((u) => u.showInStopsList && u.available).map((u) => u.name)}
             verified={verified}
+            booking={state.booking}
+            profile={profileOf(state, content)}
+            demo={bundle.demo}
             onChange={actions.setSchedule}
-            onConfirm={actions.confirmSchedule}
+            onConfirm={() => void actions.confirmSchedule()}
+            onRetry={() => void actions.loadBooking(true)}
             onBack={() => goTab('home')}
             onVerify={() => actions.openVerify(null)}
             onCalendar={actions.addToCalendar}

@@ -1,11 +1,11 @@
-import { DEMO, LEASING_PHONE, PARTY_MAX, TOUR_LENGTHS } from '~/content/demoFixtures';
+import { DEMO, LEASING_PHONE } from '~/content/demoFixtures';
 import { ScreenHeader } from '~/components/chrome';
 import { Icon } from '~/components/Icon';
 import { Button, IconButton } from '~/components/ui';
 import { Callout, Chip, Eyebrow, Segmented } from '~/components/ui2';
-import { dayKey, type ScheduleDraft } from '~/store/appState';
+import { dayKey, type BookingState, type ScheduleDraft } from '~/store/appState';
 import { DOW, MON, dayLabel, parseDay } from '~/store/scenarios';
-import { afterSlots, daySlots } from '~/store/views';
+import { afterSlots, dayNote, daySlots, slotsForDay, tourLengthOptions, type Profile } from '~/store/views';
 import { LightShell } from './shared';
 
 interface Props {
@@ -15,8 +15,14 @@ interface Props {
   done: boolean;
   unitOptions: string[];
   verified: boolean;
+  /** The property's booking rules and slots, as the CMS answered them. */
+  booking: BookingState;
+  profile: Profile;
+  /** True on the demo provider: the booking is local, the labels carry the `*` marker. */
+  demo: boolean;
   onChange: (patch: Partial<ScheduleDraft>) => void;
   onConfirm: () => void;
+  onRetry: () => void;
   onBack: () => void;
   onVerify: () => void;
   onCalendar: () => void;
@@ -25,17 +31,28 @@ interface Props {
 }
 
 /**
- * Schedule Self-Tour: the seven-day strip, daytime and after-hours slots,
- * tour length, the unit of interest, party size and the "book via" note, then
- * the confirmation card. The booking is kept on this phone only: the
- * scheduling backend is not part of this phase, so everything here is marked
- * as demo data.
+ * Schedule Self-Tour: the seven-day strip and the day's times come from the
+ * property's booking rules (Settings › Scheduling in the CMS: visiting
+ * hours, slot length, notice, horizon, closures, capacity); the tour length,
+ * unit and party rows follow the CMS's Schedule-screen options; the booking
+ * is made by the CMS, which checks the slot again. The "book via" note and
+ * the leasing phone stay demo copy until the CMS carries them.
  */
-export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, unitOptions, verified, onChange, onConfirm, onBack, onVerify, onCalendar, onDirections, onHome }: Props) => {
+export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, unitOptions, verified, booking, profile, demo, onChange, onConfirm, onRetry, onBack, onVerify, onCalendar, onDirections, onHome }: Props) => {
   const days = Array.from({ length: 7 }, (_, i) => dayKey(i));
-  const day = daySlots(draft.date);
-  const after = afterSlots(draft.date);
+  const day = daySlots(booking, draft.date);
+  const after = afterSlots(booking, draft.date);
   const noSlots = !day.length && !after.length;
+  const settings = booking.settings;
+  const loading = booking.status === 'loading' && !booking.days[draft.date];
+  const lengths = tourLengthOptions(settings);
+  const partyMax = settings?.app.partySizeLimit ?? 6;
+  const askUnit = settings?.app.askUnit ?? true;
+  const showText = settings?.app.showTextBooking ?? true;
+  const blocked = settings && !settings.bookable ? (settings.gateError ?? 'This property is not taking bookings right now.') : null;
+  const email = profile.email;
+  const detailsOk = !!(draft.first.trim() && draft.last.trim() && draft.phone.trim() && email.trim());
+  const mark = demo ? DEMO : '';
 
   return (
     <LightShell>
@@ -45,14 +62,24 @@ export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, uni
           <div className="pw-sched__where">
             {propertyName} · {propertyAddress}
           </div>
+          {booking.status === 'error' ? <Callout tone="warn" body={booking.error ?? 'The booking calendar could not be loaded.'} action={<Button variant="secondary" height={36} onClick={onRetry}>Retry</Button>} /> : null}
+          {blocked ? <Callout tone="warn" body={<>Bookings are paused: {blocked}. Call the leasing office to arrange a visit.</>} /> : null}
           <div className="pw-sched__block">
             <Eyebrow>Date</Eyebrow>
             <div className="pw-sched__days">
               {days.map((key, i) => {
                 const d = parseDay(key);
                 const on = draft.date === key;
+                const open = slotsForDay(booking, key).length > 0;
                 return (
-                  <button key={key} type="button" className={`pw-sched__day${on ? ' pw-sched__day--on' : ''}`} onClick={() => onChange({ date: key, time: [...daySlots(key), ...afterSlots(key)].includes(draft.time) ? draft.time : (daySlots(key)[0] ?? afterSlots(key)[0] ?? '') })} aria-pressed={on}>
+                  <button
+                    key={key}
+                    type="button"
+                    className={`pw-sched__day${on ? ' pw-sched__day--on' : ''}`}
+                    style={!open && booking.status === 'ready' ? { opacity: 0.45 } : undefined}
+                    onClick={() => onChange({ date: key, time: slotsForDay(booking, key).includes(draft.time) ? draft.time : (slotsForDay(booking, key)[0] ?? '') })}
+                    aria-pressed={on}
+                  >
                     <span className="pw-sched__dow">{i === 0 ? 'Today' : DOW[d.getDay()]}</span>
                     <span className="pw-sched__num">{d.getDate()}</span>
                     <span className="pw-sched__mon">{MON[d.getMonth()]}</span>
@@ -62,6 +89,7 @@ export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, uni
             </div>
           </div>
           <div className="pw-sched__block">
+            {loading ? <div className="pw-sched__noslots">Loading times…</div> : null}
             {day.length ? (
               <>
                 <Eyebrow>Daytime</Eyebrow>
@@ -89,35 +117,50 @@ export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, uni
                 </div>
               </>
             ) : null}
-            {noSlots ? <div className="pw-sched__noslots">No self-tour times on this day. Pick another day.</div> : null}
+            {!loading && noSlots ? <div className="pw-sched__noslots">{dayNote(booking, draft.date) ?? 'No self-tour times on this day.'} Pick another day.</div> : null}
           </div>
-          <div className="pw-sched__block">
-            <Eyebrow>Tour length</Eyebrow>
-            <Segmented options={TOUR_LENGTHS.map((n) => ({ id: String(n), label: `${n} min` }))} value={String(draft.length)} onChange={(id) => onChange({ length: Number(id) })} />
-          </div>
-          <div className="pw-sched__block">
-            <Eyebrow>Interested in</Eyebrow>
-            <div className="pw-sched__units">
-              {[...unitOptions, 'No preference'].map((u) => (
-                <Chip key={u} on={draft.unit === u} onClick={() => onChange({ unit: u })}>
-                  {u}
-                </Chip>
-              ))}
+          {lengths.length > 1 ? (
+            <div className="pw-sched__block">
+              <Eyebrow>Tour length</Eyebrow>
+              <Segmented options={lengths.map((n) => ({ id: String(n), label: `${n} min` }))} value={String(lengths.includes(draft.length) ? draft.length : lengths[lengths.length - 1])} onChange={(id) => onChange({ length: Number(id) })} />
             </div>
-          </div>
+          ) : null}
+          {askUnit ? (
+            <div className="pw-sched__block">
+              <Eyebrow>Interested in</Eyebrow>
+              <div className="pw-sched__units">
+                {[...unitOptions, 'No preference'].map((u) => (
+                  <Chip key={u} on={draft.unit === u} onClick={() => onChange({ unit: u })}>
+                    {u}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <div className="pw-sched__party">
             <div>
               <div className="pw-sched__partytitle">Party size</div>
-              <div className="pw-sched__partysub">Including you</div>
+              <div className="pw-sched__partysub">Including you · up to {partyMax}</div>
             </div>
             <div className="pw-sched__stepper">
               <button type="button" aria-label="Fewer people" onClick={() => onChange({ party: Math.max(1, draft.party - 1) })}>
                 <Icon name="minus" size={16} />
               </button>
-              <span>{draft.party}</span>
-              <button type="button" aria-label="More people" onClick={() => onChange({ party: Math.min(PARTY_MAX, draft.party + 1) })}>
+              <span>{Math.min(draft.party, partyMax)}</span>
+              <button type="button" aria-label="More people" onClick={() => onChange({ party: Math.min(partyMax, draft.party + 1) })}>
                 <Icon name="plus" size={16} />
               </button>
+            </div>
+          </div>
+          <div className="pw-sched__block">
+            <Eyebrow>Your details</Eyebrow>
+            <div className="pw-sched__slots" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input className="pw-input" placeholder="First name" aria-label="First name" autoComplete="given-name" value={draft.first} onChange={(e) => onChange({ first: e.target.value })} style={{ flex: 1, minWidth: 0 }} />
+                <input className="pw-input" placeholder="Last name" aria-label="Last name" autoComplete="family-name" value={draft.last} onChange={(e) => onChange({ last: e.target.value })} style={{ flex: 1, minWidth: 0 }} />
+              </div>
+              <input className="pw-input" placeholder="Mobile phone" aria-label="Mobile phone" inputMode="tel" autoComplete="tel" value={draft.phone} onChange={(e) => onChange({ phone: e.target.value })} />
+              <div className="pw-sched__partysub">{email ? `Confirmation to ${email}` : 'Sign in with your email to book.'}</div>
             </div>
           </div>
           <div className="pw-sched__block pw-sched__block--tight">
@@ -130,13 +173,16 @@ export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, uni
             </div>
             <div className="pw-sched__vianote">Every channel books the same calendar, so your tour shows up here either way.{DEMO}</div>
           </div>
-          <Button onClick={onConfirm} disabled={noSlots || !draft.time}>
-            Confirm Self-Tour
+          <Button onClick={onConfirm} disabled={noSlots || !draft.time || !detailsOk || !!blocked || booking.saving} busy={booking.saving}>
+            {booking.saving ? 'Booking…' : 'Confirm Self-Tour'}
           </Button>
-          <div className="pw-sched__text">
-            Also book by text: <b>{LEASING_PHONE}</b>
-            {DEMO}
-          </div>
+          {booking.saveError ? <div className="pw-sched__noslots">{booking.saveError}</div> : null}
+          {showText ? (
+            <div className="pw-sched__text">
+              Also book by text: <b>{LEASING_PHONE}</b>
+              {DEMO}
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="pw-sched pw-sched--done">
@@ -144,7 +190,7 @@ export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, uni
             <span className="pw-sched__donebadge">
               <Icon name="check" size={30} color="var(--pw-primary)" strokeWidth={2.4} />
             </span>
-            <div className="pw-sched__donetitle">Self-tour confirmed{DEMO}</div>
+            <div className="pw-sched__donetitle">Self-tour confirmed{mark}</div>
             <div className="pw-sched__where">
               {propertyName} · {propertyAddress}
             </div>

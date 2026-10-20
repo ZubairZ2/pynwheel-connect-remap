@@ -54,7 +54,7 @@
             json.scheduler_widget_url ""
         else
             json.scheduler_widget_allowed @community.scheduler_widget
-            community_code = (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
+            community_code = (JWT.encode ({"community_id" => @community.id}), Community.widget_signing_key, 'HS256')
             widget_url = "#{root_url}/scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true"
             if @scheduled_tours.present?
                 json.scheduler_widget_url (@community.scheduler_widget and @scheduled_tours.last.present?) ? "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true" : ""

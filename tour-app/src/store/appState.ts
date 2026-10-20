@@ -1,4 +1,5 @@
 import type { LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
+import type { AvailabilityDay, BookingSettings } from '~/repositories/tourRepository';
 import type { Overlay, Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
 
@@ -91,7 +92,7 @@ export interface ProfileEdits {
   phone?: string;
 }
 
-/** A self-tour booked in the app (local demo data: the booking backend is not part of this phase). */
+/** A self-tour booked in the app. Since October 20, 2026 the real provider books it in the CMS (`id` is the CMS booking id). */
 export type TourStatus = 'scheduled' | 'pending' | 'checkedIn' | 'past' | 'missed' | 'cancelled';
 
 export interface ScheduledTour {
@@ -107,14 +108,39 @@ export interface ScheduledTour {
   party: number;
   source: 'app' | 'website' | 'sms' | 'kiosk';
   createdAt: number;
+  /** `self_tour` / `guided_tour`, as the CMS stores it. */
+  tourType?: string;
+  /** `HH:MM`, when the CMS answered one. */
+  endTime?: string | null;
 }
 
 export interface ScheduleDraft {
   date: string;
+  /** The slot's label ("6:00 PM"); the booking sends the slot's `HH:MM`. */
   time: string;
   length: number;
   unit: string;
   party: number;
+  /** The visitor's details for the booking, prefilled from the profile. */
+  first: string;
+  last: string;
+  phone: string;
+}
+
+/**
+ * The property's booking rules and the next days' slots, read from the
+ * repository when the Schedule screen opens (never persisted: a relaunch
+ * reads them again). `days` is keyed by `YYYY-MM-DD`.
+ */
+export interface BookingState {
+  propertyId: number | null;
+  fetchedAt: number;
+  status: 'idle' | 'loading' | 'ready' | 'error';
+  error: string | null;
+  settings: BookingSettings | null;
+  days: Record<string, AvailabilityDay>;
+  saving: boolean;
+  saveError: string | null;
 }
 
 /** The identity check (simulated: CheckpointID is not integrated in this phase). */
@@ -234,6 +260,7 @@ export interface AppState {
   location: LocationState;
   schedule: ScheduleDraft;
   scheduleDone: boolean;
+  booking: BookingState;
   scheduledTour: ScheduledTour | null;
   verified: boolean;
   requireCard: boolean;
@@ -293,7 +320,9 @@ export const dayKey = (offset = 0, from: Date = new Date()): string => {
   return `${d.getFullYear()}-${m}-${day}`;
 };
 
-export const initialSchedule = (): ScheduleDraft => ({ date: dayKey(0), time: '', length: 45, unit: '', party: 1 });
+export const initialSchedule = (): ScheduleDraft => ({ date: dayKey(0), time: '', length: 45, unit: '', party: 1, first: '', last: '', phone: '' });
+
+export const initialBooking = (): BookingState => ({ propertyId: null, fetchedAt: 0, status: 'idle', error: null, settings: null, days: {}, saving: false, saveError: null });
 
 export const initialAppState = (): AppState => ({
   screen: 'splash',
@@ -346,6 +375,7 @@ export const initialAppState = (): AppState => ({
   demo: initialDemoScenarios(),
   location: { perm: 'ask', locating: false, sheet: null },
   schedule: initialSchedule(),
+  booking: initialBooking(),
   scheduleDone: false,
   scheduledTour: null,
   verified: false,

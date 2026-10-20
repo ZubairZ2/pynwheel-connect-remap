@@ -24,7 +24,7 @@ class ApplicationController < ActionController::Base
     if current_community.present?
       @community.create_tour unless @community.community_tour.present?
       @schedule_widget_setting = @community.community_tour.scheduler_widget_setting || @community.community_tour.create_scheduler_widget_setting
-      @community_code = (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
+      @community_code = (JWT.encode ({"community_id" => @community.id}), Community.widget_signing_key, 'HS256')
     end
   end
 

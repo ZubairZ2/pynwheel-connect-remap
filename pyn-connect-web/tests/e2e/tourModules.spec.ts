@@ -188,14 +188,15 @@ test.describe('Tour Setup modules (real data)', () => {
     await expect(page.getByTestId('booking-rules')).toBeVisible({ timeout: 30_000 });
     await page.getByTestId('settings-hours').click();
     await expect(page.getByTestId('booking-hours')).toBeVisible();
-    await page.getByTestId('settings-form').click();
+    // October 20, 2026: the rail is grouped; the Booking & CRM pills show once that group is open.
+    await page.getByTestId('settings-group-booking').click();
     await expect(page.getByTestId('booking-form')).toBeVisible();
     await expect(page.getByTestId('prospect-preview')).toBeVisible();
     await page.getByTestId('settings-link').click();
     await expect(page.getByTestId('booking-link')).toBeVisible();
     await page.getByTestId('settings-crm').click();
     await expect(page.getByTestId('booking-crm')).toBeVisible();
-    await page.getByTestId('settings-navigation').click();
+    await page.getByTestId('settings-group-navigation').click();
     await expect(page.locator('.bo-configgroup')).toBeVisible();
     expect(errors, 'page errors').toEqual([]);
     expect(writes, 'non-GET requests').toEqual([]);

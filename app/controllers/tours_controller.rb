@@ -156,7 +156,7 @@ class ToursController < ApplicationController
     @community_opening_hours = @community.opening_hours.order(:sort).all
     @community_guided_opening_hours = @community.guided_opening_hours.order(:sort).all
     @schedule_widget_setting = @community.community_tour.scheduler_widget_setting || @community.community_tour.create_scheduler_widget_setting
-    @community_code = (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
+    @community_code = (JWT.encode ({"community_id" => @community.id}), Community.widget_signing_key, 'HS256')
 
   end
   
@@ -288,7 +288,7 @@ class ToursController < ApplicationController
 
   def scheduler_widget
     @schedule_widget_setting = @community.community_tour.scheduler_widget_setting || @community.community_tour.create_scheduler_widget_setting
-    @community_code = (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
+    @community_code = (JWT.encode ({"community_id" => @community.id}), Community.widget_signing_key, 'HS256')
   end
 
   def save_schedule_widget_btn_setting

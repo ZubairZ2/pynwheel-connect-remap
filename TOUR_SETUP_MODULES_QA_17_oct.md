@@ -114,3 +114,15 @@ only, through the read-only URL, and only to confirm facts; no production row wa
 - The manual-code "Remove code" bug noted on Oct 18 is fixed; Auto-match no longer shows the unmapped count as a
   proposal count.
 
+## Update — October 20, 2026 (Settings on the October 20 design, branch `feature/tour-settings-scheduling-booking`)
+
+- Scheduling: Tour types & slots gained buffer, minimum notice and booking horizon (new columns, enforced); Visiting hours
+  are drawn per weekday with both lanes and gained Holidays & closures (`tour_closures`, `PUT booking/closures`).
+- Booking form: the "Schedule screen in the app" card (`tour_settings.app_*`), a prospect preview on the live availability,
+  and the fix that a NULL "desired bedrooms / move-in" flag is shown (as the legacy widget shows it).
+- Booking link: the full Button appearance card (text colour and icon are new columns); locally the link resolves to the
+  legacy widget when `HOST_URL` points at the Rails server, and a visitor booking made through it appears in Visitors.
+- CRM & Sync: **UI complete, demo data only** — the design's option cards, credentials, mode rows, flow and stats on local
+  state; nothing is sent or saved.
+- The legacy widget's submit now checks the slot on the server; the Tour App books through the CMS.
+- Results and evidence: `TOUR_SETTINGS_SCHEDULING_BOOKING_QA.md` (§6 tests, §7 matrix on the clone and on development).

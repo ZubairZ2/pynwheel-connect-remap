@@ -1091,6 +1091,7 @@ Rails.application.routes.draw do
     put    'booking/rules', to: 'booking#update_rules'
     put    'booking/hours', to: 'booking#update_hours'
     put    'booking/form', to: 'booking#update_form'
+    put    'booking/closures', to: 'booking#update_closures'
   end
 
   # Pynwheel Tour mobile app API (Api::TourApp::V1): the Rails port of the
@@ -1115,6 +1116,9 @@ Rails.application.routes.draw do
     post 'properties/:property_id/stops/distances', to: 'routes#distances'
     post 'properties/:property_id/locks/pin', to: 'locks#pin'
     post 'properties/:property_id/locks/bluetooth-key', to: 'locks#bluetooth_key'
+    get  'properties/:property_id/booking/settings', to: 'bookings#settings'
+    get  'properties/:property_id/booking/availability', to: 'bookings#availability'
+    post 'properties/:property_id/bookings', to: 'bookings#create'
     match '*unmatched', to: 'errors#not_found', via: :all
   end
 

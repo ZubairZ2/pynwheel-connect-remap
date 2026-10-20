@@ -374,6 +374,13 @@ export interface BookingSettings {
   timeZone: string | null;
   timeZoneEffective: string;
   hours: Record<HoursLane, Record<string, HourRange[]>>;
+  /** Buffer, minimum notice and horizon (October 20, 2026 columns); null until the tour exists. */
+  window: { bufferMinutes: number; minimumNoticeMinutes: number; bookingHorizonDays: number | null } | null;
+  /** Dated closures from yesterday on, soonest first. */
+  closures: BookingClosure[];
+  /** What the Pynwheel Tour app's Schedule screen shows. */
+  app: { afterHoursLabel: boolean; allowShorterTour: boolean; partySizeLimit: number; askUnit: boolean; showTextBooking: boolean } | null;
+  /** Settings the CMS cannot store; empty since October 20, 2026. */
   unavailable: string[];
   form: {
     creditCardRequired: boolean;
@@ -387,8 +394,17 @@ export interface BookingSettings {
     smsOptInDefault: boolean;
     fixedFields: string[];
   } | null;
-  button: { text: string; color: string; width: number; height: number; font: string; fontSize: string } | null;
-  link: { url: string | null; hostConfigured: boolean; live: boolean; reasons: string[]; embedHtml: string | null };
+  button: { text: string; color: string; textColor: string; icon: string | null; width: number; height: number; font: string; fontSize: string } | null;
+  link: { url: string | null; host: string | null; hostSource: 'env' | 'request' | 'none'; hostConfigured: boolean; live: boolean; reasons: string[]; embedHtml: string | null };
+}
+
+export interface BookingClosure {
+  id: number | null;
+  date: string;
+  label: string | null;
+  closedAllDay: boolean;
+  startTime: string | null;
+  endTime: string | null;
 }
 
 export interface AvailabilitySlot {
@@ -402,13 +418,21 @@ export interface AvailabilityDay {
   date: string;
   closed: boolean;
   slots: AvailabilitySlot[];
+  beyondHorizon?: boolean;
+  closure?: BookingClosure | null;
+  closures?: BookingClosure[];
 }
 
 export interface Availability {
   managedBy: string | null;
   intervalMinutes: number;
+  bufferMinutes: number;
+  minimumNoticeMinutes: number;
+  bookingHorizonDays: number | null;
+  lastBookableDate: string | null;
   closedWeekdays: number[];
   timeZone: string;
   now: string;
+  closures: BookingClosure[];
   days: AvailabilityDay[];
 }

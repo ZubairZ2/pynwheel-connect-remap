@@ -1,4 +1,5 @@
 import type { LockBluetoothKey, LockPin, MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
+import { AFTER_HOURS_SLOTS, DAY_SLOTS, PARTY_MAX, TOUR_LENGTHS } from '~/content/demoFixtures';
 import type { Session } from '~/services/session';
 import { placesFromBundle } from '../places';
 import {
@@ -26,7 +27,7 @@ import {
   type DummyProperty
 } from '~/dummy';
 import { RouteService } from '~/wayfinding/routeService';
-import { FeatureUnavailableError, type AppContent, type BookingRequest, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult } from '../tourRepository';
+import { FeatureUnavailableError, type AppContent, type AvailabilityWindow, type BookingRequest, type BookingResult, type BookingSettings, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult } from '../tourRepository';
 
 /**
  * The dummy provider: answers every repository call from local dummy data,
@@ -195,10 +196,60 @@ export class DummyTourRepository implements TourRepository {
     return fill(hit ? hit.answer : CONCIERGE_FALLBACK, params);
   }
 
-  async requestBooking(request: BookingRequest): Promise<{ id: string }> {
+  // ------------------------------------------------------------- booking
+  // The demo property's calendar: the design's slot lists, every day open,
+  // after-hours slots self-guided only, the app options at their defaults.
+  async getBookingSettings(): Promise<BookingSettings> {
+    return {
+      propertyId: this.propertyId ?? 1,
+      timeZone: 'America/Denver',
+      bookable: true,
+      schedulerEnabled: true,
+      gateError: null,
+      tourTypes: { selfTour: true, guidedTour: true },
+      slotIntervalMinutes: 30,
+      onlyScheduledTour: false,
+      gracePeriod: 15,
+      lengthStayLimit: Math.max(...TOUR_LENGTHS),
+      window: { bufferMinutes: 0, minimumNoticeMinutes: 0, bookingHorizonDays: null },
+      app: { afterHoursLabel: true, allowShorterTour: true, partySizeLimit: PARTY_MAX, askUnit: true, showTextBooking: true },
+      form: { showDesiredBedroom: true, showDesiredMoveInDate: false, creditCardRequired: false },
+      closures: [],
+      linkUrl: null
+    };
+  }
+
+  async getAvailability(fromDate: string, days: number): Promise<AvailabilityWindow> {
+    const to24 = (label: string): string => {
+      const m = /(\d+):(\d+)\s*(AM|PM)/i.exec(label);
+      if (!m) return '00:00';
+      const hour = (Number(m[1]) % 12) + (m[3].toUpperCase() === 'PM' ? 12 : 0);
+      return `${String(hour).padStart(2, '0')}:${m[2]}`;
+    };
+    const [y, mo, d] = fromDate.split('-').map(Number);
+    const list = Array.from({ length: Math.max(1, days) }, (_, i) => {
+      const day = new Date(y, (mo ?? 1) - 1, (d ?? 1) + i);
+      const date = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+      return {
+        date,
+        closed: false,
+        beyondHorizon: false,
+        closureLabel: null,
+        slots: [
+          ...DAY_SLOTS.map((label) => ({ time: to24(label), label, types: ['self_tour', 'guided_tour'], full: [] as string[] })),
+          ...AFTER_HOURS_SLOTS.map((label) => ({ time: to24(label), label, types: ['self_tour'], full: [] as string[] }))
+        ]
+      };
+    });
+    return { timeZone: 'America/Denver', now: new Date().toISOString(), intervalMinutes: 30, lastBookableDate: null, days: list };
+  }
+
+  async requestBooking(request: BookingRequest): Promise<BookingResult> {
     await this.delay('write');
-    void request;
-    return { id: `bk-${Date.now()}` };
+    const m = /^(\d{2}):(\d{2})$/.exec(request.time);
+    const hour = m ? Number(m[1]) : 0;
+    const label = m ? `${hour % 12 === 0 ? 12 : hour % 12}:${m[2]} ${hour < 12 ? 'AM' : 'PM'}` : request.time;
+    return { id: `bk-${Date.now()}`, status: 'upcoming', date: request.date, time: request.time, timeLabel: label, endTime: null, tourType: request.tourType, rescheduled: false };
   }
 
   async startApplication(unitNode: string): Promise<{ id: string }> {

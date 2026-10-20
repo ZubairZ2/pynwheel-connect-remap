@@ -572,3 +572,24 @@ errors, the Demo scenarios panel gated by `VITE_DEMO_SCENARIOS` (always on in de
 as `start_stop_id` to `POST …/tour-route` (the tour starts and finishes at the chosen entry gate). Plugin: pending calls
 rejected with `cancelled`, first-emission connect timeout, Swift timer / permission / no-SDK fixes, DFU pinned, Swift
 package resolution proven. Report §29.
+
+## 21. Schedule Self-Tour on the CMS's booking rules (October 20, 2026)
+
+- The Schedule screen no longer uses `DAY_SLOTS` / `AFTER_HOURS_SLOTS` / `TOUR_LENGTHS` / `PARTY_MAX` on the real provider: the
+  `booking` slice (`appState.ts`, not persisted) holds the property's `BookingSettings` and seven days of `AvailabilityDay`s from
+  `GET …/booking/settings` and `GET …/booking/availability` (`useAppActions.loadBooking`, five-minute freshness, read whenever the
+  screen opens — `App.tsx` effect — so Home, Explore's card and a second visit all load it).
+- Slots: `views.bookableSlots` (self-tour open, not full, not past today), `daySlots` / `afterSlots` (after-hours = self-only times when
+  the CMS's "Label self-only times as After hours" option is on and agent tours exist), `slotByLabel` (label → `HH:MM` for the
+  booking), `dayNote` (closure label / "Too far ahead to book yet" / "Closed"), `tourLengthOptions` (up to three lengths ending at the
+  length of tour, or just that length when the option is off). The reducer moves the draft to the first open day.
+- Booking: `confirmSchedule` posts through `repository.requestBooking` (first/last/phone from the new "Your details" block over the
+  profile, email from the session); the CMS checks the slot again; the answer's booking id, label and end time become
+  `scheduledTour` (`tourType`, `endTime` added); a refused slot (`slot_unavailable` / `slot_full`) re-reads the calendar; the toast
+  says when the CMS moved an earlier booking instead (`rescheduled`). "Book a Live Tour" (`submitBooking`) books a `guided_tour`
+  the same way (the sheet's day/time labels are mapped to a date and `HH:MM`).
+- Still demo copy on the real provider: the "Book via" row, the leasing phone under the button, the 24h/1h reminder note. The
+  dummy repository answers the former fixtures, so demo mode and the design's scenarios are unchanged.
+- Verified headless on the audit clone (Hazel 1618): sign in → Hazel → Schedule a Self-Tour → real slots → Confirm → `POST
+  …/bookings` 201 (booking 25519, created_by "Tour App") → "Self-tour confirmed" → the booking in Connect Visitors. Tests:
+  `src/store/booking.test.ts`; `npm test` 84 passing.

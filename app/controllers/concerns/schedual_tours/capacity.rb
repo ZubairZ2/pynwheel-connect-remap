@@ -25,8 +25,18 @@ module SchedualTours
       interval_minutes(community) - 1
     end
 
+    # The buffer between tours (Settings › Tour types & slots), 0 when unset.
+    def buffer_minutes(community)
+      community.community_tour&.tour_setting&.buffer_minutes.to_i
+    end
+
+    # Half the counting window: the interval plus the buffer, less one minute.
+    def window_minutes(community)
+      stepping(community) + buffer_minutes(community)
+    end
+
     def window_counts(community, date, time)
-      step = stepping(community)
+      step = window_minutes(community)
       slot = time.is_a?(String) ? Time.zone.parse(time) : time
       before = slot - step.minutes
       after = slot + step.minutes
@@ -76,14 +86,14 @@ module SchedualTours
     # widget's rule computed in Ruby: Bookings::Availability asks for every
     # slot of every day it renders (the SQL variant above costs 4 COUNTs and
     # several tour lookups per slot — ~25 queries a slot, thousands a week).
-    # Same window as `window_counts`: [slot − (interval − 1), slot + (interval − 1)],
+    # Same window as `window_counts`: [slot − (interval + buffer − 1), slot + (interval + buffer − 1)],
     # read as a time-of-day range exactly like the SQL BETWEEN (a window that
     # wraps past midnight is empty, as the SQL range is).
     class DayCounter
-      def initialize(community, date, tour:, setting:, interval:)
+      def initialize(community, date, tour:, setting:, interval:, buffer: 0)
         @tour = tour
         @setting = setting
-        @step = interval - 1
+        @step = interval + buffer.to_i - 1
         rows = community.schedual_tours.where(tour_date: date).where.not(tour_user_id: nil).pluck(:tour_time, :tour_type)
         @rows = rows.map { |time, type| [time && (time.hour * 60 + time.min), type] }
         @total_per_day = @rows.count { |_minute, type| non_virtual?(type) }

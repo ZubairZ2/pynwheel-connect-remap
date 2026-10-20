@@ -14,7 +14,8 @@ module Bookings
   #   4. the CRM appointments are booked (Yardi RentCafe, Funnel, Knock,
   #      RealPage) and the visitor and the property are notified
   #      (SchedualTours::Notifications), exactly as for a widget booking.
-  # `created_by` is "Staff" so the lists and the CSV say where it came from.
+  # `created_by` is "Staff" so the lists and the CSV say where it came from
+  # ("Tour App" when the Pynwheel Tour app books through the Tour App API).
   class Create
     include SchedualTours::Notifications
 
@@ -24,15 +25,16 @@ module Bookings
 
     Result = Struct.new(:booking, :visitor, :rescheduled, :notifications, keyword_init: true)
 
-    def initialize(community, user: nil, request_ip: nil)
+    def initialize(community, user: nil, request_ip: nil, created_by: CREATED_BY)
       @community = community
       @user = user
       @request_ip = request_ip
+      @created_by = created_by.presence || CREATED_BY
       @availability = Availability.new(community)
     end
 
-    def self.call!(community, attrs, user: nil, request_ip: nil)
-      new(community, user: user, request_ip: request_ip).call!(attrs)
+    def self.call!(community, attrs, user: nil, request_ip: nil, created_by: CREATED_BY)
+      new(community, user: user, request_ip: request_ip, created_by: created_by).call!(attrs)
     end
 
     def call!(attrs)
@@ -62,7 +64,7 @@ module Bookings
           rescheduled = existing.tour_user_id.present?
           previous = { tour_date: existing.tour_date, tour_time: existing.tour_time, is_rescheduled: rescheduled }
         else
-          booking = SchedualTour.new(community_id: community.id, user_time_zone: @availability.tz, created_by: CREATED_BY)
+          booking = SchedualTour.new(community_id: community.id, user_time_zone: @availability.tz, created_by: @created_by)
           last = community.schedual_tours.where(tour_user_id: visitor.id).order(:id).last
           booking.stops_list = last.stops_list if last&.stops_list.present?
         end
@@ -72,9 +74,9 @@ module Bookings
           day_diff: date && (date - @availability.now.to_date).to_i,
           desired_bedroom: attrs[:desired_bedroom].presence, desired_move_in_date: move_in_date(attrs[:desired_move_in_date]),
           user_time_zone: @availability.tz, country_code: attrs[:country_code].presence || booking.country_code,
-          knock_prospect_ip_address: @request_ip, created_by: booking.created_by.presence || CREATED_BY
+          knock_prospect_ip_address: @request_ip, created_by: booking.created_by.presence || @created_by
         )
-        booking.created_by = CREATED_BY if booking.new_record?
+        booking.created_by = @created_by if booking.new_record?
         booking.save!
       end
 
@@ -125,10 +127,14 @@ module Bookings
 
       def visitor!(attrs)
         email = attrs[:email].to_s.strip.downcase
-        phone = normalize_phone(attrs[:phone_number].to_s.gsub(/[^0-9+]/, ''), attrs[:country_code].presence || community.fetch_country_code)
+        digits = attrs[:phone_number].to_s.gsub(/[^0-9+]/, '')
         first = attrs[:first_name].to_s.strip
         last = attrs[:last_name].to_s.strip
-        raise Connect::DomainError.invalid('invalid_visitor', 'First name, last name, email and phone are required.') if first.blank? || last.blank? || email.blank? || phone.blank?
+        # The digits are checked before the country prefix is added: an empty
+        # phone must not pass as "+1" (October 20, 2026).
+        raise Connect::DomainError.invalid('invalid_visitor', 'First name, last name, email and phone are required.') if first.blank? || last.blank? || email.blank? || digits.gsub('+', '').blank?
+
+        phone = normalize_phone(digits, attrs[:country_code].presence || community.fetch_country_code)
 
         visitor = TourUserSearcherService.new(phone, email).find_tour_user
         visitor ||= TourUser.new(email: email, phone_number: phone)

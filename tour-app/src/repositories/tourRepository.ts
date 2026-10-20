@@ -78,12 +78,87 @@ export interface AppContent {
   appVersion: string;
 }
 
-export interface BookingRequest {
-  day: string;
+/**
+ * The property's booking rules as the CMS Settings store them
+ * (`GET /properties/{id}/booking/settings`, Scheduling::Settings trimmed for
+ * the app). `bookable` is false when the widget's gates fail; `gateError` then
+ * says why ("Scheduler is Disabled", …).
+ */
+export interface BookingSettings {
+  propertyId: number;
+  timeZone: string;
+  bookable: boolean;
+  schedulerEnabled: boolean;
+  gateError: string | null;
+  tourTypes: { selfTour: boolean; guidedTour: boolean };
+  slotIntervalMinutes: number;
+  onlyScheduledTour: boolean;
+  gracePeriod: number | null;
+  lengthStayLimit: number | null;
+  window: { bufferMinutes: number; minimumNoticeMinutes: number; bookingHorizonDays: number | null };
+  app: { afterHoursLabel: boolean; allowShorterTour: boolean; partySizeLimit: number; askUnit: boolean; showTextBooking: boolean };
+  form: { showDesiredBedroom: boolean; showDesiredMoveInDate: boolean; creditCardRequired: boolean };
+  closures: { date: string; label: string | null; closedAllDay: boolean }[];
+  linkUrl: string | null;
+}
+
+/** One bookable time of a day: `time` is `HH:MM` (what the booking sends), `label` what the screen shows ("6:00 PM"). */
+export interface AvailabilitySlot {
   time: string;
-  unit: string;
-  name: string;
+  label: string;
+  /** The tour types still open at this time (`self_tour`, `guided_tour`). */
+  types: string[];
+  /** The tour types whose capacity is reached at this time. */
+  full: string[];
+}
+
+export interface AvailabilityDay {
+  /** `YYYY-MM-DD` in the property's time zone. */
+  date: string;
+  closed: boolean;
+  beyondHorizon: boolean;
+  closureLabel: string | null;
+  slots: AvailabilitySlot[];
+}
+
+export interface AvailabilityWindow {
+  timeZone: string;
+  now: string;
+  intervalMinutes: number;
+  lastBookableDate: string | null;
+  days: AvailabilityDay[];
+}
+
+/** A booking the app makes (`POST /properties/{id}/bookings`), validated and persisted by the CMS. */
+export interface BookingRequest {
+  /** `YYYY-MM-DD` */
+  date: string;
+  /** `HH:MM`, a slot's `time`. */
+  time: string;
+  tourType: 'self_tour' | 'guided_tour';
+  firstName: string;
+  lastName: string;
+  email: string;
   phone: string;
+  countryCode?: string;
+  /** App-only context the CMS accepts and keeps out of the booking row. */
+  desiredUnit?: string;
+  lengthMinutes?: number;
+  partySize?: number;
+}
+
+export interface BookingResult {
+  id: string;
+  status: string;
+  date: string;
+  /** `HH:MM` */
+  time: string;
+  /** "6:00 PM" */
+  timeLabel: string;
+  endTime: string | null;
+  tourType: string;
+  /** True when the CMS moved the visitor's existing upcoming booking instead of adding one. */
+  rescheduled: boolean;
 }
 
 export type { TourRouteResult };
@@ -141,7 +216,12 @@ export interface TourRepository {
    */
   getStopLockBluetoothKey(node: string): Promise<LockBluetoothKey>;
   askConcierge(question: string, context: { stopName: string | null }): Promise<string>;
-  requestBooking(request: BookingRequest): Promise<{ id: string }>;
+  // --- booking (the property's Settings › Scheduling rules, the CMS is authoritative)
+  getBookingSettings(): Promise<BookingSettings>;
+  /** `days` days of slots from `fromDate` (`YYYY-MM-DD`), past times and full types already applied. */
+  getAvailability(fromDate: string, days: number): Promise<AvailabilityWindow>;
+  /** Books a tour; rejects with the CMS's reason (`slot_unavailable`, `slot_full`, `invalid_visitor`, `tour_type_off`, …). */
+  requestBooking(request: BookingRequest): Promise<BookingResult>;
   startApplication(unitNode: string): Promise<{ id: string }>;
 }
 
