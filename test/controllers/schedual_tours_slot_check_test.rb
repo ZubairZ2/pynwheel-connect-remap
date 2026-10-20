@@ -90,4 +90,16 @@ class SchedualToursSlotCheckTest < ActionDispatch::IntegrationTest
     assert_response :redirect
     refute_includes CGI.unescape(response.location), 'no longer available'
   end
+
+  test 'the staff list asks for a sign-in instead of raising for an anonymous visitor' do
+    get "/communities/#{@community.id}/scheduled_tours"
+    assert_response :redirect
+    assert_includes response.location, 'sign_in'
+  end
+
+  test 'the slot lookup stays public for the widget' do
+    get '/schedual_tours/get_tour_type', params: { day: 'Monday', time: '09:30 am', date: @monday.strftime('%m/%d/%Y'), community_id: @community.id }, xhr: true
+    assert_response :success
+    assert JSON.parse(response.body).key?('tour_types'), 'the widget still gets its answer without a session'
+  end
 end

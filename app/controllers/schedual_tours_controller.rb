@@ -1,7 +1,12 @@
 class SchedualToursController < ApplicationController
   # include Error::ErrorHandler
   before_action :set_schedual_tour, only: [:show, :edit, :update, :destroy]
-  skip_before_action :authenticate_user!
+  # Only the public widget's own actions run without a signed-in user (the
+  # booking submit, the slot lookup, the signed reschedule / cancel links and
+  # the custom-tour partial). The staff pages (index, show, new, edit, create)
+  # need the session: anonymous, their layout used to raise on `current_user`
+  # (October 21, 2026).
+  skip_before_action :authenticate_user!, only: %i[create_tour_user_from get_tour_type update destroy change_tour_time community_custom_tour]
   include StripeServices
   include SchedualToursHelper
   # The booking notifications (email, SMS, the property mail) and the phone
