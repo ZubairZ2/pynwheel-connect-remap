@@ -740,7 +740,13 @@ Tests: `locks_test.rb` is 15 tests; the Tour App API suite 84 runs / 605 asserti
 `unknown_start` otherwise). `POST …/locks/pin` and `…/locks/bluetooth-key` require Igloohome in
 `communities.multiple_locks_provider` and write an `igloohome_guests` row (no `tour_user`) per issuance.
 
-## 18. Booking: `GET /properties/{id}/booking/settings`, `GET /properties/{id}/booking/availability`, `POST /properties/{id}/bookings` (October 20, 2026)
+## 18. No contract change for the Connect Locks accounts (October 20, 2026)
+
+The Connect Locks tab now writes the vendor account rows the stops' `lock` and the two lock endpoints read
+(`igloohomes` and the other account tables, `multiple_locks_provider`). The `lock` shape, `POST /locks/pin` and
+`POST /locks/bluetooth-key` are unchanged; the 17-run suite stays green. Details: `LOCKS_PAGE_INTEGRATION_QA.md`.
+
+## 19. Booking: `GET /properties/{id}/booking/settings`, `GET /properties/{id}/booking/availability`, `POST /properties/{id}/bookings` (October 20, 2026)
 
 The Schedule screen's data, on the same services Connect's Settings and Visitors use (`Scheduling::Settings`, `Bookings::Availability`,
 `Bookings::Create`), so the app, the CMS and the website widget agree. Bearer token, Super Admin, tour on (as the rest of the API).

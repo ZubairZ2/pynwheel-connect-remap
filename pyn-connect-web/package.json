@@ -2,12 +2,13 @@
   "name": "pyn-connect-web",
   "version": "0.1.0",
   "private": true,
-  "description": "Pynwheel Connect \u2014 Next.js front end for the existing Pynwheel CMS (Rails) backend",
+  "description": "Pynwheel Connect — Next.js front end for the existing Pynwheel CMS (Rails) backend",
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p ${PORT:-3001}",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "test:e2e": "playwright test"
   },
   "engines": {
@@ -26,6 +27,7 @@
     "@types/node": "^22.10.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.4"
   }
 }

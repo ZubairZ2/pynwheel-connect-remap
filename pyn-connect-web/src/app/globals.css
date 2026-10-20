@@ -6876,6 +6876,16 @@ select {
 .bo-tx__stat { padding: 10px 12px; background: #fbfbfc; border: 1px solid var(--bo-line-2); border-radius: 8px; }
 .bo-tx__statlabel { font: 700 10.5px var(--bo-font); color: var(--bo-subtle); text-transform: uppercase; letter-spacing: 0.04em; }
 .bo-tx__statvalue { font: 700 12.5px var(--bo-font); color: var(--bo-ink); margin-top: 3px; }
+/* Locks: the "Connect a lock provider" grid (Oct 13 design) */
+.bo-lp { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.bo-lp__card { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; border: 1px solid var(--bo-line); border-radius: 12px; background: #fff; }
+.bo-lp__title { display: flex; align-items: center; gap: 8px; font: 800 14px var(--bo-font); color: var(--bo-ink); }
+.bo-lp__note { font: 500 12px var(--bo-font); color: var(--bo-subtle); min-height: 32px; }
+.bo-lp__btn { margin-top: auto; height: 38px; width: 100%; justify-content: center; font-size: 13px; border-radius: 9px; }
+.bo-lp__foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font: 500 12px var(--bo-font); color: var(--bo-subtle); }
+.bo-lp__foot .bo-tx__chip { cursor: default; }
+@media (max-width: 1100px) { .bo-lp { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 720px) { .bo-lp { grid-template-columns: 1fr; } }
 .bo-tx__check { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--bo-stroke-strong); background: #fff; cursor: pointer; padding: 0; flex-shrink: 0; }
 .bo-tx__check--on { background: var(--bo-accent); border-color: var(--bo-accent); }
 .bo-tx__rowlist { display: flex; flex-direction: column; gap: 6px; }

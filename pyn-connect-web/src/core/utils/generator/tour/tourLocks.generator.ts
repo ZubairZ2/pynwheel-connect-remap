@@ -3,6 +3,7 @@ import { i18n } from '~/resources/i18n';
 import type { IssuedCode, LockDeviceRow, LockInventory, LockProvider, LockTarget, LockTargetOption } from '~/core/models/data/tourModules.data';
 import { t } from '../inventory/inventoryText';
 import type { PillVariant } from '../listing.types';
+import { accessLabel, accountSummary, healthLabel } from './lockAccounts.generator';
 
 /**
  * The Locks tab's view data from the inventory the CMS answered
@@ -63,23 +64,21 @@ export interface ProviderCard {
   configured: boolean;
   enabled: boolean;
   mode: string | null;
+  /** The account values the CMS stores, never a secret (lockAccounts.generator#accountSummary). */
   account: { label: string; value: string }[];
   counts: string;
+  /** How a visitor opens the lock, and which app does it, from the CMS's access facts. */
   cred: string;
+  /** Where health comes from, from the CMS's `healthSource`. */
   health: string;
   lastChanged: string;
   supports: LockProvider['supports'];
   instructions: { unit: string | null; amenity: string | null } | null;
   noApi: boolean;
+  /** A code-grant account whose token lapsed: the design's Re-authorize. */
+  needsAuth: boolean;
+  provider: LockProvider;
 }
-
-const ACCOUNT_LABELS: Record<string, string> = {
-  homeName: L.provider.homeName,
-  propertyName: L.provider.propertyName,
-  facilityId: L.provider.facility,
-  defaultCommunityId: L.provider.dweloCommunity,
-  iglooworksDepartmentId: L.provider.account
-};
 
 export const generateProviderCards = (inventory: LockInventory, timeZone?: string | null): { connected: ProviderCard[]; available: ProviderCard[] } => {
   const cards = inventory.providers.map((provider): ProviderCard => {
@@ -88,10 +87,7 @@ export const generateProviderCards = (inventory: LockInventory, timeZone?: strin
       : provider.status === 'needs_authorization'
         ? { label: i18n.t(L.provider.needsAuth), variant: 'warn' as PillVariant }
         : { label: i18n.t(L.provider.connected), variant: 'ok' as PillVariant };
-    const account = Object.entries(provider.account ?? {})
-      .filter(([key, value]) => ACCOUNT_LABELS[key] && value != null && value !== '')
-      .map(([key, value]) => ({ label: i18n.t(ACCOUNT_LABELS[key]), value: String(value) }));
-    if (provider.mode) account.unshift({ label: i18n.t(L.provider.mode), value: provider.mode });
+    const account = accountSummary(provider);
     return {
       vendor: provider.vendor,
       label: provider.label,
@@ -102,15 +98,20 @@ export const generateProviderCards = (inventory: LockInventory, timeZone?: strin
       mode: provider.mode,
       account,
       counts: provider.lockCount ? t(L.provider.counts, { count: provider.lockCount, mapped: provider.mappedCount }) : i18n.t(L.provider.noLocks),
-      cred: i18n.t(L.provider.cred[provider.vendor as keyof typeof L.provider.cred] ?? L.provider.cred.Igloohome),
-      health: i18n.t(provider.vendor === 'Zerv' ? L.provider.health.Zerv : L.provider.health.none),
+      cred: accessLabel(provider),
+      health: healthLabel(provider),
       lastChanged: provider.lastChangedAt ? t(L.provider.lastChanged, { when: formatWhen(provider.lastChangedAt, timeZone) }) : i18n.t(L.provider.noLocks),
       supports: provider.supports,
       instructions: provider.instructions,
-      noApi: provider.vendor === 'Igloohome' && provider.mode === 'v1'
+      noApi: provider.vendor === 'Igloohome' && provider.mode === 'v1',
+      needsAuth: provider.status === 'needs_authorization',
+      provider
     };
   });
-  return { connected: cards.filter((card) => card.configured || card.enabled), available: cards.filter((card) => !card.configured && !card.enabled) };
+  // Connected = the vendor is active for the property (`multiple_locks_provider`) or still has imported locks;
+  // a stored account that was disconnected shows in the grid again and Connect reopens it pre-filled.
+  const isConnected = (card: ProviderCard) => card.enabled || card.provider.lockCount > 0;
+  return { connected: cards.filter(isConnected), available: cards.filter((card) => !isConnected(card)) };
 };
 
 export interface LockTableRow {
@@ -255,8 +256,13 @@ export const generateMapTargets = (inventory: LockInventory, device: LockDeviceR
     });
 };
 
+export type IssuedFilter = 'all' | 'issued' | 'failed' | 'expired' | 'revoked';
+export const ISSUED_FILTERS: IssuedFilter[] = ['all', 'issued', 'failed', 'expired', 'revoked'];
+
 export interface IssuedRow {
   key: string;
+  status: string;
+  issuedAt: string;
   visitor: string;
   visitorId: number | null;
   stop: string;
@@ -271,6 +277,8 @@ const ISSUED_VARIANT: Record<string, PillVariant> = { issued: 'ok', active: 'ok'
 export const generateIssuedRows = (issued: IssuedCode[], timeZone?: string | null): IssuedRow[] =>
   issued.map((code, index) => ({
     key: `${code.vendor}:${index}:${code.issuedAt}`,
+    status: code.status,
+    issuedAt: code.issuedAt,
     visitor: code.visitor?.name ?? '—',
     visitorId: code.visitor?.id ?? null,
     stop: code.target ? targetLabel(code.target) : '—',
@@ -279,3 +287,52 @@ export const generateIssuedRows = (issued: IssuedCode[], timeZone?: string | nul
     window: code.window ? `${formatWhen(code.window.from, timeZone)} – ${formatWhen(code.window.to, timeZone)}` : '—',
     pill: { label: code.status.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase()), variant: ISSUED_VARIANT[code.status] ?? 'neutral' }
   }));
+
+/* ── the "Connect a lock provider" grid ───────────────────────────────── */
+
+export interface ConnectCard {
+  vendor: string;
+  title: string;
+  note: string;
+  isNew: boolean;
+  /** False for a vendor the CMS has no connector for (Dormakaba): Connect explains instead of opening a form. */
+  available: boolean;
+}
+
+/** The design's order; Dormakaba first as its newest card, then the legacy vendors. */
+const CONNECT_ORDER = ['Dormakaba', 'Dwelo', 'Latch', 'Zerv', 'Igloohome', 'EdgeState'] as const;
+
+export const generateConnectCards = (inventory: LockInventory): ConnectCard[] => {
+  const byVendor = new Map(inventory.providers.map((provider) => [provider.vendor, provider]));
+  return CONNECT_ORDER.flatMap((vendor): ConnectCard[] => {
+    if (vendor === 'Dormakaba') {
+      return [{ vendor, title: i18n.t(L.connectGrid.titles.Dormakaba), note: i18n.t(L.connectGrid.notes.Dormakaba), isNew: true, available: false }];
+    }
+    const provider = byVendor.get(vendor);
+    if (!provider || provider.enabled || provider.lockCount > 0) return [];
+    return [{ vendor, title: i18n.t(L.connectGrid.titles[vendor]), note: i18n.t(L.connectGrid.notes[vendor]), isNew: false, available: provider.supports.account }];
+  });
+};
+
+export const generateLaunchOnlyChips = (inventory: LockInventory): { vendor: string; label: string; present: boolean }[] =>
+  (inventory.launchOnly ?? []).map((row) => ({ vendor: row.vendor, label: row.label, present: row.present }));
+
+const ISSUED_BUCKET: Record<string, IssuedFilter> = { issued: 'issued', active: 'issued', success: 'issued', failed: 'failed', error: 'failed', expired: 'expired', revoked: 'revoked', deleted: 'revoked' };
+
+export const issuedBucket = (status: string): IssuedFilter => ISSUED_BUCKET[status] ?? 'issued';
+
+export const filterIssuedRows = (rows: IssuedRow[], filter: IssuedFilter): IssuedRow[] => (filter === 'all' ? rows : rows.filter((row) => issuedBucket(row.status) === filter));
+
+export const generateIssuedFilters = (rows: IssuedRow[], active: IssuedFilter): { id: IssuedFilter; label: string; count: number; on: boolean }[] =>
+  ISSUED_FILTERS.map((id) => ({ id, label: i18n.t(L.issuedFilters[id]), count: id === 'all' ? rows.length : rows.filter((row) => issuedBucket(row.status) === id).length, on: id === active }));
+
+/** Codes that failed in the last seven days (the design's banner). */
+export const failedRecently = (rows: IssuedRow[], now = Date.now()): number =>
+  rows.filter((row) => issuedBucket(row.status) === 'failed' && now - new Date(row.issuedAt).getTime() <= 7 * 24 * 3600 * 1000).length;
+
+/** The vendors with imported rows, for the inventory's "Delete all imported locks" footer. */
+export const purgeTargets = (inventory: LockInventory): { vendor: string; label: string; count: number }[] =>
+  inventory.providers
+    .filter((provider) => provider.lockCount > 0 && provider.supports.purge)
+    .map((provider) => ({ vendor: provider.vendor, label: provider.label, count: provider.lockCount }));
+

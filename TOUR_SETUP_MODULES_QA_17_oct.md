@@ -101,6 +101,19 @@ only, through the read-only URL, and only to confirm facts; no production row wa
 - Alliance in production: 818 has six sitemap-plotted stops and no hallways, locks or bookings; 8005 has three SVG plates,
   333/339 plotted units (October 17), no stops, locks or bookings. Both render the empty / "connect a provider" states.
 
+## Update — October 20, 2026 (Locks: provider accounts on the page)
+
+- The Locks tab now creates and edits the vendor accounts with the legacy tabs' real fields (Igloo version and its
+  three modes, Zerv's login + facility/badge/card format, Dwelo's API URL/community/client, EdgeState client
+  credentials, Latch building name), the visitor instructions and images, and the igloohome v1 lock entry (typed or
+  CSV). Backend `Locks::Accounts`; report `LOCKS_PAGE_INTEGRATION_QA.md`.
+- Alliance 818 was exercised with real account creation, test, instructions, a typed lock and a mapping, then
+  restored to "no provider". 8005 is not in the development copy.
+- Two rules corrected: Latch counts as configured by its building name, Zerv by its login (the legacy page needs
+  no more for Test/Import).
+- The manual-code "Remove code" bug noted on Oct 18 is fixed; Auto-match no longer shows the unmapped count as a
+  proposal count.
+
 ## Update — October 20, 2026 (Settings on the October 20 design, branch `feature/tour-settings-scheduling-booking`)
 
 - Scheduling: Tour types & slots gained buffer, minimum notice and booking horizon (new columns, enforced); Visiting hours
