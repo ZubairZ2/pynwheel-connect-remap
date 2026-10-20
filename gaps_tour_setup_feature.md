@@ -222,3 +222,11 @@ notes; lapsed ID verification; the property code; a recorded-events timeline; th
 Still open: the new Tour App does not record visits (no `tour_histories` / `visited_stops` / unlock rows; its igloohome
 codes carry no `tour_user_id`); reminder send times are not stored; validity windows exist only for Latch; door-unlock
 events only for RemoteLock / Dwelo; the Apartments.com partner API was not executed locally.
+
+### Known gap — the new Tour App and Visitors (October 21, 2026)
+
+The new Tour App books but records no visit, stop or unlock rows (no `tour_histories`, `visited_stops` or
+`lock_histories`), and its igloohome codes carry no visitor id (`igloohome_guests.tour_user_id` is NULL because the app's
+user is a CMS user), so its tours never appear as sessions in Connect › Visitors. That is a product gap for the app
+(it needs to post an arrival, its stops and an end, as the legacy app does through `/api/v1/save_tour_history`, or
+through new `Api::TourApp::V1` endpoints), not something the Visitors branch can fill.
