@@ -150,7 +150,7 @@ test.describe('Tour Setup › Settings (real data)', () => {
       const horizonBefore = await horizon.inputValue();
       await notice.selectOption('120');
       await horizon.selectOption('14');
-      await page.getByTestId('booking-save').click();
+      await page.getByTestId('rules-save-slots').click();
       await settled(page);
       await page.reload();
       await hydrated(page);
@@ -158,7 +158,7 @@ test.describe('Tour Setup › Settings (real data)', () => {
       await expect(page.getByTestId('rules-horizon')).toHaveValue('14');
       await page.getByTestId('rules-notice').selectOption(noticeBefore);
       await page.getByTestId('rules-horizon').selectOption(horizonBefore);
-      await page.getByTestId('booking-save').click();
+      await page.getByTestId('rules-save-slots').click();
       await settled(page);
       expect(errors, 'page errors').toEqual([]);
     });
@@ -195,13 +195,13 @@ test.describe('Tour Setup › Settings (real data)', () => {
       const beds = page.getByRole('switch', { name: 'Ask for desired bedrooms' });
       const was = (await beds.getAttribute('aria-checked')) === 'true';
       await beds.click();
-      await page.getByTestId('form-save').click();
+      await page.getByTestId('form-save-fields').click();
       await settled(page);
       await page.reload();
       await hydrated(page);
       await expect(page.getByRole('switch', { name: 'Ask for desired bedrooms' })).toHaveAttribute('aria-checked', String(!was), { timeout: 30_000 });
       await page.getByRole('switch', { name: 'Ask for desired bedrooms' }).click();
-      await page.getByTestId('form-save').click();
+      await page.getByTestId('form-save-fields').click();
       await settled(page);
 
       await page.getByTestId('settings-link').click();

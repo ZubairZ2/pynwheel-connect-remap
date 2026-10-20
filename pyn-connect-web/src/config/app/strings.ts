@@ -3186,6 +3186,9 @@ export const CORE_STRINGS = {
         turnedOff: 'tourModules.booking.header.turnedOff',
         turnedOn: 'tourModules.booking.header.turnedOn',
         tagNew: 'tourModules.booking.header.tagNew',
+        allowed: 'tourModules.booking.header.allowed',
+        decrement: 'tourModules.booking.header.decrement',
+        increment: 'tourModules.booking.header.increment',
       },
       gate: {
         pass: 'tourModules.booking.gate.pass',
@@ -3442,6 +3445,7 @@ export const CORE_STRINGS = {
         copied: 'tourModules.booking.link.copied',
         signed: 'tourModules.booking.link.signed',
         noHost: 'tourModules.booking.link.noHost',
+        hostDefault: 'tourModules.booking.link.hostDefault',
         notLive: 'tourModules.booking.link.notLive',
         whereTitle: 'tourModules.booking.link.whereTitle',
         where: {

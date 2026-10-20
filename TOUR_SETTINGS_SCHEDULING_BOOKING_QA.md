@@ -90,3 +90,20 @@ Screens: `evidence/screens/clone_1618_*.png` and `dev_1618_*.png` (rules, hours,
 - Buffer has an effect only while the capacity limit is on (it widens the capacity window).
 - Connect generator unit tests were not added: `vitest.config.ts` is the Locks session's uncommitted file; Playwright covers the behaviour instead.
 - The verify servers are still running when this report was written: Rails :3101 (development), :3102 (clone), Next :3007 (→ :3101), Vite :3016 (→ :3102); pid files `rails3101.pid` / `rails3102.pid` in the session scratchpad; launch entries `rails-settings-dev`, `rails-settings-clone`, `connect-settings-verify`, `tour-app-settings`.
+
+## 10. October 21, 2026 follow-up (design parity pass)
+
+- Every settings card now carries the design's head controls (status "Saved" / "Unsaved changes" / "Fix errors", Discard while
+  dirty, Save) and saves on its own: Tour types, Time slots, Capacity, Booking behaviour (`saveRules(card)`, one `PUT booking/rules`
+  with that card's changed keys), Booking form fields, Schedule screen in the app, Button appearance (`saveForm(part)`). The
+  other cards' unsaved edits survive a save. Test ids: `rules-save-<types|slots|capacity|behaviour>`, `form-save-<fields|app>`, `button-save`.
+- Number fields are the design's − / + steppers with the "Allowed a–b." hint (capacity 1–10, grace 10–60, length of tour 1–600,
+  party size 1–10, font size 8–40, width and height 10–1000). The Capacity card shows the two per-type caps only, as the design;
+  `limit_max_tour` stays stored and in the API.
+- The prospect preview is a fixed-height phone (580 px) that scrolls inside instead of growing with its content.
+- Booking link host: when the CMS has no `HOST_URL`, `Scheduling::Settings#link` uses the environment's Connect host
+  (`http://localhost:3001` in development, `https://pyn-system-connect-de8364f794a0.herokuapp.com` in production/staging) and reports
+  `host_source: "default"`; the Connect app answers `GET /scheduler_widget/test_widget` with a 302 to the CMS's widget carrying the
+  signed query, so the link always resolves. The panel shows an info note instead of the red "no HOST_URL" error.
+- Re-verified on the clone: Settings e2e 8 passed (reads + write round trips on 818, module settings test), Rails booking tests
+  19 runs green, the redirect answers 302 to the CMS widget; screens in `qa/tour-settings/evidence/screens2/`.

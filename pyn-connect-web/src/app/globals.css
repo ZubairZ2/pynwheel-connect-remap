@@ -6932,10 +6932,10 @@ select {
 .bo-tx__setinfo { font: 700 12px var(--bo-font); color: var(--bo-muted); text-align: right; max-width: 300px; }
 .bo-tx__num { display: flex; align-items: center; gap: 6px; }
 .bo-tx__numinput { width: 64px; height: 34px; border: 1px solid var(--bo-line); border-radius: 7px; padding: 0 8px; font: 700 13px var(--bo-font); color: var(--bo-ink); text-align: center; }
-.bo-tx__unit { font: 600 11.5px var(--bo-font); color: var(--bo-subtle); width: 86px; }
-.bo-tx__phone { align-self: center; width: 280px; border: 8px solid #171a21; border-radius: 30px; overflow: hidden; background: #fff; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14); }
+.bo-tx__unit { font: 600 11.5px var(--bo-font); color: var(--bo-subtle); white-space: nowrap; }
+.bo-tx__phone { align-self: center; width: 280px; height: 580px; display: flex; flex-direction: column; border: 8px solid #171a21; border-radius: 30px; overflow: hidden; background: #fff; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14); }
 .bo-tx__phonebar { height: 22px; background: #171a21; }
-.bo-tx__phonebody { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.bo-tx__phonebody { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .bo-tx__daygrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 .bo-tx__day { border: 1px solid var(--bo-line); background: #fff; border-radius: 7px; padding: 5px 0; text-align: center; cursor: pointer; font-family: var(--bo-font); }
 .bo-tx__day--on { border-color: var(--bo-accent); background: var(--bo-accent-soft); }
@@ -7033,7 +7033,8 @@ select {
 .bo-tx__closurelabel { font: 600 11.5px var(--bo-font); color: var(--bo-subtle); }
 .bo-tx__seg--sm .bo-tx__segbtn { height: 30px; padding: 0 10px; font-size: 11.5px; }
 .bo-tx__segbtn:disabled { opacity: 0.5; cursor: not-allowed; }
-.bo-tx__counter { font: 600 10.5px var(--bo-font); color: var(--bo-subtle); text-transform: none; letter-spacing: normal; }
+.bo-tx__counter { font: 600 10.5px var(--bo-font); color: var(--bo-subtle); text-transform: none; letter-spacing: normal; white-space: nowrap; }
+.bo-tx__textrow { display: flex; align-items: center; gap: 8px; }
 .bo-tx__colorrow { display: flex; gap: 6px; align-items: center; }
 .bo-tx__colorrow input[type='color'] { width: 40px; height: 34px; padding: 0; border: 1px solid var(--bo-line); border-radius: 6px; background: #fff; }
 .bo-tx__btnpreview { background: repeating-linear-gradient(45deg, #f6f7f9 0 10px, #fff 10px 20px); border: 1px dashed var(--bo-line); border-radius: 10px; padding: 24px; display: flex; align-items: center; justify-content: center; }
@@ -7064,3 +7065,16 @@ select {
 .bo-tx__grid2--crm { grid-template-columns: minmax(0, 1fr) 380px; }
 .bo-tx__grid2--link { grid-template-columns: minmax(0, 1fr) 420px; }
 @media (max-width: 1100px) { .bo-tx__gates, .bo-tx__options { grid-template-columns: 1fr 1fr; } .bo-tx__grid2, .bo-tx__grid2--wide, .bo-tx__grid2--crm, .bo-tx__grid2--link { grid-template-columns: 1fr; } .bo-tx__lanes { grid-template-columns: 1fr; padding-left: 20px; } }
+
+/* October 21, 2026: the design's number stepper and the per-card save head */
+.bo-tx__step { width: 34px; height: 34px; border: 1px solid var(--bo-line); border-radius: 7px; background: #fff; color: var(--bo-ink); font: 800 15px var(--bo-font); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.bo-tx__step:disabled { opacity: 0.4; cursor: not-allowed; }
+.bo-tx__cardsave { display: flex; align-items: center; gap: 10px; }
+.bo-tx__cardstatus { font: 700 11.5px var(--bo-font); color: var(--bo-subtle); }
+.bo-tx__cardstatus--dirty { color: #8a6a00; }
+.bo-tx__cardstatus--bad { color: #c62534; }
+/* October 21, 2026: the Button appearance card is narrower than the others; its controls wrap under the label when needed */
+.bo-tx__grid2--link .bo-tx__setrow { flex-wrap: wrap; row-gap: 8px; }
+.bo-tx__grid2--link .bo-tx__grow { min-width: 160px; }
+.bo-tx__grid2--link .bo-tx__numinput { width: 56px; }
+.bo-tx__grid2--link .bo-tx__setrow > .bo-tx__num, .bo-tx__grid2--link .bo-tx__setrow > .bo-tx__colorrow, .bo-tx__grid2--link .bo-tx__setrow > .bo-tx__textrow, .bo-tx__grid2--link .bo-tx__setrow > .bo-tx__select { margin-left: auto; }

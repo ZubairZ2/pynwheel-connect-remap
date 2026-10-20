@@ -14,6 +14,7 @@ import { useAppDispatch } from '~/core/store/hooks';
 import { t } from '~/core/utils/generator/inventory/inventoryText';
 import {
   B,
+  BOUNDS,
   BUFFERS,
   BUTTON_ICONS,
   DAYS,
@@ -32,8 +33,9 @@ import {
   hoursLabel,
   minutesLabel,
   openDaysCount,
-  rulesDraftOf,
-  type BookingSection
+  type BookingSection,
+  type FormPart,
+  type RulesCard
 } from '~/core/utils/generator/tour/tourBooking.generator';
 import { AvailabilityHeader } from './AvailabilityHeader';
 import { CrmSyncDemoPanel } from './CrmSyncDemoPanel';
@@ -98,25 +100,65 @@ const Card = ({ title, sub, right, children, testId, tag }: { title: string; sub
   </div>
 );
 
-const Row = ({ label, sub, indent, tag, children }: { label: ReactNode; sub?: ReactNode; indent?: boolean; tag?: string; children?: ReactNode }) => (
-  <div className={`bo-tx__setrow${indent ? ' bo-tx__setrow--indent' : ''}`}>
-    <div className="bo-tx__grow">
-      <div className="bo-tx__setlabel">
-        {label}
-        {tag && <span className="bo-tx__tag--new">{tag}</span>}
+/** A settings row; `allowed` appends the design's "Allowed a–b." to the description. */
+const Row = ({ label, sub, indent, tag, allowed, children }: { label: ReactNode; sub?: ReactNode; indent?: boolean; tag?: string; allowed?: readonly [number, number]; children?: ReactNode }) => {
+  const hint = allowed ? t(B.header.allowed, { a: allowed[0], b: allowed[1] }) : null;
+  return (
+    <div className={`bo-tx__setrow${indent ? ' bo-tx__setrow--indent' : ''}`}>
+      <div className="bo-tx__grow">
+        <div className="bo-tx__setlabel">
+          {label}
+          {tag && <span className="bo-tx__tag--new">{tag}</span>}
+        </div>
+        {(sub || hint) && (
+          <div className="bo-tx__setdesc">
+            {sub}
+            {sub && hint ? ' ' : ''}
+            {hint}
+          </div>
+        )}
       </div>
-      {sub && <div className="bo-tx__setdesc">{sub}</div>}
+      {children}
     </div>
-    {children}
-  </div>
-);
+  );
+};
 
-const Num = ({ value, unit, onChange, disabled, width = 70, label }: { value: string; unit?: string; onChange: (value: string) => void; disabled?: boolean; width?: number; label: string }) => (
-  <span className="bo-tx__num">
-    <input className="bo-tx__numinput" style={{ width }} inputMode="numeric" aria-label={label} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value.replace(/[^0-9]/g, ''))} />
-    {unit && <span className="bo-tx__unit">{unit}</span>}
-  </span>
-);
+/** The design's number stepper: − · value · + · unit, clamped to `bounds`. */
+const Stepper = ({ value, bounds, unit, onChange, disabled, label }: { value: string; bounds: readonly [number, number]; unit?: string; onChange: (value: string) => void; disabled?: boolean; label: string }) => {
+  const [min, max] = bounds;
+  const n = /^\d+$/.test(value.trim()) ? Number(value.trim()) : null;
+  const step = (delta: number) => onChange(String(Math.min(max, Math.max(min, (n ?? (delta > 0 ? min - 1 : max + 1)) + delta))));
+  return (
+    <span className="bo-tx__num">
+      <button type="button" className="bo-tx__step" aria-label={`${i18n.t(B.header.decrement)} ${label}`} disabled={disabled || (n != null && n <= min)} onClick={() => step(-1)}>
+        −
+      </button>
+      <input className="bo-tx__numinput" inputMode="numeric" aria-label={label} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value.replace(/[^0-9]/g, ''))} />
+      <button type="button" className="bo-tx__step" aria-label={`${i18n.t(B.header.increment)} ${label}`} disabled={disabled || (n != null && n >= max)} onClick={() => step(1)}>
+        +
+      </button>
+      {unit && <span className="bo-tx__unit">{unit}</span>}
+    </span>
+  );
+};
+
+/** The design's card head controls: status text, Discard while dirty, Save. */
+const CardSave = ({ dirty, saving, problems, onSave, onDiscard, testId, label }: { dirty: boolean; saving: boolean; problems: string[]; onSave: () => void; onDiscard: () => void; testId: string; label?: string }) => {
+  const status = problems.length ? { text: i18n.t(B.hours.status.errors), cls: 'bo-tx__cardstatus--bad' } : dirty ? { text: i18n.t(B.hours.status.dirty), cls: 'bo-tx__cardstatus--dirty' } : { text: i18n.t(B.hours.status.saved), cls: '' };
+  return (
+    <div className="bo-tx__cardsave">
+      <span className={`bo-tx__cardstatus ${status.cls}`}>{status.text}</span>
+      {dirty && (
+        <button type="button" className="bo-tx__btn bo-tx__btn--md" disabled={saving} onClick={onDiscard}>
+          {i18n.t(X.discard)}
+        </button>
+      )}
+      <button type="button" className="bo-tx__btn bo-tx__btn--primary bo-tx__btn--md" disabled={!dirty || saving || problems.length > 0} onClick={onSave} data-testid={testId}>
+        {saving ? i18n.t(X.saving) : (label ?? i18n.t(X.save))}
+      </button>
+    </div>
+  );
+};
 
 const Seg = <V extends string | number>({ value, options, onChange, disabled, label }: { value: V; options: { value: V; label: string }[]; onChange: (value: V) => void; disabled?: boolean; label: string }) => (
   <div className="bo-tx__seg bo-tx__seg--sm" role="group" aria-label={label}>
@@ -125,25 +167,6 @@ const Seg = <V extends string | number>({ value, options, onChange, disabled, la
         {option.label}
       </button>
     ))}
-  </div>
-);
-
-const SaveBar = ({ dirty, saving, label, onSave, onDiscard, problems = [], testId = 'booking-save' }: { dirty: boolean; saving: boolean; label: string; onSave: () => void; onDiscard: () => void; problems?: string[]; testId?: string }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
-    {problems.map((problem) => (
-      <div key={problem} className="bo-tx__bad" style={{ alignSelf: 'stretch' }}>
-        {problem}
-      </div>
-    ))}
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      {dirty && <span className="bo-tx__meta">{i18n.t(X.unsavedChanges)}</span>}
-      <button type="button" className="bo-tx__btn" disabled={!dirty || saving} onClick={onDiscard}>
-        {i18n.t(X.discard)}
-      </button>
-      <button type="button" className="bo-tx__btn bo-tx__btn--primary" disabled={!dirty || saving || problems.length > 0} onClick={onSave} data-testid={testId}>
-        {saving ? i18n.t(X.saving) : label}
-      </button>
-    </div>
   </div>
 );
 
@@ -156,12 +179,14 @@ const RulesPanel = ({ c, propertyId, onNavigate }: BookingPanelProps) => {
   const r = c.rules!;
   const ro = !c.canEdit;
   const toggle = (key: 'allowSelfTour' | 'allowGuidedTour' | 'doLimitMaxTour' | 'onlyScheduledTour') => (ro ? undefined : () => c.setRules({ [key]: !r[key] }));
+  const head = (card: RulesCard) =>
+    ro ? undefined : <CardSave dirty={c.rulesDirtyFor(card)} saving={c.saving === 'rules'} problems={Object.values(c.ruleProblemsFor(card))} onSave={() => void c.saveRules(card)} onDiscard={() => c.discardRules(card)} testId={`rules-save-${card}`} />;
   return (
     <div className="bo-tx" data-testid="booking-rules">
       <AvailabilityHeader c={c} propId={String(propertyId)} onNavigate={onNavigate} />
       {ro && <div className="bo-tx__info">{i18n.t(B.readOnlyNote)}</div>}
 
-      <Card title={i18n.t(B.types.title)} sub={i18n.t(B.types.sub)} testId="rules-types">
+      <Card title={i18n.t(B.types.title)} sub={i18n.t(B.types.sub)} testId="rules-types" right={head('types')}>
         <Row label={i18n.t(B.types.self)} sub={i18n.t(B.types.selfSub)}>
           <Switch on={r.allowSelfTour} label={i18n.t(B.types.self)} onToggle={toggle('allowSelfTour')} />
         </Row>
@@ -175,7 +200,7 @@ const RulesPanel = ({ c, propertyId, onNavigate }: BookingPanelProps) => {
         )}
       </Card>
 
-      <Card title={i18n.t(B.slots.title)} sub={i18n.t(B.slots.sub)} testId="rules-slots">
+      <Card title={i18n.t(B.slots.title)} sub={i18n.t(B.slots.sub)} testId="rules-slots" right={head('slots')}>
         <Row label={i18n.t(B.slots.interval)} sub={i18n.t(B.slots.intervalSub)}>
           <Seg value={r.slotIntervalMinutes} label={i18n.t(B.slots.interval)} disabled={ro} options={INTERVALS.map((minutes) => ({ value: minutes, label: minutesLabel(minutes) }))} onChange={(slotIntervalMinutes) => c.setRules({ slotIntervalMinutes })} />
         </Row>
@@ -205,34 +230,31 @@ const RulesPanel = ({ c, propertyId, onNavigate }: BookingPanelProps) => {
         </div>
       </Card>
 
-      <Card title={i18n.t(B.cap.title)} sub={i18n.t(B.cap.sub)} testId="rules-capacity">
+      <Card title={i18n.t(B.cap.title)} sub={i18n.t(B.cap.sub)} testId="rules-capacity" right={head('capacity')}>
         <Row label={i18n.t(B.cap.on)} sub={i18n.t(B.cap.onSub)}>
           <Switch on={r.doLimitMaxTour} label={i18n.t(B.cap.on)} onToggle={toggle('doLimitMaxTour')} />
         </Row>
         {r.doLimitMaxTour && (
           <>
-            <Row label={i18n.t(B.cap.self)} indent>
-              <Num value={r.maxSelf} unit={i18n.t(B.cap.unit)} disabled={ro} label={i18n.t(B.cap.self)} onChange={(value) => c.setRules({ maxSelf: value })} />
+            <Row label={i18n.t(B.cap.self)} allowed={BOUNDS.capacity} indent>
+              <Stepper value={r.maxSelf} bounds={BOUNDS.capacity} unit={i18n.t(B.cap.unit)} disabled={ro} label={i18n.t(B.cap.self)} onChange={(value) => c.setRules({ maxSelf: value })} />
             </Row>
-            <Row label={i18n.t(B.cap.guided)} indent>
-              <Num value={r.maxGuided} unit={i18n.t(B.cap.unit)} disabled={ro} label={i18n.t(B.cap.guided)} onChange={(value) => c.setRules({ maxGuided: value })} />
-            </Row>
-            <Row label={i18n.t(B.cap.total)} sub={i18n.t(B.cap.totalSub)} indent>
-              <Num value={r.limitMaxTour} unit={i18n.t(B.cap.unit)} disabled={ro} label={i18n.t(B.cap.total)} onChange={(value) => c.setRules({ limitMaxTour: value })} />
+            <Row label={i18n.t(B.cap.guided)} allowed={BOUNDS.capacity} indent>
+              <Stepper value={r.maxGuided} bounds={BOUNDS.capacity} unit={i18n.t(B.cap.unit)} disabled={ro} label={i18n.t(B.cap.guided)} onChange={(value) => c.setRules({ maxGuided: value })} />
             </Row>
           </>
         )}
       </Card>
 
-      <Card title={i18n.t(B.behaviour.title)} sub={i18n.t(B.behaviour.sub)} testId="rules-behaviour">
+      <Card title={i18n.t(B.behaviour.title)} sub={i18n.t(B.behaviour.sub)} testId="rules-behaviour" right={head('behaviour')}>
         <Row label={i18n.t(B.behaviour.schedOnly)} sub={i18n.t(B.behaviour.schedOnlySub)}>
           <Switch on={r.onlyScheduledTour} label={i18n.t(B.behaviour.schedOnly)} onToggle={toggle('onlyScheduledTour')} />
         </Row>
-        <Row label={i18n.t(B.behaviour.grace)} sub={i18n.t(B.behaviour.graceSub)} indent>
-          <Num value={r.gracePeriod} unit={i18n.t(B.behaviour.minutes)} disabled={ro} label={i18n.t(B.behaviour.grace)} onChange={(value) => c.setRules({ gracePeriod: value })} />
+        <Row label={i18n.t(B.behaviour.grace)} sub={i18n.t(B.behaviour.graceSub)} allowed={BOUNDS.grace} indent>
+          <Stepper value={r.gracePeriod} bounds={BOUNDS.grace} unit={i18n.t(B.behaviour.minutes)} disabled={ro} label={i18n.t(B.behaviour.grace)} onChange={(value) => c.setRules({ gracePeriod: value })} />
         </Row>
-        <Row label={i18n.t(B.behaviour.stay)} sub={i18n.t(B.behaviour.staySub)}>
-          <Num value={r.lengthStayLimit} unit={i18n.t(B.behaviour.minutes)} disabled={ro} label={i18n.t(B.behaviour.stay)} onChange={(value) => c.setRules({ lengthStayLimit: value })} />
+        <Row label={i18n.t(B.behaviour.stay)} sub={i18n.t(B.behaviour.staySub)} allowed={BOUNDS.stay}>
+          <Stepper value={r.lengthStayLimit} bounds={BOUNDS.stay} unit={i18n.t(B.behaviour.minutes)} disabled={ro} label={i18n.t(B.behaviour.stay)} onChange={(value) => c.setRules({ lengthStayLimit: value })} />
         </Row>
         <Row label={i18n.t(B.behaviour.onePerPerson)} sub={i18n.t(B.behaviour.onePerPersonSub)}>
           <StatusPill variant="neutral" label={i18n.t(B.behaviour.builtIn)} />
@@ -241,7 +263,6 @@ const RulesPanel = ({ c, propertyId, onNavigate }: BookingPanelProps) => {
           <span className="bo-tx__name">{s.timeZone ?? i18n.t(B.behaviour.tzUnset)}</span>
         </Row>
       </Card>
-      {!ro && <SaveBar dirty={c.rulesDirty} saving={c.saving === 'rules'} label={i18n.t(B.rules.save)} problems={Object.values(c.ruleProblems)} onSave={() => void c.saveRules()} onDiscard={() => c.settings && c.setRules(rulesDraftOf(c.settings))} />}
     </div>
   );
 };
@@ -486,11 +507,13 @@ const FormPanel = ({ c, propertyName, onNavigate }: BookingPanelProps) => {
   useEffect(() => {
     if (!preview) void loadPreview();
   }, [loadPreview, preview]);
+  const head = (part: FormPart) =>
+    ro ? undefined : <CardSave dirty={c.formDirtyFor(part)} saving={c.saving === 'form'} problems={Object.values(c.formProblemsFor(part))} onSave={() => void c.saveForm(part)} onDiscard={() => c.discardForm(part)} testId={`form-save-${part}`} />;
   return (
     <div className="bo-tx__grid2 bo-tx__grid2--wide" data-testid="booking-form">
       <div className="bo-tx">
         {ro && <div className="bo-tx__info">{i18n.t(B.readOnlyNote)}</div>}
-        <Card title={i18n.t(F.title)} sub={i18n.t(F.sub)} testId="form-fields">
+        <Card title={i18n.t(F.title)} sub={i18n.t(F.sub)} testId="form-fields" right={head('fields')}>
           <Row label={i18n.t(F.contact)} sub={i18n.t(F.contactSub)}>
             <StatusPill variant="neutral" label={i18n.t(F.always)} />
           </Row>
@@ -519,7 +542,7 @@ const FormPanel = ({ c, propertyName, onNavigate }: BookingPanelProps) => {
             <StatusPill variant="neutral" label={i18n.t(s.form?.smsOptInDefault ? B.crm.on : B.crm.off)} />
           </Row>
         </Card>
-        <Card title={i18n.t(F.app.title)} sub={i18n.t(F.app.sub)} tag={NEW()} testId="form-app">
+        <Card title={i18n.t(F.app.title)} sub={i18n.t(F.app.sub)} tag={NEW()} testId="form-app" right={head('app')}>
           <Row label={i18n.t(F.app.days)} sub={i18n.t(F.app.daysSub)}>
             <span className="bo-tx__setinfo">{t(F.app.daysOpen, { n: openDaysCount(c.hours!) })}</span>
             <button type="button" className="bo-tx__btn bo-tx__btn--accent" onClick={() => onNavigate('hours')}>
@@ -532,8 +555,8 @@ const FormPanel = ({ c, propertyName, onNavigate }: BookingPanelProps) => {
           <Row label={i18n.t(F.app.shorter)} sub={t(F.app.shorterSub, { n: r.lengthStayLimit || '45' })}>
             <Switch on={f.app.allowShorterTour} label={i18n.t(F.app.shorter)} onToggle={appToggle('allowShorterTour')} />
           </Row>
-          <Row label={i18n.t(F.app.party)} sub={i18n.t(F.app.partySub)}>
-            <Num value={f.app.partySizeLimit} unit={i18n.t(F.app.people)} disabled={ro} label={i18n.t(F.app.party)} onChange={(value) => c.setApp({ partySizeLimit: value })} />
+          <Row label={i18n.t(F.app.party)} sub={i18n.t(F.app.partySub)} allowed={BOUNDS.party}>
+            <Stepper value={f.app.partySizeLimit} bounds={BOUNDS.party} unit={i18n.t(F.app.people)} disabled={ro} label={i18n.t(F.app.party)} onChange={(value) => c.setApp({ partySizeLimit: value })} />
           </Row>
           <Row label={i18n.t(F.app.unit)} sub={i18n.t(F.app.unitSub)}>
             <Switch on={f.app.askUnit} label={i18n.t(F.app.unit)} onToggle={appToggle('askUnit')} />
@@ -542,7 +565,6 @@ const FormPanel = ({ c, propertyName, onNavigate }: BookingPanelProps) => {
             <Switch on={f.app.showTextBooking} label={i18n.t(F.app.text)} onToggle={appToggle('showTextBooking')} />
           </Row>
         </Card>
-        {!ro && <SaveBar dirty={c.fieldsDirty} saving={c.saving === 'form'} label={i18n.t(X.save)} problems={Object.values(c.fieldProblems)} onSave={() => void c.saveForm('fields')} onDiscard={() => c.discardForm('fields')} testId="form-save" />}
       </div>
       <ProspectPreview c={c} propertyName={propertyName} />
     </div>
@@ -698,15 +720,18 @@ const LinkPanel = ({ c, propertyId, onNavigate }: BookingPanelProps) => {
   return (
     <div className="bo-tx" data-testid="booking-link">
       <AvailabilityHeader c={c} propId={String(propertyId)} onNavigate={onNavigate} />
-      {!link.hostConfigured && <div className="bo-tx__bad">{i18n.t(L.noHost)}</div>}
+      {!link.url && <div className="bo-tx__bad">{i18n.t(L.noHost)}</div>}
+      {link.url && link.hostSource === 'default' && <div className="bo-tx__info">{t(L.hostDefault, { host: link.host ?? '' })}</div>}
       {link.url && !link.live && <div className="bo-tx__note">{t(L.notLive, { error: link.reasons[0] ?? '' })}</div>}
       <div className="bo-tx__grid2 bo-tx__grid2--link">
         <div className="bo-tx">
           {ro && <div className="bo-tx__info">{i18n.t(B.readOnlyNote)}</div>}
-          <Card title={i18n.t(K.title)} sub={i18n.t(K.sub)} testId="button-card">
+          <Card title={i18n.t(K.title)} sub={i18n.t(K.sub)} testId="button-card" right={ro ? undefined : <CardSave dirty={c.formDirtyFor('button')} saving={c.saving === 'form'} problems={Object.values(c.formProblemsFor('button'))} onSave={() => void c.saveForm('button')} onDiscard={() => c.discardForm('button')} testId="button-save" />}>
             <Row label={i18n.t(K.text)}>
-              <span className="bo-tx__counter">{t(K.counter, { n: b.text.length })}</span>
-              <input className="bo-tx__input" aria-label={i18n.t(K.text)} maxLength={50} value={b.text} disabled={ro} onChange={(event) => c.setButton({ text: event.target.value })} style={{ width: 220 }} data-testid="button-text" />
+              <span className="bo-tx__textrow">
+                <span className="bo-tx__counter">{t(K.counter, { n: b.text.length })}</span>
+                <input className="bo-tx__input" aria-label={i18n.t(K.text)} maxLength={50} value={b.text} disabled={ro} onChange={(event) => c.setButton({ text: event.target.value })} style={{ width: 180 }} data-testid="button-text" />
+              </span>
             </Row>
             <Row label={i18n.t(K.color)}>
               <span className="bo-tx__colorrow">
@@ -739,17 +764,16 @@ const LinkPanel = ({ c, propertyId, onNavigate }: BookingPanelProps) => {
                 ))}
               </select>
             </Row>
-            <Row label={i18n.t(K.size)}>
-              <Num value={b.fontSize} unit={i18n.t(K.px)} disabled={ro} label={i18n.t(K.size)} onChange={(value) => c.setButton({ fontSize: value })} />
+            <Row label={i18n.t(K.size)} allowed={BOUNDS.fontSize}>
+              <Stepper value={b.fontSize} bounds={BOUNDS.fontSize} unit={i18n.t(K.px)} disabled={ro} label={i18n.t(K.size)} onChange={(value) => c.setButton({ fontSize: value })} />
             </Row>
-            <Row label={i18n.t(K.width)}>
-              <Num value={b.width} unit={i18n.t(K.px)} disabled={ro} label={i18n.t(K.width)} onChange={(value) => c.setButton({ width: value })} />
+            <Row label={i18n.t(K.width)} allowed={BOUNDS.px}>
+              <Stepper value={b.width} bounds={BOUNDS.px} unit={i18n.t(K.px)} disabled={ro} label={i18n.t(K.width)} onChange={(value) => c.setButton({ width: value })} />
             </Row>
-            <Row label={i18n.t(K.height)}>
-              <Num value={b.height} unit={i18n.t(K.px)} disabled={ro} label={i18n.t(K.height)} onChange={(value) => c.setButton({ height: value })} />
+            <Row label={i18n.t(K.height)} allowed={BOUNDS.px}>
+              <Stepper value={b.height} bounds={BOUNDS.px} unit={i18n.t(K.px)} disabled={ro} label={i18n.t(K.height)} onChange={(value) => c.setButton({ height: value })} />
             </Row>
           </Card>
-          {!ro && <SaveBar dirty={c.buttonDirty} saving={c.saving === 'form'} label={i18n.t(X.save)} problems={Object.values(c.buttonProblems)} onSave={() => void c.saveForm('button')} onDiscard={() => c.discardForm('button')} testId="button-save" />}
         </div>
         <div className="bo-tx">
           <Card title={i18n.t(L.preview)}>

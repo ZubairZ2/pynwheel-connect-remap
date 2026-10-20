@@ -45,6 +45,8 @@ class Connect::BookingControllerTest < ActionDispatch::IntegrationTest
     assert data['form']['show_desired_move_in_date']
     assert_nil data['button']['icon']
     assert_equal ENV['HOST_URL'].present?, data['link']['host_configured']
+    assert data['link']['url'].start_with?(ENV['HOST_URL'].presence || 'http://localhost:3001'), 'without HOST_URL the link uses the environment default'
+    assert_equal ENV['HOST_URL'].present? ? 'env' : 'default', data['link']['host_source']
   end
 
   test 'availability lists the stepped slots of open days with the types open at each' do

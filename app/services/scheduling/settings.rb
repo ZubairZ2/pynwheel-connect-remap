@@ -158,15 +158,29 @@ module Scheduling
         party_size_limit: setting.app_party_size_limit || 6, ask_unit: setting.app_ask_unit != false, show_text_booking: setting.app_show_text_booking != false }
     end
 
+    # The public host of the booking link: `HOST_URL` when the CMS has one,
+    # otherwise the Connect app of the environment (October 21, 2026), which
+    # forwards `/scheduler_widget/test_widget` to the CMS's widget.
+    DEFAULT_LINK_HOSTS = { production: 'https://pyn-system-connect-de8364f794a0.herokuapp.com', development: 'http://localhost:3001' }.freeze
+
+    def link_host
+      configured = ENV['HOST_URL'].to_s.presence
+      return [configured, 'env'] if configured
+
+      [Rails.env.production? || Rails.env.staging? ? DEFAULT_LINK_HOSTS[:production] : DEFAULT_LINK_HOSTS[:development], 'default']
+    end
+
     def link
-      host = ENV['HOST_URL'].to_s.presence
-      url = host ? community.schedule_tour_url : nil
+      host, source = link_host
+      url = "#{host}/scheduler_widget/test_widget?community_id=#{community.id}&community_code=#{community.community_code}&schedule_tours_page=true&direct=true"
       {
         url: url,
-        host_configured: host.present?,
-        live: widget_live? && url.present?,
+        host: host,
+        host_source: source,
+        host_configured: source == 'env',
+        live: widget_live?,
         reasons: gates.reject { |g| g[:ok] }.map { |g| g[:error] } + (community.is_salesforce_community? ? ['Bookings via Salesforce'] : []),
-        embed_html: url && button ? embed_html(url) : nil
+        embed_html: button ? embed_html(url) : nil
       }
     end
 

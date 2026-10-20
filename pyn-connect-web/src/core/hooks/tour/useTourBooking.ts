@@ -16,6 +16,7 @@ import {
   closuresErrors,
   closuresPayload,
   formChanged,
+  formDiscard,
   formDraftOf,
   formPayload,
   formProblems,
@@ -24,7 +25,9 @@ import {
   hoursDraftOf,
   hoursErrors,
   hoursPayload,
+  RULE_CARDS,
   rulesChanged,
+  rulesDiscard,
   rulesDraftOf,
   rulesPayload,
   rulesProblems,
@@ -35,6 +38,7 @@ import {
   type FormDraft,
   type FormPart,
   type HoursDraft,
+  type RulesCard,
   type RulesDraft
 } from '~/core/utils/generator/tour/tourBooking.generator';
 import { tourGet, tourPost } from '~/core/utils/tour/tourApi.client';
@@ -44,6 +48,9 @@ const X = CORE_STRINGS.tourModules.common;
 const E = CORE_STRINGS.tourModules.errors;
 
 type Kind = 'rules' | 'hours' | 'form' | 'closures' | 'scheduler';
+
+/** `into` with `part` taken from `from` (the inverse direction of `formDiscard`). */
+const formDiscardInto = (into: FormDraft, from: FormDraft, part: FormPart): FormDraft => formDiscard(into, from, part);
 
 /**
  * The booking settings (`/connect/booking`): the rules, hours, closures and
@@ -167,16 +174,27 @@ export const useTourBooking = (propertyId: number, enabled = true) => {
   const setRules = useCallback((patch: Partial<RulesDraft>) => setRulesState((current) => (current ? { ...current, ...patch } : current)), []);
   const rulesDirty = !!rules && !!baseRules && rulesChanged(rules, baseRules);
   const ruleProblems = useMemo(() => (rules && baseRules ? rulesProblems(rules, baseRules) : {}), [rules, baseRules]);
+  /** Dirty flag and problems of one design card. */
+  const rulesDirtyFor = useCallback((card: RulesCard) => !!rules && !!baseRules && rulesChanged(rules, baseRules, RULE_CARDS[card]), [baseRules, rules]);
+  const ruleProblemsFor = useCallback((card: RulesCard) => (rules && baseRules ? rulesProblems(rules, baseRules, RULE_CARDS[card]) : {}), [baseRules, rules]);
+  const discardRules = useCallback((card: RulesCard) => setRulesState((current) => (current && baseRules ? rulesDiscard(current, baseRules, RULE_CARDS[card]) : current)), [baseRules]);
 
-  const saveRules = useCallback(async () => {
-    if (!rules || !baseRules) return;
-    if (!canEdit) return refuse();
-    const payload = rulesPayload(rules, baseRules);
-    if (!Object.keys(payload).length) return toast(i18n.t(X.nothingToSave));
-    const problem = Object.values(ruleProblems)[0];
-    if (problem) return toast(problem);
-    await write('rules', 'booking/rules', payload, i18n.t(B.rules.saved));
-  }, [baseRules, canEdit, refuse, ruleProblems, rules, toast, write]);
+  /** Saves one card's changed keys; the other cards' unsaved edits survive the save. */
+  const saveRules = useCallback(
+    async (card: RulesCard) => {
+      if (!rules || !baseRules) return;
+      if (!canEdit) return refuse();
+      const keys = RULE_CARDS[card];
+      const payload = rulesPayload(rules, baseRules, keys);
+      if (!Object.keys(payload).length) return toast(i18n.t(X.nothingToSave));
+      const problem = Object.values(rulesProblems(rules, baseRules, keys))[0];
+      if (problem) return toast(problem);
+      const kept = rules;
+      const ok = await write('rules', 'booking/rules', payload, i18n.t(B.rules.saved));
+      if (ok) setRulesState((current) => (current ? rulesDiscard(kept, current, keys) : current));
+    },
+    [baseRules, canEdit, refuse, rules, toast, write]
+  );
 
   /* ── hours ────────────────────────────────────────────────────────── */
 
@@ -262,45 +280,27 @@ export const useTourBooking = (propertyId: number, enabled = true) => {
   const setFormAll = useCallback((next: FormDraft) => setFormState(next), []);
   const setApp = useCallback((patch: Partial<AppDraft>) => setFormState((current) => (current ? { ...current, app: { ...current.app, ...patch } } : current)), []);
   const setButton = useCallback((patch: Partial<ButtonDraft>) => setFormState((current) => (current ? { ...current, button: { ...current.button, ...patch } } : current)), []);
-  const fieldsDirty = !!form && !!baseForm && formChanged(form, baseForm, 'fields');
-  const buttonDirty = !!form && !!baseForm && formChanged(form, baseForm, 'button');
-  const formDirty = fieldsDirty || buttonDirty;
-  const fieldProblems = useMemo(() => (form && baseForm ? formProblems(form, baseForm, 'fields') : {}), [form, baseForm]);
-  const buttonProblems = useMemo(() => (form && baseForm ? formProblems(form, baseForm, 'button') : {}), [form, baseForm]);
+  const formDirty = !!form && !!baseForm && formChanged(form, baseForm);
+  /** Dirty flag and problems of one design card (fields, app options, button). */
+  const formDirtyFor = useCallback((part: FormPart) => !!form && !!baseForm && formChanged(form, baseForm, part), [baseForm, form]);
+  const formProblemsFor = useCallback((part: FormPart) => (form && baseForm ? formProblems(form, baseForm, part) : {}), [baseForm, form]);
+  const discardForm = useCallback((part: FormPart) => setFormState((current) => (current && baseForm ? formDiscard(current, baseForm, part) : current)), [baseForm]);
 
-  /** Discards the other part's edits only when `part` is given; a whole discard restarts both. */
-  const discardForm = useCallback(
-    (part?: FormPart) => {
-      if (!baseForm) return;
-      setFormState((current) => {
-        if (!current || !part) return baseForm;
-        return part === 'button' ? { ...current, button: baseForm.button } : { ...baseForm, button: current.button };
-      });
-    },
-    [baseForm]
-  );
-
+  /** Saves one card through `booking/form`; the other cards' unsaved edits survive the save. */
   const saveForm = useCallback(
     async (part: FormPart) => {
       if (!form || !baseForm) return;
       if (!canEdit) return refuse();
       const payload = formPayload(form, baseForm, part);
       if (!Object.keys(payload).length) return toast(i18n.t(X.nothingToSave));
-      const problem = Object.values(part === 'fields' ? fieldProblems : buttonProblems)[0];
+      const problem = Object.values(formProblems(form, baseForm, part))[0];
       if (problem) return toast(problem);
-      // A form save answers the whole settings; only the saved part's draft restarts.
-      const kept = part === 'fields' ? form.button : form.app;
-      const keptFields = part === 'button' ? form : null;
+      const kept = form;
       const ok = await write('form', 'booking/form', payload, i18n.t(part === 'button' ? B.button.saved : B.form.saved));
-      if (ok) {
-        setFormState((current) => {
-          if (!current) return current;
-          if (part === 'fields') return { ...current, button: kept as ButtonDraft };
-          return keptFields ? { ...keptFields, button: current.button } : current;
-        });
-      }
+      // The answer restarts every form draft; the parts that were not saved get their edits back.
+      if (ok) setFormState((current) => (current ? (['fields', 'app', 'button'] as FormPart[]).filter((other) => other !== part).reduce((acc, other) => formDiscardInto(acc, kept, other), current) : current));
     },
-    [baseForm, buttonProblems, canEdit, fieldProblems, form, refuse, toast, write]
+    [baseForm, canEdit, form, refuse, toast, write]
   );
 
   /* ── link, preview ────────────────────────────────────────────────── */
@@ -355,6 +355,9 @@ export const useTourBooking = (propertyId: number, enabled = true) => {
     setRules,
     rulesDirty,
     ruleProblems,
+    rulesDirtyFor,
+    ruleProblemsFor,
+    discardRules,
     saveRules,
     hours,
     hoursDirty,
@@ -381,10 +384,8 @@ export const useTourBooking = (propertyId: number, enabled = true) => {
     setApp,
     setButton,
     formDirty,
-    fieldsDirty,
-    buttonDirty,
-    fieldProblems,
-    buttonProblems,
+    formDirtyFor,
+    formProblemsFor,
     discardForm,
     saveForm,
     anyDirty,

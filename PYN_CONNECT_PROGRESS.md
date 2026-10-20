@@ -2751,3 +2751,9 @@ screenshots in `qa/tour-settings/evidence/screens/`. Tour app typecheck clean, v
 (`SchedualTour` 25514) and an app booking on Hazel 1618 (25519, created_by "Tour App") both appear in Visitors; refusals on all
 three entry points; `qa/tour-settings/scripts/legacy_snapshot.rb` before/after identical on both databases (details and residue:
 report §7–§8). Production untouched.
+
+### 45a. Design parity follow-up (October 21, 2026)
+Per-card Saved/Discard/Save heads on every settings card (`RULE_CARDS` + `saveRules(card)`, `FormPart = fields | app | button` +
+`saveForm(part)`), the design's − / + `Stepper` with "Allowed a–b." (`BOUNDS` in the generator), a fixed-height scrolling phone
+preview, and a default booking-link host per environment (`Scheduling::Settings::DEFAULT_LINK_HOSTS`, `link.host_source`) with the
+Connect route `src/app/scheduler_widget/test_widget/route.ts` redirecting to the CMS widget. Report §10.

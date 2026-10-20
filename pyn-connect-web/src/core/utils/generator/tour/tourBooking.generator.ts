@@ -40,6 +40,8 @@ export const NOTICES = [0, 60, 120, 240, 1440];
 export const HORIZONS = [0, 7, 14, 30, 60, 90];
 export const LANES: HoursLane[] = ['self', 'guided'];
 /** The axis ticks of the hours track (6 AM – 9 PM), as fractions of the 6:00 – 22:00 bar. */
+/** Stepper bounds, as `Scheduling::Settings` validates them. */
+export const BOUNDS = { capacity: [1, 10], grace: [10, 60], stay: [1, 600], party: [1, 10], fontSize: [8, 40], px: [10, 1000] } as const;
 export const HOUR_TICKS = [6, 9, 12, 15, 18, 21].map((hour) => ({ hour, left: ((hour - 6) / 16) * 100 }));
 
 const str = (value: number | null | undefined): string => (value == null ? '' : String(value));
@@ -101,20 +103,39 @@ const RULE_PARAMS: [keyof RulesDraft, string][] = [
   ['lengthStayLimit', 'length_stay_limit']
 ];
 
-/** The changed rules, by the CMS parameter names. */
-export const rulesPayload = (draft: RulesDraft, base: RulesDraft): Record<string, unknown> => {
+/** The design's four rules cards, each saved on its own (one `PUT booking/rules` with that card's changed keys). */
+export type RulesCard = 'types' | 'slots' | 'capacity' | 'behaviour';
+export const RULE_CARDS: Record<RulesCard, (keyof RulesDraft)[]> = {
+  types: ['allowSelfTour', 'allowGuidedTour'],
+  slots: ['slotIntervalMinutes', 'bufferMinutes', 'minimumNoticeMinutes', 'bookingHorizonDays'],
+  capacity: ['doLimitMaxTour', 'maxSelf', 'maxGuided', 'limitMaxTour'],
+  behaviour: ['onlyScheduledTour', 'gracePeriod', 'lengthStayLimit']
+};
+const ALL_RULE_KEYS = RULE_PARAMS.map(([key]) => key);
+
+/** The changed rules (of one card, or all), by the CMS parameter names. */
+export const rulesPayload = (draft: RulesDraft, base: RulesDraft, keys: (keyof RulesDraft)[] = ALL_RULE_KEYS): Record<string, unknown> => {
   const out: Record<string, unknown> = {};
   RULE_PARAMS.forEach(([key, param]) => {
-    if (draft[key] === base[key]) return;
+    if (!keys.includes(key) || draft[key] === base[key]) return;
     out[param] = key === 'bookingHorizonDays' && draft[key] === 0 ? '' : draft[key];
   });
   return out;
 };
 
+/** The draft with one card's keys restored from the stored settings. */
+export const rulesDiscard = (draft: RulesDraft, base: RulesDraft, keys: (keyof RulesDraft)[]): RulesDraft => {
+  const next = { ...draft } as Record<string, unknown>;
+  keys.forEach((key) => {
+    next[key] = base[key];
+  });
+  return next as unknown as RulesDraft;
+};
+
 /** The rules the CMS would refuse, checked before sending (same bounds as `Scheduling::Settings#update_rules!`). */
-export const rulesProblems = (draft: RulesDraft, base: RulesDraft): Record<string, string> => {
+export const rulesProblems = (draft: RulesDraft, base: RulesDraft, keys: (keyof RulesDraft)[] = ALL_RULE_KEYS): Record<string, string> => {
   const out: Record<string, string> = {};
-  const changed = (key: keyof RulesDraft) => draft[key] !== base[key];
+  const changed = (key: keyof RulesDraft) => keys.includes(key) && draft[key] !== base[key];
   if (draft.doLimitMaxTour && changed('limitMaxTour') && (int(draft.limitMaxTour) ?? 0) < 1) out.limitMaxTour = i18n.t(B.cap.total);
   (['maxSelf', 'maxGuided'] as const).forEach((key) => {
     if (changed(key) && draft[key].trim() !== '' && (int(draft[key]) ?? 0) < 1) out[key] = i18n.t(B.cap.sub);
@@ -130,7 +151,7 @@ export const rulesProblems = (draft: RulesDraft, base: RulesDraft): Record<strin
   return out;
 };
 
-export const rulesChanged = (draft: RulesDraft, base: RulesDraft): boolean => Object.keys(rulesPayload(draft, base)).length > 0;
+export const rulesChanged = (draft: RulesDraft, base: RulesDraft, keys?: (keyof RulesDraft)[]): boolean => Object.keys(rulesPayload(draft, base, keys)).length > 0;
 
 /* ── hours ─────────────────────────────────────────────────────────── */
 
@@ -314,7 +335,7 @@ export interface FormDraft {
   button: ButtonDraft;
 }
 
-export type FormPart = 'fields' | 'button';
+export type FormPart = 'fields' | 'app' | 'button';
 
 /** The design's font list; a stored font outside it is kept as an extra option. */
 export const BUTTON_FONTS = ['Open Sans Regular', 'Manrope', 'Lato', 'Montserrat', 'Georgia'];
@@ -384,17 +405,19 @@ const BUTTON_PARAMS: [keyof ButtonDraft, string][] = [
 /** The changed form settings; `part` limits the payload to the fields (with the app options) or to the button. */
 export const formPayload = (draft: FormDraft, base: FormDraft, part: FormPart | 'all' = 'all'): Record<string, unknown> => {
   const out: Record<string, unknown> = {};
-  if (part !== 'button') {
+  if (part === 'all' || part === 'fields') {
     FORM_PARAMS.forEach(([key, param]) => {
       if (draft[key] !== base[key]) out[param] = draft[key];
     });
+  }
+  if (part === 'all' || part === 'app') {
     const app: Record<string, unknown> = {};
     APP_PARAMS.forEach(([key, param]) => {
       if (draft.app[key] !== base.app[key]) app[param] = draft.app[key];
     });
     if (Object.keys(app).length) out.app = app;
   }
-  if (part !== 'fields') {
+  if (part === 'all' || part === 'button') {
     const button: Record<string, unknown> = {};
     BUTTON_PARAMS.forEach(([key, param]) => {
       if (draft.button[key] === base.button[key]) return;
@@ -410,9 +433,17 @@ export const formPayload = (draft: FormDraft, base: FormDraft, part: FormPart | 
 export const formChanged = (draft: FormDraft, base: FormDraft, part: FormPart | 'all' = 'all'): boolean => Object.keys(formPayload(draft, base, part)).length > 0;
 
 /** The form problems the CMS would refuse, checked before sending (`Scheduling::Settings#update_form!`). */
+/** The draft with one part restored from the stored settings. */
+export const formDiscard = (draft: FormDraft, base: FormDraft, part: FormPart): FormDraft => {
+  if (part === 'button') return { ...draft, button: base.button };
+  if (part === 'app') return { ...draft, app: base.app };
+  return { ...base, app: draft.app, button: draft.button };
+};
+
 export const formProblems = (draft: FormDraft, base: FormDraft, part: FormPart): Record<string, string> => {
   const out: Record<string, string> = {};
-  if (part === 'fields') {
+  if (part === 'fields') return out;
+  if (part === 'app') {
     const party = int(draft.app.partySizeLimit);
     if (draft.app.partySizeLimit !== base.app.partySizeLimit && (party == null || party < 1 || party > 10)) out.partySizeLimit = i18n.t(B.form.app.partySub);
   } else {
