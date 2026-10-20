@@ -1092,9 +1092,15 @@
         initializeDatePicker('.datepickertime', steps, days_disabled, [], null, 'MM/DD/YYYY hh:mm A');
 
 
-        $('#desired_move_in_date').focusin( function(){
+        // The move-in date is a calendar from the first click (October 21, 2026): the
+        // picker is built with the page, not on the first focus, and opens on focus.
+        if ($('.moveindatepicker').length) {
           initializeDatePicker('.moveindatepicker');
-        })
+          $('#desired_move_in_date').on('focusin click', function(){
+            var picker = $('.moveindatepicker').data('DateTimePicker');
+            if (picker) picker.show();
+          })
+        }
 
         $('.phoneNumber').keypress(function(event) {
             if ((event.which != 46 || $(this).val().indexOf('.') != -1) &&
