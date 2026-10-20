@@ -73,9 +73,12 @@ export interface IgloohomeBlePlugin {
   /** Starts a low-latency scan; each lock seen is a `lockFound` event. Stops itself after `timeoutMs` (default 60 000). */
   startScan(options?: { timeoutMs?: number }): Promise<void>;
   stopScan(): Promise<void>;
-  /** Connects to a lock the scan has seen, with the guest key. Resolves once the SDK reports the lock connected. */
+  /**
+   * Chooses a lock the scan has seen and the guest key for it. The igloohome SDK 3.x connects inside `unlock`, so on
+   * Android this resolves at once and the Bluetooth connection is made by `unlock`; the legacy SDK connected here.
+   */
   connect(options: { name: string; key: string; timeoutMs?: number }): Promise<{ name: string }>;
-  /** Opens the connected lock. */
+  /** Opens the chosen lock: connects with the guest key, sets its clock and unlocks (one SDK call on Android). */
   unlock(options?: { timeoutMs?: number }): Promise<{ unlocked: true }>;
   disconnect(): Promise<void>;
   /** Stops scanning, drops any connection and forgets the found locks. */

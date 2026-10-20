@@ -4,11 +4,13 @@
 # `token` also masks the Doorkeeper access / refresh tokens in ActiveRecord's
 # SQL bind logging (debug level, development and staging): the Tour App API
 # looks tokens up on every request and must never log them (October 7, 2026).
-Rails.application.config.filter_parameters += [:password, :token]
+# `guest_bluetooth_key` masks the igloohome Bluetooth guest key the Tour App
+# API stores on `igloohome_guests` (October 19, 2026): it opens a door.
+Rails.application.config.filter_parameters += [:password, :token, :guest_bluetooth_key]
 
 # ActiveRecord copies `filter_parameters` into `filter_attributes` when it
 # loads; an earlier initializer of this app loads it before this file runs, so
 # the attribute filter is set here as well (runs at once when it is already loaded).
 ActiveSupport.on_load(:active_record) do
-  self.filter_attributes += [:password, :token]
+  self.filter_attributes += [:password, :token, :guest_bluetooth_key]
 end

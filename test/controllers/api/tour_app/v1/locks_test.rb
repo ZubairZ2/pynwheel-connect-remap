@@ -195,7 +195,8 @@ class Api::TourApp::V1::LocksTest < ActionDispatch::IntegrationTest
   end
 
   test 'a Bluetooth guest key for a v1 lock: the legacy partner-API requests, 90 minutes, the backup PIN' do
-    @account.update_columns(version: 'v1')
+    # A production v1 account: no igloohome API client of its own, so the partner key serves it.
+    @account.update_columns(version: 'v1', client_id: nil, client_secret: nil)
     reset_tour_api_caches!
     stub = lambda do |url, **options|
       @calls << [url, options]
@@ -227,16 +228,80 @@ class Api::TourApp::V1::LocksTest < ActionDispatch::IntegrationTest
     assert_no_match(/guest-key-abc/, File.read(Rails.root.join('log', 'test.log')).lines.last(40).join) rescue nil
   end
 
-  test 'a Bluetooth key is refused for door-code locks, and a partner-API refusal is a 502' do
+  test 'a Bluetooth guest key for a v1 account with its own igloohome API client: the eKey endpoint, then the backup algoPIN' do
+    @account.update_columns(version: 'v1', access_token: 'vendor-token', access_token_expiry: 2.days.from_now, is_authorized_with_pynwheel: true)
+    reset_tour_api_caches!
+    stub = lambda do |url, **options|
+      @calls << [url, options]
+      if url.end_with?('/ekey')
+        FakeResponse.new(200, { 'bluetoothGuestKey' => 'dev-key-xyz', 'keyId' => 12847 })
+      else
+        FakeResponse.new(200, { 'pin' => '7788990' })
+      end
+    end
+    HTTParty.stub(:post, stub) do
+      travel_to Time.utc(2026, 10, 19, 18, 25, 42) do
+        data = request_key(@u101)
+        assert_response :success, response.body
+        assert_equal({ 'stop_id' => @u101, 'provider' => 'Igloohome', 'mode' => 'v1', 'device_id' => 'SK3E14001756', 'lock_name' => 'SK3E14001756', 'bluetooth_key' => 'dev-key-xyz', 'key_id' => '12847', 'guest_pin' => '7788990' }, data.except('success', 'valid_from', 'valid_until'))
+        assert_equal '2026-10-19T18:25:00+00:00', data['valid_from']
+        assert_equal '2026-10-19T19:55:00+00:00', data['valid_until'], 'the same 90-minute window as the partner key'
+      end
+    end
+    ekey, pin = @calls
+    assert_equal 2, @calls.size, 'no partner-API call, no token request on a live token'
+    assert_equal "#{ENV['IGLOOHOME_API_V2_BASE_URL']}/devices/SK3E14001756/ekey", ekey[0]
+    assert_equal({ 'Authorization' => 'Bearer vendor-token', 'Content-Type' => 'application/json' }, ekey[1][:headers])
+    ekey_body = JSON.parse(ekey[1][:body])
+    assert_equal '2026-10-19T18:25:00+00:00', ekey_body['startDate'], "the vendor's YYYY-MM-DDTHH:mm:00+hh:mm: whole minutes, explicit offset"
+    assert_equal '2026-10-19T19:55:00+00:00', ekey_body['endDate']
+    assert_equal IgloohomeService::GUEST_KEY_PERMISSIONS, ekey_body['permissions']
+    assert_equal "#{ENV['IGLOOHOME_API_V2_BASE_URL']}/devices/SK3E14001756/algopin/hourly", pin[0]
+    assert_equal({ 'variance' => 1, 'startDate' => '2026-10-19T18:00:00+00:00', 'endDate' => '2026-10-19T21:00:00+00:00', 'accessName' => '101' }, JSON.parse(pin[1][:body]))
+    assert_no_match(/dev-key-xyz/, File.read(Rails.root.join('log', 'test.log')).lines.last(40).join) rescue nil
+  end
+
+  test 'a stale token on the eKey request is renewed once, and a missing backup PIN does not refuse the key' do
+    @account.update_columns(version: 'v1', access_token: 'stale', access_token_expiry: 2.days.from_now, is_authorized_with_pynwheel: true)
+    reset_tour_api_caches!
+    answers = [FakeResponse.new(401, { 'message' => 'Unauthorized' }), FakeResponse.new(200, { 'bluetoothGuestKey' => 'dev-key-2', 'keyId' => 5 }), FakeResponse.new(500, 'Internal Server Error')]
+    stub = lambda do |url, **options|
+      @calls << [url, options]
+      url.include?('/oauth2/token') ? FakeResponse.new(200, { 'access_token' => 'renewed' }) : answers.shift
+    end
+    HTTParty.stub(:post, stub) do
+      data = request_key(@u101)
+      assert_response :success, response.body
+      assert_equal 'dev-key-2', data['bluetooth_key']
+      assert_equal '5', data['key_id']
+      assert_nil data['guest_pin']
+    end
+    assert_equal %w[ekey token ekey algopin/hourly], @calls.map { |url, _| url[%r{oauth2/(token)\z}, 1] || url[%r{/(ekey|algopin/hourly)\z}, 1] }
+    assert_equal 'Bearer stale', @calls[0][1][:headers]['Authorization']
+    assert_equal 'Bearer renewed', @calls[2][1][:headers]['Authorization']
+    assert_equal 'renewed', @account.reload.access_token
+  end
+
+  test 'a Bluetooth key is refused for door-code locks, and a vendor refusal is a 502' do
     assert_equal 'lock_unsupported', request_key(@u101)['error']['code'], 'the account is in igloohome (PIN) mode'
     assert_response 422
     @account.update_columns(version: 'v1')
     reset_tour_api_caches!
-    with_vendor(FakeResponse.new(404, { 'message' => 'Lock not found' })) do
+    with_vendor(FakeResponse.new(404, { 'message' => 'not found device' })) do
       data = request_key(@u101)
       assert_response 502, response.body
       assert_equal 'lock_unavailable', data['error']['code']
     end
+    assert_equal 1, @calls.count { |url, _| url.end_with?('/ekey') }, 'the developer eKey endpoint, refused, no PIN asked'
+    @calls.clear
+    @account.update_columns(client_id: nil, client_secret: nil)
+    reset_tour_api_caches!
+    with_vendor(FakeResponse.new(404, { 'message' => 'Lock not found' })) do
+      data = request_key(@u101)
+      assert_response 502, response.body
+      assert_equal 'lock_unavailable', data['error']['code'], 'the partner API refusal for an account without a client'
+    end
+    assert_equal 1, @calls.count { |url, _| url.end_with?('/ekeys') }
     assert_equal 'no_lock', request_key(@u301)['error']['code']
     assert_equal 'invalid_stop', request_key('unit:999999')['error']['code']
     post_json("#{@base}/locks/bluetooth-key", { stop_id: @u101 }, JSON_HEADERS)

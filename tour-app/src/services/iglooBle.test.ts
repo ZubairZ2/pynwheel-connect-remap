@@ -169,4 +169,15 @@ describe('unlockOverBluetooth', () => {
     expect(toUnlockError(new BluetoothUnlockError('busy', 'x')).code).toBe('busy');
     expect(toUnlockError(rejection('bluetooth_off')).message).toMatch(/Turn Bluetooth on/);
   });
+
+  it("toUnlockError keeps the SDK's reason on the lock-side failures, and only there", () => {
+    const failed = toUnlockError(rejection('unlock_failed', 'LockInvalidRightsException'));
+    expect(failed.detail).toBe('LockInvalidRightsException');
+    expect(failed.message).toBe('The lock did not open. Try again. (LockInvalidRightsException)');
+    expect(toUnlockError(rejection('sdk_error', 'Command delivery failed')).message).toMatch(/\(Command delivery failed\)$/);
+    const off = toUnlockError(rejection('bluetooth_off', 'Bluetooth is off'));
+    expect(off.detail).toBeNull();
+    expect(off.message).toBe('Turn Bluetooth on, then try again.');
+    expect(toUnlockError(rejection('unlock_failed', '  ')).detail).toBeNull();
+  });
 });

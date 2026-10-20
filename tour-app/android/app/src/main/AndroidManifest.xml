@@ -33,8 +33,9 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- The igloohome Bluetooth SDK's manifest also asks for coarse and background location (its geofenced
-         "quick unlock", which this app never uses); the Bluetooth permissions it needs come from the plugin. -->
+    <!-- The igloohome Bluetooth SDK's manifests also ask for coarse and background location (its geofenced
+         "quick unlock") and for notifications (its firmware updates), which this app never uses; the Bluetooth permissions it needs come from the plugin. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" tools:node="remove" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" tools:node="remove" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" tools:node="remove" />
 </manifest>
