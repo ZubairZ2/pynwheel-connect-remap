@@ -18,6 +18,16 @@ Branch `feature/tour-settings-scheduling-booking` → `main`. Report: `TOUR_SETT
 **Self Tour App**
 - The Schedule screen reads the property's rules and slots from the CMS and books through it; the live-tour sheet books a guided tour the same way; demo mode unchanged.
 
+## October 21 follow-ups (design parity and local widget fixes)
+- Per-card Saved / Discard / Save heads on every settings card, the design's − / + steppers with "Allowed a–b.", a fixed-height
+  scrolling phone preview.
+- Booking link built as the legacy page builds it (`HOST_URL`, else the CMS host answering the request; query
+  `community_id`/`community_code`/`direct`); it opens the public widget without sign-in. One signing key for the property code
+  (`Community.widget_signing_key`, falling back to the app secret when `SECRET_KEY_BASE_v2` is unset locally).
+- Legacy `SchedualToursController`: only the widget's actions skip sign-in; the staff pages redirect instead of raising.
+- Widget: the move-in date is a calendar from the first click.
+- Merged `origin/main` (Connect Locks, PR #35); the QA evidence folder stays local.
+
 ## Tests
 Rails: booking 13/131, tour-app bookings 6/55, legacy slot check 5/27, plus the rest of `connect/` and `api/tour_app/` green. Connect: typecheck clean, Playwright `tourSettings.spec.ts` (7) and `tourModules.spec.ts` (5) green on the clone and on development. Tour app: typecheck clean, vitest 84 tests. End-to-end: real bookings through the legacy widget (Oeuvre 229) and the app (Hazel 1618) land in Connect Visitors; refusals verified on all three entry points; legacy pages byte-identical before/after on both databases.
 
