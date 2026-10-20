@@ -167,6 +167,33 @@ class Connect::VisitorsControllerTest < ActionDispatch::IntegrationTest
     assert_nil SchedualTour.find(body['data']['booking_id']).tour_date
   end
 
+  test 'a visitor who opted out of SMS stays opted out when a later booking does not say otherwise' do
+    sign_in users(:community_manager)
+    date = (@now.to_date + 3).iso8601
+    post "#{base}/bookings.json", as: :json, params: { first_name: 'Gia', last_name: 'Holt', email: 'gia@example.test', phone_number: '3035550106', country_code: 'US',
+                                                      tour_type: 'self_tour', property_tour_type: 'scheduled_tour', tour_date: date, tour_time: '10:30', is_sms_enabled: false }
+    assert_response :success, response.body
+    gia = SchedualTour.find(body['data']['booking_id']).tour_user
+    assert_equal false, gia.is_sms_enabled
+    assert_equal false, body['data']['notifications']['sms']
+    sms_jobs = TwilioSmsWorker.jobs.size
+
+    # The same person books again without the flag: the opt-out is kept (it used to flip back to opted in).
+    post "#{base}/bookings.json", as: :json, params: { first_name: 'Gia', last_name: 'Holt', email: 'gia@example.test', phone_number: '3035550106', country_code: 'US',
+                                                      tour_type: 'self_tour', property_tour_type: 'scheduled_tour', tour_date: date, tour_time: '11:00' }
+    assert_response :success, response.body
+    assert body['data']['rescheduled']
+    assert_equal false, gia.reload.is_sms_enabled
+    assert_equal false, body['data']['notifications']['sms']
+    assert_equal sms_jobs, TwilioSmsWorker.jobs.size, 'no SMS is queued for a visitor who opted out'
+
+    # Saying so explicitly still opts the visitor back in.
+    post "#{base}/bookings.json", as: :json, params: { first_name: 'Gia', last_name: 'Holt', email: 'gia@example.test', phone_number: '3035550106', country_code: 'US',
+                                                      tour_type: 'self_tour', property_tour_type: 'scheduled_tour', tour_date: date, tour_time: '11:30', is_sms_enabled: true }
+    assert_response :success, response.body
+    assert_equal true, gia.reload.is_sms_enabled
+  end
+
   test 'reschedule moves the booking and resets its reminders' do
     sign_in users(:community_admin)
     @upcoming.update_columns(hourly_email_sent: true, daily_email_sent: true)

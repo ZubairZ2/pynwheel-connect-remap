@@ -2618,6 +2618,9 @@ export const CORE_STRINGS = {
         unassign: 'tourModules.stops.lock.unassign',
         codeInvalid: 'tourModules.stops.lock.codeInvalid',
         saving: 'tourModules.stops.lock.saving',
+        releaseTitle: 'tourModules.stops.lock.releaseTitle',
+        releaseBody: 'tourModules.stops.lock.releaseBody',
+        releaseConfirm: 'tourModules.stops.lock.releaseConfirm',
       },
       preview: {
         title: 'tourModules.stops.preview.title',
@@ -2677,6 +2680,9 @@ export const CORE_STRINGS = {
         },
         warnings: 'tourModules.stops.path.warnings',
         failed: 'tourModules.stops.path.failed',
+        fromFloor: 'tourModules.stops.path.fromFloor',
+        toFloor: 'tourModules.stops.path.toFloor',
+        anyFloor: 'tourModules.stops.path.anyFloor',
       },
       add: {
         title: 'tourModules.stops.add.title',
@@ -2754,6 +2760,7 @@ export const CORE_STRINGS = {
         walkin: 'tourModules.visitors.type.walkin',
       },
       export: 'tourModules.visitors.export',
+      exportIgnoresSearch: 'tourModules.visitors.exportIgnoresSearch',
       newBooking: 'tourModules.visitors.newBooking',
       salesforce: 'tourModules.visitors.salesforce',
       status: {
@@ -2877,6 +2884,8 @@ export const CORE_STRINGS = {
         incomplete: 'tourModules.visitors.booking.incomplete',
         pickTime: 'tourModules.visitors.booking.pickTime',
         loadingSlots: 'tourModules.visitors.booking.loadingSlots',
+        slotsFailed: 'tourModules.visitors.booking.slotsFailed',
+        slotsAs: 'tourModules.visitors.booking.slotsAs',
         horizon: 'tourModules.visitors.booking.horizon',
       },
       cancel: {

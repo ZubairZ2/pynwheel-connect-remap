@@ -23,8 +23,9 @@ module Api
           stop_ids = string_list_param(params[:stop_ids], loc: %w[body stop_ids], min: 1, max: 100)
           step_free = boolean_param(params[:step_free], default: false, loc: %w[body step_free])
           avoid_blockers = boolean_param(params[:avoid_blockers], default: true, loc: %w[body avoid_blockers])
+          start_stop_id = string_param(params[:start_stop_id], loc: %w[body start_stop_id], min: 3, max: 64, required: false)
           built = TourApi::Engine.built(@property, step_free: step_free, avoid_blockers: avoid_blockers)
-          render json: TourApi::Routing.tour_route(@property, built, stop_ids: stop_ids, step_free: step_free, avoid_blockers: avoid_blockers)
+          render json: TourApi::Routing.tour_route(@property, built, stop_ids: stop_ids, step_free: step_free, avoid_blockers: avoid_blockers, start_stop_id: start_stop_id)
         end
 
         def distances

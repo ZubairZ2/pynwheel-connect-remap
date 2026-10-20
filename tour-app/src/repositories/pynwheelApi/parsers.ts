@@ -1,6 +1,7 @@
 import type { Amenity, AmenityIcon, Building, GraphNode, LockBluetoothKey, LockPin, MapLevel, Property, PropertyListing, Route, RouteLeg, RouteStage, RouteStep, StopLock, TourRoute, TourStopPlace, Unit, WayfindingGraph } from '~/models';
 import type { StopKind } from '~/models';
 import type { PropertyBundle, StopDistance } from '../tourRepository';
+import { ApiError } from './apiClient';
 import type { ApiDistancesResponse, ApiGraph, ApiLeg, ApiLevel, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiMapResponse, ApiNode, ApiPropertyDetail, ApiPropertySummary, ApiRoute, ApiRouteStep, ApiStop, ApiStopLock, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
 
 /**
@@ -43,15 +44,19 @@ export const parseLock = (l: ApiStopLock | null | undefined): StopLock | null =>
   };
 };
 
-export const parseLockBluetoothKey = (body: ApiLockBluetoothKeyResponse, now = Date.now()): LockBluetoothKey => ({
-  lockName: str(body.lock_name) || str(body.device_id),
-  key: str(body.bluetooth_key),
-  keyId: strOrNull(body.key_id),
-  guestPin: strOrNull(body.guest_pin),
-  validFrom: strOrNull(body.valid_from),
-  validUntil: strOrNull(body.valid_until),
-  issuedAt: now
-});
+export const parseLockBluetoothKey = (body: ApiLockBluetoothKeyResponse, now = Date.now()): LockBluetoothKey => {
+  const lockName = str(body.lock_name) || str(body.device_id);
+  if (!lockName) throw new ApiError('malformed_response', 'The lock service answered without the lock to open. Please try again.', 200);
+  return {
+    lockName,
+    key: str(body.bluetooth_key),
+    keyId: strOrNull(body.key_id),
+    guestPin: strOrNull(body.guest_pin),
+    validFrom: strOrNull(body.valid_from),
+    validUntil: strOrNull(body.valid_until),
+    issuedAt: now
+  };
+};
 
 export const parseLockPin = (body: ApiLockPinResponse, now = Date.now()): LockPin => ({ pin: str(body.pin), validFrom: strOrNull(body.valid_from), validUntil: strOrNull(body.valid_until), issuedAt: now });
 
@@ -274,24 +279,36 @@ const parseStep = (s: ApiRouteStep): RouteStep => ({
   dwellS: s.dwell_s ?? undefined
 });
 
-export const parseRoute = (r: ApiRoute): Route => ({
-  from: r.start?.id ?? '',
-  to: r.destination?.id ?? '',
-  stepFree: !!r.step_free,
-  avoidBlockers: r.avoid_blockers !== false,
-  lengthPx: num(r.total_distance),
-  lengthFt: numOrNull(r.total_distance_ft),
-  durationS: numOrNull(r.duration_s),
-  legs: list<ApiLeg>(r.legs).map(parseLeg),
-  steps: list<ApiRouteStep>(r.steps).map(parseStep),
-  warnings: list<string>(r.warnings),
-  stages: list<ApiRoute['stages'][number]>(r.stages).map((s): RouteStage => ({ level: s.level_id, floor: numOrNull(s.floor), building: strOrNull(s.building), leg: num(s.leg) }))
-});
+/** A route answer whose `route` is missing or not an object is unusable: a typed error the screens can show, never a TypeError. */
+const requireRoute = (r: ApiRoute | null | undefined): ApiRoute => {
+  if (!r || typeof r !== 'object') throw new ApiError('malformed_response', 'The route service answered without a route. Please try again.', 200);
+  return r;
+};
 
-export const parseTourRoute = (body: ApiTourRouteResponse): TourRoute => ({
-  route: parseRoute(body.route),
-  segments: list<ApiTourRouteResponse['segments'][number]>(body.segments).map((s) => ({ node: s.stop_id, from: s.from_stop_id, route: parseRoute(s.route) }))
-});
+export const parseRoute = (route: ApiRoute | null | undefined): Route => {
+  const r = requireRoute(route);
+  return {
+    from: r.start?.id ?? '',
+    to: r.destination?.id ?? '',
+    stepFree: !!r.step_free,
+    avoidBlockers: r.avoid_blockers !== false,
+    lengthPx: num(r.total_distance),
+    lengthFt: numOrNull(r.total_distance_ft),
+    durationS: numOrNull(r.duration_s),
+    legs: list<ApiLeg>(r.legs).map(parseLeg),
+    steps: list<ApiRouteStep>(r.steps).map(parseStep),
+    warnings: list<string>(r.warnings),
+    stages: list<ApiRoute['stages'][number]>(r.stages).map((s): RouteStage => ({ level: s.level_id, floor: numOrNull(s.floor), building: strOrNull(s.building), leg: num(s.leg) }))
+  };
+};
+
+export const parseTourRoute = (body: ApiTourRouteResponse | null | undefined): TourRoute => {
+  if (!body || typeof body !== 'object') throw new ApiError('malformed_response', 'The route service answered without a route. Please try again.', 200);
+  return {
+    route: parseRoute(body.route),
+    segments: list<ApiTourRouteResponse['segments'][number]>(body.segments).map((s) => ({ node: s.stop_id, from: s.from_stop_id, route: parseRoute(s.route) }))
+  };
+};
 
 export const parseDistances = (body: ApiDistancesResponse): Record<string, StopDistance> => {
   const out: Record<string, StopDistance> = {};

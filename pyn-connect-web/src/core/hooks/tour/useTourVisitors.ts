@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
-import type { Availability, BookingSettings, TourModuleMeta, VisitorProfile, VisitorsList } from '~/core/models/data/tourModules.data';
+import type { Availability, BookingSettings, TourModuleMeta, VisitorProfile, VisitorType, VisitorsList } from '~/core/models/data/tourModules.data';
 import { demoActions } from '~/core/store/demo/demo.slice';
 import { useAppDispatch } from '~/core/store/hooks';
 import { t } from '~/core/utils/generator/inventory/inventoryText';
@@ -24,7 +24,7 @@ export interface VisitorFilters {
 
 export type VisitorsDialog =
   | { kind: 'newBooking'; first: string; last: string; email: string; phone: string; tourType: string; scheduled: boolean; date: string | null; time: string | null; sms: boolean; busy: boolean }
-  | { kind: 'reschedule'; bookingId: number; name: string; from: string; tourType: string; date: string | null; time: string | null; busy: boolean }
+  | { kind: 'reschedule'; bookingId: number; name: string; from: string; bookingType: VisitorType; tourType: string; date: string | null; time: string | null; busy: boolean }
   | { kind: 'cancel'; bookingId: number; name: string; when: string; busy: boolean }
   | { kind: 'pii'; fields: Record<string, boolean>; input: string; busy: boolean }
   | { kind: 'delete'; input: string; busy: boolean }
@@ -43,6 +43,8 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
   const dispatch = useAppDispatch();
   const toast = useCallback((message: string) => dispatch(demoActions.showToast(message)), [dispatch]);
   const [filters, setFiltersState] = useState<VisitorFilters>({ status: 'all', type: 'all', range: 'all', q: '', page: 1 });
+  /** The search box as typed; it reaches `filters.q` (and the request) 300 ms after the last keystroke. */
+  const [search, setSearch] = useState('');
   const [list, setList] = useState<VisitorsList | null>(null);
   const [meta, setMeta] = useState<TourModuleMeta | null>(null);
   const [loading, setLoading] = useState(false);
@@ -52,6 +54,7 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [dialog, setDialog] = useState<VisitorsDialog>(null);
   const [availability, setAvailability] = useState<Availability | null>(null);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const requestRef = useRef(0);
 
   const load = useCallback(
@@ -81,6 +84,14 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
     setFiltersState((current) => ({ ...current, ...patch, page: patch.page ?? 1 }));
   }, []);
 
+  // Debounced: one request per pause in typing, not one per keystroke (the request-id guard above drops stale answers).
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setFiltersState((current) => (current.q === search ? current : { ...current, q: search, page: 1 }));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [search]);
+
   const openProfile = useCallback(
     async (id: number) => {
       setProfileLoading(true);
@@ -106,11 +117,14 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
   const canEdit = !!meta?.canEdit && !!meta?.writesEnabled;
   const refuse = useCallback(() => toast(i18n.t(meta?.writesEnabled ? X.readOnly : X.writesOff)), [meta?.writesEnabled, toast]);
 
+  // A failed read is kept (`availabilityError`) so the slot picker can say so and offer a Retry instead of loading forever.
   const loadAvailability = useCallback(
     async (date?: string) => {
+      setAvailability(null);
+      setAvailabilityError(null);
       const result = await tourGet<Availability>(propertyId, 'booking/availability', { date, days: 7 });
       if (result.ok) setAvailability(result.data);
-      else setAvailability(null);
+      else setAvailabilityError(result.error === 'unauthorized' ? i18n.t(CORE_STRINGS.tourModules.errors.unauthorized) : i18n.t(V.booking.slotsFailed));
     },
     [propertyId]
   );
@@ -120,7 +134,6 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
   const openNewBooking = useCallback(() => {
     if (!canEdit) return refuse();
     if (settings?.salesforce) return toast(i18n.t(V.salesforce));
-    setAvailability(null);
     void loadAvailability();
     setDialog({ kind: 'newBooking', first: '', last: '', email: '', phone: '', tourType: types[0] ?? 'self_tour', scheduled: true, date: null, time: null, sms: true, busy: false });
   }, [canEdit, loadAvailability, refuse, settings, toast, types]);
@@ -157,12 +170,18 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
     void load(filters);
   }, [dialog, filters, load, propertyId, toast]);
 
+  /**
+   * The slot picker filters the open times by scheduler type, and the
+   * scheduler only knows `self_tour` and `guided_tour`. A guided booking gets
+   * the guided slots and a self-tour one its own; a virtual or walk-in
+   * booking has no lane of its own, so it is rescheduled into the self-tour
+   * slots and the dialog says so (`bookingType`) rather than refusing.
+   */
   const openReschedule = useCallback(
-    (bookingId: number, name: string, from: string, tourType: string) => {
+    (bookingId: number, name: string, from: string, bookingType: VisitorType) => {
       if (!canEdit) return refuse();
-      setAvailability(null);
       void loadAvailability();
-      setDialog({ kind: 'reschedule', bookingId, name, from, tourType, date: null, time: null, busy: false });
+      setDialog({ kind: 'reschedule', bookingId, name, from, bookingType, tourType: bookingType === 'guided' ? 'guided_tour' : 'self_tour', date: null, time: null, busy: false });
     },
     [canEdit, loadAvailability, refuse]
   );
@@ -268,7 +287,8 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
     }
   }, [dialog, toast, visitorAction]);
 
-  const exportUrl = useMemo(() => tourExportUrl(propertyId, { status: filters.status, type: filters.type, range: filters.range, q: filters.q || undefined }), [filters, propertyId]);
+  // The export carries the status / type / range filters but never the search text: the href is persistent and would keep it.
+  const exportUrl = useMemo(() => tourExportUrl(propertyId, { status: filters.status, type: filters.type, range: filters.range }), [filters.range, filters.status, filters.type, propertyId]);
 
   const rows = useMemo(() => (list ? generateVisitorRows(list) : []), [list]);
   const chips = useMemo(() => (list ? generateStatusChips(list, filters.status) : []), [list, filters.status]);
@@ -292,6 +312,8 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
     reload: () => load(filters),
     filters,
     setFilters,
+    search,
+    setSearch,
     rows,
     chips,
     onSite,
@@ -307,6 +329,7 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
     dialog,
     setDialog,
     availability,
+    availabilityError,
     picker,
     types,
     canEdit,
@@ -324,6 +347,7 @@ export const useTourVisitors = (propertyId: number, enabled = true, settings: Bo
       openPii: () => guarded(() => setDialog({ kind: 'pii', fields: {}, input: '', busy: false }), true),
       openDelete: () => guarded(() => setDialog({ kind: 'delete', input: '', busy: false }), true),
       openChat: () => setDialog({ kind: 'chat' }),
+      retryAvailability: () => loadAvailability(),
       submitDialog,
       pickDate: (date: string) => setDialog((current) => (current && (current.kind === 'newBooking' || current.kind === 'reschedule') ? { ...current, date, time: null } : current)),
       pickTime: (time: string) => setDialog((current) => (current && (current.kind === 'newBooking' || current.kind === 'reschedule') ? { ...current, time } : current)),

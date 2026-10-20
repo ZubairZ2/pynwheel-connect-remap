@@ -105,14 +105,14 @@ const Shell = () => {
       return true;
     }
     if (state.screen === 'getStarted' && state.authStep === 'confirm') {
-      dispatch({ type: 'authBack' });
+      actions.authBack();
       return true;
     }
     if (['splash', 'onboarding', 'getStarted', 'home'].includes(state.screen)) return false;
     if (state.screen === 'search' && state.signedIn && state.propertyId == null) return false;
     dispatch({ type: 'back' });
     return true;
-  }, [state.overlays, state.screen, state.wayfinding.sim, state.authStep, state.signedIn, state.propertyId, dispatch]);
+  }, [state.overlays, state.screen, state.wayfinding.sim, state.authStep, state.signedIn, state.propertyId, dispatch, actions]);
   useBackButton(back);
 
   const bundle = data.bundle;
@@ -312,7 +312,7 @@ const Shell = () => {
           onEmail={(v) => dispatch({ type: 'setEmail', value: v })}
           onPassword={(v) => dispatch({ type: 'setPassword', value: v })}
           onLogin={() => void actions.login()}
-          onBack={() => dispatch({ type: 'authBack' })}
+          onBack={actions.authBack}
           onGuest={actions.continueAsGuest}
           profile={profile}
           editing={state.editingProfile}
@@ -368,11 +368,8 @@ const Shell = () => {
               return;
             }
             if (exploreReal.id === state.propertyId) actions.openSchedule();
-            else {
-              // Switch to that property first; `selectProperty` opens Schedule when this is pending.
-              dispatch({ type: 'pendingAfterAuth', pending: 'schedule' });
-              void actions.selectProperty(exploreReal.id, exploreReal.tourable, exploreReal.name);
-            }
+            // Switch to that property first; Schedule opens only once the switch succeeded.
+            else void actions.selectProperty(exploreReal.id, exploreReal.tourable, exploreReal.name, 'schedule');
           }}
           onLive={() => (state.guest ? dispatch({ type: 'guestGate', why: 'book a live tour', pending: 'book' }) : exploreReal && exploreReal.id !== state.propertyId ? void actions.selectProperty(exploreReal.id, exploreReal.tourable, exploreReal.name) : actions.openBook())}
         />
@@ -386,7 +383,7 @@ const Shell = () => {
           propertyName={bundle?.property.name ?? null}
           verified={verified}
           verifiedLabel={verified ? `Verified · expires ${new Date(now + 365 * 86400000).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : 'Not verified'}
-          savedCount={stops.filter((s) => s.kind === 'unit' && state.favourites[s.node]).length + 2}
+          savedCount={stops.filter((s) => s.kind === 'unit' && state.favourites[s.node]).length}
           passesCount={state.tourPasses.length + (inPerson && state.accessEndsAt != null && state.accessEndsAt > now ? 1 : 0)}
           journey={{ ...state.journey, verified }}
           onBack={() => goTab('home')}
@@ -588,7 +585,7 @@ const Shell = () => {
             virtual={state.virtualTour}
             startPoints={points}
             startPointId={state.startPointId}
-            stats={state.virtualTour ? [{ v: String(all.length), l: 'stops' }, { v: `~${Math.round(minutes * 0.6)} min`, l: 'to explore' }, { v: 'Anytime', l: 'no booking' }] : [{ v: String(all.length), l: 'stops' }, { v: `~${minutes} min`, l: 'full tour' }, { v: `${ACCESS_MINUTES} min`, l: 'door access' }]}
+            stats={state.virtualTour ? [{ v: String(all.length), l: 'stops' }, { v: `~${Math.round(minutes * 0.6)} min`, l: 'to explore' }, { v: 'Anytime', l: 'no booking' }] : [{ v: String(all.length), l: 'stops' }, { v: `~${minutes} min`, l: 'full tour' }, { v: `${ACCESS_MINUTES} min`, l: `door access${DEMO}` }]}
             onPick={actions.setStartPoint}
             onGo={actions.continueToBuild}
             onBack={() => goTab('home')}

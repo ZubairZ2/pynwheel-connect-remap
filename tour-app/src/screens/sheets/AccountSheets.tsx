@@ -1,4 +1,5 @@
 import { DEMO, HOLD_HOURS, MOVE_IN_FEES } from '~/content/demoFixtures';
+import { DEMO_SCENARIOS_ENABLED } from '~/config/env';
 import { Icon } from '~/components/Icon';
 import { Button, Sheet, Toggle } from '~/components/ui';
 import { Eyebrow, Segmented } from '~/components/ui2';
@@ -297,69 +298,71 @@ export const SettingsSheet = ({ open, email, version, demo, onDemo, onResetDemo,
         <span className="pw-settings__value pw-settings__value--subtle">{version}</span>
       </div>
     </div>
-    <div className="pw-demo">
-      <div className="pw-demo__head">
-        <div>
-          <div className="pw-demo__title">Demo scenarios{DEMO}</div>
-          <div className="pw-demo__sub">The design&rsquo;s tweaks, for review. They change only what this phone shows.</div>
+    {DEMO_SCENARIOS_ENABLED ? (
+      <div className="pw-demo">
+        <div className="pw-demo__head">
+          <div>
+            <div className="pw-demo__title">Demo scenarios{DEMO}</div>
+            <div className="pw-demo__sub">The design&rsquo;s tweaks, for review. They change only what this phone shows.</div>
+          </div>
+          <button type="button" className="pw-textlink pw-textlink--sm" onClick={onResetDemo}>
+            Reset
+          </button>
         </div>
-        <button type="button" className="pw-textlink pw-textlink--sm" onClick={onResetDemo}>
-          Reset
-        </button>
+        <label className="pw-demo__field">
+          <Eyebrow>1 · Tour status (signed-in Home)</Eyebrow>
+          <select className="pw-select" value={demo.tour} onChange={(e) => onDemo({ tour: e.target.value as DemoTourScenario })}>
+            {TOUR_SCENARIOS.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="pw-demo__field">
+          <Eyebrow>2 · Location</Eyebrow>
+          <select className="pw-select" value={demo.location} onChange={(e) => onDemo({ location: e.target.value as DemoLocationScenario })}>
+            {LOCATION_SCENARIOS.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="pw-settings__row pw-settings__row--toggle">
+          <span className="pw-settings__labels">
+            <span>3 · ID verification</span>
+            <span className="pw-settings__sub">Treat the visitor as verified</span>
+          </span>
+          <Toggle on={demo.idVerified} onChange={() => onDemo({ idVerified: !demo.idVerified })} label="ID verified" />
+        </div>
+        <div className="pw-settings__row pw-settings__row--toggle">
+          <span className="pw-settings__labels">
+            <span>4 · Chat</span>
+            <span className="pw-settings__sub">A leasing agent is online</span>
+          </span>
+          <Toggle on={demo.agentOnline} onChange={() => onDemo({ agentOnline: !demo.agentOnline })} label="Agent online" />
+        </div>
+        <div className="pw-demo__field">
+          <Eyebrow>5 · Upcoming tours list</Eyebrow>
+          <Segmented options={[{ id: 'one', label: 'One' }, { id: 'multiple', label: 'Multiple' }]} value={demo.upcomingTours} onChange={(id) => onDemo({ upcomingTours: id })} />
+        </div>
+        <div className="pw-demo__field">
+          <Eyebrow>6 · Tour starting point</Eyebrow>
+          <Segmented options={[{ id: 'one', label: 'One' }, { id: 'multiple', label: 'Multiple' }]} value={demo.startingPoints} onChange={(id) => onDemo({ startingPoints: id })} />
+        </div>
+        <label className="pw-demo__field">
+          <Eyebrow>7 · Build Your Tour layout</Eyebrow>
+          <select className="pw-select" value={demo.buildLayout} onChange={(e) => onDemo({ buildLayout: e.target.value as DemoScenarios['buildLayout'] })}>
+            {LAYOUTS.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
-      <label className="pw-demo__field">
-        <Eyebrow>1 · Tour status (signed-in Home)</Eyebrow>
-        <select className="pw-select" value={demo.tour} onChange={(e) => onDemo({ tour: e.target.value as DemoTourScenario })}>
-          {TOUR_SCENARIOS.map((o) => (
-            <option key={o.id} value={o.id}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="pw-demo__field">
-        <Eyebrow>2 · Location</Eyebrow>
-        <select className="pw-select" value={demo.location} onChange={(e) => onDemo({ location: e.target.value as DemoLocationScenario })}>
-          {LOCATION_SCENARIOS.map((o) => (
-            <option key={o.id} value={o.id}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className="pw-settings__row pw-settings__row--toggle">
-        <span className="pw-settings__labels">
-          <span>3 · ID verification</span>
-          <span className="pw-settings__sub">Treat the visitor as verified</span>
-        </span>
-        <Toggle on={demo.idVerified} onChange={() => onDemo({ idVerified: !demo.idVerified })} label="ID verified" />
-      </div>
-      <div className="pw-settings__row pw-settings__row--toggle">
-        <span className="pw-settings__labels">
-          <span>4 · Chat</span>
-          <span className="pw-settings__sub">A leasing agent is online</span>
-        </span>
-        <Toggle on={demo.agentOnline} onChange={() => onDemo({ agentOnline: !demo.agentOnline })} label="Agent online" />
-      </div>
-      <div className="pw-demo__field">
-        <Eyebrow>5 · Upcoming tours list</Eyebrow>
-        <Segmented options={[{ id: 'one', label: 'One' }, { id: 'multiple', label: 'Multiple' }]} value={demo.upcomingTours} onChange={(id) => onDemo({ upcomingTours: id })} />
-      </div>
-      <div className="pw-demo__field">
-        <Eyebrow>6 · Tour starting point</Eyebrow>
-        <Segmented options={[{ id: 'one', label: 'One' }, { id: 'multiple', label: 'Multiple' }]} value={demo.startingPoints} onChange={(id) => onDemo({ startingPoints: id })} />
-      </div>
-      <label className="pw-demo__field">
-        <Eyebrow>7 · Build Your Tour layout</Eyebrow>
-        <select className="pw-select" value={demo.buildLayout} onChange={(e) => onDemo({ buildLayout: e.target.value as DemoScenarios['buildLayout'] })}>
-          {LAYOUTS.map((o) => (
-            <option key={o.id} value={o.id}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </label>
-    </div>
+    ) : null}
   </Sheet>
 );
 

@@ -519,3 +519,13 @@ The P0/P1 Next.js items and the one minimal Rails read filter were implemented t
 | H P2 direct S3/CloudFront delivery | **Open — infrastructure** | bucket CORS + edge gzip; the proxy now compresses and revalidates, which removes most of the cost |
 
 Measured after (same pair, same scripts): Cypress Terra plan ready 2,798 → 2,000 ms with the SVG requested at 534 ms (before hydration) and 5 Rails reads instead of 7; reload 2,441 → 450 ms (304); Jennifer 3638 7,017 → 1,418 ms with 495,745 bytes on the wire instead of 1,412,369; at 1.5 Mbps / 500 ms, 9,790 → 6,783 ms and 18,557 → 7,794 ms; the 8 s fonts delay no longer delays the first paint (9.4 s → 0.4–0.9 s); Unit Detail documents 489–676 KB → 52–97 KB; John Demo's image-layer floors download no SVG. The dual-map verification of October 10 passes unchanged (31 checks). Production itself was not redeployed by this work; the Heroku numbers in §D1 remain the baseline to compare against after a deploy.
+
+## Update — October 18, 2026 (final platform QA pass)
+
+Connect Tour Setup module reads measured on the clone before and after the fixes on `qa/final-platform-regression-2026-10-17`:
+Hazel `visitors?status=all` 462 ms / 500 queries → 299 ms / 13 queries; Hazel `booking/availability?days=7` 1,502 ms /
+1,872 queries → 99 ms / 25 queries (31 days: 111 ms / 49). The per-slot legacy rule cost 1,824–13,248 queries per
+property over 14 days; the rewrite costs 24–26 and matches it on 2,792 slots. Remaining hot spots: `Locks::Inventory` /
+`Stops::Rows` (59 queries for Hazel's locks), `Visitors::Query#histories` (unbounded, no community index), the visitor
+profile rebuilding the whole list, and the legacy visitors page (2,308 queries, 34 s on Hazel). Page loads from this Mac
+are dominated by S3 image fetches (Hazel Stops 10.9 s, John Demo Stops 28 s, Map & Plotting ~20 s).

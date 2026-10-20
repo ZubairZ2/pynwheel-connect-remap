@@ -2602,3 +2602,31 @@ Connect: `src/app/api/properties/[propId]/tour/[...path]/route.ts`, `models/data
   route preview and shortest path; locks (igloohome v1: 4 locks mapped, Zerv: 6 locks mapped, 10 inventory rows,
   issued codes); visitors (277 rows, status chips, profile, New booking with Funnel-managed availability);
   settings (live widget with its gates, hours, form with prospect preview, link).
+
+## 43. Final platform QA pass over the October 14–17 work (October 18, 2026)
+
+Branch `qa/final-platform-regression-2026-10-17` (from `main` `e86a28024`); report `FINAL_PLATFORM_QA_REPORT_2026-10-17.md`;
+knowledge in context.md §38. Decision: **NOT READY FOR PRODUCTION** for `main` as merged; ready for a staging release once
+the QA branch is merged, with the Bluetooth v1 and iOS features kept behind their honest unavailable states.
+
+- Production was read only (`readonly-debug`, `BEGIN READ ONLY`); Alliance = company 198 with exactly 818 Residences at
+  Escaya and 8005 Cypress Terra; both refreshed into `pynwheel_audit_clone` from a 46-table production export, verified
+  byte-identical, zero local-only rows.
+- Fixed: the Connect format-suffix authorization bypass (critical), the Self Tour App hiding every issued door code
+  (critical), three Connect refetch loops, the visitors-list (500 → 13 queries) and availability (1,872 → 25 queries)
+  storms with a 2,792-slot parity check, the legacy Elevators page crash on photo-less elevators, the SMS opt-out reset
+  on repeat bookings, and five smaller app defects. 16 tests added (9 Rails format guard, 1 Rails SMS opt-out, 6 vitest).
+- Tests: Rails 266 runs / 1,368 assertions (the four pre-existing `PartnerConfigurationsControllerTest` failures only);
+  Connect tsc + build clean; Playwright 7 real-data + 101 demo-screen passed (two `listingsAndInventory` cases encode the
+  dev-database property name); Self Tour App tsc clean, vitest 68/68, build clean; Android plugin tests 4/4 and debug APK
+  built; iOS unproven; Bluetooth hardware blocked.
+- Verified on the clone through the API and headless Chrome: every Tour Setup module read and write (stop content, lock
+  map/unmap/manual code, booking create/reschedule/cancel, rules, hours, form), cross-property refusals, the 41-page CMS
+  audit with 0 non-GET requests, the full virtual and in-person Self Tour journeys on Hazel, the mocked door-code card,
+  90 legacy pages through the in-process harness.
+
+### 43a. Resolution round (October 18, 2026)
+All open code findings from §43 / the final report were fixed on `qa/final-platform-regression-2026-10-17` and
+re-verified (Rails 267 runs with the one test-environment-only partner screen failure; Connect tsc + 7 real-data
+Playwright specs; Self Tour App tsc + vitest 77/77 + the two headless journeys; legacy harness 0 × 500 over five
+properties). Details: `FINAL_PLATFORM_QA_REPORT_2026-10-17.md` §29.

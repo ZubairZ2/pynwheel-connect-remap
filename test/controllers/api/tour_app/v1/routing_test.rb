@@ -142,6 +142,21 @@ class Api::TourApp::V1::RoutingTest < ActionDispatch::IntegrationTest
     assert_equal 'Use the side gate', r['route']['steps'][-1]['instruction'] if r['route']['steps'][-1]['to']['id'] == "bsp:#{@gate_b.id}"
   end
 
+  test 'the tour route can start and finish at a chosen entry gate, and refuses an unknown one' do
+    post_json("#{@base}/tour-route", { stop_ids: [@u101], start_stop_id: "bsp:#{@gate_b.id}" })
+    assert_response :success, response.body
+    assert_equal "bsp:#{@gate_b.id}", body['route']['start']['id']
+    assert_equal "bsp:#{@gate_b.id}", body['route']['destination']['id']
+    assert_equal "bsp:#{@gate_b.id}", body['segments'][0]['from_stop_id']
+
+    post_json("#{@base}/tour-route", { stop_ids: [@u101], start_stop_id: 'bsp:999999' })
+    assert_response :unprocessable_entity
+    assert_includes response.body, 'unknown_start'
+
+    post_json("#{@base}/tour-route", { stop_ids: [@u101], start_stop_id: @u101 })
+    assert_response :unprocessable_entity, 'a unit is not a starting point'
+  end
+
   test 'the tour route orders the chosen stops by the tour rule and keeps one segment per stop' do
     post_json("#{@base}/tour-route", { stop_ids: [@u301, @gym_key, @u101, @u201, @u101] })
     assert_response :success, response.body

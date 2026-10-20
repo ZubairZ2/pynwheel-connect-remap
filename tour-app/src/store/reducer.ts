@@ -1,4 +1,5 @@
 import type { LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
+import { DEMO_SCENARIOS_ENABLED } from '~/config/env';
 import { backScreenOf, topOverlay, type Overlay, type Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
 import {
@@ -55,7 +56,7 @@ export type Action =
   | { type: 'guestSignIn' }
   | { type: 'guestFound'; via: GuestPropertySource }
   | { type: 'guestChangeProperty' }
-  | { type: 'selectProperty'; propertyId: number }
+  | { type: 'selectProperty'; propertyId: number; then?: 'schedule' | null }
   | { type: 'sessionExpired'; message: string }
   | { type: 'signOut' }
   | { type: 'toggleStop'; node: string }
@@ -104,6 +105,7 @@ export type Action =
   | { type: 'applyStep'; step: 'details' | 'hold' }
   | { type: 'applySubmitting' }
   | { type: 'applyDone'; message: string }
+  | { type: 'applyFailed'; message: string }
   | { type: 'toggleNotif'; key: keyof AppState['notifs'] }
   | { type: 'toggleHelp'; id: string }
   | { type: 'setSearchQuery'; value: string }
@@ -255,7 +257,8 @@ export const reducer = (state: AppState, action: Action): AppState => {
       next.lockRequest = null;
       next.lockPins = next.lockPins ?? {};
       next.lockKeys = {};
-      next.demo = { ...initialDemoScenarios(), ...(next.demo ?? {}) };
+      // A build without the Demo scenarios panel cannot reset a forced scenario, so it never restores one.
+      next.demo = DEMO_SCENARIOS_ENABLED ? { ...initialDemoScenarios(), ...(next.demo ?? {}) } : initialDemoScenarios();
       next.notifs = { ...initialAppState().notifs, ...(next.notifs ?? {}) };
       next.authStep = 'email';
       next.location = { ...state.location, sheet: null, locating: false };
@@ -267,7 +270,8 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return next;
     }
     case 'navigate':
-      return { ...state, screen: action.screen, overlays: [] };
+      // Going somewhere explicitly abandons whatever a sign-in or property pick was meant to open next.
+      return { ...state, screen: action.screen, overlays: [], pendingAfterAuth: null };
     case 'back': {
       const top = topOverlay(state.overlays);
       if (top) return { ...state, overlays: without(state.overlays, top) };
@@ -306,17 +310,21 @@ export const reducer = (state: AppState, action: Action): AppState => {
       const pending = state.pendingAfterAuth;
       const screen: Screen = state.propertyId == null ? 'search' : pending === 'schedule' ? 'schedule' : 'home';
       const overlays: Overlay[] = state.propertyId != null && pending === 'book' ? ['book'] : state.propertyId != null && pending === 'upcoming' ? ['upcoming'] : state.propertyId != null && pending === 'history' ? ['history'] : [];
-      return { ...state, screen, overlays, authStep: 'email', editingProfile: false, pendingAfterAuth: null, guestGateWhy: null, scheduleDone: false };
+      // Without a property the visitor picks one first; a pending Schedule survives so `selectProperty` can open it.
+      const keep = state.propertyId == null && pending === 'schedule' ? pending : null;
+      return { ...state, screen, overlays, authStep: 'email', editingProfile: false, pendingAfterAuth: keep, guestGateWhy: null, scheduleDone: false };
     }
     case 'editProfile':
       return { ...state, editingProfile: action.on };
     case 'setProfileField':
       return { ...state, profileEdits: { ...state.profileEdits, [action.field]: action.value } };
     case 'authBack':
-      if (state.authStep === 'confirm') return { ...state, authStep: 'email', editingProfile: false };
+      // Back from the confirmation abandons the sign-in: the session is gone (the action logs the token out).
+      if (state.authStep === 'confirm') return { ...state, authStep: 'email', editingProfile: false, signedIn: false, user: null, propertyId: null, password: '', profileEdits: {} };
       return state.guest ? { ...state, screen: 'home', pendingAfterAuth: null, guestGateWhy: null } : { ...state, screen: 'onboarding' };
     case 'continueAsGuest':
-      return { ...state, screen: 'home', overlays: [], guest: true, guestProperty: null, pendingAfterAuth: null, guestGateWhy: null, scheduledTour: null };
+      // Guest mode never coexists with a live session.
+      return { ...state, screen: 'home', overlays: [], guest: true, guestProperty: null, pendingAfterAuth: null, guestGateWhy: null, scheduledTour: null, signedIn: false, user: null, propertyId: state.signedIn ? null : state.propertyId, authStep: 'email', password: '' };
     case 'pendingAfterAuth':
       return { ...state, pendingAfterAuth: action.pending };
     case 'guestGate':
@@ -328,13 +336,17 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'guestChangeProperty':
       return { ...state, guestProperty: null };
     case 'selectProperty':
-      if (state.propertyId === action.propertyId) return { ...state, screen: 'home', overlays: [], searchQuery: '' };
+      {
+      const then = action.then ?? state.pendingAfterAuth;
+      if (state.propertyId === action.propertyId) return { ...state, screen: then === 'schedule' ? 'schedule' : 'home', overlays: [], searchQuery: '', pendingAfterAuth: null };
       // A new property: every tour, route and selection belonged to the old one.
-      return { ...state, ...propertyScoped(), propertyId: action.propertyId, screen: state.pendingAfterAuth === 'schedule' ? 'schedule' : 'home', overlays: [], searchQuery: '', pendingAfterAuth: null, exploreId: null };
+      return { ...state, ...propertyScoped(), propertyId: action.propertyId, screen: then === 'schedule' ? 'schedule' : 'home', overlays: [], searchQuery: '', pendingAfterAuth: null, exploreId: null };
+      }
     case 'sessionExpired':
       return { ...initialAppState(), screen: 'getStarted', signedIn: false, email: state.email, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, demo: state.demo, toast: action.message };
     case 'signOut':
-      return { ...initialAppState(), screen: 'getStarted', signedIn: false, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, demo: state.demo, verified: state.verified };
+      // `verified` belongs to the account that signed out: the next account on this phone must not inherit it.
+      return { ...initialAppState(), screen: 'getStarted', signedIn: false, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, demo: state.demo };
     case 'toggleStop':
       return { ...state, selected: { ...state.selected, [action.node]: !state.selected[action.node] } };
     case 'selectStops': {
@@ -414,7 +426,8 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, lockRequest: { node: action.node, propertyId: state.propertyId, status: 'loading', error: null } };
     case 'lockPinReady':
       if (action.propertyId !== state.propertyId) return state; // issued for a property the visitor has since left
-      return { ...state, lockPins: { ...state.lockPins, [action.node]: action.pin }, unlocked: { ...state.unlocked, [action.node]: true }, lockRequest: null };
+      // Only this stop's in-flight status is cleared: another stop's request may still be running.
+      return { ...state, lockPins: { ...state.lockPins, [action.node]: action.pin }, unlocked: { ...state.unlocked, [action.node]: true }, lockRequest: state.lockRequest?.node === action.node ? null : state.lockRequest };
     case 'lockPinFailed':
       if (action.propertyId !== state.propertyId) return state;
       return { ...state, lockRequest: { node: action.node, propertyId: action.propertyId, status: 'error', error: action.message } };
@@ -428,7 +441,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, lockRequest: { node: action.node, propertyId: action.propertyId, status: action.status, error: null } };
     case 'lockUnlocked':
       if (action.propertyId !== state.propertyId) return state;
-      return { ...state, unlocked: { ...state.unlocked, [action.node]: true }, lockRequest: null };
+      return { ...state, unlocked: { ...state.unlocked, [action.node]: true }, lockRequest: state.lockRequest?.node === action.node ? null : state.lockRequest };
     case 'openNote':
       return { ...state, overlays: withOnTop(state.overlays, 'note'), noteDraft: state.notes[action.node] ?? '' };
     case 'setNoteDraft':
@@ -471,6 +484,9 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, applySubmitting: true };
     case 'applyDone':
       return { ...state, applySubmitting: false, applyStep: 'details', overlays: without(state.overlays, 'apply'), toast: action.message, journey: { ...state.journey, applied: true } };
+    case 'applyFailed':
+      // The application did not start: the sheet closes with the reason, and the journey must not say "Applied".
+      return { ...state, applySubmitting: false, applyStep: 'details', overlays: without(state.overlays, 'apply'), toast: action.message };
     case 'toggleNotif':
       return { ...state, notifs: { ...state.notifs, [action.key]: !state.notifs[action.key] } };
     case 'toggleHelp':

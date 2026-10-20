@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ApiGraph, ApiPropertyDetail, ApiRoute, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
+import { ApiError } from './apiClient';
 import { amenityIcon, floorLabelOf, parseBundle, parseDistances, parseLock, parseLockBluetoothKey, parseLockPin, parseRoute, parseTourRoute } from './parsers';
 
 const graph: ApiGraph = {
@@ -141,5 +142,24 @@ describe('smart locks', () => {
   it('parseLockBluetoothKey keeps the lock name, the key and the window; the device id stands in for a missing name', () => {
     const access = parseLockBluetoothKey({ success: true, stop_id: 'unit:1', provider: 'Igloohome', mode: 'v1', device_id: 'SK3E14001756', lock_name: '', bluetooth_key: 'k', key_id: null, guest_pin: null, valid_from: null, valid_until: '2026-10-16T15:55:00+00:00' }, 7);
     expect(access).toEqual({ lockName: 'SK3E14001756', key: 'k', keyId: null, guestPin: null, validFrom: null, validUntil: '2026-10-16T15:55:00+00:00', issuedAt: 7 });
+  });
+
+  it('parseLockBluetoothKey refuses an answer that names no lock at all', () => {
+    expect(() => parseLockBluetoothKey({ success: true, stop_id: 'unit:1', provider: 'Igloohome', mode: 'v1', device_id: null, lock_name: '', bluetooth_key: 'k', key_id: null, guest_pin: null, valid_from: null, valid_until: null }, 7)).toThrow(ApiError);
+    expect(() => parseLockBluetoothKey({ success: true, stop_id: 'unit:1', provider: 'Igloohome', mode: 'v1', device_id: null, lock_name: '', bluetooth_key: 'k', key_id: null, guest_pin: null, valid_from: null, valid_until: null }, 7)).toThrow(/without the lock/);
+  });
+});
+
+describe('malformed route answers', () => {
+  it('a missing route is a typed malformed_response, never a TypeError', () => {
+    expect(() => parseRoute(undefined)).toThrow(ApiError);
+    expect(() => parseTourRoute({ success: true, graph_version: 'v', segments: [], skipped: [] } as unknown as ApiTourRouteResponse)).toThrow(/without a route/);
+    try {
+      parseTourRoute(null);
+    } catch (error) {
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).code).toBe('malformed_response');
+    }
+    expect(() => parseTourRoute({ success: true, graph_version: 'v', route, segments: [{ stop_id: 'unit:101', tour_stop_id: 1, from_stop_id: 'tour_start:7', route: undefined as unknown as ApiRoute }], skipped: [] })).toThrow(ApiError);
   });
 });

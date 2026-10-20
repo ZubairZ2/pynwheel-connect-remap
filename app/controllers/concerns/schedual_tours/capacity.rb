@@ -44,23 +44,71 @@ module SchedualTours
       check_limit(nil, counts[:total], counts[:total_per_day], counts[:self_tour], counts[:guided], community)
     end
 
-    # The widget's rule, verbatim.
+    # The widget's rule: `community.community_tour` is a query each time it is
+    # read, so the tour and its setting are resolved once here (a missing tour
+    # raises NoMethodError, as the original inline rule did) and the rule
+    # itself lives in `limits_for`.
     def check_limit(tour_type, total_count, total_count_per_day, self_tour_count, guided_count, community)
+      tour = community.community_tour
+      limits_for(tour, tour.tour_setting, total_count, total_count_per_day, self_tour_count, guided_count)
+    end
+
+    # The widget's rule, verbatim, on a resolved tour and tour setting.
+    def limits_for(tour, setting, total_count, _total_count_per_day, self_tour_count, guided_count)
       limit_type = []
 
-      if (community.community_tour.tour_setting.do_limit_max_tour && community.community_tour.tour_setting.limit_max_tour.present? && total_count >= community.community_tour.tour_setting.limit_max_tour.to_i)
+      if (setting.do_limit_max_tour && setting.limit_max_tour.present? && total_count >= setting.limit_max_tour.to_i)
         limit_type << "virtual_tour"
       end
 
-      if community.community_tour.tour_setting.do_limit_max_tour && community.community_tour.max_self_tour_users.present? && community.community_tour.max_self_tour_users.present? && !(self_tour_count < community.community_tour.max_self_tour_users.to_i)
+      if setting.do_limit_max_tour && tour.max_self_tour_users.present? && tour.max_self_tour_users.present? && !(self_tour_count < tour.max_self_tour_users.to_i)
         limit_type << "self_tour"
       end
 
-      if community.community_tour.tour_setting.do_limit_max_tour && community.community_tour.max_guided_tour_users.present? && community.community_tour.max_guided_tour_users.present? && !(guided_count < community.community_tour.max_guided_tour_users.to_i)
+      if setting.do_limit_max_tour && tour.max_guided_tour_users.present? && tour.max_guided_tour_users.present? && !(guided_count < tour.max_guided_tour_users.to_i)
         limit_type << "guided_tour"
       end
 
       return limit_type
+    end
+
+    # One day's bookings loaded once, the per-slot window counts and the
+    # widget's rule computed in Ruby: Bookings::Availability asks for every
+    # slot of every day it renders (the SQL variant above costs 4 COUNTs and
+    # several tour lookups per slot — ~25 queries a slot, thousands a week).
+    # Same window as `window_counts`: [slot − (interval − 1), slot + (interval − 1)],
+    # read as a time-of-day range exactly like the SQL BETWEEN (a window that
+    # wraps past midnight is empty, as the SQL range is).
+    class DayCounter
+      def initialize(community, date, tour:, setting:, interval:)
+        @tour = tour
+        @setting = setting
+        @step = interval - 1
+        rows = community.schedual_tours.where(tour_date: date).where.not(tour_user_id: nil).pluck(:tour_time, :tour_type)
+        @rows = rows.map { |time, type| [time && (time.hour * 60 + time.min), type] }
+        @total_per_day = @rows.count { |_minute, type| non_virtual?(type) }
+      end
+
+      def limit_exceeded_types(time)
+        slot = time.is_a?(String) ? Time.zone.parse(time) : time
+        lo = minute_of(slot - @step.minutes)
+        hi = minute_of(slot + @step.minutes)
+        window = lo <= hi ? @rows.select { |minute, _type| minute && minute >= lo && minute <= hi } : []
+        Capacity.limits_for(@tour, @setting,
+                            window.count { |_minute, type| non_virtual?(type) }, @total_per_day,
+                            window.count { |_minute, type| type == 'self_tour' }, window.count { |_minute, type| type == 'guided_tour' })
+      end
+
+      private
+
+        def minute_of(time)
+          time.hour * 60 + time.min
+        end
+
+        # SQL's `tour_type != 'virtual_tour'` leaves NULL types out.
+        def non_virtual?(type)
+          !type.nil? && type != 'virtual_tour'
+        end
     end
   end
 end

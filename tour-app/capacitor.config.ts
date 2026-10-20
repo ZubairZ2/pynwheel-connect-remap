@@ -34,6 +34,9 @@ const config: CapacitorConfig = {
   appName: 'Pynwheel Tour',
   webDir: 'dist',
   backgroundColor: '#FFFFFF',
+  // The bridge's default ('debug') prints every plugin call with its options to logcat / Xcode,
+  // including the Bluetooth guest key passed to IgloohomeBle.connect. Never log them.
+  loggingBehavior: 'none',
   ios: {
     contentInset: 'never',
     scheme: 'Pynwheel Tour',

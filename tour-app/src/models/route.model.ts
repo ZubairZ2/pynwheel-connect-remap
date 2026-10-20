@@ -115,6 +115,8 @@ export interface RouteOptions {
   avoidBlockers?: boolean;
   fromFloor?: number | null;
   toFloor?: number | null;
+  /** The entry gate (`bsp:<id>`) or tour start the visitor chose on Before You Start; the tour starts and ends there. */
+  startId?: string | null;
 }
 
 /** A tour's route: the chain start → every chosen stop → start, with each stop's own segment. */

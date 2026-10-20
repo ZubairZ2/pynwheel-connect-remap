@@ -107,3 +107,13 @@ Screenshots of the headless real-API runs: `<scratchpad>/real/*.png` and `<scrat
 - The dev-only verification account's password lives in the session scratchpad; the browser pane could not be signed in with it
   (the auto-mode classifier refuses to read it), so the real-API pass is headless; the owner can sign in on the :3014 pane tab to
   drive it by hand.
+
+## I. Final platform QA pass (October 18, 2026)
+
+Every screen and sheet listed in §A was walked again in headless Chrome on real Hazel data (virtual and in-person
+journeys, all seven Demo scenarios present and switchable, 0 console errors). One critical defect was found in the
+redesign: the Stop screen's lock card disappeared as soon as a door code was issued (§B "unified Stop screen"); fixed.
+Simulated copy that is still unmarked on real properties: the location line ("You're 0.3 mi from …"), the 45-minute door
+access text, the saved-units count, the chat sheet's office hours. The live Claude Design file could not be opened from
+this session (sign-in wall), so the comparison used this report and the brief. Details:
+`FINAL_PLATFORM_QA_REPORT_2026-10-17.md` §15–§16, §24–§25.

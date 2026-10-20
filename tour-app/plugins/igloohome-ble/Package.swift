@@ -16,7 +16,9 @@ let package = Package(
         .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "8.0.0"),
         .package(url: "https://github.com/ReactiveX/RxSwift.git", from: "5.1.0"),
         .package(url: "https://gitlab.com/igloohome/rxbluetoothkit.git", exact: "6.1.2"),
-        .package(url: "https://github.com/NordicSemiconductor/IOS-DFU-Library.git", from: "4.11.1")
+        // Pinned: releases >= 4.13 renamed the SPM product `iOSDFULibrary` to `NordicDFU`, which the SDK's module
+        // interface (and the product name below) does not know. Only 4.11.x still ships the `iOSDFULibrary` product.
+        .package(url: "https://github.com/NordicSemiconductor/IOS-DFU-Library.git", exact: "4.11.1")
     ],
     targets: [
         .binaryTarget(name: "IgloohomeSDK", path: "ios/IgloohomeSDK.xcframework"),

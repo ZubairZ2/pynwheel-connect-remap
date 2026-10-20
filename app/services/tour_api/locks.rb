@@ -19,8 +19,10 @@ module TourApi
   # * `bluetooth_key!` issues the igloohome v1 guest access for one stop the
   #   way the legacy tour start did (`IgloohomeService#assign_guest_bluetooth_key`):
   #   a Bluetooth guest key from Pynwheel's partner account, 90 minutes from
-  #   now, plus the backup hourly PIN. The app opens the lock with the key
-  #   through the native igloohome SDK (the Capacitor plugin, October 2026).
+  #   now, plus the backup hourly PIN; a v1 account with its own igloohome
+  #   API client gets the key from that client's eKey endpoint instead. The
+  #   app opens the lock with the key through the native igloohome SDK (the
+  #   Capacitor plugin, October 2026).
   #
   # The other vendors (Latch, Zerv, Dwelo, EdgeState, Manual) are reported as
   # present but not supported: this app has no SDK for them.
@@ -69,12 +71,17 @@ module TourApi
                  'bluetooth'
                end
       device_id = Text.presence(lock&.device_id)
+      # The property's active vendors (`communities.multiple_locks_provider`,
+      # the Locks tab's "enabled" switch per provider) gate the issuance the
+      # way the legacy tour start did: a mapped device of a vendor the staff
+      # turned off is reported, never opened.
+      vendor_on = Array(index.community.multiple_locks_provider).include?('Igloohome')
       {
         provider: provider,
         mode: mode,
         method: method,
         device_id: device_id,
-        supported: igloo && (PIN_MODES.include?(mode) || mode == 'v1') && device_id.present? && index.community.enable_locks ? true : false
+        supported: igloo && vendor_on && (PIN_MODES.include?(mode) || mode == 'v1') && device_id.present? && index.community.enable_locks ? true : false
       }
     end
 
@@ -83,6 +90,7 @@ module TourApi
       lock = describe(index(community), record)
       raise ApiError.unprocessable('no_lock', 'This stop has no smart lock.') unless lock
       raise ApiError.unprocessable('locks_disabled', 'Smart locks are turned off for this property.') unless community.enable_locks
+      raise ApiError.unprocessable('lock_unsupported', VENDOR_OFF) if lock[:provider] == 'Igloohome' && !vendor_on?(community)
       raise ApiError.unprocessable('lock_unsupported', unsupported_message(lock)) unless lock[:supported]
       raise ApiError.unprocessable('lock_unsupported', 'This lock opens over Bluetooth, not with a door code.') unless lock[:method] == 'pin'
 
@@ -92,6 +100,7 @@ module TourApi
       valid_until = (now + PIN_HOURS.hours).strftime('%Y-%m-%dT%H:00:00%:z')
       access_name = access_name_of(target, lock[:mode])
       pin = issue(community, lock, now, access_name, valid_from, valid_until, stop_id)
+      record_issue!(community, record, target, guest_pin: pin)
       {
         success: true,
         stop_id: stop_id,
@@ -106,14 +115,19 @@ module TourApi
     end
 
     # The igloohome v1 guest access for one stop: the Bluetooth guest key and
-    # the backup PIN from the partner API, exactly as the legacy tour start
-    # asked for them. The key travels to the phone once and is never logged.
+    # the backup PIN, exactly as the legacy tour start asked the partner API
+    # for them. A v1 account that holds its own igloohome API client (client
+    # id and secret; no production v1 account does) is asked through that
+    # client instead (`/devices/:id/ekey`, the developer API's eKey), because
+    # the partner key only knows locks enrolled under Pynwheel's partner
+    # account. The key travels to the phone once and is never logged.
     def bluetooth_key!(community, built, stop_id)
       record = stop_record!(community, built, stop_id)
       idx = index(community)
       lock = describe(idx, record)
       raise ApiError.unprocessable('no_lock', 'This stop has no smart lock.') unless lock
       raise ApiError.unprocessable('locks_disabled', 'Smart locks are turned off for this property.') unless community.enable_locks
+      raise ApiError.unprocessable('lock_unsupported', VENDOR_OFF) if lock[:provider] == 'Igloohome' && !vendor_on?(community)
       raise ApiError.unprocessable('lock_unsupported', unsupported_message(lock)) unless lock[:supported]
       raise ApiError.unprocessable('lock_unsupported', 'This lock opens with a door code, not over Bluetooth.') unless lock[:method] == 'bluetooth' && lock[:provider] == 'Igloohome'
 
@@ -121,15 +135,20 @@ module TourApi
       row = idx.locks[[target.class.name, target.id]]
       now = Time.now.in_time_zone(community.get_time_zone)
       access = begin
-        IgloohomeService.new(community, now, nil).guest_access_for(row)
+        if developer_client?(idx.account)
+          developer_guest_access(community, idx.account, lock, target, now)
+        else
+          IgloohomeService.new(community, now, nil).guest_access_for(row)
+        end
       rescue StandardError => e
         Rails.logger.warn("[tour-api] lock key failed property=#{community.id} stop=#{stop_id} #{e.class}")
         raise ApiError.new(502, 'lock_unavailable', 'The lock service could not be reached. Please try again.')
       end
       unless access[:bluetooth_key]
-        Rails.logger.warn("[tour-api] lock key refused property=#{community.id} stop=#{stop_id} status=#{access[:status]}")
+        Rails.logger.warn("[tour-api] lock key refused property=#{community.id} stop=#{stop_id} status=#{access[:status]}#{" reason=#{access[:reason].inspect}" if access[:reason]}")
         raise ApiError.new(502, 'lock_unavailable', 'The lock service did not issue a Bluetooth key. Please try again.')
       end
+      record_issue!(community, record, target, guest_pin: access[:guest_pin], guest_bluetooth_key: access[:bluetooth_key], guest_key: access[:key_id])
 
       {
         success: true,
@@ -155,6 +174,26 @@ module TourApi
 
       model = match[1] == 'unit' ? Unit : Amenity
       model.find_by(id: match[2].to_i, community_id: community.id) || raise(invalid)
+    end
+
+    VENDOR_OFF = 'This property\'s igloohome locks are switched off.'
+
+    # `communities.multiple_locks_provider` lists the vendors staff turned on.
+    def vendor_on?(community)
+      Array(community.multiple_locks_provider).include?('Igloohome')
+    end
+
+    # The audit row the legacy tour start wrote per issuance (`igloohome_guests`,
+    # what the Locks tab lists as "issued codes"). The app's visitor is a CMS
+    # user, not a TourUser, so `tour_user_id` stays nil; a failure to write
+    # the row never fails the issuance.
+    def record_issue!(community, record, target, guest_pin: nil, guest_bluetooth_key: nil, guest_key: nil)
+      IgloohomeGuest.create!(
+        community_id: community.id, tour_user_id: nil, guest_pin: guest_pin, guest_bluetooth_key: guest_bluetooth_key, guest_key: guest_key,
+        stop_id: target.id, stop_type: target.class.name, guest_of_stop_type: record.class.name, guest_of_stop_id: record.id
+      )
+    rescue StandardError => e
+      Rails.logger.warn("[tour-api] lock audit row not written property=#{community.id} #{e.class}: #{e.message[0, 120]}")
     end
 
     def unsupported_message(lock)
@@ -201,17 +240,68 @@ module TourApi
     # account is therefore answered the way the CMS would: one fresh
     # client-credentials token, stored as the service stores it, one retry.
     def igloohome_pin(community, lock, now, access_name, valid_from, valid_until)
-      service = IgloohomeLockService.new(community.id, now)
-      response = service.generate_hourly_pin(lock[:device_id], access_name, valid_from, valid_until)
-      account = community.igloohome
-      return response unless status_of(response) == 401 && account&.client_id.present? && account.client_secret.present?
+      with_renewed_token(community, now) { |service| service.generate_hourly_pin(lock[:device_id], access_name, valid_from, valid_until) }
+    end
 
-      token = service.client_credentials
+    # Runs one igloohome API request through `IgloohomeLockService`; a 401 on
+    # an account with client credentials is retried once on a fresh token.
+    def with_renewed_token(community, now)
+      response = yield IgloohomeLockService.new(community.id, now)
+      account = community.igloohome
+      return response unless status_of(response) == 401 && developer_client?(account)
+
+      token = IgloohomeLockService.new(community.id, now).client_credentials
       value = token.respond_to?(:parsed_response) && token.parsed_response.is_a?(Hash) ? Text.presence(token.parsed_response['access_token'].to_s) : nil
       return response unless value
 
       account.update_columns(access_token: value, access_token_expiry: 1.day.from_now, is_authorized_with_pynwheel: true)
-      IgloohomeLockService.new(community.id, now).generate_hourly_pin(lock[:device_id], access_name, valid_from, valid_until)
+      yield IgloohomeLockService.new(community.id, now)
+    end
+
+    def developer_client?(account)
+      account.present? && account.client_id.present? && account.client_secret.present?
+    end
+
+    # The v1 guest access through the account's own igloohome API client: the
+    # eKey for the legacy window and permission set, then the backup hourly
+    # algoPIN (the door-code request, named after the stop). The same answer
+    # shape as `IgloohomeService#guest_access_for`; a refusal leaves the key
+    # nil with the vendor's status, a missing PIN is not a refusal.
+    def developer_guest_access(community, account, lock, target, now)
+      # The eKey endpoint wants whole minutes with an explicit offset: `YYYY-MM-DDTHH:mm:00+hh:mm`.
+      valid_from = now.change(sec: 0)
+      valid_until = valid_from + KEY_MINUTES.minutes
+      response = with_renewed_token(community, now) do |service|
+        service.generate_bluetooth_key(lock[:device_id], valid_from.strftime('%Y-%m-%dT%H:%M:00%:z'), valid_until.strftime('%Y-%m-%dT%H:%M:00%:z'), IgloohomeService::GUEST_KEY_PERMISSIONS)
+      end
+      parsed = status_of(response) == 200 && response.respond_to?(:parsed_response) ? response.parsed_response : nil
+      key = parsed.is_a?(Hash) ? Text.presence(parsed['bluetoothGuestKey'].to_s) : nil
+      guest_pin = if key
+                    pin_from = now.strftime('%Y-%m-%dT%H:00:00%:z')
+                    pin_until = (now + PIN_HOURS.hours).strftime('%Y-%m-%dT%H:00:00%:z')
+                    pin_of(with_renewed_token(community, now) { |service| service.generate_hourly_pin(lock[:device_id], access_name_of(target, 'igloohome'), pin_from, pin_until) })
+                  end
+      {
+        bluetooth_key: key,
+        key_id: key && parsed['keyId'].present? ? parsed['keyId'].to_s : nil,
+        guest_pin: guest_pin,
+        valid_from: valid_from,
+        valid_until: valid_until,
+        status: status_of(response),
+        reason: key ? nil : refusal_reason(response)
+      }
+    end
+
+    # The vendor's own words for a refusal (its `message` / `error` field, or
+    # a short plain body), for the log line; never a key or a token.
+    def refusal_reason(response)
+      body = response.respond_to?(:parsed_response) ? response.parsed_response : nil
+      text = case body
+             when Hash then body['message'] || body['error'] || body['errorMessage'] || body.to_json
+             when nil then nil
+             else body.to_s
+             end
+      Text.presence(text.to_s.gsub(/\s+/, ' ')[0, 200])
     end
 
     def pin_of(response)

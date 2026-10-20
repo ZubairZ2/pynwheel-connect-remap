@@ -16,7 +16,9 @@ export type BluetoothPhase = 'preparing' | 'scanning' | 'connecting' | 'unlockin
 export class BluetoothUnlockError extends Error {
   constructor(
     public readonly code: IgloohomeBleErrorCode,
-    message: string
+    message: string,
+    /** The SDK's own words for the failure (its exception message or class), when the plugin passed them on. */
+    public readonly detail: string | null = null
   ) {
     super(message);
     this.name = 'BluetoothUnlockError';
@@ -50,8 +52,13 @@ export const toUnlockError = (error: unknown): BluetoothUnlockError => {
   const raw = error as { code?: unknown; data?: { code?: unknown }; message?: unknown } | null;
   const candidate = (raw?.code ?? raw?.data?.code) as string | undefined;
   const code: IgloohomeBleErrorCode = candidate === 'UNAVAILABLE' || candidate === 'UNIMPLEMENTED' ? 'unavailable' : KNOWN.includes(candidate as IgloohomeBleErrorCode) ? (candidate as IgloohomeBleErrorCode) : 'sdk_error';
-  return new BluetoothUnlockError(code, MESSAGES[code]);
+  // The SDK's reason travels with the lock-side failures (the plugin rejects with the exception's message),
+  // so a tester or the leasing office can quote it; the other codes already say what to do.
+  const detail = DETAILED.includes(code) && typeof raw?.message === 'string' && raw.message.trim() ? raw.message.trim() : null;
+  return new BluetoothUnlockError(code, detail ? `${MESSAGES[code]} (${detail})` : MESSAGES[code], detail);
 };
+
+const DETAILED: IgloohomeBleErrorCode[] = ['connect_failed', 'invalid_key', 'not_connected', 'unlock_failed', 'sdk_error'];
 
 export interface UnlockOptions {
   /** The lock's Bluetooth name (the CMS device id, e.g. `SK3E14001756`). */
@@ -94,6 +101,8 @@ const waitForLock = (plugin: IgloohomeBlePlugin, lockName: string, signal: Abort
     plugin
       .addListener('scanStopped', (event: ScanStoppedEvent) => {
         if (event.reason === 'error') finish(new BluetoothUnlockError('sdk_error', event.message || MESSAGES.sdk_error));
+        // A scan stopped by `reset` / `stopScan` or by the app going to the background was interrupted, not exhausted.
+        else if (event.reason === 'paused' || event.reason === 'stopped') finish(new BluetoothUnlockError('cancelled', MESSAGES.cancelled));
         else finish(new BluetoothUnlockError('not_found', MESSAGES.not_found));
       })
       .then((h) => handles.push(h))

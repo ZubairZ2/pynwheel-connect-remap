@@ -372,6 +372,14 @@ const LockPane = ({ c, onOpenLocks }: { c: TourStopsController; onOpenLocks: () 
       {c.lockChoice === 'smart' && (
         <>
           {c.inventoryLoading && <div className="bo-tx__meta">{i18n.t(X.loading)}</div>}
+          {c.inventoryError && !c.inventoryLoading && (
+            <div className="bo-error" role="alert">
+              {c.inventoryError}{' '}
+              <button type="button" className="bo-tx__btn" onClick={() => void c.retryInventory()}>
+                {i18n.t(X.retry)}
+              </button>
+            </div>
+          )}
           {noDevices && (
             <div className="bo-tx__note">
               {i18n.t(ST.lock.noProvider)}{' '}
@@ -425,6 +433,31 @@ const LockPane = ({ c, onOpenLocks }: { c: TourStopsController; onOpenLocks: () 
           {i18n.t(ST.lock.openLocks)}
         </button>
       </div>
+      <Modal
+        open={!!c.lockConfirm}
+        title={i18n.t(ST.lock.releaseTitle)}
+        width={440}
+        onClose={c.cancelLockChoice}
+        closeLabel={i18n.t(X.close)}
+        className="bo-map__dialog"
+        footer={
+          <>
+            <button type="button" className="bo-btn bo-btn--secondary" onClick={c.cancelLockChoice}>
+              {i18n.t(X.cancel)}
+            </button>
+            <button type="button" className="bo-btn bo-btn--primary bo-map__btn--danger" disabled={c.lockBusy} onClick={c.confirmLockChoice} data-testid="lock-release-confirm">
+              {i18n.t(ST.lock.releaseConfirm)}
+            </button>
+          </>
+        }
+      >
+        {c.lockConfirm && lock?.device && (
+          <div className="bo-dlg bo-dlg--stacked">
+            <p className="bo-map__dialogtext">{t(ST.lock.releaseBody, { name: lock.device.name, provider: lock.device.vendor, choice: i18n.t(ST.lock[c.lockConfirm]) })}</p>
+            <p className="bo-map__dialognote">{i18n.t(X.confirmNote)}</p>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
@@ -548,7 +581,7 @@ const PathPanel = ({ c }: { c: TourStopsController }) => {
       <div className="bo-ts__ends">
         <div className="bo-ts__end">
           <span className="bo-ts__endlabel">{i18n.t(ST.path.from)}</span>
-          <select className="bo-ts__endselect" aria-label={i18n.t(ST.path.from)} value={c.path.from} onChange={(event) => c.setPath({ ...c.path, from: event.target.value })}>
+          <select className="bo-ts__endselect" aria-label={i18n.t(ST.path.from)} value={c.path.from} onChange={(event) => c.setPath({ ...c.path, from: event.target.value, fromFloor: null })}>
             {c.endpoints.map((row) => (
               <option key={row.key} value={row.key}>
                 {row.group} · {row.label}
@@ -556,12 +589,12 @@ const PathPanel = ({ c }: { c: TourStopsController }) => {
             ))}
           </select>
         </div>
-        <button type="button" className="bo-ts__swap" aria-label={i18n.t(ST.path.swap)} title={i18n.t(ST.path.swap)} onClick={() => c.setPath({ ...c.path, from: c.path.to, to: c.path.from })}>
+        <button type="button" className="bo-ts__swap" aria-label={i18n.t(ST.path.swap)} title={i18n.t(ST.path.swap)} onClick={() => c.setPath({ ...c.path, from: c.path.to, to: c.path.from, fromFloor: c.path.toFloor, toFloor: c.path.fromFloor })}>
           ⇅
         </button>
         <div className="bo-ts__end" style={{ borderBottom: 'none' }}>
           <span className="bo-ts__endlabel">{i18n.t(ST.path.to)}</span>
-          <select className="bo-ts__endselect" aria-label={i18n.t(ST.path.to)} value={c.path.to} onChange={(event) => c.setPath({ ...c.path, to: event.target.value })}>
+          <select className="bo-ts__endselect" aria-label={i18n.t(ST.path.to)} value={c.path.to} onChange={(event) => c.setPath({ ...c.path, to: event.target.value, toFloor: null })}>
             {c.endpoints.map((row) => (
               <option key={row.key} value={row.key}>
                 {row.group} · {row.label}
@@ -570,6 +603,23 @@ const PathPanel = ({ c }: { c: TourStopsController }) => {
           </select>
         </div>
       </div>
+      {c.needsFloorPick && c.floorOptions.length > 0 && (
+        <div className="bo-ts__ends" data-testid="path-floors">
+          {(['fromFloor', 'toFloor'] as const).map((side) => (
+            <div key={side} className="bo-ts__end" style={side === 'toFloor' ? { borderBottom: 'none' } : undefined}>
+              <span className="bo-ts__endlabel">{i18n.t(ST.path[side])}</span>
+              <select className="bo-ts__endselect" aria-label={i18n.t(ST.path[side])} value={c.path[side] ?? ''} onChange={(event) => c.setPath({ ...c.path, [side]: event.target.value === '' ? null : Number(event.target.value) })}>
+                <option value="">{i18n.t(ST.path.anyFloor)}</option>
+                {c.floorOptions.map((floor) => (
+                  <option key={floor} value={floor}>
+                    {t(T.stops.floor, { floor })}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+      )}
       <label style={{ display: 'flex', alignItems: 'center', gap: 8, font: '600 12px var(--bo-font)', color: 'var(--bo-ink)', cursor: 'pointer' }}>
         <input type="checkbox" checked={c.path.stepFree} onChange={(event) => c.setPath({ ...c.path, stepFree: event.target.checked })} />
         {i18n.t(ST.path.stepFree)} <span className="bo-tx__meta">{i18n.t(ST.path.stepFreeSub)}</span>

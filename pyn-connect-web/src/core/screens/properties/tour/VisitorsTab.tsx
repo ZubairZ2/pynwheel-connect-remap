@@ -7,6 +7,7 @@ import { Modal } from '~/core/components/molecules/Modal';
 import { useTourVisitors, type TourVisitorsController } from '~/core/hooks/tour/useTourVisitors';
 import type { BookingSettings } from '~/core/models/data/tourModules.data';
 import { t } from '~/core/utils/generator/inventory/inventoryText';
+import { formatWhen } from '~/core/utils/generator/tour/tourLocks.generator';
 import { V, VISITOR_RANGES, VISITOR_TYPES, bookingSends, cancelSends, idPill, statusPill, typeLabelOf } from '~/core/utils/generator/tour/tourVisitors.generator';
 
 const X = CORE_STRINGS.tourModules.common;
@@ -78,7 +79,7 @@ const List = ({ c, settings }: { c: TourVisitorsController; settings: BookingSet
               <div className="bo-tx__cardtitle">{i18n.t(V.title)}</div>
               <div className="bo-tx__cardsub">{t(V.sub, { tz: list?.timeZone ?? settings?.timeZoneEffective ?? '' })}</div>
             </div>
-            <input className="bo-tx__input" style={{ width: 240 }} value={c.filters.q} placeholder={i18n.t(V.search)} aria-label={i18n.t(V.search)} onChange={(event) => c.setFilters({ q: event.target.value })} />
+            <input className="bo-tx__input" style={{ width: 240 }} value={c.search} placeholder={i18n.t(V.search)} aria-label={i18n.t(V.search)} onChange={(event) => c.setSearch(event.target.value)} />
             <select className="bo-tx__select" value={c.filters.range} aria-label="Date range" onChange={(event) => c.setFilters({ range: event.target.value })}>
               {VISITOR_RANGES.map((range) => (
                 <option key={range} value={range}>
@@ -96,6 +97,7 @@ const List = ({ c, settings }: { c: TourVisitorsController; settings: BookingSet
             <a className="bo-tx__btn bo-tx__btn--md" href={c.exportUrl} download>
               {i18n.t(V.export)}
             </a>
+            {c.search.trim() !== '' && <span className="bo-tx__meta" data-testid="export-search-note">{i18n.t(V.exportIgnoresSearch)}</span>}
             {c.canEdit && !settings?.salesforce && (
               <button type="button" className="bo-tx__btn bo-tx__btn--primary bo-tx__btn--md" onClick={c.actions.openNewBooking} data-testid="new-booking">
                 {i18n.t(V.newBooking)}
@@ -224,7 +226,7 @@ const Profile = ({ c, settings }: { c: TourVisitorsController; settings: Booking
                 {i18n.t(V.profile.cancel)}
               </button>
               {upcoming.bookedAt && (
-                <button type="button" className="bo-tx__btn bo-tx__btn--md bo-tx__btn--primary" onClick={() => c.actions.openReschedule(upcoming.id, v.name, c.bookingCards.find((b) => b.id === upcoming.id)?.when ?? '', upcoming.tourType === 'guided' ? 'guided_tour' : 'self_tour')}>
+                <button type="button" className="bo-tx__btn bo-tx__btn--md bo-tx__btn--primary" onClick={() => c.actions.openReschedule(upcoming.id, v.name, c.bookingCards.find((b) => b.id === upcoming.id)?.when ?? '', upcoming.tourType)}>
                   {i18n.t(V.profile.reschedule)}
                 </button>
               )}
@@ -356,7 +358,7 @@ const Profile = ({ c, settings }: { c: TourVisitorsController; settings: Booking
             {p.timeline.map((event, index) => (
               <div key={`${event.at}-${index}`} style={{ padding: '9px 18px', borderBottom: '1px solid var(--bo-line-2)' }}>
                 <div className="bo-tx__name">{event.title}</div>
-                <div className="bo-tx__meta">{new Date(event.at).toLocaleString('en-US', { timeZone: p.timeZone || undefined, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}{event.sub ? ` · ${event.sub}` : ''}</div>
+                <div className="bo-tx__meta">{formatWhen(event.at, p.timeZone)}{event.sub ? ` · ${event.sub}` : ''}</div>
               </div>
             ))}
           </div>
@@ -378,6 +380,16 @@ const Photo = ({ url, label }: { url: string | null; label: string }) =>
 
 const SlotPicker = ({ c }: { c: TourVisitorsController }) => {
   const picker = c.picker;
+  if (c.availabilityError) {
+    return (
+      <div className="bo-error" role="alert" data-testid="slots-error">
+        {c.availabilityError}{' '}
+        <button type="button" className="bo-tx__btn" onClick={() => void c.actions.retryAvailability()}>
+          {i18n.t(X.retry)}
+        </button>
+      </div>
+    );
+  }
   if (!c.availability) return <div className="bo-tx__meta">{i18n.t(V.booking.loadingSlots)}</div>;
   if (!picker) return null;
   return (
@@ -409,6 +421,8 @@ const VisitorDialogs = ({ c, settings }: { c: TourVisitorsController; settings: 
   const closeLabel = i18n.t(X.close);
   const crm = settings?.crm.provider ?? null;
   const name = c.profile?.visitor.name ?? '';
+  // A scheduled booking (and every reschedule) needs a picked slot before Confirm unlocks.
+  const slotMissing = d?.kind === 'reschedule' ? !d.date || !d.time : d?.kind === 'newBooking' ? d.scheduled && (!d.date || !d.time) : false;
   const confirmFooter = (label: string, ready: boolean, danger = true) => (
     <>
       <button type="button" className="bo-btn bo-btn--secondary" onClick={close}>{i18n.t(X.cancel)}</button>
@@ -421,7 +435,7 @@ const VisitorDialogs = ({ c, settings }: { c: TourVisitorsController; settings: 
         footer={
           <>
             <button type="button" className="bo-btn bo-btn--secondary" onClick={close}>{i18n.t(X.cancel)}</button>
-            <button type="button" className="bo-btn bo-btn--primary" disabled={!!(d && 'busy' in d && d.busy)} onClick={() => void (d?.kind === 'reschedule' ? c.actions.submitReschedule() : c.actions.submitBooking())} data-testid="booking-submit">
+            <button type="button" className="bo-btn bo-btn--primary" disabled={slotMissing || !!(d && 'busy' in d && d.busy)} onClick={() => void (d?.kind === 'reschedule' ? c.actions.submitReschedule() : c.actions.submitBooking())} data-testid="booking-submit">
               {i18n.t(d?.kind === 'reschedule' ? V.booking.rescheduleSubmit : V.booking.submit)}
             </button>
           </>
@@ -460,6 +474,7 @@ const VisitorDialogs = ({ c, settings }: { c: TourVisitorsController; settings: 
         )}
         {d?.kind === 'reschedule' && (
           <div className="bo-dlg bo-dlg--stacked">
+            {(d.bookingType === 'virtual' || d.bookingType === 'walkin') && <div className="bo-tx__note">{t(V.booking.slotsAs, { type: i18n.t(V.type[d.bookingType]) })}</div>}
             <SlotPicker c={c} />
             <WhatHappens rows={bookingSends(crm, true)} />
           </div>

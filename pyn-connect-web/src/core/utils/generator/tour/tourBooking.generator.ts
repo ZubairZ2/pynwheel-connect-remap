@@ -150,17 +150,24 @@ export const hoursErrors = (draft: HoursDraft): Record<string, string> => {
   return out;
 };
 
-const normalizeHours = (draft: HoursDraft): string =>
-  JSON.stringify(LANES.map((lane) => DAYS.map((day) => [...(draft[lane][day] ?? [])].map((range) => `${range.open}-${range.close}`).sort())));
+const normalizeLane = (lane: Record<string, HourRange[]>): string =>
+  JSON.stringify(DAYS.map((day) => [...(lane[day] ?? [])].map((range) => `${range.open}-${range.close}`).sort()));
+
+const normalizeHours = (draft: HoursDraft): string => JSON.stringify(LANES.map((lane) => normalizeLane(draft[lane])));
 
 export const hoursChanged = (draft: HoursDraft, s: BookingSettings): boolean => normalizeHours(draft) !== normalizeHours(hoursDraftOf(s));
 
-/** Both lanes, every day, as `update_hours!` replaces them. */
-export const hoursPayload = (draft: HoursDraft): { hours: Record<HoursLane, Record<string, { open: string; close: string }[]>> } => ({
-  hours: {
-    self: Object.fromEntries(DAYS.map((day) => [day, (draft.self[day] ?? []).map((range) => ({ open: range.open, close: range.close }))])),
-    guided: Object.fromEntries(DAYS.map((day) => [day, (draft.guided[day] ?? []).map((range) => ({ open: range.open, close: range.close }))]))
-  }
+/** The lanes whose draft differs from the stored hours (`update_hours!` recreates every lane it receives). */
+export const changedLanes = (draft: HoursDraft, s: BookingSettings): HoursLane[] => {
+  const base = hoursDraftOf(s);
+  return LANES.filter((lane) => normalizeLane(draft[lane]) !== normalizeLane(base[lane]));
+};
+
+/** Every day of the changed lane(s) only, as `update_hours!` replaces a lane whole. */
+export const hoursPayload = (draft: HoursDraft, s: BookingSettings): { hours: Partial<Record<HoursLane, Record<string, { open: string; close: string }[]>>> } => ({
+  hours: Object.fromEntries(
+    changedLanes(draft, s).map((lane) => [lane, Object.fromEntries(DAYS.map((day) => [day, (draft[lane][day] ?? []).map((range) => ({ open: range.open, close: range.close }))]))])
+  )
 });
 
 export const timeLabel = (hhmm: string): string => {

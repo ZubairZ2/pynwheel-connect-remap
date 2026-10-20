@@ -42,13 +42,23 @@ module Locks
     end
 
     # Applies the chosen proposals: `[{vendor, device_id, target_type, target_id}]`.
+    MAX_PAIRS = 500
+
+    # All or nothing: one failing pair (unknown device, foreign target, a row
+    # that did not move) rolls every earlier pair back, so the page never
+    # shows a half-applied match.
     def apply!(community, pairs)
+      pairs = Array(pairs)
+      raise Connect::DomainError.invalid('too_many', "Apply at most #{MAX_PAIRS} matches at a time.") if pairs.size > MAX_PAIRS
+
       assigner = Assign.new(community)
       applied = []
-      Array(pairs).each do |pair|
-        pair = pair.to_h.with_indifferent_access
-        result = assigner.map!(vendor: pair[:vendor], device_id: pair[:device_id], target_type: pair[:target_type], target_id: pair[:target_id])
-        applied << { vendor: result.vendor, device_id: Vendors.device_id_of(result.vendor, result.device), holder: Targets.describe(result.holder) }
+      ApplicationRecord.transaction do
+        pairs.each do |pair|
+          pair = pair.to_h.with_indifferent_access
+          result = assigner.map!(vendor: pair[:vendor], device_id: pair[:device_id], target_type: pair[:target_type], target_id: pair[:target_id])
+          applied << { vendor: result.vendor, device_id: Vendors.device_id_of(result.vendor, result.device), holder: Targets.describe(result.holder) }
+        end
       end
       applied
     end

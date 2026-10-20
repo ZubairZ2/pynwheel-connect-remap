@@ -267,7 +267,12 @@ export class PynwheelApiTourRepository implements TourRepository {
       nodes = [...bundle.amenities.map((a) => a.node), ...bundle.units.map((u) => u.node)];
     }
     try {
-      const { data } = await this.client.post<ApiTourRouteResponse>(`${API}/properties/${id}/tour-route`, { stop_ids: nodes, step_free: options.stepFree === true, avoid_blockers: options.avoidBlockers !== false });
+      const { data } = await this.client.post<ApiTourRouteResponse>(`${API}/properties/${id}/tour-route`, {
+        stop_ids: nodes,
+        step_free: options.stepFree === true,
+        avoid_blockers: options.avoidBlockers !== false,
+        ...(options.startId ? { start_stop_id: options.startId } : {})
+      });
       return { ok: true, tour: parseTourRoute(data) };
     } catch (error) {
       if (error instanceof ApiError && error.status === 422 && error.code !== 'validation_error' && error.code !== 'tour_disabled') {

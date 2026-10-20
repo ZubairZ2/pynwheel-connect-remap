@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_10_03_100011) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_18_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -2329,6 +2329,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_03_100011) do
     t.string "tour_site", default: ""
     t.integer "community_id"
     t.string "community_time_zone", default: "UTC"
+    t.index ["community_id"], name: "index_tour_histories_on_community_id"
+    t.index ["tour_id"], name: "index_tour_histories_on_tour_id"
     t.index ["tour_user_id"], name: "index_tour_histories_on_tour_user_id"
   end
 

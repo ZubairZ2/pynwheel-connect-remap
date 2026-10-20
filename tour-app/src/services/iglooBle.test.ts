@@ -116,6 +116,17 @@ describe('unlockOverBluetooth', () => {
     await expect(run2).rejects.toMatchObject({ code: 'sdk_error', message: 'BluetoothException: adapter reset' });
   });
 
+  it('a scan the plugin stopped or paused was interrupted, not exhausted: cancelled, not not_found', async () => {
+    for (const reason of ['stopped', 'paused'] as const) {
+      const plugin = fakePlugin();
+      const run = unlockOverBluetooth({ lockName: 'L', key: 'k', plugin, available: true });
+      await vi.waitFor(() => expect(plugin.calls).toContain('startScan'));
+      plugin.emit('scanStopped', { reason });
+      await expect(run).rejects.toMatchObject({ code: 'cancelled' });
+      expect(plugin.connect).not.toHaveBeenCalled();
+    }
+  });
+
   it("the plugin's rejection codes reach the caller: invalid key on connect, a lock that will not open", async () => {
     const badKey = fakePlugin({ connect: vi.fn(async () => Promise.reject(rejection('invalid_key', 'InvalidKeyException'))) });
     const run = unlockOverBluetooth({ lockName: 'L', key: 'k', plugin: badKey, available: true });
@@ -157,5 +168,16 @@ describe('unlockOverBluetooth', () => {
     expect(toUnlockError(new Error('boom')).code).toBe('sdk_error');
     expect(toUnlockError(new BluetoothUnlockError('busy', 'x')).code).toBe('busy');
     expect(toUnlockError(rejection('bluetooth_off')).message).toMatch(/Turn Bluetooth on/);
+  });
+
+  it("toUnlockError keeps the SDK's reason on the lock-side failures, and only there", () => {
+    const failed = toUnlockError(rejection('unlock_failed', 'LockInvalidRightsException'));
+    expect(failed.detail).toBe('LockInvalidRightsException');
+    expect(failed.message).toBe('The lock did not open. Try again. (LockInvalidRightsException)');
+    expect(toUnlockError(rejection('sdk_error', 'Command delivery failed')).message).toMatch(/\(Command delivery failed\)$/);
+    const off = toUnlockError(rejection('bluetooth_off', 'Bluetooth is off'));
+    expect(off.detail).toBeNull();
+    expect(off.message).toBe('Turn Bluetooth on, then try again.');
+    expect(toUnlockError(rejection('unlock_failed', '  ')).detail).toBeNull();
   });
 });

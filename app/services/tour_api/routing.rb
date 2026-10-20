@@ -24,7 +24,9 @@ module TourApi
     # Validates that every chosen stop is on this property's stops list,
     # orders them by the tour's own rule and routes start → stops → start;
     # `segments` holds the route that reaches each stop.
-    def tour_route(community, built, stop_ids:, step_free:, avoid_blockers:)
+    # `start_stop_id`: an entry gate (`bsp:<id>`) or the tour start the visitor
+    # chose on "Before You Start"; nil keeps the tour start.
+    def tour_route(community, built, stop_ids:, step_free:, avoid_blockers:, start_stop_id: nil)
       wanted = stop_ids.uniq # duplicates collapse to one visit
       selectable = Stops.selectable_ids(community, built)
       invalid = wanted.reject { |id| selectable.include?(id) }
@@ -32,7 +34,7 @@ module TourApi
         raise ApiError.unprocessable('invalid_stop', "Some chosen stops are not on this property's stops list.", { invalid_stops: invalid })
       end
 
-      result, segments = RouteService.new(community, step_free: step_free, avoid_blockers: avoid_blockers, graph: built.graph).tour(stop_keys: wanted)
+      result, segments = RouteService.new(community, step_free: step_free, avoid_blockers: avoid_blockers, graph: built.graph).tour(stop_keys: wanted, start_key: start_stop_id.presence)
       raise failure(result, built.version) unless result.ok
 
       out = segments.filter_map do |segment|

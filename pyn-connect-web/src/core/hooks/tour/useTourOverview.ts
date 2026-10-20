@@ -16,6 +16,10 @@ export const useTourOverview = (propertyId: number, enabled = true) => {
   const [stops, setStops] = useState<StopRows | null>(null);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
+  // One automatic load per property: a failed read must not re-run the effect
+  // (three requests per iteration, forever); Reload is the only retry.
+  const [attempted, setAttempted] = useState(false);
+  useEffect(() => setAttempted(false), [propertyId]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -33,9 +37,10 @@ export const useTourOverview = (propertyId: number, enabled = true) => {
   }, [propertyId]);
 
   useEffect(() => {
-    if (!enabled || loading || (visitors && locks && stops)) return;
+    if (!enabled || loading || attempted || (visitors && locks && stops)) return;
+    setAttempted(true);
     void load();
-  }, [enabled, load, loading, locks, stops, visitors]);
+  }, [attempted, enabled, load, loading, locks, stops, visitors]);
 
   return { visitors, locks, stops, loading, failed, reload: load };
 };
