@@ -387,6 +387,27 @@ module Locks
             # Saving credentials ends a code-grant authorization (IgloohomeV2AccountsController#create).
             attrs[:is_authorized_with_pynwheel] = false if account&.is_authorized_with_pynwheel && (id.present? || s.present?)
           end
+        when 'v1'
+          # Optional developer client on a v1 account: with both values the
+          # Tour App API asks the property's own igloohome developer API for
+          # the Bluetooth guest key (TourApi::Locks#developer_client?) instead
+          # of Pynwheel's partner key. Both or neither.
+          if value(fields, 'clear_developer_client') == 'true'
+            attrs[:client_id] = nil
+            attrs[:client_secret] = nil
+          else
+            id = value(fields, 'client_id')
+            attrs[:client_id] = id unless id.nil?
+            s = secret(fields, 'client_secret')
+            attrs[:client_secret] = s if s.present?
+            final_id = attrs.key?(:client_id) ? attrs[:client_id] : account&.client_id
+            final_secret = s.presence || account&.client_secret
+            if final_id.present? && final_secret.blank?
+              errors << { field: 'client_secret', code: 'required', message: 'Client secret is required with a client ID.' }
+            elsif final_id.blank? && final_secret.present? && !id.nil?
+              errors << { field: 'client_id', code: 'required', message: 'Client ID is required with a client secret.' }
+            end
+          end
         when 'iglooworks'
           dept = value(fields, 'iglooworks_department_id')
           attrs[:iglooworks_department_id] = dept unless dept.nil?

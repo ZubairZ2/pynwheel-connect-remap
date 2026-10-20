@@ -672,6 +672,11 @@ const AccountFieldView = ({ field, value, problem, disabled, onChange }: { field
           ))}
         </div>
       )}
+      {field.kind === 'check' && (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input id={id} type="checkbox" checked={value === 'true'} disabled={disabled} onChange={(event) => onChange(event.target.checked ? 'true' : '')} />
+        </span>
+      )}
       {(field.kind === 'text' || field.kind === 'password' || field.kind === 'number') && (
         <input
           id={id}

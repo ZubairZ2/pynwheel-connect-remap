@@ -29,6 +29,9 @@ Disconnect (typed confirmation) which deletes the vendor's imported locks and ta
 while keeping the account. The inventory has the "Delete all imported locks" footer and a "Last sync" column;
 Issued codes have status filters and the recent-failures banner.
 
+A v1 Igloo account can carry the property's own developer client (optional, both values or neither, with a
+clear option); the card says which igloohome API issues the Bluetooth keys.
+
 ## Backend
 
 New `Locks::Accounts` service and six write actions on `Connect::LocksController` (`locks/account`,

@@ -78,6 +78,8 @@ export interface LockProviderAccess {
   tourApp: boolean;
   /** Opened by the legacy Pynwheel Tour app. */
   legacyApp: boolean;
+  /** v1 only: which igloohome API issues the guest key. */
+  source?: 'developer_client' | 'partner_key' | null;
 }
 
 export interface LockProvider {

@@ -116,6 +116,16 @@ rows' `updated_at`); Issued codes gained the All / Issued / Failed / Expired / R
 be tested. The design's connect fields for Dwelo, Latch and Zerv ("API key" + "Site ID") are the placeholders the
 brief rules out; the real legacy fields stay.
 
+### The v1 developer client (same day, owner's request)
+
+A v1 account may carry the property's own igloohome developer client (`igloohomes.client_id` /
+`client_secret`): with both set, `TourApi::Locks#developer_client?` asks that client's eKey endpoint for the
+Bluetooth guest key instead of Pynwheel's partner key. The legacy v1 tab never showed these columns, so Hazel's
+stored client was invisible in Connect. The v1 form now has a "Developer client (optional)" section (Client ID,
+Client secret with blank-keeps, and a clear checkbox); `Locks::Accounts` enforces both-or-neither; the card's
+"Visitor gets" names the key source (`access.source`: `developer_client` / `partner_key`). Verified on Hazel
+through the API: source `developer_client`, client ID shown, secret reported only as present.
+
 ## Field-parity matrix
 
 | Provider / mode | Legacy fields verified | New form complete | Validation | Persistence | Result |

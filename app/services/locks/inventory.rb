@@ -366,7 +366,10 @@ module Locks
         case vendor
         when 'Igloohome'
           bluetooth = state[:mode] == 'v1'
-          { method: bluetooth ? 'bluetooth_key' : 'hourly_pin', tour_app: true, legacy_app: true }
+          account = Vendors.account(community, vendor)
+          # Which igloohome API issues a v1 guest key (TourApi::Locks#developer_client?).
+          source = bluetooth ? (account&.client_id.present? && account&.client_secret.present? ? 'developer_client' : 'partner_key') : nil
+          { method: bluetooth ? 'bluetooth_key' : 'hourly_pin', tour_app: true, legacy_app: true, source: source }
         when 'Latch' then { method: 'latch_key', tour_app: false, legacy_app: true }
         when 'Zerv' then { method: 'mobile_key', tour_app: false, legacy_app: true }
         when 'Dwelo' then { method: 'remote_unlock', tour_app: false, legacy_app: true }

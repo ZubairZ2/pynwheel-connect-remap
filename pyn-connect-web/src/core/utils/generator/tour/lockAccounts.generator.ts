@@ -11,7 +11,7 @@ import { t } from '../inventory/inventoryText';
  */
 const A = CORE_STRINGS.tourModules.locks.account;
 
-export type AccountFieldKind = 'text' | 'password' | 'number' | 'select' | 'radio';
+export type AccountFieldKind = 'text' | 'password' | 'number' | 'select' | 'radio' | 'check';
 
 export interface AccountFieldOption {
   value: string;
@@ -89,7 +89,8 @@ export const accountDraftOf = (provider: LockProvider): AccountDraft => {
         client_id: detailString(d, 'clientId'),
         client_secret: '',
         iglooworks_department_id: detailString(d, 'iglooworksDepartmentId'),
-        iglooworks_api_key: ''
+        iglooworks_api_key: '',
+        clear_developer_client: ''
       };
     default:
       return {};
@@ -236,6 +237,20 @@ export const generateAccountForm = (provider: LockProvider, draft: AccountDraft)
         });
       } else {
         sections.push({ key: 'v1', note: i18n.t(A.igloo.v1Note), fields: [] });
+        const stored = detailBool(d, 'clientSecretPresent');
+        const clearing = draft.clear_developer_client === 'true';
+        sections.push({
+          key: 'developer',
+          title: i18n.t(A.igloo.devTitle),
+          note: i18n.t(A.igloo.devNote),
+          fields: clearing
+            ? [{ key: 'clear_developer_client', label: i18n.t(A.igloo.devClear), kind: 'check', required: false }]
+            : [
+                { key: 'client_id', label: i18n.t(A.clientId), kind: 'text', required: false },
+                { key: 'client_secret', label: i18n.t(A.clientSecret), kind: 'password', required: false, stored, placeholder: stored ? i18n.t(A.storedSecret) : undefined },
+                ...(stored || detailString(d, 'clientId') ? [{ key: 'clear_developer_client', label: i18n.t(A.igloo.devClear), kind: 'check' as const, required: false }] : [])
+              ]
+        });
       }
       return { ...base, intro: i18n.t(A.igloo.intro), sections, authorization };
     }
@@ -266,6 +281,13 @@ export const accountProblems = (form: AccountForm, draft: AccountDraft): Record<
         problems[field.key] = i18n.t(A.dwelo.apiUrlInvalid);
       }
     }
+    if (section.key === 'developer' && draft.clear_developer_client !== 'true') {
+      const secretField = section.fields.find((f) => f.key === 'client_secret');
+      const id = (draft.client_id ?? '').trim();
+      const secret = (draft.client_secret ?? '').trim() || (secretField?.stored ? 'stored' : '');
+      if (id && !secret) problems.client_secret = i18n.t(A.igloo.bothOrNeither);
+      if (!id && secret && !secretField?.stored) problems.client_id = i18n.t(A.igloo.bothOrNeither);
+    }
   }
   return problems;
 };
@@ -277,6 +299,7 @@ export const accountPayload = (form: AccountForm, draft: AccountDraft): Record<s
     for (const field of section.fields) {
       const value = (draft[field.key] ?? '').trim();
       if (field.kind === 'password' && !value) continue;
+      if (field.kind === 'check' && value !== 'true') continue;
       fields[field.key] = value;
     }
   }
@@ -319,6 +342,7 @@ export const accountSummary = (provider: LockProvider): { label: string; value: 
         if (detailString(d, 'authMode') !== 'code_grant') push(i18n.t(A.clientId), detailString(d, 'clientId'));
       }
       if (version === 'iglooworks') push(i18n.t(A.igloo.department), detailString(d, 'iglooworksDepartmentId'));
+      if (version === 'v1' && detailBool(d, 'clientSecretPresent')) push(i18n.t(A.igloo.devClient), detailString(d, 'clientId'));
       break;
     }
     default:
@@ -332,7 +356,8 @@ export const accessLabel = (provider: LockProvider): string => {
   const method = provider.access?.method ?? '';
   const key = A.access[method as keyof typeof A.access] ?? A.access.unknown;
   const app = provider.access?.tourApp ? i18n.t(A.access.tourApp) : i18n.t(A.access.legacyOnly);
-  return `${i18n.t(key)} · ${app}`;
+  const source = provider.access?.source === 'developer_client' ? i18n.t(A.igloo.sourceDeveloper) : provider.access?.source === 'partner_key' ? i18n.t(A.igloo.sourcePartner) : null;
+  return source ? `${i18n.t(key)} · ${app} · ${source}` : `${i18n.t(key)} · ${app}`;
 };
 
 export const healthLabel = (provider: LockProvider): string => i18n.t(provider.healthSource === 'device_active' ? A.health.deviceActive : A.health.none);

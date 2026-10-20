@@ -180,6 +180,37 @@ class Connect::LockAccountsTest < ActionDispatch::IntegrationTest
     assert_includes @community.multiple_locks_provider, 'Igloohome'
   end
 
+  test 'a v1 account can carry an optional developer client, both values or neither, and clear it' do
+    put "#{base}/account.json", as: :json, params: { vendor: 'Igloohome', fields: { version: 'v1' } }
+    assert_response :success
+    assert_equal 'partner_key', provider('Igloohome')['access']['source']
+
+    put "#{base}/account.json", as: :json, params: { vendor: 'Igloohome', fields: { version: 'v1', client_id: 'dev-cid', client_secret: '' } }
+    assert_response :unprocessable_entity
+    assert_equal 'client_secret', body['errors'].first['fields'].first['field']
+    put "#{base}/account.json", as: :json, params: { vendor: 'Igloohome', fields: { version: 'v1', client_id: '', client_secret: 'dev-sec' } }
+    assert_response :unprocessable_entity
+    assert_equal 'client_id', body['errors'].first['fields'].first['field']
+
+    put "#{base}/account.json", as: :json, params: { vendor: 'Igloohome', fields: { version: 'v1', client_id: 'dev-cid', client_secret: 'dev-sec' } }
+    assert_response :success
+    igloo = @community.reload.igloohome
+    assert_equal ['v1', 'dev-cid', 'dev-sec'], [igloo.version, igloo.client_id, igloo.client_secret]
+    card = provider('Igloohome')
+    assert_equal 'developer_client', card['access']['source']
+    assert_equal ['dev-cid', true], [card['details']['client_id'], card['details']['client_secret_present']]
+
+    put "#{base}/account.json", as: :json, params: { vendor: 'Igloohome', fields: { version: 'v1', client_id: 'dev-cid-2', client_secret: '' } }
+    assert_response :success
+    assert_equal ['dev-cid-2', 'dev-sec'], [igloo.reload.client_id, igloo.client_secret], 'a blank secret keeps the stored one'
+
+    put "#{base}/account.json", as: :json, params: { vendor: 'Igloohome', fields: { version: 'v1', clear_developer_client: 'true' } }
+    assert_response :success
+    assert_nil igloo.reload.client_id
+    assert_nil igloo.client_secret
+    assert_equal 'partner_key', provider('Igloohome')['access']['source']
+  end
+
   test 'the igloohome code grant can be chosen and its authorization removed, which falls back to v1 as the legacy page does' do
     put "#{base}/account.json", as: :json, params: { vendor: 'Igloohome', fields: { version: 'igloohome', auth_mode: 'code_grant', home_name: 'home' } }
     assert_response :success

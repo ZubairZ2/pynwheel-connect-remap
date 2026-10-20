@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { LockInventory, LockProvider } from '~/core/models/data/tourModules.data';
-import { accessLabel, accountDraftOf, accountPayload, accountProblems, generateAccountForm, healthLabel, importSummary, instructionText, stripHtml } from './lockAccounts.generator';
+import { accessLabel, accountDraftOf, accountPayload, accountProblems, accountSummary, generateAccountForm, healthLabel, importSummary, instructionText, stripHtml } from './lockAccounts.generator';
 import { failedRecently, filterIssuedRows, generateConnectCards, generateIssuedFilters, generateIssuedRows, generateProviderCards, purgeTargets } from './tourLocks.generator';
 
 /** A provider as the CMS answers it (Locks::Inventory#providers), with overrides. */
@@ -58,7 +58,7 @@ describe('the provider account forms carry the legacy fields', () => {
   });
 
   it('Igloohome: the version decides the sections', () => {
-    expect(fieldKeys('Igloohome')).toEqual(['version']);
+    expect(fieldKeys('Igloohome')).toEqual(['version', 'client_id', 'client_secret']);
     expect(fieldKeys('Igloohome', { version: 'igloohome', auth_mode: 'client_credentials' })).toEqual(['version', 'home_name', 'auth_mode', 'client_id', 'client_secret']);
     expect(fieldKeys('Igloohome', { version: 'igloohome', auth_mode: 'code_grant' })).toEqual(['version', 'home_name', 'auth_mode']);
     expect(fieldKeys('Igloohome', { version: 'iglooworks' })).toEqual(['version', 'iglooworks_api_key', 'iglooworks_department_id']);
@@ -97,6 +97,30 @@ describe('field validation follows Locks::Accounts', () => {
     const dweloForm = generateAccountForm(dwelo, accountDraftOf(dwelo));
     expect(accountProblems(dweloForm, { api_url: 'ftp://x', default_community_id: '7', client_id: 'c', client_secret: 's' })).toHaveProperty('api_url');
     expect(accountProblems(dweloForm, { api_url: '', default_community_id: '7', client_id: 'c', client_secret: 's' })).toEqual({});
+  });
+
+  it('a v1 account offers an optional developer client, both values or neither, with a clear option', () => {
+    const fresh = provider('Igloohome');
+    const draft = { ...accountDraftOf(fresh), version: 'v1' };
+    const form = generateAccountForm(fresh, draft);
+    expect(form.sections.map((s) => s.key)).toEqual(['version', 'v1', 'developer']);
+    expect(form.sections[2].fields.map((f) => f.key)).toEqual(['client_id', 'client_secret']);
+    expect(accountProblems(form, draft)).toEqual({});
+    expect(accountProblems(form, { ...draft, client_id: 'cid' })).toHaveProperty('client_secret');
+    expect(accountProblems(form, { ...draft, client_secret: 'sec' })).toHaveProperty('client_id');
+    expect(accountPayload(form, { ...draft, client_id: 'cid', client_secret: 'sec' })).toEqual({ version: 'v1', client_id: 'cid', client_secret: 'sec' });
+
+    const stored = provider('Igloohome', { mode: 'v1', access: { method: 'bluetooth_key', tourApp: true, legacyApp: true, source: 'developer_client' }, details: details({ version: 'v1', clientId: 'cid', clientSecretPresent: true }) });
+    const storedDraft = accountDraftOf(stored);
+    const storedForm = generateAccountForm(stored, storedDraft);
+    expect(storedForm.sections[2].fields.map((f) => f.key)).toEqual(['client_id', 'client_secret', 'clear_developer_client']);
+    expect(accountProblems(storedForm, storedDraft)).toEqual({});
+    expect(accountPayload(storedForm, storedDraft)).toEqual({ version: 'v1', client_id: 'cid' });
+    const clearing = { ...storedDraft, clear_developer_client: 'true' };
+    expect(generateAccountForm(stored, clearing).sections[2].fields.map((f) => f.key)).toEqual(['clear_developer_client']);
+    expect(accountPayload(generateAccountForm(stored, clearing), clearing)).toEqual({ version: 'v1', clear_developer_client: 'true' });
+    expect(accessLabel(stored)).toBe('Bluetooth guest key · Tour App · this property\'s developer client');
+    expect(accountSummary(stored).map((r) => `${r.label}: ${r.value}`)).toEqual(['Igloo version: v1 · Bluetooth keys', 'Developer client: cid']);
   });
 
   it('igloohome client credentials are required only in that mode', () => {
