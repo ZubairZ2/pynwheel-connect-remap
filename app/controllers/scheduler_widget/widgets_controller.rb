@@ -45,7 +45,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     if params[:direct].present?
       @direct =  true
       params[:message].present? ? @show_first = false : @show_first = true
-      decoded = JWT.decode params[:community_code], ENV['SECRET_KEY_BASE_v2'], true, { algorithm: 'HS256' } rescue nil
+      decoded = JWT.decode params[:community_code], Community.widget_signing_key, true, { algorithm: 'HS256' } rescue nil
       unless decoded[0]["community_id"].to_i == params[:community_id].to_i
         raise ActionController::RoutingError.new('Not Found')
       end

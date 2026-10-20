@@ -47,7 +47,7 @@ class SchedualToursController < ApplicationController
     scheduled_tour = SchedualTour.find params['scheduled_tour_id'] if params['scheduled_tour_id'].present?
     community = scheduled_tour.community
     @community_tour_stops = get_user_tour_stops(community)
-    community_code = (JWT.encode ({"community_id" => community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256') if community.present?
+    community_code = (JWT.encode ({"community_id" => community.id}), Community.widget_signing_key, 'HS256') if community.present?
     render partial: 'schedual_tours/custom_tour', :locals => {tour_user: tour_user, tour: scheduled_tour, community: community, community_code: community_code, community_tour_stops:  @community_tour_stops }
   end
   

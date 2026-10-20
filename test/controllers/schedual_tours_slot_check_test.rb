@@ -102,4 +102,17 @@ class SchedualToursSlotCheckTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert JSON.parse(response.body).key?('tour_types'), 'the widget still gets its answer without a session'
   end
+
+  test 'the booking link signs the property code with a key the widget verifies, with or without SECRET_KEY_BASE_v2' do
+    previous = ENV['SECRET_KEY_BASE_v2']
+    [nil, 'a-deployed-secret'].each do |value|
+      ENV['SECRET_KEY_BASE_v2'] = value
+      code = @community.community_code
+      decoded = JWT.decode(code, Community.widget_signing_key, true, { algorithm: 'HS256' })
+      assert_equal @community.id, decoded[0]['community_id']
+      assert_equal(value || Rails.application.secret_key_base, Community.widget_signing_key)
+    end
+  ensure
+    ENV['SECRET_KEY_BASE_v2'] = previous
+  end
 end

@@ -1,6 +1,6 @@
 - if @community.present? and @tour_user.present?
   json.data do
-    community_code    =  (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')  if @community.scheduler_widget
+    community_code    =  (JWT.encode ({"community_id" => @community.id}), Community.widget_signing_key, 'HS256')  if @community.scheduler_widget
     if @is_salesforce_crm
       @community.community_tour.only_scheduled_tour = true
       @community.scheduler_widget         = false
