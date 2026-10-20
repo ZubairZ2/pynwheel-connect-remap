@@ -108,6 +108,18 @@ class IgloohomeLockService < BaseService
     )
   end
 
+  # The igloohome API's Bluetooth guest key (`POST /devices/:id/ekey`, scope
+  # `igloohomeapi/create-ekey-access`): the same `bluetoothGuestKey` / `keyId`
+  # answer the partner API's `ekeys` gives, for an account on its own developer
+  # client. Added October 2026 for the Tour App API (TourApi::Locks#bluetooth_key!).
+  def generate_bluetooth_key(device_id, start_time, end_time, permissions)
+    HTTParty.post(
+      "#{api_base_url}/devices/#{device_id}/ekey",
+      headers: pin_code_api_header,
+      body: { 'startDate' => start_time, 'endDate' => end_time, 'permissions' => permissions }.to_json
+    )
+  end
+
   def generate_daily_pin device_id, access_name, start_time, end_time
     HTTParty.post(
       "#{api_base_url}/devices/#{device_id}/algopin/daily", 

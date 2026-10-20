@@ -2,7 +2,7 @@
   "name": "@pynwheel/igloohome-ble",
   "version": "0.1.0",
   "private": true,
-  "description": "Capacitor plugin around the igloohome Bluetooth SDK (Android ble-sdk-release.aar, iOS IgloohomeSDK.xcframework): scan for a lock, connect with a guest key, unlock. The native half of the Pynwheel Tour app's igloohome v1 flow.",
+  "description": "Capacitor plugin around the igloohome Bluetooth SDK (Android co.igloo.home:sdk 3.x from igloohome's GitLab registry, iOS IgloohomeSDK.xcframework): scan for a lock, connect with a guest key, unlock. The native half of the Pynwheel Tour app's igloohome v1 flow.",
   "type": "module",
   "main": "src/index.ts",
   "module": "src/index.ts",
@@ -11,7 +11,6 @@
     "src/",
     "android/build.gradle",
     "android/src/main/",
-    "android/libs/",
     "ios/Sources",
     "Package.swift"
   ],

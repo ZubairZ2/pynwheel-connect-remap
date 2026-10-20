@@ -3,14 +3,15 @@
      Android 12+ (API 31): BLUETOOTH_SCAN (never used to derive location) and BLUETOOTH_CONNECT, both runtime permissions.
      Android 11 and below: the legacy BLUETOOTH / BLUETOOTH_ADMIN install-time permissions plus ACCESS_FINE_LOCATION
      at runtime, because a BLE scan needs it there.
-     The SDK's own manifest also asks for coarse and background location; the app's manifest removes those (they are
-     for the SDK's geofenced "quick unlock", which this app does not use). -->
+     The SDK's own manifests (co.igloo.home:sdk, co.igloo:core, co.igloohome:ble-sdk-idp) declare the same permissions
+     without these bounds, and also coarse / background location and notifications for features this app never uses;
+     the bounds are kept with tools:replace, and the app's manifest removes the extra ones. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
-    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" tools:targetApi="s" />
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" tools:replace="android:maxSdkVersion" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" tools:replace="android:maxSdkVersion" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" tools:targetApi="s" tools:replace="android:usesPermissionFlags" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" tools:replace="android:maxSdkVersion" />
 </manifest>

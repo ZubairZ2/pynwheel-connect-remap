@@ -109,30 +109,33 @@ class IgloohomeService < BaseService
   end
 
   def get_igloohome_permisions
-    [
-      "UNLOCK",
-      "SET_TIME",
-      "GET_TIME",
-      "GET_BATTERY_LEVEL",
-      "GET_LOCK_STATUS",
-      "SET_VOLUME",
-      "RESET_LOCK",
-      "SET_AUTORELOCK",
-      "SET_MAX_INCORRECT_PINS",
-      "GET_LOGS",
-      "CREATE_PIN",
-      "EDIT_PIN",
-      "DELETE_PIN",
-      "SET_MASTER_PIN",
-      "LOCK",
-      "ENABLE_AUTOUNLOCK",
-      "BLACKLIST_GUEST_KEY",
-      "UNBLACKLIST_GUEST_KEY",
-      "ENABLE_DFU",
-      "SET_DAYLIGHT_SAVINGS",
-      "ADD_CARD",
-      "DELETE_CARD",
-      "SET_BRIGHTNESS"
-    ]
+    GUEST_KEY_PERMISSIONS
   end
+
+  # What a guest key may do on the lock, as the legacy tour start granted it.
+  GUEST_KEY_PERMISSIONS = [
+    "UNLOCK",
+    "SET_TIME",
+    "GET_TIME",
+    "GET_BATTERY_LEVEL",
+    "GET_LOCK_STATUS",
+    "SET_VOLUME",
+    "RESET_LOCK",
+    "SET_AUTORELOCK",
+    "SET_MAX_INCORRECT_PINS",
+    "GET_LOGS",
+    "CREATE_PIN",
+    "EDIT_PIN",
+    "DELETE_PIN",
+    "SET_MASTER_PIN",
+    "LOCK",
+    "ENABLE_AUTOUNLOCK",
+    "BLACKLIST_GUEST_KEY",
+    "UNBLACKLIST_GUEST_KEY",
+    "ENABLE_DFU",
+    "SET_DAYLIGHT_SAVINGS",
+    "ADD_CARD",
+    "DELETE_CARD",
+    "SET_BRIGHTNESS"
+  ].freeze
 end

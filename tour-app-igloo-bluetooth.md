@@ -186,3 +186,72 @@ the honest note.
   the connect observable tears a live connection down 30 s after connecting; `scanStopped{reason:'paused'}` maps to
   `not_found`. Fixed in JS: cancel while the key is fetched (`lockPinDismiss`); the card now stays visible after an
   unlock so "unlock once more" is reachable; Capacitor bridge logging disabled so the guest key is not printed.
+
+## 11. Bluetooth keys from the account's own igloohome API client (October 19, 2026)
+
+The partner-account blocker of §9.1 has a second way round. The igloohome API that the door-code flow already
+uses (`api.igloodeveloper.co/igloohome`, OAuth client credentials) has an eKey endpoint,
+`POST /devices/:deviceId/ekey` (scope `igloohomeapi/create-ekey-access`, body `startDate` / `endDate` /
+`permissions`), answering the same `bluetoothGuestKey` / `keyId` pair as the partner API's `/v2/locks/:id/ekeys`.
+A client-credentials token for the owner's Individual-mode developer client (Hazel's account in the development
+database) was checked on October 19 and carries that scope.
+
+`TourApi::Locks#bluetooth_key!` therefore asks through the account's own client when the v1 account holds a
+client id and secret (`IgloohomeLockService#generate_bluetooth_key`, 90 minutes, the legacy permission set
+`IgloohomeService::GUEST_KEY_PERMISSIONS`, one token renewal on a 401, then the backup hourly algoPIN named after
+the stop; a missing PIN does not refuse the key), and through the partner key otherwise. No production v1
+account holds client credentials (22 rows checked in the local production copy), so production behaviour is
+unchanged. Tests: `locks_test.rb` 17 runs, 118 assertions, green; the partner-API test now runs on an account
+without a client, two tests cover the developer path and its renewal, the refusal test covers both paths.
+
+Hardware test setup for the owner's Smart Keybox 3E (SK3E14001756, Hazel unit 1604's door): Hazel's account in
+`pynwheel_development` switched to `v1` (back to `igloohome` for door-code tests), the LAN server on the
+development `DATABASE_URL`, the October 19 review APK (`artifacts/pynwheel-tour-igloo-demo-2026-10-19.apk`).
+Whether the eKey the developer API issues opens the lock through the v1 BLE SDK (`IglooLock.connectByStringKey`)
+is the remaining unknown; the key string has the same base64 shape as the partner key.
+
+### Hardware result (October 20, 2026, Samsung Galaxy A02s, Android 12, the owner's Smart Keybox 3E)
+
+The developer-API eKey was issued (HTTP 200 once the dates were sent as `YYYY-MM-DDTHH:mm:00+hh:mm`, whole minutes
+with an explicit offset; the vendor's 400 text is now in the refusal log line), the phone found the lock by its
+Bluetooth name, connected, and the SDK aborted at "START: Establish secure connection" with
+`ran out of connection IDs`. That message is misleading: the native `beginConnection` returns -1 both when its 32
+connection slots are taken and when the guest AES key is not exactly 16 bytes (`GetArrayLength == 0x10`,
+`libnative-lib.so`). The plugin's debug-only diagnostic (`logKeyShape`, reflection on the SDK's parser `d.b.a`)
+showed the developer-API key parsed as `a.b$b` with **a 32-byte guest AES key**, a 103-byte token and an 8-byte
+password. The vendor SDK in `plugins/igloohome-ble/android/libs/ble-sdk-release.aar` (minSdk 23, targetSdk 31, the
+build the legacy RN app shipped) is therefore an older generation than the eKey the current API issues.
+
+Ways forward, none of them app-side only: (a) the current igloohome BLE SDK from the portal's SDK Access page,
+which would replace the aar (its API is unknown; the plugin wraps six SDK calls); (b) igloohome support confirming
+whether `/devices/:id/ekey` can issue a legacy 16-byte key; (c) the original partner route (Pynwheel's partner
+key, lock enrolled under the partner account), whose `ekeys` answer the legacy app consumed with this SDK.
+The app now shows the SDK's reason in brackets after the Bluetooth error banner (`BluetoothUnlockError.detail`).
+
+## 12. The plugin on igloohome SDK 3.5.0 (October 20, 2026)
+
+The portal's **SDK Access** page issues a GitLab token for igloohome's Maven registry
+(`https://gitlab.com/api/v4/projects/64441730/packages/maven`, header `Private-Token`); the documented artifact is
+`co.igloo.home:sdk:3.5.0` (minSdk 24, Kotlin 2.1, coroutines / Flow), which pulls `co.igloo:core` and
+`co.igloohome:ble-sdk-idp` 3.80.19. Its native `beginConnection` accepts a 32-byte guest AES key on one connection
+type and a 16-byte key on the other, so it covers the developer-API eKey and the legacy partner key alike. The
+`ble-sdk-idp` part lives in package `co.igloohome.ble`, the same package as the legacy `ble-sdk-release.aar`, so the
+old binary was removed rather than kept beside it.
+
+Changes: `tour-app/android/build.gradle` (Kotlin Gradle plugin 2.1.21 on the classpath; the registry under
+`allprojects.repositories`, token from the `iglooGitlabToken` Gradle property in `~/.gradle/gradle.properties` or
+the `IGLOO_GITLAB_TOKEN` variable, never from the repo); `tour-app/android/app/build.gradle` (the plugin's flatDir
+entry dropped); the plugin's `build.gradle` (Kotlin, the SDK and coroutines in place of the aar, RxJava and the
+1.9 stdlib); `IgloohomeBlePlugin.kt` replacing the Java class with the same JavaScript contract - the SDK has no
+connect step (`unlock(deviceId, key, timeInSeconds)` connects, sets the clock and unlocks), so `connect` now only
+settles the lock and key after checking the scan saw the lock, `unlock` runs the SDK call under the app's
+timeout, `disconnect` calls the SDK's `disconnect(deviceId)`; error codes map from the SDK's documented statuses
+(12 connection, 703 timeout, 708 Bluetooth off, 972 scan attempts) and class names; the plugin manifest keeps the
+version bounds with `tools:replace` against the SDK's unbounded declarations; the app manifest also removes
+`POST_NOTIFICATIONS` (the SDK's firmware updates). The SDK's WorkManager / Room parts add WAKE_LOCK,
+FOREGROUND_SERVICE, RECEIVE_BOOT_COMPLETED and ACCESS_NETWORK_STATE to the merged manifest; the debug APK grew from
+10.8 MB to 20.4 MB. `definitions.ts` documents the new `connect` semantics; `web.ts` and the app are unchanged.
+
+Not changed: the iOS side (still the legacy `IgloohomeSDK.xcframework` wiring in `Package.swift`; the SDK 3.x
+iOS package is `https://gitlab.com/igloohome/iglooaccess-ios-sdk.git` from 3.5.0, product `IgloohomeSDK` plus
+`IglooSDKCore`, deployment target 15, Swift 6). Hardware result with this build: pending at the time of writing.

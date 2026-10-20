@@ -26,8 +26,7 @@ android {
 
 repositories {
     flatDir{
-        // The last entry is the igloohome Bluetooth SDK (ble-sdk-release.aar) the @pynwheel/igloohome-ble plugin depends on.
-        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs', '../../plugins/igloohome-ble/android/libs'
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
     }
 }
 
