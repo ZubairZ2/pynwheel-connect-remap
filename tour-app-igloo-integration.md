@@ -236,3 +236,14 @@ read, retype or renew a code issued through this integration; fixed in `StopScre
 `POST …/locks/pin` on Hazel (clone row switched to `igloohome` mode for the run and restored to `v1` afterwards; no
 vendor call, no real code). The backend contract and tests are unchanged and green. See
 `FINAL_PLATFORM_QA_REPORT_2026-10-17.md` §17 and §24.
+
+## J. The CMS side moves to Connect (October 20, 2026)
+
+The igloohome account (version `v1` / `igloohome` / `iglooworks`, the API credentials or the code-grant status,
+the home name, the Iglooworks key and department), the visitor instructions and images, and the v1 lock entry
+(Device Name + Device ID, or the legacy CSV) can now be set on Pynwheel Connect's Locks tab (`Locks::Accounts`).
+Nothing the Tour App reads changed: `igloohomes.version` still picks the flow, the lock row still sits on the
+holder's door first, and `multiple_locks_provider` / `enable_locks` still gate `supported`. A lock mapped from the
+page on Escaya 818 resolved as `{method: bluetooth, mode: v1, supported: true}` through `TourApi::Locks.describe`.
+See `LOCKS_PAGE_INTEGRATION_QA.md`.
+

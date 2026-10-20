@@ -14,9 +14,10 @@ module Locks
   class Inventory
     ISSUED_LIMIT = 100
 
-    def initialize(community, include_codes: false)
+    def initialize(community, include_codes: false, base_url: nil)
       @community = community
       @include_codes = include_codes
+      @base_url = base_url
     end
 
     def as_json(*)
@@ -46,6 +47,9 @@ module Locks
           status: state[:status],
           mode: state[:mode],
           account: account_summary(vendor, account),
+          details: Accounts.describe(vendor, account, base_url: @base_url),
+          options: Accounts.options(vendor),
+          access: access_of(vendor, state),
           lock_count: rows.size,
           mapped_count: rows.count { |row| row.stop_id.present? },
           last_changed_at: rows.map(&:updated_at).compact.max,
@@ -331,7 +335,30 @@ module Locks
 
       def supports(vendor, state)
         api = state[:configured] && !(vendor == 'Igloohome' && state[:mode] == 'v1')
-        { sync: api, test: api, purge: true, auto_match: true, csv: vendor == 'Igloohome' && state[:mode] == 'v1', async_sync: %w[Latch Zerv].include?(vendor) }
+        v1 = vendor == 'Igloohome' && state[:mode] == 'v1'
+        {
+          sync: api, test: api, purge: true, auto_match: true, csv: v1, async_sync: %w[Latch Zerv].include?(vendor),
+          # The legacy page's account actions: every vendor has an account form
+          # and visitor instructions; a single lock is typed only for v1; the
+          # code-grant modes can forget their vendor token.
+          account: true, instructions: true, add_device: v1,
+          remove_authorization: (vendor == 'EdgeState' || (vendor == 'Igloohome' && state[:mode] == 'igloohome')) && state[:configured]
+        }
+      end
+
+      # How a visitor opens this vendor's lock, and whether the new Tour App
+      # does it (TourApi::Locks: igloohome door codes and v1 Bluetooth keys;
+      # every other vendor is opened by the legacy app only).
+      def access_of(vendor, state)
+        case vendor
+        when 'Igloohome'
+          bluetooth = state[:mode] == 'v1'
+          { method: bluetooth ? 'bluetooth_key' : 'hourly_pin', tour_app: true, legacy_app: true }
+        when 'Latch' then { method: 'latch_key', tour_app: false, legacy_app: true }
+        when 'Zerv' then { method: 'mobile_key', tour_app: false, legacy_app: true }
+        when 'Dwelo' then { method: 'remote_unlock', tour_app: false, legacy_app: true }
+        when 'EdgeState' then { method: 'keypad_pin', tour_app: false, legacy_app: true }
+        end
       end
   end
 end

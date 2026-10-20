@@ -60,18 +60,27 @@ module Locks
       case vendor.to_s
       when 'Igloohome'
         mode = account.version.presence || 'v1'
+        credentials = account.client_id.present? && account.client_secret.present?
         configured = case mode
                      when 'iglooworks' then account.iglooworks_api_key.present?
-                     when 'igloohome' then (account.client_id.present? && account.client_secret.present?) || account.refresh_token.present?
+                     when 'igloohome' then credentials || account.refresh_token.present?
                      else true # v1: devices come from a CSV or the single-lock form
                      end
-        needs_auth = mode == 'igloohome' && configured && !(account.client_id.present? && account.client_secret.present?) && account.refresh_token_expired?
+        # The code grant ("Authorization Code Grant" on the legacy tab) is
+        # chosen but its token is missing or expired: the legacy page's
+        # Authorize link has to be followed again.
+        code_grant = mode == 'igloohome' && !credentials && (account.is_authorized_with_pynwheel || account.refresh_token.present?)
+        needs_auth = code_grant && account.refresh_token_expired?
         { configured: configured, mode: mode, status: needs_auth ? 'needs_authorization' : (configured ? 'connected' : 'not_configured') }
       when 'Latch'
-        configured = account.client_id.present? && account.client_secret.present?
+        # The legacy Latch form stores only the building name; the OpenKit
+        # credentials are Pynwheel's (ENV), never the row's client_id/secret.
+        configured = account.latch_property_name.present?
         { configured: configured, mode: nil, status: configured ? 'connected' : 'not_configured' }
       when 'Zerv'
-        configured = account.username.present? && account.password.present? && account.facility_id.present?
+        # The legacy Test/Import need the login only; facility, badge and card
+        # format have defaults in the guest services.
+        configured = account.username.present? && account.password.present?
         { configured: configured, mode: nil, status: configured ? 'connected' : 'not_configured' }
       when 'Dwelo'
         configured = account.client_id.present? && account.client_secret.present? && account.default_community_id.present?

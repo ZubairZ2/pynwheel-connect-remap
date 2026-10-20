@@ -15,12 +15,18 @@ module Connect
   #   POST /communities/:community_id/connect/locks/test.json         {vendor}
   #   DELETE /communities/:community_id/connect/locks/purge.json      {vendor}
   #   PUT  /communities/:community_id/connect/locks/enabled.json      {enabled}
+  #   PUT  /communities/:community_id/connect/locks/account.json      {vendor, fields: {…}} create or update the vendor account (Locks::Accounts)
+  #   PUT  /communities/:community_id/connect/locks/account/remove_authorization.json {vendor} forget a code-grant token
+  #   PUT  /communities/:community_id/connect/locks/instructions.json {vendor, unit, amenity}
+  #   PUT  /communities/:community_id/connect/locks/instruction_image.json {vendor, kind, image} (a PNG/JPEG data URL)
+  #   POST /communities/:community_id/connect/locks/devices.json      {device_name, device_id} one igloohome v1 lock
+  #   POST /communities/:community_id/connect/locks/import_csv.json   {csv} the igloohome v1 CSV (name, device id)
   #
   # Every write answers the whole inventory again, so the page never shows a
   # state the database does not hold.
   class LocksController < BaseController
     CONNECT_READ_ACTIONS = %w[index auto_match_preview].freeze
-    CONNECT_WRITE_ACTIONS = %w[map unmap manual_code auto_match_apply sync test purge enabled].freeze
+    CONNECT_WRITE_ACTIONS = %w[map unmap manual_code auto_match_apply sync test purge enabled account remove_authorization instructions instruction_image add_device import_csv].freeze
 
     def index
       render_connect(inventory_json)
@@ -90,10 +96,49 @@ module Connect
       render_write(inventory_json)
     end
 
+    # The vendor account form of the legacy Locks page: one account per vendor
+    # per property, created on first save, secrets kept when left blank.
+    def account
+      fields = params[:fields].respond_to?(:to_unsafe_h) ? params[:fields].to_unsafe_h : {}
+      result = Locks::Accounts.new(@community).save!(params[:vendor], fields)
+      audit(result.created ? 'lock_account_created' : 'lock_account_updated', vendor: result.vendor, fields: result.changes.map(&:to_s))
+      render_write(inventory_json.merge(account: { vendor: result.vendor, created: result.created }))
+    end
+
+    def remove_authorization
+      Locks::Accounts.new(@community).remove_authorization!(params[:vendor])
+      audit('lock_authorization_removed', vendor: params[:vendor].to_s)
+      render_write(inventory_json.merge(account: { vendor: params[:vendor].to_s, authorization_removed: true }))
+    end
+
+    def instructions
+      Locks::Accounts.new(@community).instructions!(params[:vendor], unit: params[:unit], amenity: params[:amenity])
+      audit('lock_instructions', vendor: params[:vendor].to_s)
+      render_write(inventory_json)
+    end
+
+    def instruction_image
+      Locks::Accounts.new(@community).image!(params[:vendor], kind: params[:kind], data_url: params[:image])
+      audit('lock_instruction_image', vendor: params[:vendor].to_s, kind: params[:kind].to_s)
+      render_write(inventory_json)
+    end
+
+    def add_device
+      lock = Locks::Accounts.new(@community).add_device!(device_name: params[:device_name], device_id: params[:device_id])
+      audit('lock_device_added', vendor: 'Igloohome', device_id: lock.device_id)
+      render_write(inventory_json.merge(device: { vendor: 'Igloohome', id: lock.id, device_id: lock.device_id, name: lock.device_name }))
+    end
+
+    def import_csv
+      result = Locks::Accounts.new(@community).import_csv!(params[:csv])
+      audit('lock_csv_import', vendor: 'Igloohome', created: result.created, skipped_existing: result.skipped_existing, skipped_blank: result.skipped_blank)
+      render_write(inventory_json.merge(imported: result.to_h.merge(vendor: 'Igloohome')))
+    end
+
     private
 
       def inventory_json
-        Locks::Inventory.new(@community, include_codes: current_user&.can_edit_map?(@community) == true).as_json
+        Locks::Inventory.new(@community, include_codes: current_user&.can_edit_map?(@community) == true, base_url: request.base_url).as_json
       end
 
       def render_write(data)

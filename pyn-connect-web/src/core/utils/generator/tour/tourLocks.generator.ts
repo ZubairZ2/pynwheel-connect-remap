@@ -3,6 +3,7 @@ import { i18n } from '~/resources/i18n';
 import type { IssuedCode, LockDeviceRow, LockInventory, LockProvider, LockTarget, LockTargetOption } from '~/core/models/data/tourModules.data';
 import { t } from '../inventory/inventoryText';
 import type { PillVariant } from '../listing.types';
+import { accessLabel, accountSummary, healthLabel } from './lockAccounts.generator';
 
 /**
  * The Locks tab's view data from the inventory the CMS answered
@@ -63,23 +64,19 @@ export interface ProviderCard {
   configured: boolean;
   enabled: boolean;
   mode: string | null;
+  /** The account values the CMS stores, never a secret (lockAccounts.generator#accountSummary). */
   account: { label: string; value: string }[];
   counts: string;
+  /** How a visitor opens the lock, and which app does it, from the CMS's access facts. */
   cred: string;
+  /** Where health comes from, from the CMS's `healthSource`. */
   health: string;
   lastChanged: string;
   supports: LockProvider['supports'];
   instructions: { unit: string | null; amenity: string | null } | null;
   noApi: boolean;
+  provider: LockProvider;
 }
-
-const ACCOUNT_LABELS: Record<string, string> = {
-  homeName: L.provider.homeName,
-  propertyName: L.provider.propertyName,
-  facilityId: L.provider.facility,
-  defaultCommunityId: L.provider.dweloCommunity,
-  iglooworksDepartmentId: L.provider.account
-};
 
 export const generateProviderCards = (inventory: LockInventory, timeZone?: string | null): { connected: ProviderCard[]; available: ProviderCard[] } => {
   const cards = inventory.providers.map((provider): ProviderCard => {
@@ -88,10 +85,7 @@ export const generateProviderCards = (inventory: LockInventory, timeZone?: strin
       : provider.status === 'needs_authorization'
         ? { label: i18n.t(L.provider.needsAuth), variant: 'warn' as PillVariant }
         : { label: i18n.t(L.provider.connected), variant: 'ok' as PillVariant };
-    const account = Object.entries(provider.account ?? {})
-      .filter(([key, value]) => ACCOUNT_LABELS[key] && value != null && value !== '')
-      .map(([key, value]) => ({ label: i18n.t(ACCOUNT_LABELS[key]), value: String(value) }));
-    if (provider.mode) account.unshift({ label: i18n.t(L.provider.mode), value: provider.mode });
+    const account = accountSummary(provider);
     return {
       vendor: provider.vendor,
       label: provider.label,
@@ -102,12 +96,13 @@ export const generateProviderCards = (inventory: LockInventory, timeZone?: strin
       mode: provider.mode,
       account,
       counts: provider.lockCount ? t(L.provider.counts, { count: provider.lockCount, mapped: provider.mappedCount }) : i18n.t(L.provider.noLocks),
-      cred: i18n.t(L.provider.cred[provider.vendor as keyof typeof L.provider.cred] ?? L.provider.cred.Igloohome),
-      health: i18n.t(provider.vendor === 'Zerv' ? L.provider.health.Zerv : L.provider.health.none),
+      cred: accessLabel(provider),
+      health: healthLabel(provider),
       lastChanged: provider.lastChangedAt ? t(L.provider.lastChanged, { when: formatWhen(provider.lastChangedAt, timeZone) }) : i18n.t(L.provider.noLocks),
       supports: provider.supports,
       instructions: provider.instructions,
-      noApi: provider.vendor === 'Igloohome' && provider.mode === 'v1'
+      noApi: provider.vendor === 'Igloohome' && provider.mode === 'v1',
+      provider
     };
   });
   return { connected: cards.filter((card) => card.configured || card.enabled), available: cards.filter((card) => !card.configured && !card.enabled) };

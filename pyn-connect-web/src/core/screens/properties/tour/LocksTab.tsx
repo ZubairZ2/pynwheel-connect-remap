@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
@@ -9,9 +9,11 @@ import { StatusPill } from '~/core/components/atoms/StatusPill';
 import { Modal } from '~/core/components/molecules/Modal';
 import { useTourLocks, type TourLocksController } from '~/core/hooks/tour/useTourLocks';
 import { t } from '~/core/utils/generator/inventory/inventoryText';
+import { CSV_HINT_COLUMNS, generateAccountForm, instructionImages, stripHtml, type AccountField } from '~/core/utils/generator/tour/lockAccounts.generator';
 import { L, LOCK_SUBS, targetLabel, type ProviderCard } from '~/core/utils/generator/tour/tourLocks.generator';
 
 const X = CORE_STRINGS.tourModules.common;
+const A = L.account;
 
 /** The Locks tab: providers, the lock inventory with mapping, and the issued codes, on the real lock rows. */
 export const LocksTab = ({ propertyId, legacyUrl }: { propertyId: number; legacyUrl: string | null }) => {
@@ -78,34 +80,38 @@ const Providers = ({ c, legacyUrl }: { c: TourLocksController; legacyUrl: string
     {c.providers.connected.map((card) => (
       <ProviderCardView key={card.vendor} card={card} c={c} legacyUrl={legacyUrl} />
     ))}
-    <div className="bo-tx__card">
-      <div className="bo-tx__cardhead">
-        <div className="bo-tx__grow">
-          <div className="bo-tx__cardtitle">{i18n.t(L.provider.available)}</div>
-          <div className="bo-tx__cardsub">{i18n.t(L.provider.availableSub)}</div>
+    {c.providers.available.length > 0 && (
+      <div className="bo-tx__card" data-testid="lock-providers-available">
+        <div className="bo-tx__cardhead">
+          <div className="bo-tx__grow">
+            <div className="bo-tx__cardtitle">{i18n.t(L.provider.available)}</div>
+            <div className="bo-tx__cardsub">{i18n.t(L.provider.availableSub)}</div>
+          </div>
         </div>
-        {legacyUrl && (
-          <a className="bo-tx__btn bo-tx__btn--accent" href={legacyUrl} target="_blank" rel="noopener noreferrer">
-            {i18n.t(L.provider.openCms)}
-          </a>
-        )}
-      </div>
-      <div className="bo-tx__cardbody">
-        <div className="bo-tx__info">{i18n.t(L.provider.manageInCms)}</div>
-        <div className="bo-tx__chips">
-          {c.providers.available.map((card) => (
-            <span key={card.vendor} className="bo-tx__chip">
-              {card.label} · {card.cred}
-            </span>
-          ))}
+        <div className="bo-tx__cardbody">
+          <div className="bo-tx__rowlist">
+            {c.providers.available.map((card) => (
+              <div key={card.vendor} className="bo-tx__rowitem bo-tx__rowitem--static" data-testid={`lock-provider-available-${card.vendor}`}>
+                <div className="bo-tx__grow">
+                  <div className="bo-tx__name">{card.label}</div>
+                  <div className="bo-tx__meta">{card.cred}</div>
+                </div>
+                <button type="button" className="bo-tx__btn bo-tx__btn--accent" disabled={!c.canEdit} onClick={() => c.actions.openAccount(card.vendor)}>
+                  {i18n.t(A.connect)}
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    )}
   </div>
 );
 
 const ProviderCardView = ({ card, c, legacyUrl }: { card: ProviderCard; c: TourLocksController; legacyUrl: string | null }) => {
   const test = c.testResult?.vendor === card.vendor ? c.testResult : null;
+  const supports = card.supports;
+  const count = c.inventory?.locks.filter((lock) => lock.vendor === card.vendor).length ?? 0;
   return (
     <div className="bo-tx__card" data-testid={`lock-provider-${card.vendor}`}>
       <div className="bo-tx__cardhead">
@@ -117,6 +123,9 @@ const ProviderCardView = ({ card, c, legacyUrl }: { card: ProviderCard; c: TourL
           {card.note && <div className="bo-tx__cardsub bo-tx__warn">{card.note}</div>}
           <div className="bo-tx__cardsub">{card.lastChanged}</div>
         </div>
+        <button type="button" className="bo-tx__btn bo-tx__btn--accent" disabled={!supports.account} onClick={() => c.actions.openAccount(card.vendor)}>
+          {i18n.t(card.configured || card.provider.details ? A.edit : A.connect)}
+        </button>
       </div>
       <div className="bo-tx__cardbody">
         <div className="bo-tx__stats">
@@ -138,7 +147,7 @@ const ProviderCardView = ({ card, c, legacyUrl }: { card: ProviderCard; c: TourL
           </div>
         </div>
         {card.noApi && <div className="bo-tx__note">{i18n.t(L.provider.noApi)}</div>}
-        {test && <div className={test.ok ? 'bo-tx__ok' : 'bo-tx__bad'}>{test.message}</div>}
+        {test && <div className={test.ok ? 'bo-tx__ok' : 'bo-tx__bad'} role="status">{test.message}</div>}
         {card.instructions && (card.instructions.unit || card.instructions.amenity) && (
           <div className="bo-tx__info">
             <b>{i18n.t(L.provider.instructions)}</b>
@@ -147,19 +156,32 @@ const ProviderCardView = ({ card, c, legacyUrl }: { card: ProviderCard; c: TourL
           </div>
         )}
         <div className="bo-tx__toolbar">
-          <span className="bo-tx__grow bo-tx__cardsub">{i18n.t(L.provider.manageInCms)}</span>
+          <span className="bo-tx__grow" />
           {legacyUrl && (
             <a className="bo-tx__btn" href={legacyUrl} target="_blank" rel="noopener noreferrer">
               {i18n.t(L.provider.openCms)}
             </a>
           )}
-          <button type="button" className="bo-tx__btn" disabled={!card.supports.test || c.busy === `test:${card.vendor}`} onClick={() => void c.actions.test(card.vendor)}>
+          <button type="button" className="bo-tx__btn" disabled={!supports.instructions || !card.provider.details} onClick={() => c.actions.openInstructions(card.vendor)}>
+            {i18n.t(A.instructions.button)}
+          </button>
+          {supports.addDevice && (
+            <button type="button" className="bo-tx__btn" onClick={() => c.actions.openDevices(card.vendor)}>
+              {i18n.t(A.devices.button)}
+            </button>
+          )}
+          <button type="button" className="bo-tx__btn" disabled={!supports.test || c.busy === `test:${card.vendor}`} onClick={() => void c.actions.test(card.vendor)}>
             {c.busy === `test:${card.vendor}` ? i18n.t(L.provider.testing) : i18n.t(L.provider.test)}
           </button>
-          <button type="button" className="bo-tx__btn" disabled={!card.supports.sync || c.busy === `sync:${card.vendor}`} onClick={() => void c.actions.sync(card.vendor)}>
+          <button type="button" className="bo-tx__btn" disabled={!supports.sync || c.busy === `sync:${card.vendor}`} onClick={() => void c.actions.sync(card.vendor)}>
             {c.busy === `sync:${card.vendor}` ? i18n.t(L.provider.syncing) : i18n.t(L.provider.sync)}
           </button>
-          <button type="button" className="bo-tx__btn bo-tx__btn--danger" disabled={!c.inventory || c.inventory.locks.every((lock) => lock.vendor !== card.vendor)} onClick={() => c.actions.openPurge(card.vendor, card.label, c.inventory?.locks.filter((lock) => lock.vendor === card.vendor).length ?? 0)}>
+          {supports.removeAuthorization && (
+            <button type="button" className="bo-tx__btn" onClick={() => c.actions.openRemoveAuth(card.vendor)}>
+              {i18n.t(A.removeAuth)}
+            </button>
+          )}
+          <button type="button" className="bo-tx__btn bo-tx__btn--danger" disabled={!supports.purge || count === 0} onClick={() => c.actions.openPurge(card.vendor, card.label, count)}>
             {i18n.t(L.provider.purge)}
           </button>
         </div>
@@ -168,11 +190,10 @@ const ProviderCardView = ({ card, c, legacyUrl }: { card: ProviderCard; c: TourL
   );
 };
 
-const stripHtml = (value: string): string => value.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 
 const Inventory = ({ c }: { c: TourLocksController }) => {
   const inventory = c.inventory!;
-  const proposalsCount = useMemo(() => inventory.counts.unmapped, [inventory.counts.unmapped]);
+  const unmappedCount = useMemo(() => inventory.counts.unmapped, [inventory.counts.unmapped]);
   return (
     <div className="bo-tx__grid2">
       <div className="bo-tx__card" data-testid="lock-inventory">
@@ -197,8 +218,8 @@ const Inventory = ({ c }: { c: TourLocksController }) => {
               </button>
             </>
           )}
-          <button type="button" className="bo-tx__btn bo-tx__btn--soft" onClick={() => void c.actions.openAutoMatch()} disabled={proposalsCount === 0}>
-            {t(L.autoMatch.button, { count: proposalsCount })}
+          <button type="button" className="bo-tx__btn bo-tx__btn--soft" onClick={() => void c.actions.openAutoMatch()} disabled={unmappedCount === 0}>
+            {i18n.t(L.autoMatch.title)}
           </button>
         </div>
         <table className="bo-tx__table">
@@ -285,7 +306,7 @@ const Inventory = ({ c }: { c: TourLocksController }) => {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              <button type="button" className="bo-tx__btn bo-tx__btn--accent" onClick={() => c.setSub('inventory')}>
+              <button type="button" className="bo-tx__btn bo-tx__btn--accent" disabled={inventory.counts.unmapped === 0} onClick={() => c.setFilter('unmapped')}>
                 {i18n.t(L.withoutLock.pick)}
               </button>
               <button type="button" className="bo-tx__btn" onClick={() => c.actions.openManual(row.target)}>
@@ -376,7 +397,7 @@ const LocksDialogs = ({ c }: { c: TourLocksController }) => {
           dialog?.kind === 'manual' && (
             <>
               {c.inventory?.manualCodes.some((m) => m.target.type === dialog.target.type && m.target.id === dialog.target.id) && (
-                <button type="button" className="bo-btn bo-btn--secondary bo-map__btn--danger" disabled={dialog.busy} onClick={() => { c.setDialog({ ...dialog, code: '' }); void c.actions.saveManual(); }}>
+                <button type="button" className="bo-btn bo-btn--secondary bo-map__btn--danger" disabled={dialog.busy} onClick={() => void c.actions.saveManual('')}>
                   {i18n.t(L.manual.remove)}
                 </button>
               )}
@@ -497,9 +518,296 @@ const LocksDialogs = ({ c }: { c: TourLocksController }) => {
       >
         <p className="bo-map__dialogtext">{i18n.t(L.turnOffBody)}</p>
       </Modal>
+      <AccountDialog c={c} />
+      <InstructionsDialog c={c} />
+      <DevicesDialog c={c} />
+
+      <Modal
+        open={dialog?.kind === 'removeAuth'}
+        title={dialog?.kind === 'removeAuth' ? t(A.removeAuthTitle, { provider: c.inventory?.providers.find((p) => p.vendor === dialog.vendor)?.label ?? dialog.vendor }) : ''}
+        width={480}
+        onClose={close}
+        closeLabel={closeLabel}
+        className="bo-map__dialog"
+        footer={
+          dialog?.kind === 'removeAuth' && (
+            <>
+              <button type="button" className="bo-btn bo-btn--secondary" onClick={close}>
+                {i18n.t(X.cancel)}
+              </button>
+              <button type="button" className="bo-btn bo-btn--primary bo-map__btn--danger" disabled={dialog.busy} onClick={() => void c.actions.removeAuthorization()}>
+                {i18n.t(A.removeAuth)}
+              </button>
+            </>
+          )
+        }
+      >
+        {dialog?.kind === 'removeAuth' && (
+          <div className="bo-dlg bo-dlg--stacked">
+            <p className="bo-map__dialogtext">{i18n.t(A.removeAuthBody)}</p>
+            {dialog.vendor === 'Igloohome' && <p className="bo-map__dialognote">{i18n.t(A.removeAuthIgloo)}</p>}
+          </div>
+        )}
+      </Modal>
       <span style={{ display: 'none' }}>
         <Icon name="lock" />
       </span>
     </>
+  );
+};
+
+/** One field of an account form: the real legacy input, with its problem under it. */
+const AccountFieldView = ({ field, value, problem, disabled, onChange }: { field: AccountField; value: string; problem: string | null; disabled: boolean; onChange: (value: string) => void }) => {
+  const id = `lock-account-${field.key}`;
+  return (
+    <label className="bo-tx__field" htmlFor={id} data-testid={`lock-account-field-${field.key}`}>
+      <span>
+        {field.label}
+        {field.required && <span aria-hidden="true"> *</span>}
+      </span>
+      {field.kind === 'select' && (
+        <select id={id} className="bo-tx__select" value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)}>
+          {(field.options ?? []).map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      )}
+      {field.kind === 'radio' && (
+        <div className="bo-tx__seg" role="radiogroup" aria-label={field.label}>
+          {(field.options ?? []).map((option) => (
+            <button key={option.value} type="button" role="radio" aria-checked={value === option.value} className={`bo-tx__segbtn${value === option.value ? ' bo-tx__segbtn--on' : ''}`} disabled={disabled} onClick={() => onChange(option.value)}>
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+      {(field.kind === 'text' || field.kind === 'password' || field.kind === 'number') && (
+        <input
+          id={id}
+          className="bo-tx__input"
+          type={field.kind === 'password' ? 'password' : 'text'}
+          inputMode={field.kind === 'number' ? 'numeric' : undefined}
+          autoComplete={field.kind === 'password' ? 'new-password' : 'off'}
+          value={value}
+          placeholder={field.placeholder}
+          min={field.min}
+          max={field.max}
+          disabled={disabled}
+          aria-invalid={!!problem}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      )}
+      {field.hint && !problem && <span className="bo-tx__meta">{field.hint}</span>}
+      {problem && <span className="bo-tx__error" role="alert">{problem}</span>}
+    </label>
+  );
+};
+
+/** The provider account form: the legacy tab's fields for the vendor, under the current draft. */
+const AccountDialog = ({ c }: { c: TourLocksController }) => {
+  const dialog = c.dialog;
+  const open = dialog?.kind === 'account';
+  const provider = open ? c.inventory?.providers.find((p) => p.vendor === dialog.vendor) ?? null : null;
+  const form = useMemo(() => (open && provider ? generateAccountForm(provider, dialog.draft) : null), [open, provider, dialog]);
+  const close = c.actions.closeDialog;
+  return (
+    <Modal
+      open={open}
+      title={form?.title ?? ''}
+      subtitle={form ? i18n.t(A.oneAccount) : undefined}
+      width={560}
+      onClose={close}
+      closeLabel={i18n.t(X.close)}
+      className="bo-tour__dialog"
+      footer={
+        open && (
+          <>
+            <button type="button" className="bo-btn bo-btn--secondary" onClick={close}>
+              {i18n.t(X.cancel)}
+            </button>
+            {provider && provider.vendor !== 'Igloohome' && (
+              <button type="button" className="bo-btn bo-btn--secondary" disabled={dialog.busy} onClick={() => void c.actions.saveAccount(true)}>
+                {i18n.t(A.saveTest)}
+              </button>
+            )}
+            <button type="button" className="bo-btn bo-btn--primary" disabled={dialog.busy} onClick={() => void c.actions.saveAccount(false)} data-testid="lock-account-save">
+              {i18n.t(A.save)}
+            </button>
+          </>
+        )
+      }
+    >
+      {open && form && (
+        <div className="bo-dlg bo-dlg--stacked" data-testid="lock-account-form">
+          {form.intro && <p className="bo-map__dialogtext">{form.intro}</p>}
+          {form.sections.map((section) => (
+            <div key={section.key} className="bo-dlg__group">
+              {section.title && <div className="bo-dlg__grouptitle">{section.title}</div>}
+              {section.note && <div className="bo-tx__note">{section.note}</div>}
+              {section.fields.map((field) => (
+                <AccountFieldView key={field.key} field={field} value={dialog.draft[field.key] ?? ''} problem={dialog.problems[field.key] ?? null} disabled={dialog.busy} onChange={(value) => c.actions.setAccountField(field.key, value)} />
+              ))}
+            </div>
+          ))}
+          {form.authorization && (
+            <div className="bo-tx__info" data-testid="lock-account-authorization">
+              <b>{form.authorization.label}</b>
+              <div>{form.authorization.note}</div>
+              <div>{i18n.t(A.authorizeInCms)}</div>
+              {form.authorization.removable && (
+                <button type="button" className="bo-tx__btn" style={{ marginTop: 8 }} disabled={dialog.busy} onClick={() => c.actions.openRemoveAuth(dialog.vendor)}>
+                  {i18n.t(A.removeAuth)}
+                </button>
+              )}
+            </div>
+          )}
+          {dialog.error && <div className="bo-tx__bad" role="alert">{dialog.error}</div>}
+        </div>
+      )}
+    </Modal>
+  );
+};
+
+const ImageSlot = ({ label, image, uploading, disabled, onPick }: { label: string; image: { url: string | null; fileName: string } | null; uploading: boolean; disabled: boolean; onPick: (file: File) => void }) => {
+  // A stored file this CMS host cannot serve (a database restored from another environment) shows its name instead of a broken image.
+  const [broken, setBroken] = useState<string | null>(null);
+  return (
+  <div className="bo-tx__field">
+    <span>{label}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      {image?.url && broken !== image.url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={image.url} alt={label} onError={() => setBroken(image.url)} style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--bo-line)' }} />
+      ) : (
+        <div className="bo-tx__meta" style={{ width: 96, height: 96, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: '1px dashed var(--bo-line)' }}>
+          {image ? image.fileName : i18n.t(A.instructions.noImage)}
+        </div>
+      )}
+      <label className="bo-tx__btn" style={{ cursor: disabled ? 'default' : 'pointer' }}>
+        {uploading ? i18n.t(A.instructions.uploading) : i18n.t(image ? A.instructions.replace : A.instructions.choose)}
+        <input
+          type="file"
+          accept="image/png,image/jpeg"
+          style={{ display: 'none' }}
+          disabled={disabled || uploading}
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = '';
+            if (file) onPick(file);
+          }}
+        />
+      </label>
+    </div>
+  </div>
+  );
+};
+
+/** The vendor's visitor instructions: the two texts and the two images of the legacy tab. */
+const InstructionsDialog = ({ c }: { c: TourLocksController }) => {
+  const dialog = c.dialog;
+  const open = dialog?.kind === 'instructions';
+  const provider = open ? c.inventory?.providers.find((p) => p.vendor === dialog.vendor) ?? null : null;
+  const images = provider ? instructionImages(provider) : { unit: null, amenity: null };
+  const close = c.actions.closeDialog;
+  return (
+    <Modal
+      open={open}
+      title={provider ? t(A.instructions.title, { provider: provider.label }) : ''}
+      subtitle={i18n.t(A.instructions.intro)}
+      width={600}
+      onClose={close}
+      closeLabel={i18n.t(X.close)}
+      className="bo-tour__dialog"
+      footer={
+        open && (
+          <>
+            <button type="button" className="bo-btn bo-btn--secondary" onClick={close}>
+              {i18n.t(X.cancel)}
+            </button>
+            <button type="button" className="bo-btn bo-btn--primary" disabled={dialog.busy || !!dialog.uploading} onClick={() => void c.actions.saveInstructions()} data-testid="lock-instructions-save">
+              {i18n.t(X.save)}
+            </button>
+          </>
+        )
+      }
+    >
+      {open && (
+        <div className="bo-dlg bo-dlg--stacked" data-testid="lock-instructions-form">
+          <div className="bo-tx__note">{i18n.t(A.instructions.legacyOnly)}</div>
+          <label className="bo-tx__field">
+            <span>{i18n.t(A.instructions.unitText)}</span>
+            <textarea className="bo-tx__textarea" rows={3} value={dialog.unit} disabled={dialog.busy} onChange={(event) => c.setDialog({ ...dialog, unit: event.target.value })} />
+          </label>
+          <ImageSlot label={i18n.t(A.instructions.unitImage)} image={images.unit} uploading={dialog.uploading === 'unit'} disabled={dialog.busy} onPick={(file) => void c.actions.uploadInstructionImage('unit', file)} />
+          <label className="bo-tx__field">
+            <span>{i18n.t(A.instructions.amenityText)}</span>
+            <textarea className="bo-tx__textarea" rows={3} value={dialog.amenity} disabled={dialog.busy} onChange={(event) => c.setDialog({ ...dialog, amenity: event.target.value })} />
+          </label>
+          <ImageSlot label={i18n.t(A.instructions.amenityImage)} image={images.amenity} uploading={dialog.uploading === 'amenity'} disabled={dialog.busy} onPick={(file) => void c.actions.uploadInstructionImage('amenity', file)} />
+        </div>
+      )}
+    </Modal>
+  );
+};
+
+/** igloohome v1: one lock at a time, or the legacy CSV. */
+const DevicesDialog = ({ c }: { c: TourLocksController }) => {
+  const dialog = c.dialog;
+  const open = dialog?.kind === 'devices';
+  const close = c.actions.closeDialog;
+  return (
+    <Modal open={open} title={i18n.t(A.devices.title)} subtitle={i18n.t(A.devices.intro)} width={560} onClose={close} closeLabel={i18n.t(X.close)} className="bo-tour__dialog">
+      {open && (
+        <div className="bo-dlg bo-dlg--stacked" data-testid="lock-devices-form">
+          <div className="bo-dlg__group">
+            <div className="bo-dlg__grouptitle">{i18n.t(A.devices.addTitle)}</div>
+            <label className="bo-tx__field">
+              <span>{i18n.t(A.devices.name)}</span>
+              <input className="bo-tx__input" value={dialog.name} placeholder={i18n.t(A.devices.namePh)} disabled={dialog.busy} onChange={(event) => c.setDialog({ ...dialog, name: event.target.value })} />
+            </label>
+            <label className="bo-tx__field">
+              <span>{i18n.t(A.devices.id)}</span>
+              <input className="bo-tx__input" value={dialog.deviceId} placeholder={i18n.t(A.devices.idPh)} disabled={dialog.busy} onChange={(event) => c.setDialog({ ...dialog, deviceId: event.target.value })} />
+            </label>
+            <div>
+              <button type="button" className="bo-tx__btn bo-tx__btn--accent" disabled={dialog.busy || !dialog.name.trim() || !dialog.deviceId.trim()} onClick={() => void c.actions.addDevice()} data-testid="lock-device-add">
+                {i18n.t(A.devices.add)}
+              </button>
+            </div>
+          </div>
+          <div className="bo-dlg__group">
+            <div className="bo-dlg__grouptitle">{i18n.t(A.devices.csvTitle)}</div>
+            <div className="bo-tx__meta">{i18n.t(A.devices.csvHint)}</div>
+            <div className="bo-tx__mono bo-tx__meta">{CSV_HINT_COLUMNS.join(',')}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <label className="bo-tx__btn" style={{ cursor: 'pointer' }}>
+                {i18n.t(A.devices.csvChoose)}
+                <input
+                  type="file"
+                  accept=".csv,text/csv"
+                  style={{ display: 'none' }}
+                  disabled={dialog.busy}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    event.target.value = '';
+                    if (file) void c.actions.pickCsv(file);
+                  }}
+                />
+              </label>
+              {dialog.file && <span className="bo-tx__meta">{dialog.file.name}</span>}
+              {dialog.file && (
+                <button type="button" className="bo-tx__btn bo-tx__btn--accent" disabled={dialog.busy} onClick={() => void c.actions.importCsv()} data-testid="lock-csv-import">
+                  {t(A.devices.csvImport, { name: dialog.file.name })}
+                </button>
+              )}
+            </div>
+            {dialog.fileError && <div className="bo-tx__bad" role="alert">{dialog.fileError}</div>}
+            {dialog.result && <div className="bo-tx__ok" role="status">{dialog.result}</div>}
+          </div>
+        </div>
+      )}
+    </Modal>
   );
 };

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
-import type { AutoMatchProposal, LockDeviceRow, LockInventory, LockTarget, TourModuleMeta, TourResult } from '~/core/models/data/tourModules.data';
+import type { AutoMatchProposal, LockDeviceRow, LockInventory, LockProvider, LockTarget, TourModuleMeta, TourResult } from '~/core/models/data/tourModules.data';
 import { demoActions } from '~/core/store/demo/demo.slice';
 import { useAppDispatch } from '~/core/store/hooks';
 import { t } from '~/core/utils/generator/inventory/inventoryText';
@@ -21,6 +21,7 @@ import {
   type LockFilter,
   type LocksSub
 } from '~/core/utils/generator/tour/tourLocks.generator';
+import { accountDraftOf, accountPayload, accountProblems, generateAccountForm, importSummary, instructionText, type AccountDraft } from '~/core/utils/generator/tour/lockAccounts.generator';
 import { firstFieldError, tourGet, tourPost } from '~/core/utils/tour/tourApi.client';
 
 const E = CORE_STRINGS.tourModules.errors;
@@ -53,7 +54,31 @@ export type LocksDialog =
   | { kind: 'autoMatch'; proposals: AutoMatchProposal[]; picked: string[]; loading: boolean; busy: boolean }
   | { kind: 'purge'; vendor: string; label: string; count: number; input: string; busy: boolean }
   | { kind: 'disable'; busy: boolean }
+  | { kind: 'account'; vendor: string; draft: AccountDraft; problems: Record<string, string>; submitted: boolean; busy: boolean; error: string | null }
+  | { kind: 'removeAuth'; vendor: string; busy: boolean }
+  | { kind: 'instructions'; vendor: string; unit: string; amenity: string; uploading: 'unit' | 'amenity' | null; busy: boolean }
+  | { kind: 'devices'; vendor: string; name: string; deviceId: string; file: { name: string; text: string } | null; fileError: string | null; result: string | null; busy: boolean }
   | null;
+
+/** A field error the CMS answered on an account write: `{field, code, message}` under the error's `fields`. */
+const fieldProblemsOf = (result: Extract<TourResult<unknown>, { ok: false }>): Record<string, string> => {
+  const first = (result.errors?.[0] ?? null) as { fields?: { field?: string; message?: string }[] } | null;
+  const problems: Record<string, string> = {};
+  for (const entry of first?.fields ?? []) if (entry.field) problems[entry.field] = entry.message ?? '';
+  return problems;
+};
+
+const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+const CSV_MAX_BYTES = 1024 * 1024;
+
+const readFile = (file: File, as: 'dataUrl' | 'text'): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => resolve(String(reader.result ?? ''));
+    if (as === 'dataUrl') reader.readAsDataURL(file);
+    else reader.readAsText(file);
+  });
 
 /**
  * The Locks tab: the inventory read on mount and replaced by every write's
@@ -183,9 +208,9 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
     [canEdit, refuse]
   );
 
-  const saveManual = useCallback(async () => {
+  const saveManual = useCallback(async (override?: string) => {
     if (dialog?.kind !== 'manual' || dialog.busy) return;
-    const code = dialog.code.trim();
+    const code = (override ?? dialog.code).trim();
     if (code && !/^[0-9#*]{1,10}$/.test(code)) {
       toast(i18n.t(L.manual.invalid));
       return;
@@ -229,16 +254,6 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
     setDialog(data ? null : { ...dialog, busy: false });
   }, [apply, dialog]);
 
-  const sync = useCallback(
-    async (vendor: string) => {
-      if (!canEdit) return refuse();
-      setBusy(`sync:${vendor}`);
-      await apply('locks/sync', { vendor }, (data) => data.sync?.message ?? i18n.t(CORE_STRINGS.tourModules.common.saved));
-      setBusy(null);
-    },
-    [apply, canEdit, refuse]
-  );
-
   const test = useCallback(
     async (vendor: string) => {
       if (!canEdit) return refuse();
@@ -254,6 +269,16 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
     [canEdit, propertyId, refuse]
   );
 
+  const sync = useCallback(
+    async (vendor: string) => {
+      if (!canEdit) return refuse();
+      setBusy(`sync:${vendor}`);
+      await apply('locks/sync', { vendor }, (data) => data.sync?.message ?? i18n.t(CORE_STRINGS.tourModules.common.saved));
+      setBusy(null);
+    },
+    [apply, canEdit, refuse]
+  );
+
   const openPurge = useCallback(
     (vendor: string, label: string, count: number) => {
       if (!canEdit) return refuse();
@@ -261,6 +286,150 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
     },
     [canEdit, refuse]
   );
+
+  /* ── provider accounts ───────────────────────────────────────────── */
+
+  const providerOf = useCallback((vendor: string): LockProvider | null => inventory?.providers.find((p) => p.vendor === vendor) ?? null, [inventory]);
+
+  const openAccount = useCallback(
+    (vendor: string) => {
+      if (!canEdit) return refuse();
+      const provider = providerOf(vendor);
+      if (!provider) return;
+      setDialog({ kind: 'account', vendor, draft: accountDraftOf(provider), problems: {}, submitted: false, busy: false, error: null });
+    },
+    [canEdit, providerOf, refuse]
+  );
+
+  const setAccountField = useCallback((key: string, value: string) => {
+    setDialog((current) => {
+      if (current?.kind !== 'account') return current;
+      const draft = { ...current.draft, [key]: value };
+      const provider = inventory?.providers.find((p) => p.vendor === current.vendor);
+      const problems = current.submitted && provider ? accountProblems(generateAccountForm(provider, draft), draft) : current.problems;
+      return { ...current, draft, problems, error: null };
+    });
+  }, [inventory]);
+
+  const saveAccount = useCallback(
+    async (thenTest = false) => {
+      if (dialog?.kind !== 'account' || dialog.busy) return;
+      const provider = providerOf(dialog.vendor);
+      if (!provider) return;
+      const form = generateAccountForm(provider, dialog.draft);
+      const problems = accountProblems(form, dialog.draft);
+      if (Object.keys(problems).length) {
+        setDialog({ ...dialog, problems, submitted: true, error: i18n.t(L.account.fixFields) });
+        return;
+      }
+      setDialog({ ...dialog, busy: true, submitted: true, problems: {}, error: null });
+      const result = await tourPost<LockInventory>(propertyId, 'locks/account', { vendor: dialog.vendor, fields: accountPayload(form, dialog.draft) });
+      if (!result.ok) {
+        const serverProblems = fieldProblemsOf(result);
+        setDialog({ ...dialog, busy: false, submitted: true, problems: serverProblems, error: Object.keys(serverProblems).length ? i18n.t(L.account.fixFields) : writeErrorText(result) });
+        return;
+      }
+      setInventory(result.data);
+      setMeta(result.meta);
+      toast(result.data.account?.created ? t(L.account.created, { provider: provider.label }) : i18n.t(L.account.saved));
+      setDialog(null);
+      if (thenTest) await test(dialog.vendor);
+    },
+    [dialog, propertyId, providerOf, test, toast]
+  );
+
+  const openRemoveAuth = useCallback(
+    (vendor: string) => {
+      if (!canEdit) return refuse();
+      setDialog({ kind: 'removeAuth', vendor, busy: false });
+    },
+    [canEdit, refuse]
+  );
+
+  const removeAuthorization = useCallback(async () => {
+    if (dialog?.kind !== 'removeAuth' || dialog.busy) return;
+    setDialog({ ...dialog, busy: true });
+    const data = await apply('locks/account/remove_authorization', { vendor: dialog.vendor }, i18n.t(L.account.removeAuthDone));
+    setDialog(data ? null : { ...dialog, busy: false });
+  }, [apply, dialog]);
+
+  const openInstructions = useCallback(
+    (vendor: string) => {
+      if (!canEdit) return refuse();
+      const provider = providerOf(vendor);
+      if (!provider) return;
+      setDialog({ kind: 'instructions', vendor, unit: instructionText(provider.details?.instructions.unit), amenity: instructionText(provider.details?.instructions.amenity), uploading: null, busy: false });
+    },
+    [canEdit, providerOf, refuse]
+  );
+
+  const saveInstructions = useCallback(async () => {
+    if (dialog?.kind !== 'instructions' || dialog.busy) return;
+    setDialog({ ...dialog, busy: true });
+    const data = await apply('locks/instructions', { vendor: dialog.vendor, unit: dialog.unit, amenity: dialog.amenity }, i18n.t(L.account.instructions.saved));
+    setDialog(data ? null : { ...dialog, busy: false });
+  }, [apply, dialog]);
+
+  /** One instruction image, uploaded as soon as it is chosen (as the legacy page does). */
+  const uploadInstructionImage = useCallback(
+    async (kind: 'unit' | 'amenity', file: File) => {
+      if (dialog?.kind !== 'instructions' || dialog.busy || dialog.uploading) return;
+      if (!/^image\/(png|jpeg|jpg)$/.test(file.type)) return toast(i18n.t(L.account.instructions.badType));
+      if (file.size > IMAGE_MAX_BYTES) return toast(i18n.t(L.account.instructions.tooLarge));
+      setDialog({ ...dialog, uploading: kind });
+      let dataUrl = '';
+      try {
+        dataUrl = await readFile(file, 'dataUrl');
+      } catch {
+        setDialog({ ...dialog, uploading: null });
+        return toast(i18n.t(E.failed));
+      }
+      const data = await apply('locks/instruction_image', { vendor: dialog.vendor, kind, image: dataUrl }, i18n.t(L.account.instructions.uploaded));
+      setDialog((current) => (current?.kind === 'instructions' ? { ...current, uploading: null } : current));
+      return data;
+    },
+    [apply, dialog, toast]
+  );
+
+  const openDevices = useCallback(
+    (vendor: string) => {
+      if (!canEdit) return refuse();
+      setDialog({ kind: 'devices', vendor, name: '', deviceId: '', file: null, fileError: null, result: null, busy: false });
+    },
+    [canEdit, refuse]
+  );
+
+  const addDevice = useCallback(async () => {
+    if (dialog?.kind !== 'devices' || dialog.busy) return;
+    const name = dialog.name.trim();
+    const deviceId = dialog.deviceId.trim();
+    if (!name || !deviceId) return;
+    setDialog({ ...dialog, busy: true });
+    const data = await apply('locks/devices', { device_name: name, device_id: deviceId }, t(L.account.devices.added, { name }));
+    setDialog((current) => (current?.kind === 'devices' ? { ...current, busy: false, name: data ? '' : current.name, deviceId: data ? '' : current.deviceId } : current));
+  }, [apply, dialog]);
+
+  const pickCsv = useCallback(
+    async (file: File) => {
+      if (dialog?.kind !== 'devices' || dialog.busy) return;
+      if (!/\.csv$/i.test(file.name) && file.type !== 'text/csv') return setDialog({ ...dialog, file: null, fileError: i18n.t(L.account.devices.csvNotCsv) });
+      if (file.size > CSV_MAX_BYTES) return setDialog({ ...dialog, file: null, fileError: i18n.t(L.account.devices.csvTooLarge) });
+      try {
+        const text = await readFile(file, 'text');
+        setDialog({ ...dialog, file: { name: file.name, text }, fileError: null, result: null });
+      } catch {
+        setDialog({ ...dialog, file: null, fileError: i18n.t(E.failed) });
+      }
+    },
+    [dialog]
+  );
+
+  const importCsv = useCallback(async () => {
+    if (dialog?.kind !== 'devices' || dialog.busy || !dialog.file) return;
+    setDialog({ ...dialog, busy: true });
+    const data = await apply('locks/import_csv', { csv: dialog.file.text }, (result) => importSummary(result.imported));
+    setDialog((current) => (current?.kind === 'devices' ? { ...current, busy: false, file: data ? null : current.file, result: data ? importSummary(data.imported) : current.result } : current));
+  }, [apply, dialog]);
 
   const purge = useCallback(async () => {
     if (dialog?.kind !== 'purge' || dialog.busy || dialog.input.trim().toUpperCase() !== 'DELETE') return;
@@ -309,7 +478,11 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
     withoutLock,
     issued,
     mapTargets,
-    actions: { openMap, mapTo, unmap, bulkUnmap, openManual, saveManual, openAutoMatch, toggleProposal, applyAutoMatch, sync, test, openPurge, purge, setEnabled, closeDialog: () => setDialog(null) }
+    actions: {
+      openMap, mapTo, unmap, bulkUnmap, openManual, saveManual, openAutoMatch, toggleProposal, applyAutoMatch, sync, test, openPurge, purge, setEnabled,
+      openAccount, setAccountField, saveAccount, openRemoveAuth, removeAuthorization, openInstructions, saveInstructions, uploadInstructionImage, openDevices, addDevice, pickCsv, importCsv,
+      closeDialog: () => setDialog(null)
+    }
   };
 };
 

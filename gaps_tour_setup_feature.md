@@ -192,3 +192,11 @@ M15; then Tour Setup reads the stops model.
   endpoints on stacked plates where Rails would otherwise answer `ambiguous_floor`; a from/to floor control is still
   missing (report §25).
 - Booking link still needs `HOST_URL` on the Connect-facing Rails instance; CRM & Sync stays read-only.
+
+## October 20, 2026 update — lock provider accounts
+
+Closed: provider account configuration (every legacy vendor tab's fields), visitor instructions and images, and
+the igloohome v1 single-lock and CSV entry now live on the Connect Locks tab (`LOCKS_PAGE_INTEGRATION_QA.md`).
+Still legacy-only: the igloohome and RemoteLock OAuth code-grant sign-ins (the callback is the legacy
+`HomeController`), elevator lock gating (T4), and the Lock Vendors demo page.
+

@@ -6,11 +6,14 @@
 # looks tokens up on every request and must never log them (October 7, 2026).
 # `guest_bluetooth_key` masks the igloohome Bluetooth guest key the Tour App
 # API stores on `igloohome_guests` (October 19, 2026): it opens a door.
-Rails.application.config.filter_parameters += [:password, :token, :guest_bluetooth_key]
+# `client_secret`, `iglooworks_api_key`, `image` and `csv` mask the lock
+# provider credentials and the base64 uploads the Connect Locks page sends
+# (October 20, 2026).
+Rails.application.config.filter_parameters += [:password, :token, :guest_bluetooth_key, :client_secret, :iglooworks_api_key, :image, :csv]
 
 # ActiveRecord copies `filter_parameters` into `filter_attributes` when it
 # loads; an earlier initializer of this app loads it before this file runs, so
 # the attribute filter is set here as well (runs at once when it is already loaded).
 ActiveSupport.on_load(:active_record) do
-  self.filter_attributes += [:password, :token, :guest_bluetooth_key]
+  self.filter_attributes += [:password, :token, :guest_bluetooth_key, :client_secret, :iglooworks_api_key]
 end
