@@ -192,3 +192,17 @@ M15; then Tour Setup reads the stops model.
   endpoints on stacked plates where Rails would otherwise answer `ambiguous_floor`; a from/to floor control is still
   missing (report §25).
 - Booking link still needs `HOST_URL` on the Connect-facing Rails instance; CRM & Sync stays read-only.
+
+## October 20, 2026 update — Settings on the October 20 design (branch `feature/tour-settings-scheduling-booking`)
+
+- The design's NEW controls now have columns and are enforced by `Bookings::Availability` (owner decision): buffer between
+  tours, minimum notice, booking horizon, holidays & closures (`tour_closures`), the Tour App Schedule-screen options
+  (`tour_settings.app_*`), the booking button's text colour and icon. `Scheduling::Settings#as_json` no longer lists anything
+  as `unavailable`.
+- The Tour App's Schedule screen is on real data (`/api/tour/v1/properties/:id/booking/*`); its "Book via" row and the
+  leasing phone remain demo copy (the CMS has no source for them).
+- CRM & sync is UI only on isolated demo fixtures (`src/data/mock/crmSyncDemo.mock.ts`); the stored provider / lead sync /
+  data provider still come from the booking read. No CRM endpoint, model or job was added.
+- Still open: `HOST_URL` on the Connect-facing Rails instance; prospect authentication for the Tour App API (super admins
+  only); the legacy widget keeps the CRM's slots on Funnel / Knock / Yardi properties, so the new server-side slot check
+  runs on Pynwheel-managed calendars only. Report: `TOUR_SETTINGS_SCHEDULING_BOOKING_QA.md`.

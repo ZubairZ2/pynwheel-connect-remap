@@ -739,3 +739,17 @@ Tests: `locks_test.rb` is 15 tests; the Tour App API suite 84 runs / 605 asserti
 `POST /api/tour/v1/properties/:id/tour-route` accepts `start_stop_id` (`bsp:<id>` or the tour start; 422
 `unknown_start` otherwise). `POST …/locks/pin` and `…/locks/bluetooth-key` require Igloohome in
 `communities.multiple_locks_provider` and write an `igloohome_guests` row (no `tour_user`) per issuance.
+
+## 18. Booking: `GET /properties/{id}/booking/settings`, `GET /properties/{id}/booking/availability`, `POST /properties/{id}/bookings` (October 20, 2026)
+
+The Schedule screen's data, on the same services Connect's Settings and Visitors use (`Scheduling::Settings`, `Bookings::Availability`,
+`Bookings::Create`), so the app, the CMS and the website widget agree. Bearer token, Super Admin, tour on (as the rest of the API).
+
+| Endpoint | Answer | Errors |
+|---|---|---|
+| `GET /api/tour/v1/properties/{id}/booking/settings` | `{property_id, time_zone, scheduler_enabled, widget_live, salesforce, bookable, managed_by, gates[{key,label,ok,error}], tour_types{self_tour,guided_tour}, slot_interval_minutes, only_scheduled_tour, grace_period, length_stay_limit, capacity{enabled,max_self_tour_users,max_guided_tour_users}, window{buffer_minutes,minimum_notice_minutes,booking_horizon_days}, closures[{id,date,label,closed_all_day,start_time,end_time}], app{after_hours_label,allow_shorter_tour,party_size_limit,ask_unit,show_text_booking}, hours{self,guided → weekday → [{open,close}]}, form{credit_card_required,id_verification_fee,visual_id_verification,show_desired_bedroom,show_desired_move_in_date,marketing_source_required,discovery_source,sms_opt_in_default}, link{url,live}}` (`TourApi::Booking.settings`) | 404 property, 422 `tour_disabled` |
+| `GET /api/tour/v1/properties/{id}/booking/availability?date=YYYY-MM-DD&days=7` | `Bookings::Availability#window`: `{managed_by, interval_minutes, buffer_minutes, minimum_notice_minutes, booking_horizon_days, last_bookable_date, closed_weekdays, time_zone, now, closures, days[{date, closed, beyond_horizon?, closure?, closures?, slots[{time "HH:MM", label "6:00 PM", types[], full[]}]}]}`; `days` clamped 1–31 (default 7), a bad `date` means today | 422 `validation_error` (`days` not an integer) |
+| `POST /api/tour/v1/properties/{id}/bookings` | body `{tour_type, property_tour_type?, tour_date, tour_time "HH:MM", first_name, last_name, email, phone_number, country_code?, desired_bedroom?, desired_move_in_date?, is_sms_enabled?, marketing_source?}` (+ app-only `unit`, `length_minutes`, `party_size`, accepted and ignored) → 201 `{booking{id,status,tour_date,tour_time,tour_time_label,end_time,tour_type,property_tour_type,created_by:"Tour App",rescheduled}, visitor{id,first_name,last_name,email,phone_number}, notifications{email,sms,web}}` (`Bookings::Create`, one active booking per person → `rescheduled: true`) | 422 with the service's code: `slot_unavailable` / `slot_full` (with `details.date` and `details.slots`), `tour_type_off`, `invalid_tour_type`, `invalid_date`, `past_date`, `invalid_time`, `invalid_visitor`, `invalid_move_in`, `tour_disabled`, `salesforce` |
+
+App side: `PynwheelApiTourRepository.getBookingSettings / getAvailability / requestBooking`, parsers `parseBookingSettings`,
+`parseAvailability`, `parseBookingResult`. Tests: `test/controllers/api/tour_app/v1/bookings_test.rb`.

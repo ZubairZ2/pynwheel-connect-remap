@@ -2630,3 +2630,75 @@ All open code findings from §43 / the final report were fixed on `qa/final-plat
 re-verified (Rails 267 runs with the one test-environment-only partner screen failure; Connect tsc + 7 real-data
 Playwright specs; Self Tour App tsc + vitest 77/77 + the two headless journeys; legacy harness 0 × 500 over five
 properties). Details: `FINAL_PLATFORM_QA_REPORT_2026-10-17.md` §29.
+
+## 44. Tour Setup › Settings on the October 20 design: scheduling rules, closures, booking form and link, Self Tour App booking (October 20, 2026)
+
+Branch `feature/tour-settings-scheduling-booking` (worktree, from `main` `b60cccabd`); report `TOUR_SETTINGS_SCHEDULING_BOOKING_QA.md`;
+PR text `PR_DESCRIPTION_tour_settings_scheduling_booking.md`. The Settings tab of §42 is the base; this round aligns it to the
+October 20 design export (the `TourModule.dc.html` sub-page of `Pynwheel Back Office (standalone) (2).html`, read after
+decompressing the bundle's pages) and closes the "not stored" gaps with additive columns, by the owner's decision.
+
+### Backend
+- Migration `20261020120000_add_booking_window_and_app_options`: `tour_settings.buffer_minutes` (0), `minimum_notice_minutes` (0),
+  `booking_horizon_days` (NULL), `app_after_hours_label` / `app_allow_shorter_tour` / `app_ask_unit` / `app_show_text_booking` (true),
+  `app_party_size_limit` (6); `scheduler_widget_settings.btn_text_color` ('#ffffff'), `btn_icon` (NULL); table `tour_closures`
+  (`TourClosure`, `Community has_many :tour_closures`). Applied to `pynwheel_audit_clone`, `pynwheel_development` and `pynwheel_test`;
+  `db/schema.rb` carries only these hunks.
+- `Bookings::Availability#day`: horizon (`beyond_horizon: true`), closures (`closure` / `closures` in the day), notice
+  (`slot_minutes < now + notice` on the property clock) and buffer (`DayCounter buffer:`); `#window(start, days)` is the
+  shared answer of `Connect::BookingController#availability` and the Tour App.
+- `SchedualTours::Capacity#window_minutes = stepping + buffer` for both the SQL count and `DayCounter`; `stepping` (end_time) unchanged.
+- `Scheduling::Settings`: `window`, `closures`, `app`, `button.text_color/icon`; `update_rules!` validates buffer/notice/horizon,
+  `update_form!` the app options and the button's colour/icon, `update_closures!` replaces the property's closures (past ones kept);
+  **`form.show_desired_bedroom` / `show_desired_move_in_date` are `!= false`** (a NULL is shown by the legacy page and widget —
+  `tours/settings.html.haml:415`, `test_widget.html.erb:395`); §42 reported them as off.
+- `Connect::BookingController`: `PUT booking/closures`; `routes.rb` line after `booking/form`.
+- `Bookings::Create.call!(…, created_by:)` (default 'Staff'); an empty phone is refused before `normalize_phone` prefixes "+1".
+  `Visitors::Status::SOURCE['Tour App']`.
+- Tour App API (`Api::TourApp::V1::BookingsController < PropertyController`, `TourApi::Booking`): `GET properties/:id/booking/settings`
+  (trimmed settings: tour types, interval, only-scheduled, grace, length, capacity, window, closures, app, hours, form flags,
+  gates/bookable, link), `GET properties/:id/booking/availability?date&days` (= `window`), `POST properties/:id/bookings`
+  (201 `{booking, visitor, notifications}`; `Connect::DomainError` → the envelope, `details.slots` on `slot_unavailable` / `slot_full`).
+- Legacy widget submit (`SchedualToursController#create_tour_user_from`, owner decision): `scheduled_slot_problem` checks the
+  placeholder's date/time with `Bookings::Availability` (closed, full, type not offered) **before** the visitor row, the Stripe hold and
+  the CRM pushes; refused → `redirect_to test_widget(message: …)` in the widget's own confirmation block; `managed_by` properties
+  (Yardi RentCafe, Knock, Funnel) and unscheduled visits keep the old path. `AccessLogsService#scheduler_widget_logs` records the refusal.
+
+### Connect
+- `SettingsTab` (`tourModuleTabs.tsx`): rail = design groups (`BOOKING_GROUPS`), pills per group, `?section=` (`bookingSectionOf`,
+  read by `tour-setup/page.tsx`, kept with `router.replace`), `onNavigate` for the in-page fix links; test ids `settings-group-<id>` /
+  `settings-<section>`.
+- `AvailabilityHeader.tsx`: `widgetState` + Scheduler switch (`setSchedulerEnabled`, a one-field `booking/rules` write, confirm
+  Modal before turning off) + four gate cards with fixes (`propRoute`, "Turn on", rules).
+- `BookingPanels.tsx`: RulesPanel (Tour types self/guided — virtual hidden like the legacy page; Time slots with `Seg` slot length
+  and the three NEW controls; Capacity; Booking behaviour), HoursPanel (axis `HOUR_TICKS`, per-day rows with both lanes, one
+  `LaneEditor` pair per open day, `ClosuresCard` with the add-closure Modal and `closures-save`), FormPanel (fields, the
+  "Schedule screen in the app" card, `saveForm('fields')`) + `ProspectPreview` (walk-in/scheduled segment, day and time chips,
+  type auto-select, configured fields, "Book tour" toasts "Preview only"), LinkPanel (Button appearance → `saveForm('button')`,
+  live preview with the inline icon, embed as saved, direct link, where prospects find it).
+- `CrmSyncDemoPanel.tsx` on `src/data/mock/crmSyncDemo.mock.ts`: UI only; local reducer; `DemoMark` on every demo value; the
+  real "From the CMS" card from `settings.crm`. The e2e test counts zero `/api/properties/` requests during its interactions.
+- `useTourBooking.ts`: `requestId` + full reset on `propertyId` change, `savingRef` (one write at a time), scheduler, closures,
+  `fieldsDirty` / `buttonDirty` / `formProblems`, `beforeunload` while dirty.
+- `tourBooking.generator.ts`: `BOOKING_GROUPS`, `bookingSectionOf`, `BUFFERS/NOTICES/HORIZONS`, closures draft/payload/errors,
+  `AppDraft`, `BUTTON_FONTS/ICONS/ICON_PATHS`, `formPayload(draft, base, part)`, `minutesLabel/daysLabel`.
+- Next proxy: `booking/(rules|hours|form|closures)`. Strings/i18n inside `tourModules.booking` only; CSS appended to `globals.css`.
+
+### Self Tour App
+- `tourRepository.ts`: `BookingSettings`, `AvailabilityDay/Slot/Window`, `BookingRequest` (date, `HH:MM`, tourType, visitor fields,
+  app-only extras), `BookingResult`; `getBookingSettings`, `getAvailability`, `requestBooking`. API repository on the three endpoints;
+  dummy repository on the former fixtures (demo unchanged).
+- `appState.booking` (not persisted), reducer actions `bookingLoading/Loaded/Failed/Saving/SaveFailed` (the draft moves to the
+  first open day), `views.ts` `bookableSlots/daySlots/afterSlots/slotByLabel/dayNote/tourLengthOptions`, `useAppActions.loadBooking`
+  + async `confirmSchedule` (CMS booking id kept; a refused slot re-reads the calendar) + `submitBooking` as a guided booking;
+  `ScheduleScreen` reads the rules; `App.tsx` loads them whenever the screen opens.
+
+### Tests and verification
+Rails: `connect/booking_controller_test.rb` 13/131, `api/tour_app/v1/bookings_test.rb` 6/55, `schedual_tours_slot_check_test.rb` 5/27,
+the other Connect and Tour App files green (per-file runs; a whole-directory run once hung 24 min on a Sucker Punch mail job —
+the slot-check test stubs `ScheduledTourMailerJob.perform_async`). Connect typecheck clean; Playwright `tourSettings.spec.ts`
+(4 reads + 3 gated write round trips) and `tourModules.spec.ts` green on the clone (:3102/:3007) and on development (:3101/:3007);
+screenshots in `qa/tour-settings/evidence/screens/`. Tour app typecheck clean, vitest 84. End to end: a widget booking on Oeuvre 229
+(`SchedualTour` 25514) and an app booking on Hazel 1618 (25519, created_by "Tour App") both appear in Visitors; refusals on all
+three entry points; `qa/tour-settings/scripts/legacy_snapshot.rb` before/after identical on both databases (details and residue:
+report §7–§8). Production untouched.

@@ -33,7 +33,7 @@ const WRITES: [RegExp, Verb, (path: string) => string][] = [
   [/^visitors\/\d+\/reset_stops$/, 'POST', (path) => path],
   [/^visitors\/\d+\/(id_review|reset_verification|remove_pii)$/, 'PUT', (path) => path],
   [/^visitors\/\d+\/delete$/, 'DELETE', (path) => path.replace(/\/delete$/, '')],
-  [/^booking\/(rules|hours|form)$/, 'PUT', (path) => path]
+  [/^booking\/(rules|hours|form|closures)$/, 'PUT', (path) => path]
 ];
 
 const metaOf = (meta: Record<string, unknown> | undefined): TourModuleMeta => {

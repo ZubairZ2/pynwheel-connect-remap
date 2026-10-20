@@ -1,4 +1,6 @@
 import type { LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
+import type { AvailabilityDay, BookingSettings } from '~/repositories/tourRepository';
+import { slotsForDay } from './views';
 import { DEMO_SCENARIOS_ENABLED } from '~/config/env';
 import { backScreenOf, topOverlay, type Overlay, type Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
@@ -21,8 +23,7 @@ import {
   type ScheduledTour,
   type TourMode,
   type TourPass,
-  type VerifyStep
-} from './appState';
+  type VerifyStep, type BookingState } from './appState';
 
 /**
  * Every state change of the app, in one pure reducer. The async flows
@@ -145,6 +146,11 @@ export type Action =
   | { type: 'setSchedule'; patch: Partial<ScheduleDraft> }
   | { type: 'confirmSchedule'; tour: ScheduledTour }
   | { type: 'cancelTour' }
+  | { type: 'bookingLoading'; propertyId: number }
+  | { type: 'bookingLoaded'; propertyId: number; settings: BookingSettings; days: AvailabilityDay[]; now: number }
+  | { type: 'bookingFailed'; message: string }
+  | { type: 'bookingSaving' }
+  | { type: 'bookingSaveFailed'; message: string }
   | { type: 'openVerify'; then: 'start' | null }
   | { type: 'verifyStep'; step: VerifyStep }
   | { type: 'verifyConsent' }
@@ -589,7 +595,32 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'setSchedule':
       return { ...state, schedule: { ...state.schedule, ...action.patch } };
     case 'confirmSchedule':
-      return { ...state, scheduledTour: action.tour, scheduleDone: true, checkedIn: false, accessEndsAt: null, overlays: [] };
+      return { ...state, scheduledTour: action.tour, scheduleDone: true, checkedIn: false, accessEndsAt: null, overlays: [], booking: { ...state.booking, saving: false, saveError: null, fetchedAt: 0 } };
+    case 'bookingLoading':
+      return { ...state, booking: { ...state.booking, propertyId: action.propertyId, status: 'loading', error: null, ...(state.booking.propertyId === action.propertyId ? {} : { settings: null, days: {} }) } };
+    case 'bookingLoaded': {
+      const days = Object.fromEntries(action.days.map((d) => [d.date, d]));
+      const booking: BookingState = { ...state.booking, propertyId: action.propertyId, fetchedAt: action.now, status: 'ready', error: null, settings: action.settings, days };
+      // The draft keeps its time when the day still offers it; otherwise the day's first bookable
+      // time, and when the day has none at all, the first of the loaded days that does.
+      let date = state.schedule.date;
+      let options = slotsForDay(booking, date, action.now);
+      if (!options.length) {
+        const open = action.days.map((d) => d.date).find((key) => key >= date && slotsForDay(booking, key, action.now).length > 0);
+        if (open) {
+          date = open;
+          options = slotsForDay(booking, date, action.now);
+        }
+      }
+      const time = options.includes(state.schedule.time) ? state.schedule.time : (options[0] ?? '');
+      return { ...state, booking, schedule: { ...state.schedule, date, time } };
+    }
+    case 'bookingFailed':
+      return { ...state, booking: { ...state.booking, status: 'error', error: action.message } };
+    case 'bookingSaving':
+      return { ...state, booking: { ...state.booking, saving: true, saveError: null } };
+    case 'bookingSaveFailed':
+      return { ...state, booking: { ...state.booking, saving: false, saveError: action.message } };
     case 'cancelTour':
       return { ...state, scheduledTour: state.scheduledTour ? { ...state.scheduledTour, status: 'cancelled' } : null, overlays: [], checkinFor: null };
     case 'openVerify':

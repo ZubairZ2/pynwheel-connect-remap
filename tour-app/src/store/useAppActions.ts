@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react';
 import { CONCIERGE_GREETING_GUEST } from '~/content/appCopy';
 import { ACCESS_MINUTES, DEMO, EXTEND_MINUTES, HOLD_HOURS, LEASING_EMAIL, LEASING_PHONE } from '~/content/demoFixtures';
 import type { TourHistoryEntry } from '~/models';
+import { ApiError } from '~/repositories/pynwheelApi/apiClient';
 import { useRepository } from '~/repositories/repositoryContext';
 import { FeatureUnavailableError } from '~/repositories/tourRepository';
 import { unlockOverBluetooth } from '~/services/iglooBle';
@@ -11,7 +12,7 @@ import type { AppState, ScheduleDraft, TourPass, VerifyStep } from './appState';
 import { dayKey } from './appState';
 import { fmtTime, slotTime } from './scenarios';
 import { bestMatchUnit, currentStop, markOf, selectedNodes, tourStopViews } from './selectors';
-import { slotsForDay } from './views';
+import { profileOf, slotByLabel, slotsForDay } from './views';
 
 /**
  * The async flows of the app: they call the repository and dispatch plain
@@ -95,15 +96,40 @@ export const useAppActions = () => {
       void success();
     };
 
+    /**
+     * The property's booking rules and the next week's slots, from the
+     * repository (the CMS is authoritative). Kept for five minutes; `force`
+     * reads them again (after a refused booking, or on Retry).
+     */
+    const loadBooking = async (force = false) => {
+      const propertyId = repository.currentPropertyId() ?? state.propertyId;
+      if (!propertyId) return;
+      const fresh = state.booking.propertyId === propertyId && state.booking.status === 'ready' && Date.now() - state.booking.fetchedAt < 5 * 60000;
+      if (fresh && !force) return;
+      if (state.booking.status === 'loading' && state.booking.propertyId === propertyId && !force) return;
+      dispatch({ type: 'bookingLoading', propertyId });
+      try {
+        const [settings, window] = await Promise.all([repository.getBookingSettings(), repository.getAvailability(dayKey(0), 7)]);
+        dispatch({ type: 'bookingLoaded', propertyId, settings, days: window.days, now: Date.now() });
+      } catch (error) {
+        dispatch({ type: 'bookingFailed', message: messageOf(error, 'The booking calendar could not be loaded.') });
+      }
+    };
+
     const openSchedule = (patch: Partial<ScheduleDraft> = {}) => {
       const booked = state.scheduledTour && state.scheduledTour.status !== 'past' && state.scheduledTour.status !== 'cancelled' ? state.scheduledTour : null;
+      const profile = profileOf(state, content);
       const base: ScheduleDraft = booked
-        ? { date: booked.date, time: booked.time, length: booked.length, unit: booked.unit, party: booked.party }
+        ? { ...state.schedule, date: booked.date, time: booked.time, length: booked.length, unit: booked.unit, party: booked.party }
         : { ...state.schedule, date: state.schedule.date < dayKey(0) ? dayKey(0) : state.schedule.date };
       const draft = { ...base, ...patch };
+      if (!draft.first) draft.first = profile.first;
+      if (!draft.last) draft.last = profile.last;
+      if (!draft.phone) draft.phone = profile.phone;
       if (!draft.unit) draft.unit = bundle?.units.find((u) => u.showInStopsList && u.available)?.name ?? 'No preference';
-      if (!draft.time || !slotsForDay(draft.date).includes(draft.time)) draft.time = slotsForDay(draft.date)[0] ?? '';
+      if (!draft.time || !slotsForDay(state.booking, draft.date).includes(draft.time)) draft.time = slotsForDay(state.booking, draft.date)[0] ?? '';
       dispatch({ type: 'openSchedule', draft });
+      void loadBooking();
     };
 
     const checkIn = () => {
@@ -188,9 +214,13 @@ export const useAppActions = () => {
       openSchedule,
       scheduleSecondVisit: () => openSchedule({ date: dayKey(1) }),
       setSchedule: (patch: Partial<ScheduleDraft>) => dispatch({ type: 'setSchedule', patch }),
-      confirmSchedule: () => {
+      loadBooking,
+      /** Books the self-tour through the repository: the CMS checks the slot, the visitor and the rules, and keeps the booking. */
+      confirmSchedule: async () => {
         const d = state.schedule;
-        if (!slotsForDay(d.date).includes(d.time)) {
+        if (state.booking.saving) return;
+        const slot = slotByLabel(state.booking, d.date, d.time);
+        if (!slot) {
           toast('Pick an available time');
           return;
         }
@@ -198,8 +228,45 @@ export const useAppActions = () => {
           toast('That time has passed. Pick a later slot.');
           return;
         }
-        dispatch({ type: 'confirmSchedule', tour: { id: `s-${Date.now()}`, status: 'scheduled', date: d.date, time: d.time, length: d.length, unit: d.unit, party: d.party, source: 'app', createdAt: Date.now() } });
-        void success();
+        const profile = profileOf(state, content);
+        const first = (d.first || profile.first).trim();
+        const last = (d.last || profile.last).trim();
+        const phone = (d.phone || profile.phone).trim();
+        const email = profile.email.trim();
+        if (!first || !last || !phone || !email) {
+          toast('Add your name, phone and email to book.');
+          return;
+        }
+        dispatch({ type: 'bookingSaving' });
+        try {
+          const result = await repository.requestBooking({
+            date: d.date,
+            time: slot.time,
+            tourType: 'self_tour',
+            firstName: first,
+            lastName: last,
+            email,
+            phone,
+            desiredUnit: d.unit && d.unit !== 'No preference' ? d.unit : undefined,
+            lengthMinutes: d.length,
+            partySize: d.party
+          });
+          if (d.first && d.first !== profile.first) dispatch({ type: 'setProfileField', field: 'first', value: d.first });
+          if (d.last && d.last !== profile.last) dispatch({ type: 'setProfileField', field: 'last', value: d.last });
+          if (d.phone && d.phone !== profile.phone) dispatch({ type: 'setProfileField', field: 'phone', value: d.phone });
+          dispatch({
+            type: 'confirmSchedule',
+            tour: { id: result.id, status: 'scheduled', date: result.date || d.date, time: result.timeLabel || d.time, length: d.length, unit: d.unit, party: d.party, source: 'app', createdAt: Date.now(), tourType: result.tourType, endTime: result.endTime }
+          });
+          toast(result.rescheduled ? 'Your earlier booking was moved to this time.' : 'Self-tour booked. The property has your details.');
+          void success();
+        } catch (error) {
+          const message = messageOf(error, 'The booking could not be made. Please try again.');
+          dispatch({ type: 'bookingSaveFailed', message });
+          toast(message);
+          // A refused slot means the calendar moved: read it again so the screen shows what is left.
+          if (error instanceof ApiError && (error.code === 'slot_unavailable' || error.code === 'slot_full')) void loadBooking(true);
+        }
       },
       cancelTour: () => {
         dispatch({ type: 'cancelTour' });
@@ -553,11 +620,25 @@ export const useAppActions = () => {
         if (!content) return;
         dispatch({ type: 'bookSubmitting' });
         try {
-          await repository.requestBooking({ day: state.book.day, time: state.book.time, unit: state.book.unit, name: content.visitor.name, phone: content.visitor.phone });
+          // The sheet lists the content's day and time labels; the booking needs the date and the slot's HH:MM.
+          const dayIndex = Math.max(0, content.booking.days.indexOf(state.book.day));
+          const m = /(\d+):(\d+)\s*(AM|PM)/i.exec(state.book.time);
+          const hour = m ? (Number(m[1]) % 12) + (m[3].toUpperCase() === 'PM' ? 12 : 0) : 0;
+          const profile = profileOf(state, content);
+          await repository.requestBooking({
+            date: dayKey(dayIndex),
+            time: m ? `${String(hour).padStart(2, '0')}:${m[2]}` : '00:00',
+            tourType: 'guided_tour',
+            firstName: profile.first,
+            lastName: profile.last,
+            email: profile.email,
+            phone: profile.phone,
+            desiredUnit: state.book.unit.replace(/ \*$/, '')
+          });
           dispatch({ type: 'bookDone' });
           void success();
         } catch (error) {
-          dispatch({ type: 'toast', message: error instanceof FeatureUnavailableError ? error.message : `The request could not be sent. Please try again.${mark}` });
+          dispatch({ type: 'toast', message: error instanceof FeatureUnavailableError || error instanceof ApiError ? error.message : `The request could not be sent. Please try again.${mark}` });
           dispatch({ type: 'setBook', field: 'day', value: state.book.day });
           dispatch({ type: 'closeOverlay', overlay: 'book' });
         }

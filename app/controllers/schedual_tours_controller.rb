@@ -51,6 +51,18 @@ class SchedualToursController < ApplicationController
     tu = TourUserSearcherService.new(phone_number, params[:tour_user][:email].downcase).find_tour_user()
 
     community = Community.find_by_id params[:community_id]
+    # October 20, 2026: the slot the visitor picked is checked on the server
+    # against the same rules Connect and the Tour app use (visiting hours,
+    # closures, notice, horizon, capacity and buffer) before anything is
+    # written or charged. The page only filtered the list when it loaded; a
+    # slot that closed since, or a hand-made request, is sent back to the
+    # widget with the message instead of becoming a booking.
+    slot_problem = scheduled_slot_problem(community)
+    if slot_problem
+      AccessLogsService.new().scheduler_widget_logs(community&.id, { sched_tour_id: params[:sched_tour_id], tour_type: params[:tour_type], source: 'widget_slot_check' }, slot_problem) rescue nil
+      redirect_to scheduler_widget_test_widget_path(message: slot_unavailable_message(slot_problem), community_id: params[:community_id], property_tour_type: params.dig(:tour_user, :property_tour_type), tour_type: params[:tour_type])
+      return
+    end
     realpage_marketing_source = ""
     cm = community.credential.realpage_marketing_sources.each {|s| realpage_marketing_source = s['Text'] if s['Value'] == params['marketing_source']} if community&.credential&.realpage_marketing_sources.present?
     f_name = params[:tour_user][:first_name].present? ? params[:tour_user][:first_name] : ""
@@ -201,6 +213,41 @@ class SchedualToursController < ApplicationController
         error = "No tour found for this community." unless error.present?
       render json: {message: error, code: "400" }
     end
+  end
+
+  # The reason the picked slot cannot be booked, or nil. Only scheduled
+  # visits on a Pynwheel-managed calendar are checked: an unscheduled visit
+  # has no slot, and a property whose slots a CRM manages (Yardi RentCafe,
+  # Knock, Funnel) keeps that CRM's answer, as before.
+  def scheduled_slot_problem(community)
+    return nil if community.nil?
+    return nil unless (params.dig(:tour_user, :property_tour_type).presence || 'scheduled_tour') == 'scheduled_tour'
+
+    availability = Bookings::Availability.new(community)
+    return nil if availability.managed_by.present?
+
+    placeholder = SchedualTour.find_by(id: params[:sched_tour_id], community_id: community.id)
+    return 'Pick a date and time.' if placeholder.nil? || placeholder.tour_date.blank? || placeholder.tour_time.blank?
+
+    tour_type = params[:tour_type].presence || 'self_tour'
+    day = availability.day(placeholder.tour_date)
+    time = placeholder.tour_time.strftime('%H:%M')
+    slot = day[:slots].find { |row| row[:time] == time }
+    return 'That time is no longer available.' if slot.nil?
+    return "That time is full for #{Bookings::Availability::TYPE_LABELS[tour_type] || tour_type}." if slot[:full].include?(tour_type)
+    return "#{Bookings::Availability::TYPE_LABELS[tour_type] || tour_type} is not offered at that time." unless slot[:types].include?(tour_type)
+
+    nil
+  rescue StandardError => e
+    Rails.logger.warn("[SchedualTours#create_tour_user_from] slot check skipped: #{e.class}: #{e.message}")
+    nil
+  end
+
+  # The widget shows `message` as the confirmation block (flash[:success]);
+  # the refusal uses the same block, in the widget's own styling.
+  def slot_unavailable_message(reason)
+    text = ERB::Util.html_escape(reason)
+    "<div style='vertical-align:middle; text-align:center'><p style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;'><b>#{text}</b><br/>Please choose another date or time and try again.</p></div>"
   end
 
   def get_tour_type

@@ -6,84 +6,107 @@ import type { PillVariant } from '../listing.types';
 
 /**
  * The Settings tab's scheduling and booking sections (Back Office design,
- * Oct 13 2026): the booking rules, the visiting hours, the booking form and
- * the booking link, as `Scheduling::Settings` stores and validates them.
- * Drafts are what the forms edit; payloads carry only what changed. Pure.
+ * Oct 20 2026): the booking rules, the visiting hours and closures, the
+ * booking form, the booking link and button, as `Scheduling::Settings`
+ * stores and validates them. Drafts are what the forms edit; payloads carry
+ * only what changed. Pure.
  */
 export const B = CORE_STRINGS.tourModules.booking;
 
 export type BookingSection = 'rules' | 'hours' | 'form' | 'link' | 'crm';
-export const BOOKING_SECTIONS: { id: BookingSection; group: 'scheduling' | 'booking' }[] = [
+export type BookingGroup = 'scheduling' | 'booking';
+export const BOOKING_SECTIONS: { id: BookingSection; group: BookingGroup }[] = [
   { id: 'rules', group: 'scheduling' },
   { id: 'hours', group: 'scheduling' },
   { id: 'form', group: 'booking' },
   { id: 'link', group: 'booking' },
   { id: 'crm', group: 'booking' }
 ];
+/** The design's rail groups (`SET_GROUPS`): one rail entry per group, pills for its sections. */
+export const BOOKING_GROUPS: { id: BookingGroup; sections: BookingSection[] }[] = [
+  { id: 'scheduling', sections: ['rules', 'hours'] },
+  { id: 'booking', sections: ['form', 'link', 'crm'] }
+];
+export const isBookingSection = (value: string | undefined | null): value is BookingSection => !!value && BOOKING_SECTIONS.some((section) => section.id === value);
+/** `?section=` of the Settings tab, or undefined. */
+export const bookingSectionOf = (value: string | undefined | null): BookingSection | undefined => (isBookingSection(value) ? value : undefined);
+export const groupOfSection = (section: BookingSection): BookingGroup => BOOKING_SECTIONS.find((row) => row.id === section)?.group ?? 'scheduling';
 
 export const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const WEEKDAYS = DAYS.slice(0, 5);
 export const INTERVALS = [15, 30, 60, 120];
+export const BUFFERS = [0, 5, 10, 15, 30];
+export const NOTICES = [0, 60, 120, 240, 1440];
+export const HORIZONS = [0, 7, 14, 30, 60, 90];
 export const LANES: HoursLane[] = ['self', 'guided'];
+/** The axis ticks of the hours track (6 AM – 9 PM), as fractions of the 6:00 – 22:00 bar. */
+export const HOUR_TICKS = [6, 9, 12, 15, 18, 21].map((hour) => ({ hour, left: ((hour - 6) / 16) * 100 }));
 
 const str = (value: number | null | undefined): string => (value == null ? '' : String(value));
 const int = (value: string): number | null => (/^\d+$/.test(value.trim()) ? Number(value.trim()) : null);
 
 /* ── rules ─────────────────────────────────────────────────────────── */
 
+/**
+ * The rules draft. The virtual tour type stays in the CMS (the legacy page
+ * hides it too) and the scheduler switch is its own write (`scheduler_enabled`),
+ * so neither is part of a rules save.
+ */
 export interface RulesDraft {
   allowSelfTour: boolean;
   allowGuidedTour: boolean;
-  allowVirtualTour: boolean;
   slotIntervalMinutes: number;
+  bufferMinutes: number;
+  minimumNoticeMinutes: number;
+  /** 0 = no horizon (the CMS stores null). */
+  bookingHorizonDays: number;
   doLimitMaxTour: boolean;
   limitMaxTour: string;
   maxSelf: string;
   maxGuided: string;
-  maxVirtual: string;
   onlyScheduledTour: boolean;
   gracePeriod: string;
   lengthStayLimit: string;
-  schedulerEnabled: boolean;
 }
 
 export const rulesDraftOf = (s: BookingSettings): RulesDraft => ({
   allowSelfTour: s.tourTypes?.selfTour ?? false,
   allowGuidedTour: s.tourTypes?.guidedTour ?? false,
-  allowVirtualTour: s.tourTypes?.virtualTour ?? false,
   slotIntervalMinutes: s.slotIntervalMinutes || 30,
+  bufferMinutes: s.window?.bufferMinutes ?? 0,
+  minimumNoticeMinutes: s.window?.minimumNoticeMinutes ?? 0,
+  bookingHorizonDays: s.window?.bookingHorizonDays ?? 0,
   doLimitMaxTour: s.capacity?.enabled ?? false,
   limitMaxTour: str(s.capacity?.limitMaxTour),
   maxSelf: str(s.capacity?.maxSelfTourUsers),
   maxGuided: str(s.capacity?.maxGuidedTourUsers),
-  maxVirtual: str(s.capacity?.maxVirtualTourUsers),
   onlyScheduledTour: s.onlyScheduledTour,
   gracePeriod: str(s.gracePeriod),
-  lengthStayLimit: str(s.lengthStayLimit),
-  schedulerEnabled: s.schedulerEnabled
+  lengthStayLimit: str(s.lengthStayLimit)
 });
 
 const RULE_PARAMS: [keyof RulesDraft, string][] = [
   ['allowSelfTour', 'allow_self_tour'],
   ['allowGuidedTour', 'allow_guided_tour'],
-  ['allowVirtualTour', 'allow_virtual_tour'],
   ['slotIntervalMinutes', 'slot_interval_minutes'],
+  ['bufferMinutes', 'buffer_minutes'],
+  ['minimumNoticeMinutes', 'minimum_notice_minutes'],
+  ['bookingHorizonDays', 'booking_horizon_days'],
   ['doLimitMaxTour', 'do_limit_max_tour'],
   ['limitMaxTour', 'limit_max_tour'],
   ['maxSelf', 'max_self_tour_users'],
   ['maxGuided', 'max_guided_tour_users'],
-  ['maxVirtual', 'max_virtual_tour_users'],
   ['onlyScheduledTour', 'only_scheduled_tour'],
   ['gracePeriod', 'grace_period'],
-  ['lengthStayLimit', 'length_stay_limit'],
-  ['schedulerEnabled', 'scheduler_enabled']
+  ['lengthStayLimit', 'length_stay_limit']
 ];
 
 /** The changed rules, by the CMS parameter names. */
 export const rulesPayload = (draft: RulesDraft, base: RulesDraft): Record<string, unknown> => {
   const out: Record<string, unknown> = {};
   RULE_PARAMS.forEach(([key, param]) => {
-    if (draft[key] !== base[key]) out[param] = draft[key];
+    if (draft[key] === base[key]) return;
+    out[param] = key === 'bookingHorizonDays' && draft[key] === 0 ? '' : draft[key];
   });
   return out;
 };
@@ -93,10 +116,10 @@ export const rulesProblems = (draft: RulesDraft, base: RulesDraft): Record<strin
   const out: Record<string, string> = {};
   const changed = (key: keyof RulesDraft) => draft[key] !== base[key];
   if (draft.doLimitMaxTour && changed('limitMaxTour') && (int(draft.limitMaxTour) ?? 0) < 1) out.limitMaxTour = i18n.t(B.cap.total);
-  (['maxSelf', 'maxGuided', 'maxVirtual'] as const).forEach((key) => {
+  (['maxSelf', 'maxGuided'] as const).forEach((key) => {
     if (changed(key) && draft[key].trim() !== '' && (int(draft[key]) ?? 0) < 1) out[key] = i18n.t(B.cap.sub);
   });
-  if (changed('gracePeriod')) {
+  if (changed('gracePeriod') && (draft.onlyScheduledTour || draft.gracePeriod.trim() !== '')) {
     const grace = int(draft.gracePeriod);
     if (grace == null || grace < 10 || grace > 60) out.gracePeriod = i18n.t(B.behaviour.graceSub);
   }
@@ -197,15 +220,87 @@ export const hoursBars = (ranges: HourRange[]): { left: number; width: number }[
     .filter((bar) => bar.width > 0);
 };
 
+/** The weekdays with at least one range in either lane (the app's "N days open this week"). */
+export const openDaysCount = (draft: HoursDraft): number => DAYS.filter((day) => (draft.self[day]?.length ?? 0) + (draft.guided[day]?.length ?? 0) > 0).length;
+
+/* ── closures ──────────────────────────────────────────────────────── */
+
+export interface ClosureDraft {
+  key: string;
+  date: string;
+  label: string;
+  closedAllDay: boolean;
+  startTime: string;
+  endTime: string;
+}
+
+export const closuresDraftOf = (s: BookingSettings): ClosureDraft[] =>
+  (s.closures ?? []).map((closure, index) => ({
+    key: `${closure.id ?? 'c'}-${index}`,
+    date: closure.date,
+    label: closure.label ?? '',
+    closedAllDay: closure.closedAllDay,
+    startTime: closure.startTime ?? '09:00',
+    endTime: closure.endTime ?? '12:00'
+  }));
+
+const normalizeClosures = (rows: ClosureDraft[]): string =>
+  JSON.stringify([...rows].map((row) => [row.date, row.label.trim(), row.closedAllDay, row.closedAllDay ? '' : row.startTime, row.closedAllDay ? '' : row.endTime]).sort());
+
+export const closuresChanged = (draft: ClosureDraft[], s: BookingSettings): boolean => normalizeClosures(draft) !== normalizeClosures(closuresDraftOf(s));
+
+/** The first problem of a closure row, keyed by its `key`, as the CMS would report it. */
+export const closuresErrors = (rows: ClosureDraft[]): Record<string, string> => {
+  const out: Record<string, string> = {};
+  const seen = new Set<string>();
+  rows.forEach((row) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(row.date)) out[row.key] = i18n.t(B.closures.error.date);
+    else if (row.label.trim().length > 60) out[row.key] = i18n.t(B.closures.error.label);
+    else if (!row.closedAllDay && (!HHMM.test(row.startTime) || !HHMM.test(row.endTime))) out[row.key] = i18n.t(B.hours.error.format);
+    else if (!row.closedAllDay && row.startTime >= row.endTime) out[row.key] = i18n.t(B.hours.error.order);
+    const id = `${row.date}|${row.closedAllDay ? '' : row.startTime}`;
+    if (seen.has(id)) out[row.key] = i18n.t(B.closures.error.duplicate);
+    seen.add(id);
+  });
+  return out;
+};
+
+export const closuresPayload = (rows: ClosureDraft[]): { closures: { date: string; label: string; closed_all_day: boolean; start_time?: string; end_time?: string }[] } => ({
+  closures: rows.map((row) => ({
+    date: row.date,
+    label: row.label.trim(),
+    closed_all_day: row.closedAllDay,
+    ...(row.closedAllDay ? {} : { start_time: row.startTime, end_time: row.endTime })
+  }))
+});
+
+export const closureLabel = (row: { date: string; closedAllDay: boolean; startTime: string | null; endTime: string | null }): string => {
+  const date = new Date(`${row.date}T12:00:00`);
+  const day = Number.isNaN(date.getTime()) ? row.date : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  return row.closedAllDay ? `${day} · ${i18n.t(B.closures.allDay)}` : `${day} · ${timeLabel(row.startTime ?? '')} – ${timeLabel(row.endTime ?? '')}`;
+};
+
 /* ── form ──────────────────────────────────────────────────────────── */
 
 export interface ButtonDraft {
   text: string;
   color: string;
+  textColor: string;
+  /** '' = no icon. */
+  icon: string;
   width: string;
   height: string;
   font: string;
+  /** Digits only; sent as `${n}px`. */
   fontSize: string;
+}
+
+export interface AppDraft {
+  afterHoursLabel: boolean;
+  allowShorterTour: boolean;
+  partySizeLimit: string;
+  askUnit: boolean;
+  showTextBooking: boolean;
 }
 
 export interface FormDraft {
@@ -215,8 +310,24 @@ export interface FormDraft {
   showDesiredBedroom: boolean;
   showDesiredMoveInDate: boolean;
   marketingSourceRequired: boolean;
+  app: AppDraft;
   button: ButtonDraft;
 }
+
+export type FormPart = 'fields' | 'button';
+
+/** The design's font list; a stored font outside it is kept as an extra option. */
+export const BUTTON_FONTS = ['Open Sans Regular', 'Manrope', 'Lato', 'Montserrat', 'Georgia'];
+export const BUTTON_ICONS = ['calendar', 'pin', 'clock', 'arrow', 'home'];
+/** The design's inline icons (`ICON_D`), 24-unit stroke paths. */
+export const ICON_PATHS: Record<string, string> = {
+  calendar: 'M3 5h18v16H3zM3 10h18M8 3v4M16 3v4',
+  pin: 'M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11zM12 8a2 2 0 1 1 0 4a2 2 0 1 1 0-4z',
+  clock: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 7v5l3 2',
+  arrow: 'M5 12h14M13 6l6 6-6 6',
+  home: 'M4 21V9l8-6 8 6v12M9 21v-6h6v6'
+};
+export const fontOptions = (stored: string): string[] => (stored && !BUTTON_FONTS.includes(stored) ? [...BUTTON_FONTS, stored] : BUTTON_FONTS);
 
 export const formDraftOf = (s: BookingSettings): FormDraft => ({
   creditCardRequired: s.form?.creditCardRequired ?? false,
@@ -225,17 +336,26 @@ export const formDraftOf = (s: BookingSettings): FormDraft => ({
   showDesiredBedroom: s.form?.showDesiredBedroom ?? false,
   showDesiredMoveInDate: s.form?.showDesiredMoveInDate ?? false,
   marketingSourceRequired: s.form?.marketingSourceRequired ?? false,
+  app: {
+    afterHoursLabel: s.app?.afterHoursLabel ?? true,
+    allowShorterTour: s.app?.allowShorterTour ?? true,
+    partySizeLimit: str(s.app?.partySizeLimit ?? 6),
+    askUnit: s.app?.askUnit ?? true,
+    showTextBooking: s.app?.showTextBooking ?? true
+  },
   button: {
-    text: s.button?.text ?? 'Schedule a Tour',
-    color: s.button?.color ?? '#0077ae',
-    width: str(s.button?.width ?? 180),
-    height: str(s.button?.height ?? 44),
-    font: s.button?.font ?? 'Arial',
-    fontSize: s.button?.fontSize ?? '14px'
+    text: s.button?.text ?? 'Schedule a Visit',
+    color: s.button?.color ?? '#20a345',
+    textColor: s.button?.textColor ?? '#ffffff',
+    icon: s.button?.icon ?? '',
+    width: str(s.button?.width ?? 130),
+    height: str(s.button?.height ?? 35),
+    font: s.button?.font ?? 'Open Sans Regular',
+    fontSize: (s.button?.fontSize ?? '14px').replace(/[^0-9]/g, '') || '14'
   }
 });
 
-const FORM_PARAMS: [keyof Omit<FormDraft, 'button'>, string][] = [
+const FORM_PARAMS: [keyof Omit<FormDraft, 'button' | 'app'>, string][] = [
   ['creditCardRequired', 'credit_card_required'],
   ['idVerificationFee', 'id_verification_fee'],
   ['visualIdVerification', 'visual_id_verification'],
@@ -243,29 +363,72 @@ const FORM_PARAMS: [keyof Omit<FormDraft, 'button'>, string][] = [
   ['showDesiredMoveInDate', 'show_desired_move_in_date'],
   ['marketingSourceRequired', 'marketing_source_required']
 ];
+const APP_PARAMS: [keyof AppDraft, string][] = [
+  ['afterHoursLabel', 'after_hours_label'],
+  ['allowShorterTour', 'allow_shorter_tour'],
+  ['partySizeLimit', 'party_size_limit'],
+  ['askUnit', 'ask_unit'],
+  ['showTextBooking', 'show_text_booking']
+];
 const BUTTON_PARAMS: [keyof ButtonDraft, string][] = [
   ['text', 'text'],
   ['color', 'color'],
+  ['textColor', 'text_color'],
+  ['icon', 'icon'],
   ['width', 'width'],
   ['height', 'height'],
   ['font', 'font'],
   ['fontSize', 'font_size']
 ];
 
-export const formPayload = (draft: FormDraft, base: FormDraft): Record<string, unknown> => {
+/** The changed form settings; `part` limits the payload to the fields (with the app options) or to the button. */
+export const formPayload = (draft: FormDraft, base: FormDraft, part: FormPart | 'all' = 'all'): Record<string, unknown> => {
   const out: Record<string, unknown> = {};
-  FORM_PARAMS.forEach(([key, param]) => {
-    if (draft[key] !== base[key]) out[param] = draft[key];
-  });
-  const button: Record<string, unknown> = {};
-  BUTTON_PARAMS.forEach(([key, param]) => {
-    if (draft.button[key] !== base.button[key]) button[param] = draft.button[key];
-  });
-  if (Object.keys(button).length) out.button = button;
+  if (part !== 'button') {
+    FORM_PARAMS.forEach(([key, param]) => {
+      if (draft[key] !== base[key]) out[param] = draft[key];
+    });
+    const app: Record<string, unknown> = {};
+    APP_PARAMS.forEach(([key, param]) => {
+      if (draft.app[key] !== base.app[key]) app[param] = draft.app[key];
+    });
+    if (Object.keys(app).length) out.app = app;
+  }
+  if (part !== 'fields') {
+    const button: Record<string, unknown> = {};
+    BUTTON_PARAMS.forEach(([key, param]) => {
+      if (draft.button[key] === base.button[key]) return;
+      if (key === 'fontSize') button[param] = `${draft.button.fontSize}px`;
+      else if (key === 'icon') button[param] = draft.button.icon || 'none';
+      else button[param] = draft.button[key];
+    });
+    if (Object.keys(button).length) out.button = button;
+  }
   return out;
 };
 
-export const formChanged = (draft: FormDraft, base: FormDraft): boolean => Object.keys(formPayload(draft, base)).length > 0;
+export const formChanged = (draft: FormDraft, base: FormDraft, part: FormPart | 'all' = 'all'): boolean => Object.keys(formPayload(draft, base, part)).length > 0;
+
+/** The form problems the CMS would refuse, checked before sending (`Scheduling::Settings#update_form!`). */
+export const formProblems = (draft: FormDraft, base: FormDraft, part: FormPart): Record<string, string> => {
+  const out: Record<string, string> = {};
+  if (part === 'fields') {
+    const party = int(draft.app.partySizeLimit);
+    if (draft.app.partySizeLimit !== base.app.partySizeLimit && (party == null || party < 1 || party > 10)) out.partySizeLimit = i18n.t(B.form.app.partySub);
+  } else {
+    const b = draft.button;
+    if (b.text !== base.button.text && (!b.text.trim() || b.text.trim().length > 50)) out.text = i18n.t(B.button.textError);
+    if (b.color !== base.button.color && !/^#[0-9a-fA-F]{6}$/.test(b.color)) out.color = i18n.t(B.button.colorError);
+    if (b.textColor !== base.button.textColor && !/^#[0-9a-fA-F]{6}$/.test(b.textColor)) out.textColor = i18n.t(B.button.colorError);
+    const size = int(b.fontSize);
+    if (b.fontSize !== base.button.fontSize && (size == null || size < 8 || size > 40)) out.fontSize = i18n.t(B.button.sizeError);
+    (['width', 'height'] as const).forEach((key) => {
+      const value = int(b[key]);
+      if (b[key] !== base.button[key] && (value == null || value < 10 || value > 1000)) out[key] = i18n.t(B.button.pxError);
+    });
+  }
+  return out;
+};
 
 /* ── state of the widget, gates, link ───────────────────────────────── */
 
@@ -305,19 +468,28 @@ export const generateGateRows = (s: BookingSettings): GateRow[] =>
 
 /** The booking button as the embed renders it. */
 export const buttonStyle = (button: ButtonDraft): Record<string, string | number> => ({
-  background: /^#[0-9a-fA-F]{6}$/.test(button.color) ? button.color : '#0077ae',
-  color: '#fff',
-  width: int(button.width) ?? 180,
-  height: int(button.height) ?? 44,
-  fontFamily: button.font || 'Arial',
-  fontSize: /^\d{1,2}px$/.test(button.fontSize) ? button.fontSize : '14px',
+  background: /^#[0-9a-fA-F]{6}$/.test(button.color) ? button.color : '#20a345',
+  color: /^#[0-9a-fA-F]{6}$/.test(button.textColor) ? button.textColor : '#fff',
+  width: int(button.width) ?? 130,
+  height: int(button.height) ?? 35,
+  fontFamily: button.font || 'Open Sans Regular',
+  fontSize: int(button.fontSize) ? `${button.fontSize}px` : '14px',
   border: 'none',
-  borderRadius: 6,
+  borderRadius: 4,
   fontWeight: 700,
   display: 'inline-flex',
   alignItems: 'center',
-  justifyContent: 'center'
+  justifyContent: 'center',
+  gap: 6
 });
+
+/** The label of a slot length / buffer / notice / horizon option. */
+export const minutesLabel = (minutes: number): string => {
+  if (minutes === 0) return i18n.t(B.slots.opt.none);
+  if (minutes % 60 !== 0) return t(B.slots.opt.min, { n: minutes });
+  return minutes === 60 ? i18n.t(B.slots.opt.hour) : t(B.slots.opt.hours, { n: minutes / 60 });
+};
+export const daysLabel = (days: number): string => (days === 0 ? i18n.t(B.slots.opt.none) : t(B.slots.opt.days, { n: days }));
 
 export const wherePlaces = (): { title: string; sub: string }[] => [
   { title: i18n.t(B.link.where.button), sub: i18n.t(B.link.where.buttonSub) },

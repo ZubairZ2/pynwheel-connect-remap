@@ -3,10 +3,10 @@ import { APP_VERSION, AR_INIT_LABELS, BOOKING_TIMES, CONCIERGE_GREETING_GENERAL,
 import type { LockBluetoothKey, LockPin, MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
 import { clearSession, loadSession, saveSession, type Session } from '~/services/session';
 import { placesFromBundle } from '../places';
-import { FeatureUnavailableError, type AppContent, type BookingRequest, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult } from '../tourRepository';
+import { FeatureUnavailableError, type AppContent, type AvailabilityWindow, type BookingRequest, type BookingResult, type BookingSettings, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult } from '../tourRepository';
 import { ApiClient, ApiError } from './apiClient';
-import type { ApiDistancesResponse, ApiGraph, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiLoginResponse, ApiMapResponse, ApiPropertyDetail, ApiPropertySummary, ApiRouteResponse, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
-import { parseBundle, parseDistances, parseListing, parseLockBluetoothKey, parseLockPin, parseRoute, parseTourRoute } from './parsers';
+import type { ApiAvailabilityResponse, ApiBookingCreateResponse, ApiBookingSettings, ApiDistancesResponse, ApiGraph, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiLoginResponse, ApiMapResponse, ApiPropertyDetail, ApiPropertySummary, ApiRouteResponse, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
+import { parseAvailability, parseBookingResult, parseBookingSettings, parseBundle, parseDistances, parseListing, parseLockBluetoothKey, parseLockPin, parseRoute, parseTourRoute } from './parsers';
 
 /**
  * The production provider: the Pynwheel Tour App API, served by the Rails CMS
@@ -17,6 +17,8 @@ import { parseBundle, parseDistances, parseListing, parseLockBluetoothKey, parse
  *   GET  {API}/properties/{id}/stops | /map | /map/levels/{id} | /map/levels/{id}/svg | /graph
  *   POST {API}/properties/{id}/route | /tour-route | /stops/distances
  *   POST {API}/properties/{id}/locks/pin | /locks/bluetooth-key
+ *   GET  {API}/properties/{id}/booking/settings | /booking/availability
+ *   POST {API}/properties/{id}/bookings
  *
  * The session (token, user, selected property) is persisted by
  * `services/session.ts`; the graph is cached per property with its ETag.
@@ -310,8 +312,37 @@ export class PynwheelApiTourRepository implements TourRepository {
     return CONCIERGE_NOT_CONNECTED.replace('{property}', property).replace('{stop}', context.stopName ?? 'this stop');
   }
 
-  async requestBooking(_request: BookingRequest): Promise<{ id: string }> {
-    throw new FeatureUnavailableError('Booking a live tour');
+  // ---------------------------------------------------------------- booking
+  async getBookingSettings(): Promise<BookingSettings> {
+    const id = await this.requireProperty();
+    const { data } = await this.client.get<ApiBookingSettings>(`${API}/properties/${id}/booking/settings`);
+    return parseBookingSettings(data);
+  }
+
+  async getAvailability(fromDate: string, days: number): Promise<AvailabilityWindow> {
+    const id = await this.requireProperty();
+    const query = new URLSearchParams({ date: fromDate, days: String(Math.min(31, Math.max(1, Math.round(days)))) });
+    const { data } = await this.client.get<ApiAvailabilityResponse>(`${API}/properties/${id}/booking/availability?${query.toString()}`);
+    return parseAvailability(data);
+  }
+
+  async requestBooking(request: BookingRequest): Promise<BookingResult> {
+    const id = await this.requireProperty();
+    const { data } = await this.client.post<ApiBookingCreateResponse>(`${API}/properties/${id}/bookings`, {
+      tour_type: request.tourType,
+      property_tour_type: 'scheduled_tour',
+      tour_date: request.date,
+      tour_time: request.time,
+      first_name: request.firstName,
+      last_name: request.lastName,
+      email: request.email,
+      phone_number: request.phone,
+      ...(request.countryCode ? { country_code: request.countryCode } : {}),
+      ...(request.desiredUnit ? { unit: request.desiredUnit } : {}),
+      ...(request.lengthMinutes ? { length_minutes: request.lengthMinutes } : {}),
+      ...(request.partySize ? { party_size: request.partySize } : {})
+    });
+    return parseBookingResult(data);
   }
 
   async startApplication(_unitNode: string): Promise<{ id: string }> {

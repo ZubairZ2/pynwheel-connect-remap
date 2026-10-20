@@ -2825,3 +2825,20 @@ and adds a board (the Launch Board) whose state is rich but belongs to one page.
 `repository/remote/propertyCrumb.server.ts`, `hooks/connect/useLaunchBoard.ts`,
 `utils/generator/connect/launchBoard.generator.ts`, `screens/properties/tourSetup.screen.tsx`;
 PYN_CONNECT_PROGRESS.md §40.
+
+### October 20, 2026 — Infrastructure Update: a grouped settings rail with URL-synced sections, a stale-answer guard on property change, and a demo-only panel beside real data
+
+- **Grouped rail + pills + `?section=`.** `SettingsTab` renders one rail entry per design group and the group's sections as pills;
+  the active section is read from the server page's `searchParams` (`bookingSectionOf`) and kept with `router.replace` (no history
+  entries). In-page links (`onNavigate`) switch the group and the pill together. Pattern: the server page parses the parameter,
+  the client component owns the state.
+- **Request id on the hook.** `useTourBooking` bumps a `useRef` id and empties its state when `propertyId` changes; every async
+  callback captures the id and drops its answer when it no longer matches. A `savingRef` refuses a second write while one is in
+  flight (and is cleared on every exit path, including the stale one). `beforeunload` is registered only while a draft is dirty.
+- **Split saves of one endpoint.** `formPayload(draft, base, part)` lets two cards (`fields`, `button`) save through one
+  `PUT booking/form` with their own dirty flags; after a save only the saved part's draft restarts from the answer.
+- **Demo beside real.** `CrmSyncDemoPanel` keeps its state in a local `useReducer` on fixtures from `src/data/mock/`, never imports
+  the API client, and shows the real stored values in a separate card read from data the page already has. The e2e test asserts
+  that its interactions make no `/api/properties/` request.
+- **Proxy allowlist is the contract.** A new write path (`booking/closures`) must be added to the route handler's `WRITES` table, or
+  the browser gets a 404 the UI reports as a failed save (found by the write round-trip test).

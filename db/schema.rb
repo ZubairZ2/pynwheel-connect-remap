@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_10_18_090000) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_20_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -2087,6 +2087,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_18_090000) do
     t.integer "tour_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.string "btn_text_color", default: "#ffffff"
+    t.string "btn_icon"
     t.index ["tour_id"], name: "index_scheduler_widget_settings_on_tour_id"
   end
 
@@ -2293,6 +2295,19 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_18_090000) do
     t.index ["community_id"], name: "index_three_d_maps_configurations_on_community_id"
   end
 
+  create_table "tour_closures", force: :cascade do |t|
+    t.integer "community_id", null: false
+    t.date "date", null: false
+    t.string "label"
+    t.boolean "closed_all_day", default: true, null: false
+    t.string "start_time"
+    t.string "end_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["community_id", "date", "start_time"], name: "index_tour_closures_on_community_id_and_date_and_start_time", unique: true
+    t.index ["community_id"], name: "index_tour_closures_on_community_id"
+  end
+
   create_table "tour_histories", id: :serial, force: :cascade do |t|
     t.datetime "arrived", precision: nil
     t.datetime "left", precision: nil
@@ -2362,6 +2377,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_18_090000) do
     t.boolean "enable_restricted_property_access", default: false
     t.boolean "enable_tour_customization", default: false
     t.boolean "bypass_stop_lock_access", default: true
+    t.integer "buffer_minutes", default: 0, null: false
+    t.integer "minimum_notice_minutes", default: 0, null: false
+    t.integer "booking_horizon_days"
+    t.boolean "app_after_hours_label", default: true, null: false
+    t.boolean "app_allow_shorter_tour", default: true, null: false
+    t.integer "app_party_size_limit", default: 6, null: false
+    t.boolean "app_ask_unit", default: true, null: false
+    t.boolean "app_show_text_booking", default: true, null: false
     t.index ["tour_id"], name: "index_tour_settings_on_tour_id"
   end
 

@@ -1322,3 +1322,33 @@ index migration on production, set `HOST_URL`, wire the iOS plugin into CapApp-S
 - Coexistence evidence for the shared database (report §30): a `main` worktree on the migrated clone serves the legacy
   pages unchanged (only the three pre-existing 500s), JSON endpoints byte-identical between main and the branch, and the
   legacy widget's `check_limit` rule identical to the refactor on 1,026 cases.
+
+## 39. Settings on the October 20 design — implementation knowledge (October 20, 2026)
+
+- **Read the design export decompressed.** `Pynwheel Back Office (standalone) (2).html` stores its sub-pages gzip-compressed in
+  `<script type="__bundler/manifest">` (`TourModule.dc.html` = uuid `16fa05e2…` holds the whole Settings block; `TmSettingsCard.dc.html`
+  the generic card). A plain-text grep of the file finds nothing; decode `data` (base64 → gzip) first. The shell template is plain.
+- **The Settings tab already existed** (PR #31). Extend `tourModuleTabs.tsx` / `BookingPanels.tsx` / `useTourBooking.ts` /
+  `tourBooking.generator.ts`; the proxy route needs no new entry except a token in the committed `booking/(…)` regex.
+- **Legacy NULL semantics:** `tour_settings.show_desired_bedroom` / `show_desired_move_in_date` NULL = shown (haml and ERB both
+  check `.nil? ? true : value`); report them as `!= false`. `communities.scheduler_widget` NULL = on. `allow_self_tour` NULL is
+  off for the slot engine (`collect_time_slots` tests truthiness) — keep it as is.
+- **Where the engine lives:** every new rule goes into `Bookings::Availability#day` (and `SchedualTours::Capacity` for anything that
+  counts bookings); Connect, the Tour App and the legacy submit all read it. `stepping` is the widget's `end_time` arithmetic
+  (interval − 1) — do not fold the buffer into it.
+- **Legacy submit check scope:** `Bookings::Availability#managed_by` (Yardi RentCafe / Knock / Funnel) → skip, the widget's slots
+  come from the CRM there; unscheduled visits have no slot. The widget shows `message=` through `flash[:success].html_safe`.
+- **Sucker Punch in tests:** a legacy flow that enqueues `ScheduledTourMailerJob` runs the job after the test transaction on a
+  closed connection (`verify!` for nil noise, and once a 24-minute idle-in-transaction hang of the whole run). Stub
+  `ScheduledTourMailerJob.perform_async` around such posts.
+- **Devise sessions for e2e:** mint right before each run (a ~1 h old cookie answered 401 through the proxy and hung
+  `hydrated()`); `rails_cookie` = `key=escaped value`, `user` = `Connect::ResponseEnvelope.current_user_meta(user)`.
+- **Two `next dev` servers cannot share one checkout** (`.next`); to switch the verify Connect between Rails :3102 and :3101,
+  stop the preview and start `npx next dev -p 3007` again with the other `PYNWHEEL_CMS_URL`.
+- **Vite from a worktree:** `npx vite` installed a global vite and answered 404 at `/`; run `./node_modules/.bin/vite` (the
+  symlinked project binary). Vite answers `index.html` only to `Accept: text/html`, so a bare `curl /` is a 404 even when fine.
+- **App property pick in headless runs:** `getByText('Hazel')` without `exact` hits "Arbour Place · 4769 Hazel Street" first.
+- **Legacy widget on CRM properties locally:** the Funnel push in `create_tour_user_from` raises (no Funnel host) after the row is
+  written — pick a non-CRM, card-free, widget-live property (Oeuvre 229 on both databases) for widget bookings.
+- **Playwright + React state:** wait for the section's "Saving…" / "Unsaved changes" to disappear before navigating after a save;
+  a `router.replace` during an in-flight write left the next save blocked in one run.

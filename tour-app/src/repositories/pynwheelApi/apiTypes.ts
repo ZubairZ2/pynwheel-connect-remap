@@ -248,3 +248,56 @@ export interface ApiDistancesResponse {
   from_stop_id: string | null;
   distances: Record<string, { reachable: boolean; distance: number; unit: 'px'; distance_ft: number | null; duration_s: number | null; direction: 'up' | 'down' | 'level'; error: { code: string; message: string } | null }>;
 }
+
+// ---- booking (Api::TourApp::V1::BookingsController, October 20, 2026) ----
+export interface ApiBookingSettings {
+  property_id: number;
+  time_zone: string;
+  scheduler_enabled: boolean;
+  widget_live: boolean;
+  salesforce: boolean;
+  bookable: boolean;
+  managed_by: string | null;
+  gates: { key: string; label: string; ok: boolean; error: string }[];
+  tour_types: { self_tour: boolean; guided_tour: boolean } | null;
+  slot_interval_minutes: number;
+  only_scheduled_tour: boolean;
+  grace_period: number | null;
+  length_stay_limit: number | null;
+  capacity: { enabled: boolean; max_self_tour_users: number | null; max_guided_tour_users: number | null } | null;
+  window: { buffer_minutes: number; minimum_notice_minutes: number; booking_horizon_days: number | null } | null;
+  closures: { id: number; date: string; label: string | null; closed_all_day: boolean; start_time: string | null; end_time: string | null }[];
+  app: { after_hours_label: boolean; allow_shorter_tour: boolean; party_size_limit: number; ask_unit: boolean; show_text_booking: boolean } | null;
+  hours: Record<string, Record<string, { open: string; close: string }[]>>;
+  form: { credit_card_required: boolean; show_desired_bedroom: boolean; show_desired_move_in_date: boolean } | null;
+  link: { url: string | null; live: boolean } | null;
+}
+
+export interface ApiAvailabilitySlot {
+  time: string;
+  label: string;
+  types: string[];
+  full: string[];
+}
+
+export interface ApiAvailabilityDay {
+  date: string;
+  closed: boolean;
+  beyond_horizon?: boolean;
+  closure?: { label: string | null } | null;
+  slots: ApiAvailabilitySlot[];
+}
+
+export interface ApiAvailabilityResponse {
+  time_zone: string;
+  now: string;
+  interval_minutes: number;
+  last_bookable_date: string | null;
+  days: ApiAvailabilityDay[];
+}
+
+export interface ApiBookingCreateResponse {
+  booking: { id: number; status: string; tour_date: string | null; tour_time: string | null; tour_time_label: string | null; end_time: string | null; tour_type: string; property_tour_type: string; created_by: string; rescheduled: boolean };
+  visitor: { id: number; first_name: string; last_name: string; email: string; phone_number: string };
+  notifications: { email: boolean; sms: boolean; web: boolean };
+}

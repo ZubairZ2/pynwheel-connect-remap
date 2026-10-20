@@ -36,7 +36,14 @@ class Connect::BookingControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Schedule a Visit', data['button']['text']
     assert_equal 2, data['capacity']['max_self_tour_users']
     assert_equal 15, data['grace_period']
-    assert_includes data['unavailable'], 'holidays'
+    assert_equal [], data['unavailable'], 'every setting of the October 20 design has a column now'
+    assert_equal({ 'buffer_minutes' => 0, 'minimum_notice_minutes' => 0, 'booking_horizon_days' => nil }, data['window'])
+    assert_equal [], data['closures']
+    assert_equal({ 'after_hours_label' => true, 'allow_shorter_tour' => true, 'party_size_limit' => 6, 'ask_unit' => true, 'show_text_booking' => true }, data['app'])
+    assert_equal '#ffffff', data['button']['text_color']
+    assert data['form']['show_desired_bedroom'], 'a NULL flag is shown, as the legacy widget shows it'
+    assert data['form']['show_desired_move_in_date']
+    assert_nil data['button']['icon']
     assert_equal ENV['HOST_URL'].present?, data['link']['host_configured']
   end
 
@@ -135,5 +142,123 @@ class Connect::BookingControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:other_company_admin)
     get "#{base}.json"
     assert_response :not_found
+  end
+
+  test 'the link carries the signed property code once HOST_URL is set' do
+    sign_in users(:community_assistant)
+    previous = ENV['HOST_URL']
+    ENV['HOST_URL'] = 'https://cms.example.test'
+    get "#{base}.json"
+    link = body['data']['link']
+    assert link['host_configured']
+    assert link['live'], link.inspect
+    assert link['url'].start_with?("https://cms.example.test/scheduler_widget/test_widget?community_id=#{@community.id}&community_code=")
+    assert_includes link['url'], 'direct=true'
+    assert_includes link['embed_html'], 'Schedule a Visit'
+    assert_includes link['embed_html'], 'color:#ffffff'
+  ensure
+    ENV['HOST_URL'] = previous
+  end
+
+  test 'availability drops the times closer than the minimum notice and the dates beyond the horizon' do
+    monday = Date.today.next_occurring(:monday)
+    # The whole test runs at 9:30 on that Monday (a session signed in earlier would have timed out).
+    travel_to Time.find_zone('America/Chicago').local(monday.year, monday.month, monday.day, 9, 30) do
+      sign_in users(:community_manager)
+      put "#{base}/rules.json", as: :json, params: { minimum_notice_minutes: 120, booking_horizon_days: 7 }
+      assert_response :success, response.body
+      assert_equal [120, 7], [@setting.reload.minimum_notice_minutes, @setting.booking_horizon_days]
+      assert_equal({ 'buffer_minutes' => 0, 'minimum_notice_minutes' => 120, 'booking_horizon_days' => 7 }, body['data']['window'])
+
+      get "#{base}/availability.json", params: { date: monday.iso8601, days: 1 }
+      times = body['data']['days'].first['slots'].map { |s| s['time'] }
+      refute_includes times, '09:45', 'inside the notice'
+      refute_includes times, '11:15', 'inside the notice'
+      assert_includes times, '11:30'
+      assert_equal (monday + 7).iso8601, body['data']['last_bookable_date']
+      get "#{base}/availability.json", params: { date: (monday + 7).iso8601, days: 2 }
+      assert_equal [false, true], body['data']['days'].map { |d| d['closed'] }
+      assert body['data']['days'].last['beyond_horizon']
+
+      put "#{base}/rules.json", as: :json, params: { minimum_notice_minutes: 90, booking_horizon_days: 8, buffer_minutes: 7 }
+      assert_response :unprocessable_entity
+      assert_equal %w[booking_horizon_days buffer_minutes minimum_notice_minutes], body['errors'].map { |e| e['path'] }.sort
+      put "#{base}/rules.json", as: :json, params: { booking_horizon_days: '' }
+      assert_response :success
+      assert_nil @setting.reload.booking_horizon_days
+    end
+  end
+
+  test 'closures close a whole day or a window of it and are validated' do
+    sign_in users(:community_admin)
+    monday = Date.today.next_occurring(:monday)
+    next_monday = monday + 7
+    put "#{base}/closures.json", as: :json, params: { closures: [{ date: monday.iso8601, label: 'Staff training', closed_all_day: true }, { date: next_monday.iso8601, closed_all_day: false, start_time: '10:00', end_time: '11:00' }] }
+    assert_response :success, response.body
+    assert_equal 2, TourClosure.where(community_id: @community.id).count
+    assert_equal [[monday.iso8601, 'Staff training', true, nil, nil], [next_monday.iso8601, nil, false, '10:00', '11:00']],
+                 body['data']['closures'].map { |c| [c['date'], c['label'], c['closed_all_day'], c['start_time'], c['end_time']] }
+
+    get "#{base}/availability.json", params: { date: monday.iso8601, days: 1 }
+    day = body['data']['days'].first
+    assert day['closed']
+    assert_equal 'Staff training', day['closure']['label']
+    get "#{base}/availability.json", params: { date: next_monday.iso8601, days: 1 }
+    times = body['data']['days'].first['slots'].map { |s| s['time'] }
+    assert_includes times, '09:45'
+    refute_includes times, '10:00'
+    refute_includes times, '10:45'
+    assert_includes times, '11:00'
+    assert_equal 1, body['data']['closures'].size
+
+    put "#{base}/closures.json", as: :json, params: { closures: [{ date: 'tomorrow' }, { date: monday.iso8601, closed_all_day: false, start_time: '12:00', end_time: '11:00' }] }
+    assert_response :unprocessable_entity
+    assert_equal %w[closures[0].date closures[1]], body['errors'].map { |e| e['path'] }
+    assert_equal 2, TourClosure.where(community_id: @community.id).count, 'nothing written'
+
+    put "#{base}/closures.json", as: :json, params: { closures: [] }
+    assert_response :success
+    assert_equal 0, TourClosure.where(community_id: @community.id).count
+  end
+
+  test 'a buffer makes a booking count against the next slot too' do
+    monday = Date.today.next_occurring(:monday)
+    @setting.update_columns(time_intervel: '30 min', buffer_minutes: 10)
+    user = TourUser.create!(first_name: 'V', last_name: 'X', email: 'v@example.test', phone_number: '+13035550100')
+    2.times { |i| SchedualTour.create!(community_id: @community.id, tour_user_id: user.id, tour_date: monday, tour_time: '10:00', tour_type: 'self_tour', property_tour_type: 'scheduled_tour') }
+    sign_in users(:community_assistant)
+    get "#{base}/availability.json", params: { date: monday.iso8601, days: 1 }
+    assert_equal 10, body['data']['buffer_minutes']
+    slots = body['data']['days'].first['slots'].to_h { |s| [s['time'], s['full']] }
+    assert_equal ['self_tour'], slots['10:00']
+    assert_equal ['self_tour'], slots['10:30'], 'within interval + buffer of the 10:00 bookings'
+    assert_equal [], slots['11:00']
+  end
+
+  test 'the scheduler toggle alone is a valid rules write' do
+    sign_in users(:community_manager)
+    put "#{base}/rules.json", as: :json, params: { scheduler_enabled: false }
+    assert_response :success, response.body
+    assert_equal false, @community.reload.scheduler_widget
+    refute body['data']['gates'].find { |g| g['key'] == 'scheduler_on' }['ok']
+    refute body['data']['widget_live']
+    assert_equal 2, OpeningHour.where(community_id: @community.id).count
+  end
+
+  test 'the app options and the button label colour and icon are written and validated' do
+    sign_in users(:community_admin)
+    put "#{base}/form.json", as: :json, params: { app: { after_hours_label: false, party_size_limit: 4, ask_unit: false }, button: { text_color: '#112233', icon: 'calendar' } }
+    assert_response :success, response.body
+    @setting.reload
+    assert_equal [false, 4, false, true], [@setting.app_after_hours_label, @setting.app_party_size_limit, @setting.app_ask_unit, @setting.app_show_text_booking]
+    assert_equal ['#112233', 'calendar'], [@button.reload.btn_text_color, @button.btn_icon]
+    assert_equal({ 'after_hours_label' => false, 'allow_shorter_tour' => true, 'party_size_limit' => 4, 'ask_unit' => false, 'show_text_booking' => true }, body['data']['app'])
+    assert_includes body['data']['link']['embed_html'].to_s + 'color:#112233', 'color:#112233'
+    put "#{base}/form.json", as: :json, params: { app: { party_size_limit: 11 }, button: { text_color: 'white', icon: 'star' } }
+    assert_response :unprocessable_entity
+    assert_equal %w[app.party_size_limit button.icon button.text_color], body['errors'].map { |e| e['path'] }.sort
+    put "#{base}/form.json", as: :json, params: { button: { icon: 'none' } }
+    assert_response :success
+    assert_nil @button.reload.btn_icon
   end
 end

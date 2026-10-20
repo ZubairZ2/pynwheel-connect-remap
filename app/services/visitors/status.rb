@@ -78,7 +78,7 @@ module Visitors
 
     TYPE = { 'self_tour' => 'self', 'guided_tour' => 'guided', 'virtual_tour' => 'virtual', 'Virtual Tour' => 'virtual', 'Virtual tour' => 'virtual', 'Self Guided' => 'self' }.freeze
     TYPE_LABEL = { 'self' => 'App Guided Tour', 'guided' => 'Person Guided Tour', 'virtual' => 'Virtual Tour', 'walkin' => 'Walk-in' }.freeze
-    SOURCE = { 'Pynwheel' => 'Booking form', 'Staff' => 'Staff', 'salesforce' => 'Salesforce', 'PERQ' => 'PERQ', 'Appartments.com' => 'Apartments.com' }.freeze
+    SOURCE = { 'Pynwheel' => 'Booking form', 'Staff' => 'Staff', 'Tour App' => 'Tour App', 'salesforce' => 'Salesforce', 'PERQ' => 'PERQ', 'Appartments.com' => 'Apartments.com' }.freeze
 
     def tour_type_key(booking)
       TYPE[booking.tour_type.to_s] || (booking.tour_type.present? ? booking.tour_type.to_s : 'self')
