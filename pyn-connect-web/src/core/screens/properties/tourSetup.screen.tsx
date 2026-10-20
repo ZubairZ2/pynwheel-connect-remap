@@ -69,6 +69,12 @@ const TourSetup = ({ map, initialTab, initialSection }: { map: PropertyMap; init
   const overview = useTourOverview(propertyId, state.tab === 'overview');
   const [stopFocus, setStopFocus] = useState<string | null>(null);
   const [addSignal, setAddSignal] = useState(0);
+  // Clicking the Visitors tab while it is open takes the profile back to the list (the tab state itself does not change).
+  const [visitorsListSignal, setVisitorsListSignal] = useState(0);
+  const pickTab = (id: TourTab) => {
+    if (id === 'visitors' && state.tab === 'visitors') setVisitorsListSignal((current) => current + 1);
+    actions.setTab(id);
+  };
   const TB = CORE_STRINGS.tourModules.tabs;
   const tabs: { id: TourTab; label: string; count: number | null }[] = [
     { id: 'overview', label: i18n.t(TB.overview), count: null },
@@ -156,7 +162,7 @@ const TourSetup = ({ map, initialTab, initialSection }: { map: PropertyMap; init
             role="tab"
             aria-selected={state.tab === tab.id}
             className={`bo-tour__tab${state.tab === tab.id ? ' bo-tour__tab--on' : ''}`}
-            onClick={() => actions.setTab(tab.id)}
+            onClick={() => pickTab(tab.id)}
             data-testid={`tour-tab-${tab.id}`}
           >
             {tab.label}
@@ -171,7 +177,7 @@ const TourSetup = ({ map, initialTab, initialSection }: { map: PropertyMap; init
       )}
       {state.tab === 'elevators' && <ElevatorsTab controller={controller} propId={propId} />}
       {state.tab === 'locks' && <LocksTab propertyId={propertyId} legacyUrl={legacyCmsURLs.locks(propertyId)} />}
-      {state.tab === 'visitors' && <VisitorsTab propertyId={propertyId} settings={booking.settings} />}
+      {state.tab === 'visitors' && <VisitorsTab propertyId={propertyId} settings={booking.settings} listSignal={visitorsListSignal} />}
       {state.tab === 'chat' && <ChatTab propId={propId} />}
       {state.tab === 'settings' && <SettingsTab controller={controller} booking={booking} propertyId={propertyId} propertyName={map.inventory.property.name} initialSection={initialSection} />}
 

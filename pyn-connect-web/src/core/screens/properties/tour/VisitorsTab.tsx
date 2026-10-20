@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
 import { StatusPill } from '~/core/components/atoms/StatusPill';
@@ -12,9 +14,19 @@ import { V, VISITOR_RANGES, VISITOR_TYPES, bookingSends, cancelSends, feedbackTe
 
 const X = CORE_STRINGS.tourModules.common;
 
-/** The Visitors tab: bookings and visits of the property, one visitor's profile, and the booking and privacy actions. */
-export const VisitorsTab = ({ propertyId, settings }: { propertyId: number; settings: BookingSettings | null }) => {
+/**
+ * The Visitors tab: bookings and visits of the property, one visitor's profile, and the booking and privacy actions.
+ * `listSignal` changes when the Visitors tab is clicked while already open: the profile closes and the list shows again.
+ */
+export const VisitorsTab = ({ propertyId, settings, listSignal = 0 }: { propertyId: number; settings: BookingSettings | null; listSignal?: number }) => {
   const c = useTourVisitors(propertyId, true, settings);
+  const { closeProfile } = c;
+  const seenSignal = useRef(listSignal);
+  useEffect(() => {
+    if (seenSignal.current === listSignal) return;
+    seenSignal.current = listSignal;
+    closeProfile();
+  }, [closeProfile, listSignal]);
   if (c.error) {
     return (
       <div className="bo-tx" data-testid="tour-visitors">

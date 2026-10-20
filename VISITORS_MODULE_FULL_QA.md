@@ -185,7 +185,8 @@ Chang Liu with codes revealed, the walk-in on site / in progress / redacted, the
 Connect: `tourModules.data.ts` (types), `tourVisitors.generator.ts` (+ `generateAccessRows`, `idCheckText`,
 `propertyCodeText`, `feedbackText`, abandoned / expired pills, grouped stops), `useTourVisitors.ts` (reveal codes, access
 scope), `VisitorsTab.tsx` (ID sentence, booking lines, feedback / guest cards card, session stops with photos, property code,
-Access codes card, timeline note), `strings.ts` / `i18n/index.ts` (54 strings).
+Access codes card, timeline note), `strings.ts` / `i18n/index.ts` (54 strings); `tourSetup.screen.tsx` — clicking the Visitors tab
+while a profile is open returns to the list (`listSignal`), found by the owner on October 21.
 
 ## 10. Tests
 
