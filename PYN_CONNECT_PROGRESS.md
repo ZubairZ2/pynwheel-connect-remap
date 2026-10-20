@@ -31,6 +31,7 @@ This is the single progress document. It merges the original phase 1/2 handoff w
 | **2n**: Map & Plotting — Detect Hallways, the POC's editing, A* routing | `POC_auto_plot_impmemnted.md`, Oct 1 | `feature/wayfinding_detect_hallways_auto_connect` → `main`, **PR #15** (merged Oct 2) | ✅ (§27) |
 | **2o**: Map & Plotting — stored hallways kept by Detect, Auto-Connect folded in, editable bridges, hollow markers; favicon, top-bar profile | `POC_auto_plot_impmemnted_issues.md`, Oct 2 | `improvement/wayfinding_hallway_persistence_markers` → `main`, **PR #17** (merged Oct 2) | ✅ (§28); final pre-production run on `main` at the end of §28 |
 | **2p**: The Oct 13 Back Office design — nav groups, Launch Board, profile menu, Manage grid, Product Setup, Tours page, property-scoped pages | `new_app_design_17_oct.md`, Oct 17 | `feature/new-cms-design-oct-17` (uncommitted) | ✅ Frontend only (§40) |
+| **2q**: Locks page on the real legacy integrations — per-vendor account forms, instructions and images, igloohome v1 lock entry and CSV | the Oct 20 locks brief | `feature/connect-locks-real-integrations` | ✅ (§44), `LOCKS_PAGE_INTEGRATION_QA.md` |
 | **3**: Replace demo data with real Rails data | *brief not written yet* | — | ⏭ Next (§11) |
 
 **`main` holds everything above** (PRs #1–#17 merged; phases 2f–2j are §18–§23, merged through PRs #5–#12). As of October 2, 2026, local `main` (`1357822ec`) equals `origin/main`, and its tree is identical to the phase 2o commit `8ee78da06`. Every feature branch listed in `git branch --merged` is in.
@@ -2630,3 +2631,52 @@ All open code findings from §43 / the final report were fixed on `qa/final-plat
 re-verified (Rails 267 runs with the one test-environment-only partner screen failure; Connect tsc + 7 real-data
 Playwright specs; Self Tour App tsc + vitest 77/77 + the two headless journeys; legacy harness 0 × 500 over five
 properties). Details: `FINAL_PLATFORM_QA_REPORT_2026-10-17.md` §29.
+
+## 44. Connect: the Locks page configures the real lock providers (October 20, 2026)
+
+Brief: rebuild the Locks page on the actual legacy integrations, fields and backend behaviour, with the Oct 13
+Back Office design as the layout. Report: `LOCKS_PAGE_INTEGRATION_QA.md`. Branch `feature/connect-locks-real-integrations`.
+
+**What §42 left to the legacy page** was the account itself: every credential, the visitor instructions and the
+igloohome v1 lock entry were an "Open in the CMS" link, and two card facts were fixed text.
+
+**Backend (Connect module only; no legacy file, no migration):**
+- `Locks::Accounts` (new): the five legacy account tabs as one service — `describe` (secret presence only),
+  `options` (the 10 Zerv card formats verbatim from `ApplicationHelper#cards_formats`, the Igloo versions, the
+  facility/badge ranges), `save!` (find-or-create one row per community, append the vendor to
+  `multiple_locks_provider`, blank secrets keep the stored value, per-vendor field errors), `remove_authorization!`
+  (EdgeState forgets its token; Igloohome forgets it and falls back to v1 as the legacy action does),
+  `instructions!`, `image!` (PNG/JPEG data URL through the base64 uploader), `add_device!` and `import_csv!`
+  (the legacy v1 CSV: header row, name then id, known ids skipped, nothing deleted). Latch gets the bundled
+  default images and texts on first save.
+- `Connect::LocksController`: `PUT locks/account`, `PUT locks/account/remove_authorization`, `PUT locks/instructions`,
+  `PUT locks/instruction_image`, `POST locks/devices`, `POST locks/import_csv`; all writes, all audited.
+- `Locks::Inventory#providers`: `details`, `options`, `access {method, tour_app, legacy_app}` and `supports`
+  `{account, instructions, add_device, remove_authorization}`; `base_url` for image URLs.
+- `Locks::Vendors.account_state`: Latch configured by `latch_property_name`, Zerv by username + password, an
+  igloohome code grant without a token is `needs_authorization`.
+- Log filter: `client_secret`, `iglooworks_api_key`, `image`, `csv`.
+
+**Frontend:** `lockAccounts.generator.ts` (pure form specs, drafts, problems, payloads, labels; 11 vitest tests —
+vitest is new to the Connect app, `npm test`), four new dialogs in `useTourLocks` / `LocksTab` (account, remove
+authorization, instructions with image slots, igloohome v1 locks with CSV), the available providers as "Connect"
+rows, cards reading access and health from the CMS. Fixed on the way: manual-code "Remove code" sent the old code;
+the Auto-match button showed the unmapped count; "Pick a lock" did nothing; purge ignored `supports.purge`.
+
+**Verified (development database, Rails `:3000`, Next `:3006`):** Hazel 1618 reads its igloohome v1 and Zerv
+accounts; Residences at Escaya 818 (Alliance, no provider) had Zerv, Igloohome v1 and Latch accounts created from
+the page, the Zerv test answered the vendor's refusal honestly, one v1 lock typed, a duplicate refused, the lock
+mapped to the Pool amenity and resolved by `TourApi::Locks.describe` as a supported Bluetooth lock, then everything
+was removed again. Rails `test/controllers/connect` + Tour App locks + upload URL: 79 runs, 583 assertions, green.
+
+**Later the same day:** the unconnected providers were rebuilt as the design's "Connect a lock provider" grid
+(three columns, vendor note, full-width Connect), with a Dormakaba card whose Connect explains that no CMS
+connector exists yet, and the Launch-only vendors (Schlage, Yale, Other; `Locks::Inventory#launch_only`) as chips.
+
+The connected card, inventory footer and issued-code filters were aligned with the same design page: Igloo
+"Connection" select, Re-authorize, Disconnect (`PUT locks/disconnect` = `Locks::Purge` + vendor off
+`multiple_locks_provider`, account kept), "Delete all imported locks" under the table, issued-code status filters.
+
+**Still on the legacy page:** the OAuth code-grant sign-ins (igloohome, RemoteLock), whose callback is the
+legacy `HomeController`.
+

@@ -14,9 +14,10 @@ module Locks
   class Inventory
     ISSUED_LIMIT = 100
 
-    def initialize(community, include_codes: false)
+    def initialize(community, include_codes: false, base_url: nil)
       @community = community
       @include_codes = include_codes
+      @base_url = base_url
     end
 
     def as_json(*)
@@ -24,6 +25,7 @@ module Locks
         enabled: community.enable_locks != false,
         active_providers: Array(community.multiple_locks_provider),
         providers: providers,
+        launch_only: launch_only,
         locks: locks,
         manual_codes: manual_codes,
         locked_without_lock: locked_without_lock,
@@ -46,6 +48,9 @@ module Locks
           status: state[:status],
           mode: state[:mode],
           account: account_summary(vendor, account),
+          details: Accounts.describe(vendor, account, base_url: @base_url),
+          options: Accounts.options(vendor),
+          access: access_of(vendor, state),
           lock_count: rows.size,
           mapped_count: rows.count { |row| row.stop_id.present? },
           last_changed_at: rows.map(&:updated_at).compact.max,
@@ -54,6 +59,18 @@ module Locks
           instructions: account ? { unit: account.try(:lock_instruction_text).presence, amenity: account.try(:amenity_lock_instruction_text).presence } : nil
         }
       end
+    end
+
+    # Vendors the Launch onboarding API records (Api::V2::SecureLocksController)
+    # and the legacy Locks page has no tab for: Schlage, Yale and the free-text
+    # "other" locks. Shown as chips, never as an account form.
+    def launch_only
+      providers = Array(community.multiple_locks_provider)
+      [
+        { vendor: 'Schlage', label: 'Schlage', present: community.schlage.present? || providers.include?('Schlage') },
+        { vendor: 'Yale', label: 'Yale', present: community.yale.present? || providers.include?('Yale') },
+        { vendor: 'Other', label: 'Other vendors', present: community.other_locks.exists? || providers.include?('Other') }
+      ]
     end
 
     # The four lists below are memoised: `as_json` and `counts` read each of
@@ -331,7 +348,33 @@ module Locks
 
       def supports(vendor, state)
         api = state[:configured] && !(vendor == 'Igloohome' && state[:mode] == 'v1')
-        { sync: api, test: api, purge: true, auto_match: true, csv: vendor == 'Igloohome' && state[:mode] == 'v1', async_sync: %w[Latch Zerv].include?(vendor) }
+        v1 = vendor == 'Igloohome' && state[:mode] == 'v1'
+        {
+          sync: api, test: api, purge: true, auto_match: true, csv: v1, async_sync: %w[Latch Zerv].include?(vendor),
+          # The legacy page's account actions: every vendor has an account form
+          # and visitor instructions; a single lock is typed only for v1; the
+          # code-grant modes can forget their vendor token.
+          account: true, instructions: true, add_device: v1,
+          remove_authorization: (vendor == 'EdgeState' || (vendor == 'Igloohome' && state[:mode] == 'igloohome')) && state[:configured]
+        }
+      end
+
+      # How a visitor opens this vendor's lock, and whether the new Tour App
+      # does it (TourApi::Locks: igloohome door codes and v1 Bluetooth keys;
+      # every other vendor is opened by the legacy app only).
+      def access_of(vendor, state)
+        case vendor
+        when 'Igloohome'
+          bluetooth = state[:mode] == 'v1'
+          account = Vendors.account(community, vendor)
+          # Which igloohome API issues a v1 guest key (TourApi::Locks#developer_client?).
+          source = bluetooth ? (account&.client_id.present? && account&.client_secret.present? ? 'developer_client' : 'partner_key') : nil
+          { method: bluetooth ? 'bluetooth_key' : 'hourly_pin', tour_app: true, legacy_app: true, source: source }
+        when 'Latch' then { method: 'latch_key', tour_app: false, legacy_app: true }
+        when 'Zerv' then { method: 'mobile_key', tour_app: false, legacy_app: true }
+        when 'Dwelo' then { method: 'remote_unlock', tour_app: false, legacy_app: true }
+        when 'EdgeState' then { method: 'keypad_pin', tour_app: false, legacy_app: true }
+        end
       end
   end
 end

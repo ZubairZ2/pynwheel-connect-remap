@@ -739,3 +739,10 @@ Tests: `locks_test.rb` is 15 tests; the Tour App API suite 84 runs / 605 asserti
 `POST /api/tour/v1/properties/:id/tour-route` accepts `start_stop_id` (`bsp:<id>` or the tour start; 422
 `unknown_start` otherwise). `POST …/locks/pin` and `…/locks/bluetooth-key` require Igloohome in
 `communities.multiple_locks_provider` and write an `igloohome_guests` row (no `tour_user`) per issuance.
+
+## 18. No contract change for the Connect Locks accounts (October 20, 2026)
+
+The Connect Locks tab now writes the vendor account rows the stops' `lock` and the two lock endpoints read
+(`igloohomes` and the other account tables, `multiple_locks_provider`). The `lock` shape, `POST /locks/pin` and
+`POST /locks/bluetooth-key` are unchanged; the 17-run suite stays green. Details: `LOCKS_PAGE_INTEGRATION_QA.md`.
+

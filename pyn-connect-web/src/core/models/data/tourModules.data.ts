@@ -65,6 +65,23 @@ export interface LockDeviceRow {
   updatedAt: string | null;
 }
 
+/** What the CMS says about a vendor account (Locks::Accounts.describe): never a secret, only whether one is stored. */
+export type LockAccountDetails = Record<string, unknown> & {
+  id: number;
+  instructions: { unit: string | null; amenity: string | null };
+  images: { unit: { url: string | null; fileName: string } | null; amenity: { url: string | null; fileName: string } | null };
+};
+
+export interface LockProviderAccess {
+  method: 'hourly_pin' | 'bluetooth_key' | 'latch_key' | 'mobile_key' | 'remote_unlock' | 'keypad_pin' | string;
+  /** Opened by the new Tour App. */
+  tourApp: boolean;
+  /** Opened by the legacy Pynwheel Tour app. */
+  legacyApp: boolean;
+  /** v1 only: which igloohome API issues the guest key. */
+  source?: 'developer_client' | 'partner_key' | null;
+}
+
 export interface LockProvider {
   vendor: string;
   label: string;
@@ -73,10 +90,25 @@ export interface LockProvider {
   status: 'connected' | 'not_configured' | 'needs_authorization';
   mode: string | null;
   account: Record<string, unknown> | null;
+  details: LockAccountDetails | null;
+  /** The choices the account form offers (card formats, Igloo versions, ranges), from the CMS. */
+  options: Record<string, unknown> | null;
+  access: LockProviderAccess | null;
   lockCount: number;
   mappedCount: number;
   lastChangedAt: string | null;
-  supports: { sync: boolean; test: boolean; purge: boolean; autoMatch: boolean; csv: boolean; asyncSync: boolean };
+  supports: {
+    sync: boolean;
+    test: boolean;
+    purge: boolean;
+    autoMatch: boolean;
+    csv: boolean;
+    asyncSync: boolean;
+    account: boolean;
+    instructions: boolean;
+    addDevice: boolean;
+    removeAuthorization: boolean;
+  };
   healthSource: string | null;
   instructions: { unit: string | null; amenity: string | null } | null;
 }
@@ -111,6 +143,8 @@ export interface LockInventory {
   enabled: boolean;
   activeProviders: string[];
   providers: LockProvider[];
+  /** Vendors only the Launch onboarding API records (Schlage, Yale, "other"); no account form. */
+  launchOnly?: { vendor: string; label: string; present: boolean }[];
   locks: LockDeviceRow[];
   manualCodes: { target: LockTarget; codePresent: boolean; code: string | null }[];
   lockedWithoutLock: { target: LockTarget; provider: string; reason: 'no_device' | 'no_code' }[];
@@ -122,6 +156,10 @@ export interface LockInventory {
   test?: { vendor: string; status: string; count: number | null; message: string };
   purged?: { vendor: string; count: number };
   applied?: unknown[];
+  account?: { vendor: string; created?: boolean; authorizationRemoved?: boolean };
+  disconnected?: { vendor: string; count: number };
+  device?: { vendor: string; id: number; deviceId: string; name: string };
+  imported?: { vendor: string; created: number; skippedExisting: number; skippedBlank: number; rows: number };
 }
 
 export interface AutoMatchProposal {
