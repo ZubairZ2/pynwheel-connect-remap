@@ -259,6 +259,16 @@ class Connect::LockAccountsTest < ActionDispatch::IntegrationTest
     assert zerv.reload.read_attribute(:lock_image).present?
   end
 
+  test 'the Launch-only vendors are listed as chips, present when the property has their rows' do
+    get "#{base}.json"
+    chips = body['data']['launch_only']
+    assert_equal %w[Schlage Yale Other], chips.map { |c| c['vendor'] }
+    assert_equal [false, false, false], chips.map { |c| c['present'] }
+    OtherLock.create!(community: @community, description: 'Gate fob', area_type: 'amenity')
+    get "#{base}.json"
+    assert_equal true, body['data']['launch_only'].find { |c| c['vendor'] == 'Other' }['present']
+  end
+
   test 'account writes are refused for read-only roles and foreign properties' do
     sign_in users(:community_assistant)
     put "#{base}/account.json", as: :json, params: { vendor: 'Zerv', fields: { username: 'u', password: 'p' } }

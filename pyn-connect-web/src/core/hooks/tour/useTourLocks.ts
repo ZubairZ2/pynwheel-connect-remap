@@ -10,7 +10,9 @@ import { useAppDispatch } from '~/core/store/hooks';
 import { t } from '~/core/utils/generator/inventory/inventoryText';
 import {
   L,
+  generateConnectCards,
   generateIssuedRows,
+  generateLaunchOnlyChips,
   generateLockFilters,
   generateLockRows,
   generateMapTargets,
@@ -56,6 +58,7 @@ export type LocksDialog =
   | { kind: 'disable'; busy: boolean }
   | { kind: 'account'; vendor: string; draft: AccountDraft; problems: Record<string, string>; submitted: boolean; busy: boolean; error: string | null }
   | { kind: 'removeAuth'; vendor: string; busy: boolean }
+  | { kind: 'unavailable'; vendor: string; title: string }
   | { kind: 'instructions'; vendor: string; unit: string; amenity: string; uploading: 'unit' | 'amenity' | null; busy: boolean }
   | { kind: 'devices'; vendor: string; name: string; deviceId: string; file: { name: string; text: string } | null; fileError: string | null; result: string | null; busy: boolean }
   | null;
@@ -143,6 +146,8 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
   const filters = useMemo(() => (inventory ? generateLockFilters(inventory, filter) : []), [inventory, filter]);
   const withoutLock = useMemo(() => (inventory ? generateWithoutLock(inventory) : []), [inventory]);
   const issued = useMemo(() => (inventory ? generateIssuedRows(inventory.issued, timeZone) : []), [inventory, timeZone]);
+  const connectCards = useMemo(() => (inventory ? generateConnectCards(inventory) : []), [inventory]);
+  const launchOnly = useMemo(() => (inventory ? generateLaunchOnlyChips(inventory) : []), [inventory]);
   const mapTargets = useMemo(
     () => (inventory && dialog?.kind === 'map' ? generateMapTargets(inventory, dialog.device, dialog.query) : []),
     [inventory, dialog]
@@ -293,12 +298,16 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
 
   const openAccount = useCallback(
     (vendor: string) => {
-      if (!canEdit) return refuse();
       const provider = providerOf(vendor);
-      if (!provider) return;
+      if (!provider) {
+        const card = connectCards.find((c) => c.vendor === vendor);
+        if (card && !card.available) setDialog({ kind: 'unavailable', vendor, title: card.title });
+        return;
+      }
+      if (!canEdit) return refuse();
       setDialog({ kind: 'account', vendor, draft: accountDraftOf(provider), problems: {}, submitted: false, busy: false, error: null });
     },
-    [canEdit, providerOf, refuse]
+    [canEdit, connectCards, providerOf, refuse]
   );
 
   const setAccountField = useCallback((key: string, value: string) => {
@@ -477,6 +486,8 @@ export const useTourLocks = (propertyId: number, enabled = true) => {
     filters,
     withoutLock,
     issued,
+    connectCards,
+    launchOnly,
     mapTargets,
     actions: {
       openMap, mapTo, unmap, bulkUnmap, openManual, saveManual, openAutoMatch, toggleProposal, applyAutoMatch, sync, test, openPurge, purge, setEnabled,

@@ -25,6 +25,7 @@ module Locks
         enabled: community.enable_locks != false,
         active_providers: Array(community.multiple_locks_provider),
         providers: providers,
+        launch_only: launch_only,
         locks: locks,
         manual_codes: manual_codes,
         locked_without_lock: locked_without_lock,
@@ -58,6 +59,18 @@ module Locks
           instructions: account ? { unit: account.try(:lock_instruction_text).presence, amenity: account.try(:amenity_lock_instruction_text).presence } : nil
         }
       end
+    end
+
+    # Vendors the Launch onboarding API records (Api::V2::SecureLocksController)
+    # and the legacy Locks page has no tab for: Schlage, Yale and the free-text
+    # "other" locks. Shown as chips, never as an account form.
+    def launch_only
+      providers = Array(community.multiple_locks_provider)
+      [
+        { vendor: 'Schlage', label: 'Schlage', present: community.schlage.present? || providers.include?('Schlage') },
+        { vendor: 'Yale', label: 'Yale', present: community.yale.present? || providers.include?('Yale') },
+        { vendor: 'Other', label: 'Other vendors', present: community.other_locks.exists? || providers.include?('Other') }
+      ]
     end
 
     # The four lists below are memoised: `as_json` and `counts` read each of

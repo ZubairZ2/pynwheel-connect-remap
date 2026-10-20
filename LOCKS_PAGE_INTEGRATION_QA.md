@@ -89,6 +89,19 @@ Schlage / Yale / Remote / Other rows written only by the Launch API.
   (`LockAccountDetails`, `LockProviderAccess`, `supports`).
 - vitest added to the Connect app (`npm test`, `vitest.config.ts`); the Playwright e2e stays.
 
+### The "Connect a lock provider" grid (October 20, later the same day)
+
+The owner compared the page with the live design project (newer than any downloaded export): the unconnected
+providers are a three-column card grid, each card a title, a one-line note and a full-width Connect button, with a
+**Dormakaba · NEW** card and a footer "Connected through the Launch onboarding API only: Schlage, Yale, Other
+vendors". Rebuilt as `generateConnectCards` / `.bo-lp` in `LocksTab`. Two honesty rules apply:
+
+- **Dormakaba** has no account record, service or import in the CMS. Its Connect opens a notice saying so
+  instead of a form; nothing is fabricated.
+- **Schlage, Yale, Other** are rows only the Launch onboarding API writes (`Api::V2::SecureLocksController`).
+  `Locks::Inventory#launch_only` reports each with `present` (the property has the row or the provider string),
+  and the chip is highlighted when present (Hazel has an `other_locks` row). No account form exists for them.
+
 ## Field-parity matrix
 
 | Provider / mode | Legacy fields verified | New form complete | Validation | Persistence | Result |

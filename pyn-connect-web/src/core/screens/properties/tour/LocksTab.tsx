@@ -80,28 +80,39 @@ const Providers = ({ c, legacyUrl }: { c: TourLocksController; legacyUrl: string
     {c.providers.connected.map((card) => (
       <ProviderCardView key={card.vendor} card={card} c={c} legacyUrl={legacyUrl} />
     ))}
-    {c.providers.available.length > 0 && (
+    {c.connectCards.length > 0 && (
       <div className="bo-tx__card" data-testid="lock-providers-available">
         <div className="bo-tx__cardhead">
           <div className="bo-tx__grow">
-            <div className="bo-tx__cardtitle">{i18n.t(L.provider.available)}</div>
+            <div className="bo-tx__cardtitle">{i18n.t(L.connectGrid.title)}</div>
             <div className="bo-tx__cardsub">{i18n.t(L.provider.availableSub)}</div>
           </div>
         </div>
         <div className="bo-tx__cardbody">
-          <div className="bo-tx__rowlist">
-            {c.providers.available.map((card) => (
-              <div key={card.vendor} className="bo-tx__rowitem bo-tx__rowitem--static" data-testid={`lock-provider-available-${card.vendor}`}>
-                <div className="bo-tx__grow">
-                  <div className="bo-tx__name">{card.label}</div>
-                  <div className="bo-tx__meta">{card.cred}</div>
+          <div className="bo-lp">
+            {c.connectCards.map((card) => (
+              <div key={card.vendor} className="bo-lp__card" data-testid={`lock-provider-available-${card.vendor}`}>
+                <div className="bo-lp__title">
+                  {card.title}
+                  {card.isNew && <StatusPill variant="ok" label={i18n.t(L.connectGrid.isNew)} />}
                 </div>
-                <button type="button" className="bo-tx__btn bo-tx__btn--accent" disabled={!c.canEdit} onClick={() => c.actions.openAccount(card.vendor)}>
+                <div className="bo-lp__note">{card.note}</div>
+                <button type="button" className="bo-tx__btn bo-tx__btn--primary bo-lp__btn" onClick={() => c.actions.openAccount(card.vendor)}>
                   {i18n.t(A.connect)}
                 </button>
               </div>
             ))}
           </div>
+          {c.launchOnly.length > 0 && (
+            <div className="bo-lp__foot">
+              <span>{i18n.t(L.connectGrid.launchOnly)}</span>
+              {c.launchOnly.map((chip) => (
+                <span key={chip.vendor} className={`bo-tx__chip${chip.present ? ' bo-tx__chip--on' : ''}`} title={chip.present ? chip.label : undefined}>
+                  {chip.label}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     )}
@@ -517,6 +528,21 @@ const LocksDialogs = ({ c }: { c: TourLocksController }) => {
         }
       >
         <p className="bo-map__dialogtext">{i18n.t(L.turnOffBody)}</p>
+      </Modal>
+      <Modal
+        open={dialog?.kind === 'unavailable'}
+        title={dialog?.kind === 'unavailable' ? i18n.t(L.connectGrid.unavailableTitle) : ''}
+        width={480}
+        onClose={close}
+        closeLabel={closeLabel}
+        className="bo-tour__dialog"
+        footer={
+          <button type="button" className="bo-btn bo-btn--primary" onClick={close}>
+            {closeLabel}
+          </button>
+        }
+      >
+        <p className="bo-map__dialogtext">{i18n.t(L.connectGrid.unavailableBody)}</p>
       </Modal>
       <AccountDialog c={c} />
       <InstructionsDialog c={c} />

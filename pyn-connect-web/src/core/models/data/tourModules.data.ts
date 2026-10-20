@@ -141,6 +141,8 @@ export interface LockInventory {
   enabled: boolean;
   activeProviders: string[];
   providers: LockProvider[];
+  /** Vendors only the Launch onboarding API records (Schlage, Yale, "other"); no account form. */
+  launchOnly?: { vendor: string; label: string; present: boolean }[];
   locks: LockDeviceRow[];
   manualCodes: { target: LockTarget; codePresent: boolean; code: string | null }[];
   lockedWithoutLock: { target: LockTarget; provider: string; reason: 'no_device' | 'no_code' }[];

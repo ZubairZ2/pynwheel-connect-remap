@@ -2669,6 +2669,10 @@ the page, the Zerv test answered the vendor's refusal honestly, one v1 lock type
 mapped to the Pool amenity and resolved by `TourApi::Locks.describe` as a supported Bluetooth lock, then everything
 was removed again. Rails `test/controllers/connect` + Tour App locks + upload URL: 79 runs, 583 assertions, green.
 
+**Later the same day:** the unconnected providers were rebuilt as the design's "Connect a lock provider" grid
+(three columns, vendor note, full-width Connect), with a Dormakaba card whose Connect explains that no CMS
+connector exists yet, and the Launch-only vendors (Schlage, Yale, Other; `Locks::Inventory#launch_only`) as chips.
+
 **Still on the legacy page:** the OAuth code-grant sign-ins (igloohome, RemoteLock), whose callback is the
 legacy `HomeController`.
 

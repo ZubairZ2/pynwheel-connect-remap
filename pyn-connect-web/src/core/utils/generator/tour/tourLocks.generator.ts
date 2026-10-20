@@ -274,3 +274,33 @@ export const generateIssuedRows = (issued: IssuedCode[], timeZone?: string | nul
     window: code.window ? `${formatWhen(code.window.from, timeZone)} – ${formatWhen(code.window.to, timeZone)}` : '—',
     pill: { label: code.status.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase()), variant: ISSUED_VARIANT[code.status] ?? 'neutral' }
   }));
+
+/* ── the "Connect a lock provider" grid ───────────────────────────────── */
+
+export interface ConnectCard {
+  vendor: string;
+  title: string;
+  note: string;
+  isNew: boolean;
+  /** False for a vendor the CMS has no connector for (Dormakaba): Connect explains instead of opening a form. */
+  available: boolean;
+}
+
+/** The design's order; Dormakaba first as its newest card, then the legacy vendors. */
+const CONNECT_ORDER = ['Dormakaba', 'Dwelo', 'Latch', 'Zerv', 'Igloohome', 'EdgeState'] as const;
+
+export const generateConnectCards = (inventory: LockInventory): ConnectCard[] => {
+  const byVendor = new Map(inventory.providers.map((provider) => [provider.vendor, provider]));
+  return CONNECT_ORDER.flatMap((vendor): ConnectCard[] => {
+    if (vendor === 'Dormakaba') {
+      return [{ vendor, title: i18n.t(L.connectGrid.titles.Dormakaba), note: i18n.t(L.connectGrid.notes.Dormakaba), isNew: true, available: false }];
+    }
+    const provider = byVendor.get(vendor);
+    if (!provider || provider.configured || provider.enabled) return [];
+    return [{ vendor, title: i18n.t(L.connectGrid.titles[vendor]), note: i18n.t(L.connectGrid.notes[vendor]), isNew: false, available: provider.supports.account }];
+  });
+};
+
+export const generateLaunchOnlyChips = (inventory: LockInventory): { vendor: string; label: string; present: boolean }[] =>
+  (inventory.launchOnly ?? []).map((row) => ({ vendor: row.vendor, label: row.label, present: row.present }));
+
