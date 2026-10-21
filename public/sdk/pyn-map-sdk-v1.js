@@ -4582,6 +4582,11 @@
      *
      * `map.hideUnitNumbers` is the CMS "Hide unit numbers" toggle. The SDK
      * already applies it to the SVGs it renders; hosts need do nothing.
+     *
+     * `products` is which Pynwheel products the property has switched on;
+     * `design.themeName` is its CMS theme:
+     *   products: { pynwheelTouch: boolean, pynwheelTour: boolean }
+     *   design:   { themeName: "futurist" | "modernist" | "expressionist" | ... }
      */
     getPropertyConfig() {
       return this.data.property || null;
