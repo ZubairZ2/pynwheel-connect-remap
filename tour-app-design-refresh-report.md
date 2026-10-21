@@ -117,3 +117,11 @@ Simulated copy that is still unmarked on real properties: the location line ("Yo
 access text, the saved-units count, the chat sheet's office hours. The live Claude Design file could not be opened from
 this session (sign-in wall), so the comparison used this report and the brief. Details:
 `FINAL_PLATFORM_QA_REPORT_2026-10-17.md` §15–§16, §24–§25.
+
+## J. The Start Tour experience on the live design (October 21, 2026)
+
+The live design was read this time (sign-in in the browser pane, then the design service's `GetFile` RPC). The seven Tweaks of §A are
+unchanged; the Unlock component's `Demo · Method` (BLE · PIN · Remote · Gate) became `UnlockPanel.tsx` with `state.demoMethod` on demo
+data only. What changed on the screens of §B and what was verified: `SELF_TOUR_START_EXPERIENCE_QA.md`. The simulated copy still
+unmarked on real properties listed in §I is now marked or real: the access-window line carries `*`, the leasing phone is the
+property's own, the 360° view and photos are the CMS's.

@@ -61,6 +61,8 @@ export interface PlaceDef {
   radiusPx?: number;
   unit?: { bedrooms: number; bathrooms: number; sqft: number; rent: number | null; available: boolean; model: boolean; description: string };
   amenity?: { icon: AmenityIcon; hours: string; description: string };
+  /** Demo only: which of the design's Unlock variants this stop shows (`Demo · Method`), and the vendor it names. */
+  demoLock?: { method: 'ble' | 'pin' | 'remote' | 'gate'; provider: string };
   showInStopsList?: boolean;
   /** Where the AR Live screen pins the place, as the reference positions its labels. */
   arPin?: { top: string; left: string };
@@ -167,6 +169,7 @@ export const LEVELS: LevelDef[] = [
         at: [396, 296],
         attach: 2,
         unit: { bedrooms: 1, bathrooms: 1, sqft: 720, rent: 1850, available: true, model: false, description: 'Corner one-bedroom with a south-facing balcony.' },
+        demoLock: { method: 'ble', provider: 'dormakaba' },
         showInStopsList: true,
         arPin: { top: '74%', left: '74%' }
       },
@@ -190,6 +193,7 @@ export const LEVELS: LevelDef[] = [
         at: [300, 324],
         attach: 2,
         amenity: { icon: 'dumbbell', hours: '24/7 for residents', description: 'Peloton bikes, free weights up to 90 lb, a squat rack and a yoga studio.' },
+        demoLock: { method: 'remote', provider: 'Latch' },
         showInStopsList: true,
         arPin: { top: '64%', left: '16%' }
       },
@@ -204,6 +208,7 @@ export const LEVELS: LevelDef[] = [
         at: [780, 324],
         attach: 5,
         unit: { bedrooms: 2, bathrooms: 1, sqft: 960, rent: 2150, available: true, model: true, description: 'Furnished model home with a den.' },
+        demoLock: { method: 'pin', provider: 'igloohome' },
         showInStopsList: false
       },
       {
@@ -442,6 +447,7 @@ export const LEVELS: LevelDef[] = [
         at: [260, 324],
         attach: 52,
         amenity: { icon: 'dog', hours: 'Dawn to dusk', description: 'Fenced turf run with a wash station.' },
+        demoLock: { method: 'gate', provider: 'myQ' },
         showInStopsList: true
       },
       {

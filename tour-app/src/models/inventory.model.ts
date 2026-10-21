@@ -21,7 +21,37 @@ export interface StopLock {
   method: 'pin' | 'bluetooth' | null;
   deviceId: string | null;
   supported: boolean;
+  /**
+   * Demo data only (the dummy property): which of the design's Unlock
+   * variants the stop exercises. Never set on a lock the backend reports,
+   * so a real stop can never inherit a demo method.
+   */
+  demoMethod?: AccessMethod;
 }
+
+/**
+ * How a stop's door opens on screen, resolved from the lock the CMS assigned
+ * (`accessMethodOf`): the design's four Unlock variants, plus the honest
+ * states for a door this app cannot open and a door without a lock.
+ */
+export type AccessMethod = 'ble' | 'pin' | 'remote' | 'gate' | 'unsupported' | 'none';
+
+/** The CMS-managed media of a stop, as the stops list serves it (never invented by the app). */
+export interface StopMedia {
+  image: string | null;
+  floorplanImage: string | null;
+  photos: { id: number; name: string | null; url: string }[];
+  /** A Matterport / 360° link from the unit, its floor plan or the amenity. */
+  virtualTourUrl: string | null;
+}
+
+/** One lease-term price of a unit (`units.lease_pricing`, shown only while the property displays pricing options). */
+export interface LeaseTerm {
+  months: number;
+  rent: number;
+}
+
+export const emptyMedia = (): StopMedia => ({ image: null, floorplanImage: null, photos: [], virtualTourUrl: null });
 
 /**
  * The igloohome v1 guest access the backend issued for a stop's lock: the Bluetooth
@@ -63,6 +93,13 @@ export interface Unit {
   /** Monthly rent in dollars; null when not published. */
   rent: number | null;
   available: boolean;
+  /** False when the backend holds no availability flag for the unit: then `available` is a default, not a fact. */
+  availabilityKnown?: boolean;
+  /** The feed's availability text ("Unoccupied", "Occupied"), when the CMS holds one. */
+  availability?: string | null;
+  /** `YYYY-MM-DD` move-in date from the feed, when known. */
+  availableDate?: string | null;
+  unitType?: string | null;
   model: boolean;
   description: string | null;
   /** Footprint on the level, in level pixels. */
@@ -73,6 +110,13 @@ export interface Unit {
   floorplanName?: string | null;
   /** The unit's smart lock, when the CMS assigned one. */
   lock?: StopLock | null;
+  /** Rent by lease term, when the property publishes pricing options (empty otherwise). */
+  leaseTerms?: LeaseTerm[];
+  /** The floor plan's deposit, when the CMS holds one. */
+  deposit?: number | null;
+  /** The property's additional-fee text for this unit, when the CMS shows one. */
+  additionalFee?: string | null;
+  media?: StopMedia;
 }
 
 export interface Amenity {
@@ -93,6 +137,7 @@ export interface Amenity {
   routable?: boolean;
   videoUrl?: string | null;
   lock?: StopLock | null;
+  media?: StopMedia;
 }
 
 /** An additional self-tour stop (entry, exit, elevator, stairs, ramp, door, blocker, leasing, restroom, mail, parking, waypoint). */

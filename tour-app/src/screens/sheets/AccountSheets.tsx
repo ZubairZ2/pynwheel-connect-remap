@@ -1,4 +1,5 @@
-import { DEMO, HOLD_HOURS, MOVE_IN_FEES } from '~/content/demoFixtures';
+import { DEMO, HOLD_HOURS } from '~/content/demoFixtures';
+import { moveInEstimate } from '~/store/access';
 import { DEMO_SCENARIOS_ENABLED } from '~/config/env';
 import { Icon } from '~/components/Icon';
 import { Button, Sheet, Toggle } from '~/components/ui';
@@ -12,8 +13,11 @@ interface BookProps {
   open: boolean;
   propertyName: string;
   visitor: Visitor;
-  days: string[];
-  times: string[];
+  /** The next days of the property's calendar (`key` = `YYYY-MM-DD`), with the agent-guided times still open on each. */
+  days: { key: string; label: string; times: string[] }[];
+  /** Why no guided tour can be booked (the CMS does not offer them, the calendar failed, nothing open), else null. */
+  blocked: string | null;
+  loading: boolean;
   units: string[];
   value: { day: string; time: string; unit: string; done: boolean; submitting: boolean };
   onChange: (field: 'day' | 'time' | 'unit', value: string) => void;
@@ -21,25 +25,35 @@ interface BookProps {
   onClose: () => void;
 }
 
-export const BookSheet = ({ open, propertyName, visitor, days, times, units, value, onChange, onSubmit, onClose }: BookProps) => (
-  <Sheet open={open} onClose={onClose} title={<span className="pw-sheet__title--18">Book a Live Tour</span>} zIndex={330} headerPadding="tight" className="pw-book">
+/** Book a Live Tour: the agent-guided times the property's calendar still has open (the same CMS rules as the self-tour), booked through the same endpoint. */
+export const BookSheet = ({ open, propertyName, visitor, days, blocked, loading, units, value, onChange, onSubmit, onClose }: BookProps) => {
+  const day = days.find((d) => d.key === value.day) ?? days.find((d) => d.times.length) ?? null;
+  const times = day?.times ?? [];
+  return (
+  <Sheet open={open} onClose={onClose} title={<span className="pw-sheet__title--18">Book a Live Tour</span>} zIndex={330} headerPadding="tight" className="pw-book" testId="book-sheet">
     {!value.done ? (
       <div className="pw-book__form">
-        <div className="pw-book__intro">Prefer a guided tour with a leasing specialist at {propertyName}? Pick a time and we&rsquo;ll confirm it.</div>
+        <div className="pw-book__intro">Prefer a guided tour with a leasing specialist at {propertyName}? Pick a time and the leasing team gets the booking.</div>
+        {blocked ? <div className="pw-lockcode__note" role="status">{blocked}</div> : null}
+        {loading ? <div className="pw-sched__noslots">Loading times…</div> : null}
         <label className="pw-book__field">
           <span>Date</span>
-          <select value={value.day} onChange={(e) => onChange('day', e.target.value)} className="pw-select">
+          <select value={day?.key ?? ''} onChange={(e) => onChange('day', e.target.value)} className="pw-select" disabled={!!blocked || !days.length}>
             {days.map((d) => (
-              <option key={d}>{d}</option>
+              <option key={d.key} value={d.key} disabled={!d.times.length}>
+                {d.label}
+                {d.times.length ? '' : ' · no times'}
+              </option>
             ))}
           </select>
         </label>
         <label className="pw-book__field">
           <span>Time</span>
-          <select value={value.time} onChange={(e) => onChange('time', e.target.value)} className="pw-select">
+          <select value={times.includes(value.time) ? value.time : (times[0] ?? '')} onChange={(e) => onChange('time', e.target.value)} className="pw-select" disabled={!!blocked || !times.length}>
             {times.map((t) => (
               <option key={t}>{t}</option>
             ))}
+            {!times.length ? <option value="">No guided-tour times on this day</option> : null}
           </select>
         </label>
         <label className="pw-book__field">
@@ -52,10 +66,11 @@ export const BookSheet = ({ open, propertyName, visitor, days, times, units, val
           </select>
         </label>
         <div className="pw-book__who">
-          {visitor.name} · {visitor.phone}
+          {visitor.name}
+          {visitor.phone ? ` · ${visitor.phone}` : ''}
         </div>
-        <Button busy={value.submitting} onClick={onSubmit}>
-          Request This Tour
+        <Button busy={value.submitting} onClick={onSubmit} disabled={!!blocked || !times.length || !day}>
+          Book This Tour
         </Button>
       </div>
     ) : (
@@ -63,13 +78,13 @@ export const BookSheet = ({ open, propertyName, visitor, days, times, units, val
         <span className="pw-book__donebadge">
           <Icon name="check" size={30} color="var(--pw-primary)" strokeWidth={2.4} />
         </span>
-        <div className="pw-book__donetitle">Request Sent</div>
+        <div className="pw-book__donetitle">Tour booked</div>
         <div className="pw-book__donetext">
-          The {propertyName} leasing team has your request for{' '}
+          The {propertyName} leasing team has your booking for{' '}
           <b>
-            {value.day} at {value.time}
+            {day?.label ?? value.day} at {value.time}
           </b>
-          . They&rsquo;ll confirm by text shortly. It&rsquo;s now on their board.
+          . It is on their calendar now.
         </div>
         <Button height={48} onClick={onClose}>
           Done
@@ -77,7 +92,8 @@ export const BookSheet = ({ open, propertyName, visitor, days, times, units, val
       </div>
     )}
   </Sheet>
-);
+  );
+};
 
 interface ApplyProps {
   open: boolean;
@@ -100,8 +116,9 @@ interface ApplyProps {
 export const ApplySheet = ({ open, step, units, bestMatch, selected, submitting, profile, verified, mark, onPick, onStartHold, onEsign, onBack, onClose }: ApplyProps) => {
   const unit = units.find((u) => u.node === selected) ?? units[0] ?? null;
   const facts = unit ? unitFacts(unit, mark) : null;
-  const fees = MOVE_IN_FEES.reduce((a, f) => a + f.amount, 0);
-  const total = facts?.rent != null ? money(facts.rent + fees) : null;
+  // The move-in total from published figures only (rent + the floor plan's deposit when the CMS holds one).
+  const estimate = unit && facts?.rent != null ? moveInEstimate(unit, facts.rent) : null;
+  const total = estimate ? money(estimate.total) : facts?.rent != null ? money(facts.rent) : null;
   const holdEnd = new Date(Date.now() + HOLD_HOURS * 3600000);
   return (
     <Sheet open={open} onClose={onClose} title={step === 'hold' ? 'Unit on hold' : 'Apply For A Unit'} zIndex={320} size="scroll" className="pw-apply">

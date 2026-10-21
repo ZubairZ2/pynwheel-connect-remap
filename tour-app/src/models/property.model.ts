@@ -92,4 +92,7 @@ export interface Property {
   amenitiesCount: number;
   /** The Self-Guided Tour is on for this property (server-side fact). */
   tourEnabled: boolean;
+  /** The leasing office's phone and email as the CMS holds them; null when it holds none. */
+  phone?: string | null;
+  email?: string | null;
 }

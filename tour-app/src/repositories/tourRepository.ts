@@ -145,6 +145,10 @@ export interface BookingRequest {
   desiredUnit?: string;
   lengthMinutes?: number;
   partySize?: number;
+  /** The CMS Booking Form's optional fields (sent only when the property's form shows them). */
+  desiredBedroom?: string;
+  /** `YYYY-MM-DD` */
+  desiredMoveInDate?: string;
 }
 
 export interface BookingResult {

@@ -340,7 +340,9 @@ export class PynwheelApiTourRepository implements TourRepository {
       ...(request.countryCode ? { country_code: request.countryCode } : {}),
       ...(request.desiredUnit ? { unit: request.desiredUnit } : {}),
       ...(request.lengthMinutes ? { length_minutes: request.lengthMinutes } : {}),
-      ...(request.partySize ? { party_size: request.partySize } : {})
+      ...(request.partySize ? { party_size: request.partySize } : {}),
+      ...(request.desiredBedroom ? { desired_bedroom: request.desiredBedroom } : {}),
+      ...(request.desiredMoveInDate ? { desired_move_in_date: request.desiredMoveInDate } : {})
     });
     return parseBookingResult(data);
   }

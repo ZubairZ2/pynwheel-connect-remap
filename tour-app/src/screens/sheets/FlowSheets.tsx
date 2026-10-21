@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import communityPhoto from '~/assets/images/community-pool.jpg';
-import { DEMO, DEMO_SAVED_ELSEWHERE, LEASING_PHONE, LINK_STEPS, REPORT_OPTIONS, SKIP_REASONS, type DemoExtraTour } from '~/content/demoFixtures';
+import { DEMO, DEMO_SAVED_ELSEWHERE, LINK_STEPS, REPORT_OPTIONS, SKIP_REASONS, type DemoExtraTour } from '~/content/demoFixtures';
 import { Icon } from '~/components/Icon';
 import { Button, IconButton, Sheet } from '~/components/ui';
 import { Callout, Eyebrow, LinkRow, RoundAction, TonePill } from '~/components/ui2';
@@ -73,19 +73,28 @@ export const CheckinSheet = ({ open, model, onPrimary, onOption, onWarn, onVirtu
   </Sheet>
 );
 
-export const CallSheet = ({ open, propertyName, onCall, onClose }: { open: boolean; propertyName: string; onCall: () => void; onClose: () => void }) => (
-  <Sheet open={open} onClose={onClose} zIndex={333} headerPadding="tight" className="pw-call">
+/** Call leasing: the property's own phone number from the CMS; an honest unavailable state when it holds none (never a demonstration number on real data). */
+export const CallSheet = ({ open, propertyName, phone, demo, onCall, onClose }: { open: boolean; propertyName: string; phone: string | null; demo: boolean; onCall: () => void; onClose: () => void }) => (
+  <Sheet open={open} onClose={onClose} zIndex={333} headerPadding="tight" className="pw-call" testId="call-sheet">
     <div className="pw-ci__head">
       <span className="pw-ci__icon pw-ci__icon--ok">
         <Icon name="phone" size={20} />
       </span>
       <div>
         <div className="pw-ci__title">Call {propertyName}</div>
-        <div className="pw-ci__sub">Leasing office · open today until 6:00 PM{DEMO}</div>
+        <div className="pw-ci__sub">{phone ? 'Leasing office' : 'Leasing office · no phone number on file'}{demo ? ` · open today until 6:00 PM${DEMO}` : ''}</div>
       </div>
     </div>
-    <div className="pw-call__number">{LEASING_PHONE}{DEMO}</div>
-    <Button onClick={onCall}>Call Now</Button>
+    {phone ? (
+      <>
+        <div className="pw-call__number">{phone}</div>
+        <Button onClick={onCall}>Call Now</Button>
+      </>
+    ) : (
+      <div className="pw-lockcode__note" role="status">
+        This property has not published a leasing phone number in Pynwheel yet. Ask at the leasing office, or use the chat.
+      </div>
+    )}
     <Button variant="secondary" height={46} onClick={onClose}>
       Cancel
     </Button>
@@ -412,9 +421,10 @@ export const SosSheet = ({ open, onCall911, onCallLeasing, onShareLocation, onCl
   </Sheet>
 );
 
+/** Report an issue: the CMS has no endpoint for it yet, so the sheet records the choice on the phone and says so (no claim that a report was sent). */
 export const ReportSheet = ({ open, propertyName, onReport, onClose }: { open: boolean; propertyName: string; onReport: (label: string) => void; onClose: () => void }) => (
-  <Sheet open={open} onClose={onClose} zIndex={335} title="Report an issue">
-    <div className="pw-ci__sub">The {propertyName} leasing team sees your report right away.{DEMO}</div>
+  <Sheet open={open} onClose={onClose} zIndex={335} title="Report an issue" testId="report-sheet">
+    <div className="pw-ci__sub">Tell the {propertyName} leasing team what went wrong. Reports are kept on this phone in this build; call or chat for help right now.</div>
     <div className="pw-report__options">
       {REPORT_OPTIONS.map((label) => (
         <button key={label} type="button" onClick={() => onReport(label)}>
@@ -492,16 +502,35 @@ export const UpcomingSheet = ({ open, items, onPrimary, onVirtual, onCall, onCha
   </Sheet>
 );
 
-export const PanoSheet = ({ open, stopName, onClose }: { open: boolean; stopName: string; onClose: () => void }) => (
-  <Sheet open={open} onClose={onClose} zIndex={330} title={<span className="pw-sheet__title--18">360° view — {stopName}</span>} headerPadding="tight">
-    <div className="pw-pano">
-      <div className="pw-pano__scroll">
-        <img src={communityPhoto} alt="Panoramic view placeholder" />
+/** The 360° / virtual tour of a stop: the CMS's own link (Matterport and the like) in a frame, with a way to open it outside; the demo placeholder only on demo data. */
+export const PanoSheet = ({ open, stopName, url, demo, onClose }: { open: boolean; stopName: string; url: string | null; demo: boolean; onClose: () => void }) => (
+  <Sheet open={open} onClose={onClose} zIndex={330} size="tall" title={<span className="pw-sheet__title--18">360° view — {stopName}</span>} headerPadding="tight" testId="pano-sheet">
+    {url ? (
+      <>
+        <div className="pw-pano pw-pano--frame">
+          <iframe src={url} title={`${stopName} 360° view`} allow="xr-spatial-tracking; fullscreen; gyroscope; accelerometer" allowFullScreen loading="lazy" />
+        </div>
+        <div className="pw-ci__sub">From the property&rsquo;s own virtual tour. Drag inside the view to look around.</div>
+        <Button variant="secondary" height={44} onClick={() => window.open(url, '_blank', 'noopener')}>
+          Open in your browser
+        </Button>
+      </>
+    ) : demo ? (
+      <>
+        <div className="pw-pano">
+          <div className="pw-pano__scroll">
+            <img src={communityPhoto} alt="Panoramic view placeholder" />
+          </div>
+          <span className="pw-pano__hint">Drag to look around</span>
+          <span className="pw-pano__by">Demo capture{DEMO}</span>
+        </div>
+        <div className="pw-ci__sub">A placeholder panorama: the demo property publishes no 360° tour.{DEMO}</div>
+      </>
+    ) : (
+      <div className="pw-lockcode__note" role="status">
+        No 360° view is published for this stop.
       </div>
-      <span className="pw-pano__hint">Drag to look around</span>
-      <span className="pw-pano__by">Powered by Seenic{DEMO}</span>
-    </div>
-    <div className="pw-ci__sub">Panoramic capture from the property&rsquo;s virtual tour. Look around before you walk in, or revisit it later from your summary.{DEMO}</div>
+    )}
   </Sheet>
 );
 
@@ -572,15 +601,25 @@ export const PassesSheet = ({ open, passes, active, now, onClose }: { open: bool
 );
 
 /** The gallery overlay of a stop: the visitor's own photos (placeholders in this build). */
-export const GallerySheet = ({ open, stopName, count, onClose }: { open: boolean; stopName: string; count: number; onClose: () => void }) => {
+export interface GalleryPhoto {
+  url: string;
+  /** "Floor plan", the CMS caption, or "Your photo". */
+  label: string;
+  mine: boolean;
+}
+
+/** The stop's photo collection: the CMS images (the floor plan first for a unit) and the visitor's own, full screen. */
+export const GallerySheet = ({ open, stopName, photos, start, onClose }: { open: boolean; stopName: string; photos: GalleryPhoto[]; start: number; onClose: () => void }) => {
   const [index, setIndex] = useState(0);
   useEffect(() => {
-    if (!open) setIndex(0);
-  }, [open]);
+    if (open) setIndex(Math.max(0, Math.min(start, Math.max(0, photos.length - 1))));
+  }, [open, start, photos.length]);
   if (!open) return null;
+  const count = photos.length;
   const n = Math.max(1, count);
+  const current = photos[Math.min(index, count - 1)] ?? null;
   return (
-    <div className="pw-gallery" role="dialog" aria-modal="true" aria-label={`${stopName} photos`}>
+    <div className="pw-gallery" role="dialog" aria-modal="true" aria-label={`${stopName} photos`} data-testid="gallery">
       <div className="pw-gallery__top">
         <span>{stopName}</span>
         <button type="button" aria-label="Close gallery" onClick={onClose}>
@@ -588,10 +627,14 @@ export const GallerySheet = ({ open, stopName, count, onClose }: { open: boolean
         </button>
       </div>
       <div className="pw-gallery__stage">
-        <div className="pw-gallery__placeholder">
-          <Icon name="camera" size={40} color="rgba(255,255,255,0.6)" />
-          <span>{count ? `Your photo ${index + 1}` : 'No photos yet'}</span>
-        </div>
+        {current ? (
+          <img className="pw-gallery__img" src={current.url} alt={current.label} />
+        ) : (
+          <div className="pw-gallery__placeholder">
+            <Icon name="camera" size={40} color="rgba(255,255,255,0.6)" />
+            <span>No photos yet</span>
+          </div>
+        )}
         {n > 1 ? (
           <>
             <button type="button" className="pw-gallery__prev" aria-label="Previous photo" onClick={() => setIndex((i) => (i - 1 + n) % n)}>
@@ -604,11 +647,11 @@ export const GallerySheet = ({ open, stopName, count, onClose }: { open: boolean
         ) : null}
       </div>
       <div className="pw-gallery__foot">
-        <div>{count ? `${index + 1} of ${count} · photos stay on this phone${DEMO}` : 'Tap Photo on a stop to add one.'}</div>
+        <div>{current ? `${index + 1} of ${count} · ${current.label}${current.mine ? ' · stays on this phone' : ''}` : 'Tap Photo on a stop to add one.'}</div>
         <div className="pw-gallery__thumbs">
-          {Array.from({ length: count }, (_, i) => (
-            <button key={i} type="button" className={i === index ? 'pw-gallery__thumb--on' : ''} onClick={() => setIndex(i)} aria-label={`Photo ${i + 1}`}>
-              <Icon name="camera" size={16} color="#fff" />
+          {photos.map((ph, i) => (
+            <button key={`${ph.url.slice(0, 40)}-${i}`} type="button" className={i === index ? 'pw-gallery__thumb--on' : ''} onClick={() => setIndex(i)} aria-label={`Photo ${i + 1}`}>
+              <img src={ph.url} alt="" />
             </button>
           ))}
         </div>

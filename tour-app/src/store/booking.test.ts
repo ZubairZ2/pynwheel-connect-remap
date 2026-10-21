@@ -73,7 +73,7 @@ describe('the schedule slots from the CMS availability', () => {
 
 describe('the booking reducer', () => {
   it('loads the rules and keeps or replaces the draft time', () => {
-    const base = { ...initialAppState(), schedule: { date: key(0), time: '8:00 AM', length: 45, unit: '', party: 1, first: '', last: '', phone: '' } };
+    const base = { ...initialAppState(), schedule: { date: key(0), time: '8:00 AM', length: 45, unit: '', party: 1, first: '', last: '', phone: '', bedroom: '', moveIn: '' } };
     const loading = reducer(base, { type: 'bookingLoading', propertyId: 1618 });
     expect(loading.booking.status).toBe('loading');
     const loaded = reducer(loading, { type: 'bookingLoaded', propertyId: 1618, settings: settings(), days: [today, holiday], now: NOW });

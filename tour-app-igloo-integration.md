@@ -247,3 +247,9 @@ holder's door first, and `multiple_locks_provider` / `enable_locks` still gate `
 page on Escaya 818 resolved as `{method: bluetooth, mode: v1, supported: true}` through `TourApi::Locks.describe`.
 See `LOCKS_PAGE_INTEGRATION_QA.md`.
 
+
+**October 21, 2026.** The Stop screen's lock card is the design's shared Unlock frame (`screens/UnlockPanel.tsx`): a `pin` lock keeps
+the `POST …/locks/pin` flow (Get Door Code → the code, Copy, keypad hint, expiry, "I've entered the code" as the visitor's own
+confirmation, Get a new code when expired or refused); an unsupported vendor shows the honest note and the tour continues. The method
+comes from `lock` alone (`store/access.ts#accessMethodOf`); the `Demo · Method` switch never applies to a real lock. See
+`SELF_TOUR_START_EXPERIENCE_QA.md` §Unlock integration.

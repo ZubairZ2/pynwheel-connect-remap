@@ -11,20 +11,32 @@ module TourApi
   # inferred from plotting. Each stop carries its map node, location and
   # whether a route can reach it, from the built graph, and its smart lock
   # (`lock`, see TourApi::Locks) when the CMS assigned one.
+  #
+  # October 21, 2026 (the Start Tour experience): each stop also carries what
+  # the app's Unit / Amenity detail shows from the CMS's own inventory data -
+  # the unit's availability date and type, its lease-term pricing (the kiosk's
+  # matrix rule, `Unit#get_lease_term_pricing_matrix`), the floor plan's
+  # deposit and the property's additional-fee text, and the CMS-managed
+  # media (`media`: the main image, the floor plan image, the gallery photos,
+  # the virtual-tour link). Nothing is invented: a field the CMS does not hold
+  # is null, and the URLs are the ones Connect's inventory resolves
+  # (`Connect::UploadUrl`), which need the request's `base_url` for a
+  # development upload.
   module Stops
     VISIBLE = 'tour_stops.display_stop IS DISTINCT FROM FALSE'
 
     module_function
 
-    def list(community, built)
+    def list(community, built, base_url: nil)
       graph = built.graph
       tour_id = community.community_tour&.id
       amenities = []
       units = []
       if tour_id
         locks = Locks.index(community)
-        amenity_rows(community, tour_id).each { |ts, amenity| amenities << amenity_stop(graph, ts, amenity, locks) }
-        unit_rows(community, tour_id).each { |ts, unit, floorplan| units << unit_stop(graph, ts, unit, floorplan, locks) }
+        media = Media.new(community, base_url)
+        amenity_rows(community, tour_id).each { |ts, amenity| amenities << amenity_stop(graph, ts, amenity, locks, media) }
+        unit_rows(community, tour_id).each { |ts, unit, floorplan| units << unit_stop(graph, ts, unit, floorplan, locks, media) }
       end
       # Tour order: the rule the routes use (building order, floor, Tour Setup sort, id).
       building_index = graph.buildings.each_with_index.to_h
@@ -84,7 +96,7 @@ module TourApi
       [node.level_key, { x: node.x, y: node.y }, routable]
     end
 
-    def amenity_stop(graph, ts, amenity, locks = nil)
+    def amenity_stop(graph, ts, amenity, locks = nil, media = nil)
       key = "amenity:#{amenity.id}"
       level_id, location, routable = node_facts(graph, key)
       {
@@ -97,11 +109,12 @@ module TourApi
         unit: nil,
         amenity: { amenity_type: Text.presence(amenity.amenity_type), video_url: Text.presence(amenity.video_link),
                    video_button_label: Text.presence(amenity.video_link_button_label) },
-        lock: locks ? Locks.describe(locks, amenity) : nil
+        lock: locks ? Locks.describe(locks, amenity) : nil,
+        media: media ? media.amenity(amenity) : nil
       }
     end
 
-    def unit_stop(graph, ts, unit, floorplan, locks = nil)
+    def unit_stop(graph, ts, unit, floorplan, locks = nil, media = nil)
       key = "unit:#{unit.id}"
       level_id, location, routable = node_facts(graph, key)
       square_feet = if Text.truthy?(unit.square_feet)
@@ -122,11 +135,80 @@ module TourApi
           rent: rent_of(unit),
           available: unit.available,
           model: unit.modal_unit ? true : false,
-          floorplan_name: floorplan ? Text.presence(floorplan.name) : nil
+          floorplan_name: floorplan ? Text.presence(floorplan.name) : nil,
+          # The detail screen's facts (October 21, 2026): from the CMS's columns, null when it holds none.
+          unit_type: Text.presence(unit.unit_type),
+          available_date: unit.available_date&.iso8601,
+          availability: Text.presence(unit.availability),
+          lease_terms: lease_terms_of(unit),
+          deposit: floorplan && Text.truthy?(floorplan.deposit) ? Text.to_f(floorplan.deposit) : nil,
+          additional_fee: Text.strip_html(media ? media.community.get_additional_fees(unit) : nil),
+          virtual_tour_url: Text.presence(unit.virtual_tour_url) || (floorplan ? Text.presence(floorplan.virtual_tour_url) : nil)
         },
         amenity: nil,
-        lock: locks ? Locks.describe(locks, unit) : nil
+        lock: locks ? Locks.describe(locks, unit) : nil,
+        media: media ? media.unit(unit, floorplan) : nil
       }
+    end
+
+    # The unit's rent per lease term, by the rule the kiosk's pricing matrix
+    # follows (`Unit#get_lease_term_pricing_matrix`): `lease_pricing` holds
+    # `term:rent:...;` entries, shown only while the property displays
+    # pricing options, and only the entries with a rent. Sorted by term.
+    def lease_terms_of(unit)
+      return [] unless unit.lease_pricing.present? && unit.community&.display_pricing_options
+
+      unit.lease_pricing.to_s.split(';').filter_map do |entry|
+        term, rent = entry.split(':')
+        next unless term.to_i.positive? && rent.to_i.positive?
+
+        { months: term.to_i, rent: rent.to_f }
+      end.sort_by { |row| row[:months] }
+    rescue StandardError
+      []
+    end
+
+    # The CMS-managed images of the stops, resolved as Connect's inventory
+    # resolves them (the standard S3 URL first, else the stored upload), with
+    # the gallery rows read once per list.
+    class Media
+      attr_reader :community
+
+      def initialize(community, base_url)
+        @community = community
+        @base_url = base_url
+        @bucket = Connect::UploadUrl.bucket_hint(community)
+      end
+
+      def amenity(amenity)
+        photos = galleries[amenity.id] || []
+        {
+          image: Connect::UploadUrl.image(amenity, @base_url, bucket: @bucket),
+          floorplan_image: nil,
+          photos: photos.filter_map { |g| url = Connect::UploadUrl.upload(g, :image, @base_url, bucket: Connect::UploadUrl.bucket_of(amenity, @bucket)); url && { id: g.id, name: Text.presence(g.name), url: url } },
+          virtual_tour_url: nil
+        }
+      end
+
+      def unit(unit, floorplan)
+        {
+          image: Connect::UploadUrl.image(unit, @base_url, bucket: @bucket),
+          floorplan_image: floorplan ? Connect::UploadUrl.image(floorplan, @base_url, bucket: @bucket) : nil,
+          photos: (interiors[unit.id] || []).filter_map { |a| url = Connect::UploadUrl.image(a, @base_url, bucket: @bucket); url && { id: a.id, name: Text.presence(a.name), url: url } },
+          virtual_tour_url: Text.presence(unit.virtual_tour_url) || (floorplan ? Text.presence(floorplan.virtual_tour_url) : nil)
+        }
+      end
+
+      private
+
+        def galleries
+          @galleries ||= AmenityGallery.where(amenity_id: Amenity.where(community_id: @community.id).select(:id)).order(:sort, :id).group_by(&:amenity_id)
+        end
+
+        # A unit's "interior images" are the amenities attached to it, as the Connect inventory lists them.
+        def interiors
+          @interiors ||= Amenity.where(community_id: @community.id, amenityable_type: 'Unit').order(:sort, :id).group_by(&:amenityable_id)
+        end
     end
 
     # `effective_rent`, else `market_rent`; nil when not published (<= 0).

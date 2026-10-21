@@ -191,6 +191,20 @@ class Api::TourApp::V1::RoutingTest < ActionDispatch::IntegrationTest
     assert_equal @level_a, whole_lift['transition']['to_level_id']
   end
 
+  test 'a listed stop the CMS has not plotted is left out and reported in skipped, not refused' do
+    tour_stops(:unit_stop).update_columns(display_stop: true)
+    @hidden_stop.update_columns(display_stop: true) # 102: on the list, not on the map
+    reset_tour_api_caches!
+    post_json "#{@base}/tour-route", { stop_ids: [@u101, @u102] }
+    assert_response :success, response.body
+    assert_equal [@u101], body['segments'].map { |s| s['stop_id'] }
+    assert_equal [@u102], body['skipped']
+    post_json "#{@base}/tour-route", { stop_ids: [@u102] }
+    assert_response :unprocessable_entity
+    assert_equal 'no_path', body['error']['code']
+    assert_equal [@u102], body['error']['details']['skipped']
+  end
+
   test 'a stop the route cannot reach is skipped with a warning' do
     post_json("#{@base}/tour-route", { stop_ids: [@island_key, @u101] })
     assert_response :success, response.body

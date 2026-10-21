@@ -2796,3 +2796,16 @@ and Tour API green, full suite 308 runs with the one pre-existing partner-screen
 real-data visitors spec 2 passed, headless pass 0 errors / 0 writes, 12 legacy pages 200 in-process. Production read-only
 (one query). Gaps: the new Tour App records no visits; reminder times not stored; windows only for Latch; unlock events
 only from RemoteLock; Apartments.com not executed.
+
+## 47. Self Tour App: the Start Tour experience on the live design (October 21, 2026)
+
+Branch `feature/self-tour-start-tour-experience` (from `main` `4d0351a2d`); report `SELF_TOUR_START_EXPERIENCE_QA.md`. Build Your Tour
+(All floors, maximize, locate + zoom, real thumbnails, unplotted stops named), Add Stops (building chips, honest availability filter),
+Guided Navigation (replay icon, audio guide with real pause / resume, secured-floor note, rerouting state), the Stop screen on the
+CMS's inventory data (generated About this space, real floor plan and photos, 360° links, published lease terms and a move-in estimate
+from published figures only, the visitor's own photos), the design's shared Unlock frame with its four `Demo · Method` variants
+(real locks follow the backend's lock: PIN / Bluetooth / honest unsupported), Schedule with the Booking Form's optional fields and
+Book a Live Tour on the real calendar. Backend: additive stop facts / media and property phone, unplotted stops skipped by
+`tour-route`. Verified headless on Hazel, John Demo, Jennifer Demo FP, Cypress Terra (no graph on the clone), Oeuvre (two bookings
+written, the second moved the first, listed by Connect's Visitors query) and the dummy property; vitest 103, Rails 95 runs, Android
+debug APK built. Open: vendor / hardware checks, Cypress Terra routes, remote-unlock and gate integrations, Report an issue endpoint.

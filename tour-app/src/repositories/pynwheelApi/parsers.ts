@@ -1,4 +1,5 @@
-import type { Amenity, AmenityIcon, Building, GraphNode, LockBluetoothKey, LockPin, MapLevel, Property, PropertyListing, Route, RouteLeg, RouteStage, RouteStep, StopLock, TourRoute, TourStopPlace, Unit, WayfindingGraph } from '~/models';
+import type { Amenity, AmenityIcon, Building, GraphNode, LeaseTerm, LockBluetoothKey, LockPin, MapLevel, Property, PropertyListing, Route, RouteLeg, RouteStage, RouteStep, StopLock, StopMedia, TourRoute, TourStopPlace, Unit, WayfindingGraph } from '~/models';
+import { emptyMedia } from '~/models';
 import type { StopKind } from '~/models';
 import type { AvailabilityDay, AvailabilityWindow, BookingResult, BookingSettings, PropertyBundle, StopDistance } from '../tourRepository';
 import { ApiError } from './apiClient';
@@ -43,6 +44,29 @@ export const parseLock = (l: ApiStopLock | null | undefined): StopLock | null =>
     supported: l.supported === true
   };
 };
+
+/** The stop's CMS media; every URL must be a string, every photo a URL, else it is left out. */
+export const parseMedia = (m: ApiStop['media'] | null | undefined): StopMedia => {
+  if (!m || typeof m !== 'object') return emptyMedia();
+  return {
+    image: strOrNull(m.image),
+    floorplanImage: strOrNull(m.floorplan_image),
+    photos: list<{ id: unknown; name: unknown; url: unknown }>(m.photos)
+      .filter((p) => p && typeof p === 'object' && typeof p.url === 'string' && p.url)
+      .map((p, i) => ({ id: typeof p.id === 'number' ? p.id : i, name: strOrNull(p.name), url: p.url as string })),
+    virtualTourUrl: strOrNull(m.virtual_tour_url)
+  };
+};
+
+/** Lease terms as the stops list serves them: positive months and rents only, sorted by term. */
+export const parseLeaseTerms = (v: unknown): LeaseTerm[] =>
+  list<{ months: unknown; rent: unknown }>(v)
+    .filter((t) => t && typeof t === 'object' && typeof t.months === 'number' && t.months > 0 && typeof t.rent === 'number' && t.rent > 0)
+    .map((t) => ({ months: t.months as number, rent: t.rent as number }))
+    .sort((a, b) => a.months - b.months);
+
+/** A "video" link that is really a 360° / virtual tour (Matterport and the like): shown as the 360° view, not as a video player. */
+export const isVirtualTourLink = (url: string | null): boolean => !!url && /matterport\.com|kuula\.co|360|panorama|virtualtour|my\.matterport/i.test(url);
 
 export const parseLockBluetoothKey = (body: ApiLockBluetoothKeyResponse, now = Date.now()): LockBluetoothKey => {
   const lockName = str(body.lock_name) || str(body.device_id);
@@ -191,13 +215,21 @@ export const parseBundle = (detail: ApiPropertyDetail, graph: ApiGraph, stops: A
           sqft: numOrNull(s.unit?.square_feet),
           rent: numOrNull(s.unit?.rent),
           available: s.unit?.available !== false,
+          availabilityKnown: typeof s.unit?.available === 'boolean',
+          availability: strOrNull(s.unit?.availability),
+          availableDate: strOrNull(s.unit?.available_date),
+          unitType: strOrNull(s.unit?.unit_type),
           model: !!s.unit?.model,
           description: stripHtml(s.description) ?? stripHtml(s.instruction),
           polygon: null,
           showInStopsList: true,
           routable: !!s.routable,
           floorplanName: strOrNull(s.unit?.floorplan_name),
-          lock: parseLock(s.lock)
+          lock: parseLock(s.lock),
+          leaseTerms: parseLeaseTerms(s.unit?.lease_terms),
+          deposit: numOrNull(s.unit?.deposit),
+          additionalFee: stripHtml(s.unit?.additional_fee),
+          media: { ...parseMedia(s.media), virtualTourUrl: strOrNull(s.media?.virtual_tour_url) ?? strOrNull(s.unit?.virtual_tour_url) }
         });
       } else {
         amenities.push({
@@ -214,8 +246,9 @@ export const parseBundle = (detail: ApiPropertyDetail, graph: ApiGraph, stops: A
           polygon: null,
           showInStopsList: true,
           routable: !!s.routable,
-          videoUrl: strOrNull(s.amenity?.video_url),
-          lock: parseLock(s.lock)
+          videoUrl: isVirtualTourLink(strOrNull(s.amenity?.video_url)) ? null : strOrNull(s.amenity?.video_url),
+          lock: parseLock(s.lock),
+          media: { ...parseMedia(s.media), virtualTourUrl: strOrNull(s.media?.virtual_tour_url) ?? (isVirtualTourLink(strOrNull(s.amenity?.video_url)) ? strOrNull(s.amenity?.video_url) : null) }
         });
       }
     })
@@ -253,7 +286,9 @@ export const parseBundle = (detail: ApiPropertyDetail, graph: ApiGraph, stops: A
     floorsCount: new Set(levels.flatMap((l) => l.floors)).size || levels.length,
     unitsCount: num(detail.units_count),
     amenitiesCount: num(detail.amenities_count),
-    tourEnabled: !!detail.tour_enabled
+    tourEnabled: !!detail.tour_enabled,
+    phone: strOrNull(detail.phone),
+    email: strOrNull(detail.email)
   };
   return { property, buildings, levels, graph: wayfinding, units, amenities, stops: places, arPins: {}, floorLabels, demo: false };
 };
@@ -276,7 +311,9 @@ const parseStep = (s: ApiRouteStep): RouteStep => ({
   leg: num(s.leg),
   title: str(s.title),
   sub: s.instruction && s.type === 'arrive' ? `${s.description} · ${stripHtml(s.instruction) ?? ''}`.replace(/ · $/, '') : str(s.description),
-  dwellS: s.dwell_s ?? undefined
+  dwellS: s.dwell_s ?? undefined,
+  via: strOrNull(s.transition?.via),
+  instruction: stripHtml(s.instruction)
 });
 
 /** A route answer whose `route` is missing or not an object is unusable: a typed error the screens can show, never a TypeError. */

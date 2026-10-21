@@ -255,3 +255,8 @@ FOREGROUND_SERVICE, RECEIVE_BOOT_COMPLETED and ACCESS_NETWORK_STATE to the merge
 Not changed: the iOS side (still the legacy `IgloohomeSDK.xcframework` wiring in `Package.swift`; the SDK 3.x
 iOS package is `https://gitlab.com/igloohome/iglooaccess-ios-sdk.git` from 3.5.0, product `IgloohomeSDK` plus
 `IglooSDKCore`, deployment target 15, Swift 6). Hardware result with this build: pending at the time of writing.
+
+**October 21, 2026.** The v1 flow renders as the design's BLE variant: the Bluetooth availability pill (the plugin's real availability,
+the SDK's scanning / connecting / unlocking phases), slide to unlock → `unlockWithBluetooth`, cancel, failure with "Slide to try
+again", and "Try another method" → the backup keypad PIN that came with the guest key (`LockBluetoothKey.guestPin`). In a browser the
+panel says the plugin is not available instead of pretending. Hardware still unverified this session.

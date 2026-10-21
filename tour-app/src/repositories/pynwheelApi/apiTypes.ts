@@ -35,6 +35,8 @@ export interface ApiPropertyDetail extends ApiPropertySummary {
   buildings: string[];
   tour: { id: number; start_node: string | null; starting_floor: number | null; building: string | null; building_order: string[]; stops_total: number } | null;
   graph_version: string | null;
+  phone?: string | null;
+  email?: string | null;
 }
 
 export interface ApiLevel {
@@ -139,9 +141,26 @@ export interface ApiStop {
   routable: boolean;
   sort: number | null;
   duration_minutes: number | null;
-  unit: { bedrooms: number | null; bathrooms: number | null; square_feet: number | null; rent: number | null; available: boolean | null; model: boolean; floorplan_name: string | null } | null;
+  unit: {
+    bedrooms: number | null;
+    bathrooms: number | null;
+    square_feet: number | null;
+    rent: number | null;
+    available: boolean | null;
+    model: boolean;
+    floorplan_name: string | null;
+    unit_type?: string | null;
+    available_date?: string | null;
+    availability?: string | null;
+    lease_terms?: { months: number; rent: number }[] | null;
+    deposit?: number | null;
+    additional_fee?: string | null;
+    virtual_tour_url?: string | null;
+  } | null;
   amenity: { amenity_type: string | null; video_url: string | null; video_button_label: string | null } | null;
   lock?: ApiStopLock | null;
+  /** The CMS-managed media (October 21, 2026): the main image, the floor plan image, the gallery photos, the virtual-tour link. */
+  media?: { image: string | null; floorplan_image: string | null; photos: { id: number; name: string | null; url: string }[]; virtual_tour_url: string | null } | null;
 }
 
 /** `POST /properties/{id}/locks/pin`: an hourly igloohome door code for one stop (`TourApi::Locks#pin!`). */
