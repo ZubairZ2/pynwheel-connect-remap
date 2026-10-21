@@ -5427,52 +5427,64 @@
 
     // ─────────────────────────────────────────────────────────────────────────
     // PYNWHEEL TOUCH SETTINGS
-    // One settings document per property, shared by every Touch device logged
-    // into it. The server stores `settings` exactly as sent and never reads
-    // inside it, so the Touch app owns its shape. The property comes from the
-    // session token. See docs/touch-settings/frontend-integration.md.
+    // One layout per property per screen type: a device type (mobile / ipad /
+    // desktop) and an orientation (portrait / landscape), so at most six. The
+    // server stores `settings` exactly as sent and never reads inside it, so the
+    // Touch app owns its shape. The property comes from the session token.
+    // See docs/touch-settings/frontend-integration.md.
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Load the property's saved Touch settings.
+     * Load the property's saved Touch layouts.
      *
-     * Before anything is saved, `settings` and `device` are {} and
-     * `updated_at` is null. Never rejects.
+     * With no arguments, returns every saved layout (at most six), so the app
+     * can switch layouts on rotation without another request. Pass deviceType
+     * and/or deviceOrientation to narrow it. A screen type that was never saved
+     * is simply absent from `layouts`. Never rejects.
      *
-     * @returns {Promise<{success: boolean, property_id?: number, settings?: Object,
-     *   device?: Object, updated_at?: string|null, status?: number, message?: string}>}
+     * @param {{deviceType?: "mobile"|"ipad"|"desktop", deviceOrientation?: "portrait"|"landscape"}} [filter]
+     * @returns {Promise<{success: boolean, property_id?: number, layouts?: Array<{device_type: string,
+     *   device_orientation: string, settings: Object, device_details: Object, updated_at: string}>,
+     *   status?: number, message?: string}>}
      */
-    async getTouchSettings() {
-      return this._touchSettingsRequest("GET");
+    async getTouchSettings({ deviceType, deviceOrientation } = {}) {
+      const params = new URLSearchParams();
+      if (deviceType)        params.append("device_type", deviceType);
+      if (deviceOrientation) params.append("device_orientation", deviceOrientation);
+      const query = params.toString() ? `?${params}` : "";
+
+      return this._touchSettingsRequest("GET", query);
     },
 
     /**
-     * Replace the property's Touch settings. A full replace, not a merge: send
-     * the whole document, because any key left out is removed on the server.
+     * Replace one screen type's layout. A full replace, not a merge: send the
+     * whole settings document, because any key left out is removed on the
+     * server. Other screen types are untouched.
      *
-     * `device` is optional ({ device_type, platform, app_version, ... }). When
-     * omitted, the server keeps the device info from the last save that sent one.
+     * `deviceDetails` is optional ({ platform, app_version, ... }). When
+     * omitted, the server keeps the details from the last save that sent them.
      * Never rejects.
      *
-     * @param {Object} settings - the whole settings document (must be an object)
-     * @param {Object} [device] - info about the device saving
-     * @returns {Promise<{success: boolean, property_id?: number, settings?: Object,
-     *   device?: Object, updated_at?: string|null, status?: number, message?: string}>}
+     * @param {{deviceType: "mobile"|"ipad"|"desktop", deviceOrientation: "portrait"|"landscape",
+     *   settings: Object, deviceDetails?: Object}} layout
+     * @returns {Promise<{success: boolean, property_id?: number, layout?: {device_type: string,
+     *   device_orientation: string, settings: Object, device_details: Object, updated_at: string},
+     *   status?: number, message?: string}>}
      */
-    async saveTouchSettings(settings, device) {
+    async saveTouchSettings({ deviceType, deviceOrientation, settings, deviceDetails } = {}) {
       if (!settings || typeof settings !== "object" || Array.isArray(settings)) {
         return { success: false, status: 422, message: "settings must be an object." };
       }
 
-      const body = { settings };
-      if (device && typeof device === "object") body.device = device;
+      const body = { device_type: deviceType, device_orientation: deviceOrientation, settings };
+      if (deviceDetails && typeof deviceDetails === "object") body.device_details = deviceDetails;
 
-      return this._touchSettingsRequest("PUT", body);
+      return this._touchSettingsRequest("PUT", "", body);
     },
 
-    async _touchSettingsRequest(method, body) {
+    async _touchSettingsRequest(method, query, body) {
       try {
-        const res = await this._authorizedFetch(`${this._apiBase()}/api/partner/maps/touch_settings`, {
+        const res = await this._authorizedFetch(`${this._apiBase()}/api/partner/maps/touch_settings${query}`, {
           method,
           headers: body ? { "Content-Type": "application/json" } : {},
           body: body ? JSON.stringify(body) : undefined
@@ -6061,8 +6073,8 @@
       deleteFavorite(itemIds, communityId, sessionId, type) { return PynMapSDK.deleteFavorite.call(PynMapSDK, itemIds, communityId, sessionId, type); },
       clearAllFavorites(communityId, sessionId)             { return PynMapSDK.clearAllFavorites.call(PynMapSDK, communityId, sessionId); },
       shareFavoritesEmail(userEmail, favoritesUrl)          { return PynMapSDK.shareFavoritesEmail.call(PynMapSDK, userEmail, favoritesUrl); },
-      getTouchSettings()                                    { return PynMapSDK.getTouchSettings.call(PynMapSDK); },
-      saveTouchSettings(settings, device)                   { return PynMapSDK.saveTouchSettings.call(PynMapSDK, settings, device); },
+      getTouchSettings(filter)                              { return PynMapSDK.getTouchSettings.call(PynMapSDK, filter); },
+      saveTouchSettings(layout)                             { return PynMapSDK.saveTouchSettings.call(PynMapSDK, layout); },
       onFloorplanHover(floorplanId){ return PynMapSDK.onFloorplanHover.call(PynMapSDK, floorplanId); },
       offFloorplanHover()          { return PynMapSDK.offFloorplanHover.call(PynMapSDK); },
       setExpandedMode(expanded)    { return PynMapSDK.setExpandedMode.call(PynMapSDK, expanded); },
