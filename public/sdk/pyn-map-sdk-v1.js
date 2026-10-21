@@ -5081,8 +5081,8 @@
 
     /**
      * Returns the stable session UUID stored in localStorage for this property.
-     * Use this to build a shareable URL: append ?session_id=<value>&community_id=<id>
-     * and pass those values back into the favorites methods on the receiving page.
+     * It is the write key for this visitor's favorites, so don't put it in a
+     * share link: use createFavoritesShare() for that.
      *
      * @returns {string}
      */
@@ -5231,16 +5231,75 @@
           }
         });
         if (!res.ok) return empty;
-        const data = await res.json();
-        return {
-          units:         data.units          || [],
-          amenities:     data.amenities      || [],
-          floorplans:    data.floorplans     || [],
-          galleryImages: data.gallery_images || []
-        };
+        return this._favoritesFromResponse(await res.json());
       } catch {
         return empty;
       }
+    },
+
+    /**
+     * Freezes the session's current favorites into a share and returns its
+     * token. Build the share link with the token (?share=<token>) instead of
+     * the session id: later favorite changes in this session don't change a
+     * link already sent, and the token can't be used to edit the favorites.
+     * Sharing an unchanged list again returns the same token.
+     *
+     * The property comes from the session token.
+     *
+     * @param {string} [sessionId] - defaults to this SDK's session
+     * @returns {Promise<{success: boolean, token?: string, message?: string}>}
+     *   success is false when there is nothing to share or the call failed.
+     */
+    async createFavoritesShare(sessionId) {
+      try {
+        const res = await this._authorizedFetch(`${this._apiBase()}/api/partner/maps/share_favorites`, {
+          method: "POST",
+          headers: { "X-SDK-Session-Id": sessionId || this._sdkSessionId }
+        });
+        const data = await res.json();
+        if (!res.ok || !data.token) return { success: false, message: data.message };
+
+        return { success: true, token: data.token };
+      } catch {
+        return { success: false, message: "Network error. Please try again." };
+      }
+    },
+
+    /**
+     * Fetches a shared favorites list by its share token (see
+     * createFavoritesShare). Same result shape as getAllFavorites. The list is
+     * the one frozen at share time; the items in it are current.
+     *
+     * @param {string} token
+     * @returns {Promise<{units: object[], amenities: object[], floorplans: object[], galleryImages: object[]}>}
+     *   Empty lists when the token is unknown or the call failed.
+     */
+    async getSharedFavorites(token) {
+      const empty = { units: [], amenities: [], floorplans: [], galleryImages: [] };
+      if (!token) return empty;
+
+      this._captureFavorite("view_favorites");
+
+      try {
+        const query = new URLSearchParams({ share: String(token) });
+        if (this.config.mapType === "ops") query.append("map_type", "ops");
+
+        const res = await this._authorizedFetch(`${this._apiBase()}/api/partner/maps/get_shared_favorites?${query}`);
+        if (!res.ok) return empty;
+        return this._favoritesFromResponse(await res.json());
+      } catch {
+        return empty;
+      }
+    },
+
+    /** Internal: the favorites lists out of a get_favorites-shaped response. */
+    _favoritesFromResponse(data) {
+      return {
+        units:         data.units          || [],
+        amenities:     data.amenities      || [],
+        floorplans:    data.floorplans     || [],
+        galleryImages: data.gallery_images || []
+      };
     },
 
     /**
@@ -6073,6 +6132,8 @@
       deleteFavorite(itemIds, communityId, sessionId, type) { return PynMapSDK.deleteFavorite.call(PynMapSDK, itemIds, communityId, sessionId, type); },
       clearAllFavorites(communityId, sessionId)             { return PynMapSDK.clearAllFavorites.call(PynMapSDK, communityId, sessionId); },
       shareFavoritesEmail(userEmail, favoritesUrl)          { return PynMapSDK.shareFavoritesEmail.call(PynMapSDK, userEmail, favoritesUrl); },
+      createFavoritesShare(sessionId)                       { return PynMapSDK.createFavoritesShare.call(PynMapSDK, sessionId); },
+      getSharedFavorites(token)                             { return PynMapSDK.getSharedFavorites.call(PynMapSDK, token); },
       getTouchSettings(filter)                              { return PynMapSDK.getTouchSettings.call(PynMapSDK, filter); },
       saveTouchSettings(layout)                             { return PynMapSDK.saveTouchSettings.call(PynMapSDK, layout); },
       onFloorplanHover(floorplanId){ return PynMapSDK.onFloorplanHover.call(PynMapSDK, floorplanId); },

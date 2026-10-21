@@ -13,30 +13,8 @@
 #  updated_at        :datetime         not null
 #
 
+# A session's live favorites. Share links don't read this row; they read a
+# SharedFavorite snapshot of it.
 class Favorite < ApplicationRecord
-  # Maps a favorite "type" (as sent by the SDK) to the jsonb column that
-  # stores its favorited ids. "unit" is the historical default.
-  TYPE_COLUMNS = {
-    "unit"          => :unit_ids,
-    "amenity"       => :amenity_ids,
-    "floorplan"     => :floorplan_ids,
-    "gallery_image" => :gallery_image_ids
-  }.freeze
-
-  def self.column_for_type(type)
-    TYPE_COLUMNS[type.to_s.presence || "unit"]
-  end
-
-  def self.valid_type?(type)
-    TYPE_COLUMNS.key?(type.to_s.presence || "unit")
-  end
-
-  # Favorited ids for the given type, as an array of strings.
-  def ids_for(type)
-    (self[self.class.column_for_type(type)] || []).map(&:to_s)
-  end
-
-  def set_ids(type, ids)
-    self[self.class.column_for_type(type)] = ids
-  end
+  include FavoriteIdColumns
 end
