@@ -28,7 +28,7 @@ describe('door codes', () => {
   it('a failure keeps the error for the stop and leaves any earlier code in place', () => {
     let state = reducer({ ...signedIn(), lockPins: { 'unit:1': pin } }, { type: 'lockPinStart', node: 'unit:1' });
     state = reducer(state, { type: 'lockPinFailed', node: 'unit:1', propertyId: 3539, message: 'The lock service could not be reached. Please try again.' });
-    expect(state.lockRequest).toEqual({ node: 'unit:1', propertyId: 3539, status: 'error', error: 'The lock service could not be reached. Please try again.' });
+    expect(state.lockRequest).toEqual({ node: 'unit:1', propertyId: 3539, status: 'error', errorCode: null, error: 'The lock service could not be reached. Please try again.' });
     expect(state.lockPins['unit:1']).toEqual(pin);
     expect(reducer(state, { type: 'lockPinDismiss' }).lockRequest).toBeNull();
   });

@@ -4,6 +4,9 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.content.Intent
+import androidx.activity.result.ActivityResult
+import com.getcapacitor.annotation.ActivityCallback
 import android.content.pm.PackageManager
 import android.os.Build
 import co.igloo.core.ble.exception.IglooSdkException
@@ -116,6 +119,45 @@ class IgloohomeBlePlugin : Plugin() {
         out.put("supported", hasBluetoothLe())
         out.put("enabled", adapterEnabled())
         call.resolve(out)
+    }
+
+    /**
+     * Asks the system to switch Bluetooth on from inside the app: Android's own "Allow … to turn on Bluetooth?" dialog
+     * (BluetoothAdapter.ACTION_REQUEST_ENABLE). On Android 12+ the dialog itself needs BLUETOOTH_CONNECT, which the app
+     * requests first (`requestPermissions`); without it the call answers the current state so nothing crashes. The
+     * answer is the adapter's state once the dialog closes: `enabled` false means the visitor declined.
+     */
+    @PluginMethod
+    fun enableBluetooth(call: PluginCall) {
+        if (!hasBluetoothLe()) {
+            reject(call, "unsupported", "This device has no Bluetooth LE.")
+            return
+        }
+        if (adapterEnabled()) {
+            call.resolve(enabledState())
+            return
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && getPermissionState(ALIAS_BLUETOOTH) != PermissionState.GRANTED) {
+            call.resolve(enabledState())
+            return
+        }
+        try {
+            startActivityForResult(call, Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), "enableBluetoothResult")
+        } catch (error: Throwable) {
+            // No activity can show the dialog (a restricted profile, a very old ROM): say where Bluetooth stands.
+            call.resolve(enabledState())
+        }
+    }
+
+    @ActivityCallback
+    private fun enableBluetoothResult(call: PluginCall?, result: ActivityResult?) {
+        call?.resolve(enabledState())
+    }
+
+    private fun enabledState(): JSObject {
+        val out = JSObject()
+        out.put("enabled", adapterEnabled())
+        return out
     }
 
     /** The permission the running Android version needs: Bluetooth on 12+, fine location below (a BLE scan needs it there). */

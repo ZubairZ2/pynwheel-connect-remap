@@ -32,6 +32,10 @@ const fakePlugin = (overrides: Partial<Record<keyof IgloohomeBlePlugin, unknown>
       calls.push('requestPermissions');
       return permission;
     }),
+    enableBluetooth: vi.fn(async () => {
+      calls.push('enableBluetooth');
+      return { enabled: false };
+    }),
     startScan: vi.fn(async () => {
       calls.push('startScan');
     }),
@@ -91,12 +95,25 @@ describe('unlockOverBluetooth', () => {
     expect(plugin.disconnect).toHaveBeenCalled();
   });
 
-  it('reports Bluetooth off and an unsupported phone before touching the radio', async () => {
+  it('asks the system to turn Bluetooth on when it is off; a refusal is bluetooth_off, an unsupported phone is unsupported', async () => {
     const off = fakePlugin({ initialize: vi.fn(async () => ({ supported: true, enabled: false, platform: 'android' })) });
     await expect(unlockOverBluetooth({ lockName: 'L', key: 'k', plugin: off, available: true })).rejects.toMatchObject({ code: 'bluetooth_off' });
+    expect(off.calls).toEqual(['checkPermissions', 'enableBluetooth', 'disconnect']);
+    expect(off.startScan).not.toHaveBeenCalled();
     const none = fakePlugin({ initialize: vi.fn(async () => ({ supported: false, enabled: false, platform: 'android' })) });
     await expect(unlockOverBluetooth({ lockName: 'L', key: 'k', plugin: none, available: true })).rejects.toMatchObject({ code: 'unsupported' });
-    expect(off.startScan).not.toHaveBeenCalled();
+    expect(none.enableBluetooth).not.toHaveBeenCalled();
+  });
+
+  it('continues with the scan once the visitor lets the app turn Bluetooth on', async () => {
+    const plugin = fakePlugin({ initialize: vi.fn(async () => ({ supported: true, enabled: false, platform: 'android' })), enableBluetooth: vi.fn(async () => ({ enabled: true })) });
+    const run = unlockOverBluetooth({ lockName: 'L', key: 'k', plugin, available: true });
+    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
+    plugin.emit('lockFound', { name: 'L', rssi: -50 });
+    await expect(run).resolves.toBeUndefined();
+    expect(plugin.enableBluetooth).toHaveBeenCalledTimes(1);
+    expect(plugin.calls.slice(0, 2)).toEqual(['checkPermissions', 'startScan']);
   });
 
   it('a scan that ends without the lock is not_found; a scan error carries the SDK message', async () => {
@@ -167,7 +184,7 @@ describe('unlockOverBluetooth', () => {
     expect(toUnlockError({ code: 'UNAVAILABLE', message: 'not implemented' }).code).toBe('unavailable');
     expect(toUnlockError(new Error('boom')).code).toBe('sdk_error');
     expect(toUnlockError(new BluetoothUnlockError('busy', 'x')).code).toBe('busy');
-    expect(toUnlockError(rejection('bluetooth_off')).message).toMatch(/Turn Bluetooth on/);
+    expect(toUnlockError(rejection('bluetooth_off')).message).toMatch(/Turn on Bluetooth/);
   });
 
   it("toUnlockError keeps the SDK's reason on the lock-side failures, and only there", () => {
@@ -177,7 +194,7 @@ describe('unlockOverBluetooth', () => {
     expect(toUnlockError(rejection('sdk_error', 'Command delivery failed')).message).toMatch(/\(Command delivery failed\)$/);
     const off = toUnlockError(rejection('bluetooth_off', 'Bluetooth is off'));
     expect(off.detail).toBeNull();
-    expect(off.message).toBe('Turn Bluetooth on, then try again.');
+    expect(off.message).toBe('Bluetooth is off. Tap Turn on Bluetooth to switch it on, then try again.');
     expect(toUnlockError(rejection('unlock_failed', '  ')).detail).toBeNull();
   });
 });

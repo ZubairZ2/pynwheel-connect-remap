@@ -8,7 +8,7 @@ import type { TourHistoryEntry } from '~/models';
 import { ApiError } from '~/repositories/pynwheelApi/apiClient';
 import { useRepository } from '~/repositories/repositoryContext';
 import { FeatureUnavailableError } from '~/repositories/tourRepository';
-import { unlockOverBluetooth } from '~/services/iglooBle';
+import { BluetoothUnlockError, unlockOverBluetooth } from '~/services/iglooBle';
 import { success, tap } from '~/services/native';
 import { useApp } from './appContext';
 import type { AppState, ScheduleDraft, TourPass, VerifyStep } from './appState';
@@ -537,7 +537,7 @@ export const useAppActions = () => {
             dispatch({ type: 'lockPinDismiss' });
             return;
           }
-          dispatch({ type: 'lockPinFailed', node, propertyId, message: messageOf(error, 'The lock could not be opened. Please try again.') });
+          dispatch({ type: 'lockPinFailed', node, propertyId, message: messageOf(error, 'The lock could not be opened. Please try again.'), code: error instanceof BluetoothUnlockError ? error.code : null });
         } finally {
           lockRequests.current.delete(node);
           if (bluetoothUnlocks.current.get(node) === controller) bluetoothUnlocks.current.delete(node);

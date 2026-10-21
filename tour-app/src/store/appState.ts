@@ -76,6 +76,8 @@ export interface LockRequestState {
   propertyId: number | null;
   status: LockRequestStatus;
   error: string | null;
+  /** The failure's code when known (`bluetooth_off`, `permission_denied`, …), so the screen can offer the matching action. */
+  errorCode?: string | null;
 }
 
 // ───────── The design refresh's UI-only state ─────────

@@ -48,7 +48,7 @@ export interface UnlockPanelProps {
   pin: LockPin | null;
   /** The Bluetooth key already fetched for the stop (its backup PIN is the PIN alternate). */
   bleKey: LockBluetoothKey | null;
-  request: { status: LockRequestStatus; error: string | null } | null;
+  request: { status: LockRequestStatus; error: string | null; code?: string | null } | null;
   bluetoothAvailable: boolean;
   isLast: boolean;
   onPickMethod: (method: AccessMethod) => void;
@@ -110,6 +110,7 @@ export const UnlockPanel = (p: UnlockPanelProps) => {
   const busy = !!p.request && p.request.status !== 'error';
   const phase = p.request && p.request.status !== 'error' ? p.request.status : null;
   const error = p.request?.status === 'error' ? p.request.error : null;
+  const errorCode = p.request?.status === 'error' ? (p.request.code ?? null) : null;
   const pct = drag?.pct ?? (p.unlocked && !phase ? 100 : 0);
   const onDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (busy || (p.unlocked && !demo)) return;
@@ -177,7 +178,8 @@ export const UnlockPanel = (p: UnlockPanelProps) => {
     switch (method) {
       case 'ble': {
         const available = demo || p.bluetoothAvailable;
-        const pill = !available ? { tone: 'off', text: 'Bluetooth unlock not available on this device' } : phase === 'scanning' ? { tone: 'live', text: 'Bluetooth on · Looking for the lock' } : phase === 'connecting' || phase === 'unlocking' ? { tone: 'live', text: 'Bluetooth on · Lock in range' } : phase === 'loading' ? { tone: 'live', text: 'Bluetooth on · Getting your key' } : { tone: 'live', text: demo ? `Bluetooth on · Lock in range${DEMO}` : 'Bluetooth on · Hold near the lock' };
+        const radioOff = errorCode === 'bluetooth_off';
+        const pill = !available ? { tone: 'off', text: 'Bluetooth unlock not available on this device' } : radioOff ? { tone: 'off', text: 'Bluetooth is off' } : phase === 'scanning' ? { tone: 'live', text: 'Bluetooth on · Looking for the lock' } : phase === 'connecting' || phase === 'unlocking' ? { tone: 'live', text: 'Bluetooth on · Lock in range' } : phase === 'loading' ? { tone: 'live', text: 'Bluetooth on · Getting your key' } : { tone: 'live', text: demo ? `Bluetooth on · Lock in range${DEMO}` : 'Bluetooth on · Hold near the lock' };
         return (
           <>
             <div className="pw-ul__row">
@@ -193,7 +195,13 @@ export const UnlockPanel = (p: UnlockPanelProps) => {
               </div>
             ) : (
               <>
-                {error ? <ErrorBanner title="The door did not open" body={error} /> : null}
+                {error ? <ErrorBanner title={radioOff ? 'Bluetooth is off' : errorCode === 'permission_denied' ? 'Bluetooth permission needed' : 'The door did not open'} body={error} /> : null}
+                {radioOff ? (
+                  // The system's own "turn on Bluetooth?" dialog, asked again from the app; no trip to the phone's Settings.
+                  <Button onClick={p.onBluetoothUnlock} icon="bluetooth">
+                    Turn on Bluetooth
+                  </Button>
+                ) : null}
                 <div ref={track} className={`pw-ul__track${busy || demoPhase === 'loading' ? ' pw-ul__track--busy' : ''}`} role="slider" aria-label="Slide to unlock" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
                   <div className="pw-ul__fill" style={{ width: `calc((100% - 64px) * ${(pct / 100).toFixed(3)} + 60px)`, transition: drag ? 'none' : undefined }} />
                   <div className="pw-ul__slidelabel">{phase ? PHASE_LABEL[phase] : demoPhase === 'loading' ? 'Unlocking…' : p.unlocked ? (demo ? 'Unlocked' : 'Unlocked · slide again if it closed') : error ? 'Slide to try again' : 'Slide to unlock'}</div>

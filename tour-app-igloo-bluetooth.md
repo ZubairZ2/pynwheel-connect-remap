@@ -260,3 +260,12 @@ iOS package is `https://gitlab.com/igloohome/iglooaccess-ios-sdk.git` from 3.5.0
 the SDK's scanning / connecting / unlocking phases), slide to unlock → `unlockWithBluetooth`, cancel, failure with "Slide to try
 again", and "Try another method" → the backup keypad PIN that came with the guest key (`LockBluetoothKey.guestPin`). In a browser the
 panel says the plugin is not available instead of pretending. Hardware still unverified this session.
+
+**October 22, 2026 — turning Bluetooth on from the app.** The plugin gained `enableBluetooth()`: on Android it starts
+`BluetoothAdapter.ACTION_REQUEST_ENABLE` (the system's "Allow Pynwheel Tour to turn on Bluetooth?" dialog, through
+`startActivityForResult` + an `@ActivityCallback`) and answers the adapter's state afterwards; on Android 12+ it needs
+`BLUETOOTH_CONNECT`, so `unlockOverBluetooth` now requests the permission first and asks to enable the radio second. A refusal
+is `bluetooth_off` with the message "Bluetooth is off. Tap Turn on Bluetooth…" and the Unlock panel shows a **Turn on Bluetooth**
+button that asks again (`LockRequestState.errorCode` carries the plugin's code). iOS cannot switch the radio on from an app; its
+`enableBluetooth` answers the current state (Core Bluetooth shows its own alert). Web: `{enabled: false}`.
+Tests: `iglooBle.test.ts` (refusal → `bluetooth_off` without a scan; acceptance → scan continues), vitest 104.

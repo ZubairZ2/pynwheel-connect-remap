@@ -81,7 +81,7 @@ export type Action =
   | { type: 'demoUnlock'; node: string }
   | { type: 'lockPinStart'; node: string }
   | { type: 'lockPinReady'; node: string; propertyId: number | null; pin: LockPin }
-  | { type: 'lockPinFailed'; node: string; propertyId: number | null; message: string }
+  | { type: 'lockPinFailed'; node: string; propertyId: number | null; message: string; code?: string | null }
   | { type: 'lockPinDismiss' }
   | { type: 'lockKeyReady'; node: string; propertyId: number | null; key: LockBluetoothKey }
   | { type: 'lockPhase'; node: string; propertyId: number | null; status: Exclude<LockRequestStatus, 'error'> }
@@ -448,7 +448,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, lockPins: { ...state.lockPins, [action.node]: action.pin }, unlocked: { ...state.unlocked, [action.node]: true }, lockRequest: state.lockRequest?.node === action.node ? null : state.lockRequest };
     case 'lockPinFailed':
       if (action.propertyId !== state.propertyId) return state;
-      return { ...state, lockRequest: { node: action.node, propertyId: action.propertyId, status: 'error', error: action.message } };
+      return { ...state, lockRequest: { node: action.node, propertyId: action.propertyId, status: 'error', error: action.message, errorCode: action.code ?? null } };
     case 'lockPinDismiss':
       return { ...state, lockRequest: null };
     case 'lockKeyReady':

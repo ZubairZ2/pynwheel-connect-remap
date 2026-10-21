@@ -239,7 +239,7 @@ export const StopScreen = (p: Props) => {
                 pin={p.lockPin}
                 key={`${stop.node}:${method}`}
                 bleKey={p.lockKey}
-                request={p.lockRequest && p.lockRequest.node === stop.node ? { status: p.lockRequest.status, error: p.lockRequest.error } : null}
+                request={p.lockRequest && p.lockRequest.node === stop.node ? { status: p.lockRequest.status, error: p.lockRequest.error, code: p.lockRequest.errorCode ?? null } : null}
                 bluetoothAvailable={p.bluetoothAvailable}
                 isLast={p.isLast}
                 onPickMethod={p.onPickMethod}
