@@ -767,3 +767,20 @@ no `tour_histories`, `visited_stops` or unlock rows, and `TourApi::Locks.record_
 `tour_user_id` NULL (the app's user is a CMS user), so an app tour has no session, stops or attributable access rows in
 Visitors. The legacy app's `/api/v1/save_tour_history` family is the path those rows come from today (see
 `VISITORS_MODULE_FULL_QA.md` §12).
+
+## 20. Stop detail facts and media, the property's contact, unplotted stops skipped (October 21, 2026)
+
+Additive, for the Start Tour experience (`SELF_TOUR_START_EXPERIENCE_QA.md`); no contract field removed or renamed.
+
+- `GET /properties/{id}/stops`: each unit's `unit` gains `unit_type`, `available_date` (ISO), `availability` (the feed's text),
+  `lease_terms` (`[{months, rent}]` by the kiosk rule `Unit#get_lease_term_pricing_matrix`: only while the property displays pricing
+  options, only entries with a rent, sorted), `deposit` (the floor plan's), `additional_fee` (plain text of
+  `Community#get_additional_fees(unit)`), `virtual_tour_url` (the unit's, else the floor plan's); every stop gains `media`
+  (`image`, `floorplan_image`, `photos: [{id, name, url}]` from `amenity_galleries` or the unit's interior amenities, `virtual_tour_url`),
+  resolved as Connect's inventory resolves uploads (`Connect::UploadUrl`, so `StopsController` passes `request.base_url`).
+- `GET /properties/{id}`: `phone` (`communities.phone`, else `property_manager_phone`) and `email`, null when the CMS holds none.
+- `POST /properties/{id}/tour-route`: a chosen stop that is on the list but has no map node is left out and reported in `skipped`
+  (it used to refuse the whole tour as `invalid_stop`); when none of the chosen stops is plotted the answer is 422 `no_path` with
+  `details.skipped`. `invalid_stop` still answers for stops that are not on the list.
+- Tests: `stops_test.rb` (contract keys, the detail facts / media case), `properties_test.rb` (keys), `routing_test.rb` (the skipped
+  case); the whole `test/controllers/api/tour_app` + `test/services/tour_api` suite: 95 runs, 714 assertions, 0 failures.

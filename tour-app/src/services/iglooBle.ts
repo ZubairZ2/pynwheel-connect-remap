@@ -28,7 +28,7 @@ export class BluetoothUnlockError extends Error {
 const MESSAGES: Record<IgloohomeBleErrorCode, string> = {
   unavailable: 'Bluetooth unlock is not available in this build of the app.',
   unsupported: 'This phone has no Bluetooth LE, so it cannot open the lock.',
-  bluetooth_off: 'Turn Bluetooth on, then try again.',
+  bluetooth_off: 'Bluetooth is off. Tap Turn on Bluetooth to switch it on, then try again.',
   permission_denied: 'Allow Bluetooth for Pynwheel Tour in your phone settings, then try again.',
   not_found: 'The lock was not found nearby. Stand closer to the door and try again.',
   connect_failed: 'The phone could not connect to the lock. Try again.',
@@ -133,7 +133,7 @@ export const unlockOverBluetooth = async (options: UnlockOptions): Promise<void>
     });
     throwIfCancelled();
     if (!state.supported) throw new BluetoothUnlockError('unsupported', MESSAGES.unsupported);
-    if (!state.enabled) throw new BluetoothUnlockError('bluetooth_off', MESSAGES.bluetooth_off);
+    // The permission first: on Android 12+ the system's "turn on Bluetooth?" dialog itself needs it.
     let permission = (await plugin.checkPermissions().catch((error) => {
       throw toUnlockError(error);
     })).bluetooth;
@@ -144,6 +144,15 @@ export const unlockOverBluetooth = async (options: UnlockOptions): Promise<void>
     }
     throwIfCancelled();
     if (permission !== 'granted') throw new BluetoothUnlockError('permission_denied', MESSAGES.permission_denied);
+    if (!state.enabled) {
+      // Bluetooth is off: ask the system to switch it on from inside the app (Android shows its own dialog); the visitor
+      // can decline, and then the attempt stops with `bluetooth_off` and a button to ask again.
+      const asked = await plugin.enableBluetooth().catch((error) => {
+        throw toUnlockError(error);
+      });
+      throwIfCancelled();
+      if (!asked.enabled) throw new BluetoothUnlockError('bluetooth_off', MESSAGES.bluetooth_off);
+    }
 
     phase('scanning');
     await waitForLock(plugin, options.lockName, signal, options.scanTimeoutMs ?? 60_000);

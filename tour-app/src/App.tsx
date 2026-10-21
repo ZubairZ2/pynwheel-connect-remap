@@ -13,8 +13,13 @@ import { bluetoothUnlockAvailable } from '~/services/iglooBle';
 import { AppProvider } from '~/store/AppProvider';
 import { useApp } from '~/store/appContext';
 import type { MapView } from '~/store/appState';
+import type { AccessMethod } from '~/models';
+import type { TourStopView } from '~/store/selectors';
 import { checkinModel, extraTours, isVerified, locationModel, tourCard, effectiveTour } from '~/store/scenarios';
+import { accessMethodOf, alternateMethods, guidedSlots, guidedToursOffered, providerOf } from '~/store/access';
 import { bestMatchUnit, currentSegment, currentStop, distanceLabel, markOf, tourStopViews, tourStopsInOrder } from '~/store/selectors';
+import { dayLabel } from '~/store/scenarios';
+import type { GalleryPhoto } from './screens/sheets/FlowSheets';
 import { useAppActions } from '~/store/useAppActions';
 import { profileOf, startPoints } from '~/store/views';
 import type { SimulationState } from '~/wayfinding/simulation';
@@ -51,11 +56,14 @@ const GUEST_PROPERTY: Property = { id: 0, name: `${DEMO_LISTINGS[0].name}${DEMO}
 const Shell = () => {
   const { state, dispatch, data, hydrated, reload, reloadProperties } = useApp();
   const actions = useAppActions();
-  // The Schedule screen reads the property's booking rules whichever way it was opened (Home, Explore's card, a second visit).
+  // The Schedule screen and the Book a Live Tour sheet read the property's booking rules whichever way they were opened.
+  const bookOpen = state.overlays.includes('book');
   useEffect(() => {
-    if (state.screen === 'schedule') void actions.loadBooking();
+    if (state.screen === 'schedule' || bookOpen) void actions.loadBooking();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.screen, state.propertyId]);
+  }, [state.screen, state.propertyId, bookOpen]);
+  // Which photo the gallery opens on (the floor plan, a CMS photo, the visitor's own).
+  const [galleryStart, setGalleryStart] = useState(0);
   const repository = useRepository();
   const framed = useFramed();
   useChrome(state.screen);
@@ -169,23 +177,54 @@ const Shell = () => {
   const close = (overlay: Overlay) => dispatch({ type: 'closeOverlay', overlay });
   const has = (overlay: Overlay) => state.overlays.includes(overlay);
 
-  // The current stop's smart-lock state: its door code, and the request in flight or failed for it.
-  const lockOf = (node: string) => {
-    const request = state.lockRequest?.node === node ? state.lockRequest : null;
+  // The current stop's smart-lock state: the access method the CMS configured for it (the design's Unlock variant), the
+  // alternates it really offers, its door code / Bluetooth key, and the request in flight or failed for it.
+  const lockOf = (node: string, lock: TourStopView['lock']) => {
+    const demo = !!bundle?.demo;
+    const method = accessMethodOf(lock, demo, state.demoMethod[node] ?? null);
     return {
       lockPin: state.lockPins[node] ?? null,
-      lockBusy: request?.status === 'loading',
-      lockError: request?.status === 'error' ? request.error : null,
+      lockKey: state.lockKeys[node] ?? null,
+      lockRequest: state.lockRequest,
+      bluetoothAvailable: bluetoothUnlockAvailable(),
+      method,
+      alternates: alternateMethods(lock, method, demo, !!state.lockKeys[node]?.guestPin),
+      provider: providerOf(lock),
+      codeEntered: !!state.codeEntered[node],
+      onPickMethod: (m: AccessMethod) => actions.setDemoMethod(node, m),
       onRequestPin: () => void actions.requestLockPin(node),
-      lockBluetooth: {
-        available: bluetoothUnlockAvailable(),
-        phase: request && request.status !== 'error' ? request.status : null,
-        unlocked: !!state.unlocked[node],
-        onUnlock: () => void actions.unlockWithBluetooth(node),
-        onCancel: () => actions.cancelBluetoothUnlock(node)
-      }
+      onBluetoothUnlock: () => void actions.unlockWithBluetooth(node),
+      onBluetoothCancel: () => actions.cancelBluetoothUnlock(node),
+      onCodeEntered: () => actions.codeEntered(node)
     };
   };
+  // The stop's photo collection for the gallery: the floor plan first for a unit, then the CMS photos, then the visitor's own.
+  const galleryOf = (s: TourStopView | null): GalleryPhoto[] => {
+    if (!s) return [];
+    const media = s.unit?.media ?? s.amenity?.media ?? null;
+    const out: GalleryPhoto[] = [];
+    if (s.kind === 'unit' && media?.floorplanImage) out.push({ url: media.floorplanImage, label: 'Floor plan', mine: false });
+    if (media?.image) out.push({ url: media.image, label: s.name.replace(/ \*$/, ''), mine: false });
+    (media?.photos ?? []).forEach((ph, i) => out.push({ url: ph.url, label: ph.name ?? `Photo ${i + 1}`, mine: false }));
+    (state.shots[s.node] ?? []).forEach((src, i) => out.push({ url: src, label: `Your photo ${i + 1}`, mine: true }));
+    return out;
+  };
+  // Minutes of walking left in the tour: the backend's route times of the segments not yet reached.
+  const remainingMinutes = (() => {
+    const segs = state.guided.tour?.segments ?? [];
+    if (!segs.length) return null;
+    const rest = segs.slice(state.stopIndex);
+    if (rest.some((s) => s.route.durationS == null)) return null;
+    return Math.max(1, Math.round(rest.reduce((a, s) => a + (s.route.durationS ?? 0), 0) / 60));
+  })();
+  // Build Your Tour's estimate: the backend's time for exactly the chosen stops, when that route was calculated.
+  const chosenNodes = stops.filter((s) => state.selected[s.node]).map((s) => s.node);
+  const routeMinutes = state.guided.tour && state.guided.tour.segments.length === chosenNodes.length && chosenNodes.every((n) => state.guided.tour!.segments.some((s) => s.node === n)) && state.guided.tour.route.durationS != null ? Math.max(1, Math.round(state.guided.tour.route.durationS / 60)) : null;
+  // Book a Live Tour: the next days of the loaded calendar with the agent-guided times still open.
+  const bookDays = Object.keys(state.booking.days)
+    .sort()
+    .map((key) => ({ key, label: dayLabel(key, new Date(now)), times: guidedSlots(state.booking, key, now).map((s) => s.label) }));
+  const bookBlocked = !guidedToursOffered(state.booking.settings) ? 'This property does not offer agent-guided tours. You can still book a self-tour.' : state.booking.settings && !state.booking.settings.bookable ? `Bookings are paused: ${state.booking.settings.gateError ?? 'the scheduler is off'}.` : state.booking.status === 'error' ? (state.booking.error ?? 'The booking calendar could not be loaded.') : state.booking.status === 'ready' && !bookDays.some((d) => d.times.length) ? 'No guided-tour times are open in the next week. Call the leasing office to arrange one.' : null;
 
   // ── derived views of the design refresh ──
   const property: Property | null = bundle?.property ?? (state.guest && state.guestProperty ? GUEST_PROPERTY : null);
@@ -559,6 +598,7 @@ const Shell = () => {
             booking={state.booking}
             profile={profileOf(state, content)}
             demo={bundle.demo}
+            phone={bundle.property.phone ?? null}
             onChange={actions.setSchedule}
             onConfirm={() => void actions.confirmSchedule()}
             onRetry={() => void actions.loadBooking(true)}
@@ -619,6 +659,7 @@ const Shell = () => {
             virtual={state.virtualTour}
             calculating={state.guided.status === 'calculating'}
             error={state.guided.status === 'error' ? state.guided.error : null}
+            routeMinutes={routeMinutes}
             mark={mark}
             onView={(patch) => dispatch({ type: 'buildView', patch })}
             onMapView={onGuidedView}
@@ -651,11 +692,17 @@ const Shell = () => {
             routeError={state.guided.error}
             distance={distanceOf(segmentRoute)}
             minutes={minutesOf(segmentRoute)}
+            remainingMinutes={remainingMinutes}
             view={state.guided.view}
             sim={state.guided.sim}
             stepFree={state.guided.stepFree}
+            stepFreeBusy={state.guided.rerouting}
             audioOn={state.audioOn}
             expanded={state.build.expanded}
+            focusNode={state.build.focusNode}
+            onFocusDone={() => dispatch({ type: 'buildView', patch: { focusNode: null } })}
+            onCall={() => open('call')}
+            onToast={actions.toast}
             onExpand={() => dispatch({ type: 'buildView', patch: { expanded: !state.build.expanded } })}
             onView={onGuidedView}
             onSim={onGuidedSim}
@@ -672,7 +719,8 @@ const Shell = () => {
         return stop ? (
           <StopScreen
             stop={stop}
-            {...lockOf(stop.node)}
+            {...lockOf(stop.node, stop.lock)}
+            propertyName={bundle.property.name}
             stopNumber={state.stopIndex + 1}
             stopTotal={state.tourOrder.length || 1}
             isLast={isLast}
@@ -680,14 +728,14 @@ const Shell = () => {
             demo={bundle.demo}
             mark={mark}
             unlocked={!!state.unlocked[stop.node]}
+            accessLeftMs={inPerson && state.accessEndsAt != null ? state.accessEndsAt - now : null}
             reaction={state.reactions[stop.node] ?? null}
             favourite={!!state.favourites[stop.node]}
-            photos={state.photos[stop.node] ?? 0}
+            shots={state.shots[stop.node] ?? []}
             note={state.notes[stop.node] ?? ''}
             leaseTerm={state.leaseTerm}
             held={!!state.holds[stop.node]}
             compared={!!state.compare[stop.node]}
-            narration={state.narration}
             now={now}
             onBack={() => dispatch({ type: 'exitStop' })}
             onItinerary={() => open('itinerary')}
@@ -697,15 +745,22 @@ const Shell = () => {
             onVideo={() => open('video')}
             onPano={() => open('pano')}
             onNote={() => dispatch({ type: 'openNote', node: stop.node })}
-            onPhoto={() => actions.addPhoto(stop.node)}
-            onGallery={() => open('gallery')}
+            onPhoto={(dataUrl) => actions.addPhoto(stop.node, dataUrl)}
+            onGallery={(index) => {
+              setGalleryStart(index);
+              open('gallery');
+            }}
+            onLocate={() => actions.locateStop(stop.node)}
             onAi={() => actions.openAiChat('stop')}
             onLeaseTerm={(term) => dispatch({ type: 'setLeaseTerm', term })}
             onHold={() => actions.holdUnit(stop.node)}
             onCompare={() => dispatch({ type: 'toggleCompare', node: stop.node })}
-            onNarration={(next) => dispatch({ type: 'narration', ...next })}
+            onExtend={inPerson ? actions.extendAccess : null}
+            onReport={() => open('report')}
+            onCall={() => open('call')}
             onNext={actions.nextStop}
             onSkip={() => dispatch({ type: 'openSkip' })}
+            onToast={actions.toast}
           />
         ) : null;
       case 'tourComplete': {
@@ -847,7 +902,7 @@ const Shell = () => {
             onClose={() => close('link')}
           />
           <GuestGateSheet open={has('guestGate')} why={state.guestGateWhy ?? 'continue'} onSignIn={actions.guestSignIn} onVirtual={null} onClose={() => { close('guestGate'); dispatch({ type: 'pendingAfterAuth', pending: null }); }} />
-          <CallSheet open={has('call')} propertyName={propertyName.replace(/ \*$/, '')} onCall={actions.callLeasing} onClose={() => close('call')} />
+          <CallSheet open={has('call')} propertyName={propertyName.replace(/ \*$/, '')} phone={property?.phone ?? null} demo={!!bundle?.demo} onCall={actions.callLeasing} onClose={() => close('call')} />
           <ChatOptionsSheet open={has('chatOptions')} agentOnline={state.demo.agentOnline} onAi={() => actions.openAiChat('general')} onAgent={actions.chatWithAgent} onClose={() => close('chatOptions')} />
           <AiChatSheet
             open={has('aiChat')}
@@ -877,8 +932,8 @@ const Shell = () => {
               <AddStopSheet open={has('addStop')} stops={stops.filter((s) => !state.tourOrder.includes(s.node))} onAdd={(node) => dispatch({ type: 'addStop', node })} onClose={() => close('addStop')} />
               <NoteSheet open={has('note')} stopName={stop?.name ?? ''} draft={state.noteDraft} onChange={(v) => dispatch({ type: 'setNoteDraft', value: v })} onSave={() => stop && dispatch({ type: 'saveNote', node: stop.node })} onClose={() => close('note')} />
               <VideoModal open={has('video')} stopName={stop?.name ?? ''} videoUrl={stop?.amenity?.videoUrl ?? null} onClose={() => close('video')} />
-              <PanoSheet open={has('pano')} stopName={stop?.name ?? ''} onClose={() => close('pano')} />
-              <GallerySheet open={has('gallery')} stopName={stop?.name ?? ''} count={stop ? (state.photos[stop.node] ?? 0) : 0} onClose={() => close('gallery')} />
+              <PanoSheet open={has('pano')} stopName={stop?.name ?? ''} url={stop?.unit?.media?.virtualTourUrl ?? stop?.amenity?.media?.virtualTourUrl ?? null} demo={bundle.demo} onClose={() => close('pano')} />
+              <GallerySheet open={has('gallery')} stopName={stop?.name ?? ''} photos={galleryOf(stop)} start={galleryStart} onClose={() => close('gallery')} />
               <SkipSheet open={has('skip')} stopName={stop?.name ?? 'this stop'} nextName={nextStopName} reason={state.skipReason} onReason={(reason) => dispatch({ type: 'setSkipReason', reason })} onConfirm={actions.skipStop} onCall={() => {
                 close('skip');
                 open('call');
@@ -906,8 +961,9 @@ const Shell = () => {
                 open={has('book')}
                 propertyName={bundle.property.name}
                 visitor={{ ...content.visitor, name: `${profile.first} ${profile.last}`.trim() || content.visitor.name, phone: profile.phone || content.visitor.phone }}
-                days={content.booking.days}
-                times={content.booking.times}
+                days={bookDays}
+                blocked={bookBlocked}
+                loading={state.booking.status === 'loading' && !bookDays.length}
                 units={unitsForApply.map((u) => u.name)}
                 value={state.book}
                 onChange={(field, value) => dispatch({ type: 'setBook', field, value })}

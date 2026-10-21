@@ -46,7 +46,7 @@ class Api::TourApp::V1::PropertiesTest < ActionDispatch::IntegrationTest
     assert_equal 3, body['floorplates_count']
     assert_equal Unit.where(community_id: @community.id, visible: true).count, body['units_count']
     assert_equal 2, body['amenities_count']
-    assert_equal %w[id name address city state zip company tour_enabled is_sitemap success auto_wayfinding floorplates_count units_count amenities_count buildings tour graph_version], body.keys
+    assert_equal %w[id name address city state zip company tour_enabled is_sitemap success auto_wayfinding floorplates_count units_count amenities_count buildings tour graph_version phone email], body.keys
   end
 
   test 'the detail of a property without the tour' do

@@ -1,4 +1,4 @@
-import { DEMO, LEASING_PHONE } from '~/content/demoFixtures';
+import { DEMO } from '~/content/demoFixtures';
 import { ScreenHeader } from '~/components/chrome';
 import { Icon } from '~/components/Icon';
 import { Button, IconButton } from '~/components/ui';
@@ -20,6 +20,8 @@ interface Props {
   profile: Profile;
   /** True on the demo provider: the booking is local, the labels carry the `*` marker. */
   demo: boolean;
+  /** The leasing office's phone from the CMS (text booking), null when it holds none. */
+  phone: string | null;
   onChange: (patch: Partial<ScheduleDraft>) => void;
   onConfirm: () => void;
   onRetry: () => void;
@@ -38,7 +40,7 @@ interface Props {
  * is made by the CMS, which checks the slot again. The "book via" note and
  * the leasing phone stay demo copy until the CMS carries them.
  */
-export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, unitOptions, verified, booking, profile, demo, onChange, onConfirm, onRetry, onBack, onVerify, onCalendar, onDirections, onHome }: Props) => {
+export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, unitOptions, verified, booking, profile, demo, phone, onChange, onConfirm, onRetry, onBack, onVerify, onCalendar, onDirections, onHome }: Props) => {
   const days = Array.from({ length: 7 }, (_, i) => dayKey(i));
   const day = daySlots(booking, draft.date);
   const after = afterSlots(booking, draft.date);
@@ -48,7 +50,11 @@ export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, uni
   const lengths = tourLengthOptions(settings);
   const partyMax = settings?.app.partySizeLimit ?? 6;
   const askUnit = settings?.app.askUnit ?? true;
-  const showText = settings?.app.showTextBooking ?? true;
+  const showText = (settings?.app.showTextBooking ?? true) && !!phone;
+  const askBedroom = settings?.form.showDesiredBedroom ?? false;
+  const askMoveIn = settings?.form.showDesiredMoveInDate ?? false;
+  const selfToursOff = !!settings && !settings.tourTypes.selfTour;
+  const cardNote = settings?.form.creditCardRequired ? 'This property asks for a card on file before a self-tour; the leasing team will confirm it with you.' : null;
   const blocked = settings && !settings.bookable ? (settings.gateError ?? 'This property is not taking bookings right now.') : null;
   const email = profile.email;
   const detailsOk = !!(draft.first.trim() && draft.last.trim() && draft.phone.trim() && email.trim());
@@ -64,6 +70,8 @@ export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, uni
           </div>
           {booking.status === 'error' ? <Callout tone="warn" body={booking.error ?? 'The booking calendar could not be loaded.'} action={<Button variant="secondary" height={36} onClick={onRetry}>Retry</Button>} /> : null}
           {blocked ? <Callout tone="warn" body={<>Bookings are paused: {blocked}. Call the leasing office to arrange a visit.</>} /> : null}
+          {selfToursOff && !blocked ? <Callout tone="warn" body="This property does not offer self-guided tours at the moment. Book a live tour with the leasing team instead." /> : null}
+          {cardNote ? <Callout tone="info" body={cardNote} /> : null}
           <div className="pw-sched__block">
             <Eyebrow>Date</Eyebrow>
             <div className="pw-sched__days">
@@ -160,6 +168,17 @@ export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, uni
                 <input className="pw-input" placeholder="Last name" aria-label="Last name" autoComplete="family-name" value={draft.last} onChange={(e) => onChange({ last: e.target.value })} style={{ flex: 1, minWidth: 0 }} />
               </div>
               <input className="pw-input" placeholder="Mobile phone" aria-label="Mobile phone" inputMode="tel" autoComplete="tel" value={draft.phone} onChange={(e) => onChange({ phone: e.target.value })} />
+              {askBedroom ? (
+                <select className="pw-select" aria-label="Desired bedrooms" value={draft.bedroom} onChange={(e) => onChange({ bedroom: e.target.value })}>
+                  <option value="">Desired bedrooms (optional)</option>
+                  <option value="0">Studio</option>
+                  <option value="1">1 bedroom</option>
+                  <option value="2">2 bedrooms</option>
+                  <option value="3">3 bedrooms</option>
+                  <option value="4">4+ bedrooms</option>
+                </select>
+              ) : null}
+              {askMoveIn ? <input className="pw-input" type="date" aria-label="Desired move-in date" value={draft.moveIn} min={dayKey(0)} onChange={(e) => onChange({ moveIn: e.target.value })} /> : null}
               <div className="pw-sched__partysub">{email ? `Confirmation to ${email}` : 'Sign in with your email to book.'}</div>
             </div>
           </div>
@@ -173,14 +192,13 @@ export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, uni
             </div>
             <div className="pw-sched__vianote">Every channel books the same calendar, so your tour shows up here either way.{DEMO}</div>
           </div>
-          <Button onClick={onConfirm} disabled={noSlots || !draft.time || !detailsOk || !!blocked || booking.saving} busy={booking.saving}>
+          <Button onClick={onConfirm} disabled={noSlots || !draft.time || !detailsOk || !!blocked || selfToursOff || booking.saving} busy={booking.saving}>
             {booking.saving ? 'Booking…' : 'Confirm Self-Tour'}
           </Button>
           {booking.saveError ? <div className="pw-sched__noslots">{booking.saveError}</div> : null}
           {showText ? (
             <div className="pw-sched__text">
-              Also book by text: <b>{LEASING_PHONE}</b>
-              {DEMO}
+              Also book by text: <b>{phone}</b>
             </div>
           ) : null}
         </div>

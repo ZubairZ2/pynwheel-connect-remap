@@ -1,28 +1,37 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { DEMO, FINISHES, HOLD_HOURS, MOVE_IN_FEES } from '~/content/demoFixtures';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { DEMO, FINISHES } from '~/content/demoFixtures';
 import { Icon } from '~/components/Icon';
 import { Button, IconButton, Pill, stopIconOf } from '~/components/ui';
 import { Chip, Eyebrow } from '~/components/ui2';
-import type { LockPin } from '~/models';
-import { success, tap } from '~/services/native';
+import type { AccessMethod, LockBluetoothKey, LockPin } from '~/models';
+import { audioGuide } from '~/services/audioGuide';
 import type { AppState, Reaction } from '~/store/appState';
+import { aboutSpace, moveInEstimate, rentForTerm, usableUnitType } from '~/store/access';
 import type { TourStopView } from '~/store/selectors';
 import { money, unitFacts } from '~/store/views';
-import { LockAccessCard, type BluetoothControls } from './LockAccess';
 import { LightShell } from './shared';
+import { UnlockPanel } from './UnlockPanel';
 
-/** The smart-lock state of the stop on screen (the store's door code and request for this stop). */
+/** The smart-lock state of the stop on screen (the store's door code, key and request for this stop). */
 export interface StopLockProps {
   lockPin: LockPin | null;
-  lockBusy: boolean;
-  lockError: string | null;
+  lockKey: LockBluetoothKey | null;
+  lockRequest: AppState['lockRequest'];
+  bluetoothAvailable: boolean;
+  method: AccessMethod;
+  alternates: AccessMethod[];
+  provider: string | null;
+  codeEntered: boolean;
+  onPickMethod: (method: AccessMethod) => void;
   onRequestPin: () => void;
-  /** The igloohome v1 Bluetooth flow for this stop. */
-  lockBluetooth: BluetoothControls;
+  onBluetoothUnlock: () => void;
+  onBluetoothCancel: () => void;
+  onCodeEntered: () => void;
 }
 
 interface Props extends StopLockProps {
   stop: TourStopView;
+  propertyName: string;
   stopNumber: number;
   stopTotal: number;
   isLast: boolean;
@@ -30,14 +39,15 @@ interface Props extends StopLockProps {
   demo: boolean;
   mark: string;
   unlocked: boolean;
+  /** Milliseconds of door access left on an in-person tour, null otherwise. */
+  accessLeftMs: number | null;
   reaction: Reaction | null;
   favourite: boolean;
-  photos: number;
+  shots: string[];
   note: string;
-  leaseTerm: AppState['leaseTerm'];
+  leaseTerm: number;
   held: boolean;
   compared: boolean;
-  narration: AppState['narration'];
   now: number;
   onBack: () => void;
   onItinerary: () => void;
@@ -47,86 +57,117 @@ interface Props extends StopLockProps {
   onVideo: () => void;
   onPano: () => void;
   onNote: () => void;
-  onPhoto: () => void;
-  onGallery: () => void;
+  onPhoto: (dataUrl: string | null) => void;
+  onGallery: (index: number) => void;
+  onLocate: () => void;
   onAi: () => void;
-  onLeaseTerm: (t: AppState['leaseTerm']) => void;
+  onLeaseTerm: (t: number) => void;
   onHold: () => void;
   onCompare: () => void;
-  onNarration: (next: AppState['narration']) => void;
+  onExtend: (() => void) | null;
+  onReport: () => void;
+  onCall: () => void;
   onNext: () => void;
   onSkip: () => void;
+  onToast: (message: string) => void;
 }
 
-const NARRATION_S = 42;
+/** A captured photo, downscaled to a small JPEG data URL so a few of them fit in memory. */
+const readPhoto = (file: File): Promise<string | null> =>
+  new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const max = 640;
+        const k = Math.min(1, max / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.width * k));
+        canvas.height = Math.max(1, Math.round(img.height * k));
+        canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      } catch {
+        resolve(null);
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(null);
+    };
+    img.src = url;
+  });
 
 /**
- * The Stop screen: one screen for units and amenities. The lock card is the
- * real one where the CMS assigned a smart lock (door code / Bluetooth), the
- * design's slide-to-unlock on the demo property, and "Open access" where
- * there is no lock. Below it the stop's facts, the unit's floor plan and
- * pricing (demo-marked where the backend publishes no such data), photos,
- * the narration player, reactions, the actions grid, the concierge and
- * Next Stop (or Skip while the door is still locked).
+ * The Stop screen: one screen for units and amenities, the design's
+ * "Stop" artboard. The unlock block is the shared Unlock frame for the
+ * stop's own access method (or "Open access" / "Virtual tour"); below it
+ * the stop's facts from the inventory, the real floor plan with zoom and
+ * "On map", About this space generated from the record, the CMS photos
+ * and the visitor's own, the narration (read from that text), reactions,
+ * Video / 360° only where the CMS holds a link, Notes and Photo, the
+ * concierge, and for units the published lease pricing and the move-in
+ * estimate built from published figures only.
  */
 export const StopScreen = (p: Props) => {
-  const { stop } = p;
+  const { stop, method } = p;
   const isUnit = stop.kind === 'unit';
   const facts = stop.unit ? unitFacts(stop.unit, p.mark) : null;
-  const realLock = stop.lock;
-  const demoSlide = !realLock && p.demo && isUnit && !p.virtual;
-  const locked = !p.virtual && ((realLock && realLock.supported && !p.unlocked) || (demoSlide && !p.unlocked));
+  const media = stop.unit?.media ?? stop.amenity?.media ?? null;
+  const hasLock = method !== 'none';
+  // Locked = a lock the visitor still has to open on an in-person tour. A door this app cannot open never blocks the tour.
+  const locked = !p.virtual && hasLock && method !== 'unsupported' && !(method === 'pin' ? p.codeEntered : p.unlocked);
   const open = !locked;
+  const about = aboutSpace(stop, p.propertyName);
 
-  // Slide to unlock (the demo property): 44 px thumb on a 52 px track, released past 85 %.
-  const track = useRef<HTMLDivElement>(null);
-  const [drag, setDrag] = useState<{ startX: number; pct: number } | null>(null);
-  const [unlocking, setUnlocking] = useState(false);
-  const pct = drag?.pct ?? (p.unlocked ? 100 : 0);
-  const onDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (p.unlocked || unlocking) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    setDrag({ startX: e.clientX, pct: 0 });
-    void tap();
-  };
-  const onMove = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (!drag) return;
-    const w = (track.current?.clientWidth ?? 300) - 52;
-    setDrag({ ...drag, pct: Math.max(0, Math.min(100, ((e.clientX - drag.startX) / w) * 100)) });
-  };
-  const onUp = () => {
-    if (!drag) return;
-    const done = drag.pct > 85;
-    setDrag(null);
-    if (done) {
-      setUnlocking(true);
-      window.setTimeout(() => {
-        setUnlocking(false);
-        p.onDemoUnlock();
-        void success();
-      }, 900);
-    }
-  };
-
-  // Narration (simulated 0:42 clip).
-  const n = p.narration;
-  const mine = n.node === stop.node;
-  const cur = mine ? Math.min(NARRATION_S, n.base + (n.startAt ? (p.now - n.startAt) / 1000 : 0)) : 0;
-  const narrPlaying = mine && !!n.startAt && cur < NARRATION_S;
+  // Narration: the generated "About this space", read by the audio guide; Play resumes a paused reading.
+  const narrKey = `stop:${stop.node}`;
+  const [audio, setAudio] = useState(audioGuide.status());
+  useEffect(() => audioGuide.subscribe(setAudio), []);
+  useEffect(
+    () => () => {
+      // Leaving the stop stops its narration (the guide's directions have their own).
+      if (audioGuide.status().key === narrKey) audioGuide.stop();
+    },
+    [narrKey]
+  );
+  const mine = audio.key === narrKey;
+  const narrPlaying = mine && audio.status === 'speaking';
+  const progress = mine ? audioGuide.progress(p.now) : 0;
   const toggleNarr = () => {
-    if (!mine || cur >= NARRATION_S) p.onNarration({ node: stop.node, base: 0, startAt: Date.now() });
-    else if (n.startAt) p.onNarration({ node: stop.node, base: cur, startAt: null });
-    else p.onNarration({ node: stop.node, base: n.base, startAt: Date.now() });
+    if (!audioGuide.available) {
+      p.onToast('Narration is not available on this device.');
+      return;
+    }
+    if (narrPlaying) audioGuide.pause();
+    else if (mine && audio.status === 'paused') audioGuide.resume();
+    else audioGuide.speak(narrKey, about);
   };
-  useEffect(() => () => undefined, []);
+  const narrLength = Math.max(1, Math.round((mine && audio.estimatedMs ? audio.estimatedMs : Math.max(1200, (about.split(/\s+/).length / 2.6) * 1000)) / 1000));
+  const narrAt = Math.round(progress * narrLength);
+  const clock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+  // The floor plan: the real image with zoom, else the honest placeholder.
+  const [planZoom, setPlanZoom] = useState(1);
+  const plan = media?.floorplanImage ?? null;
+  const unitImage = media?.image ?? null;
+  const cmsPhotos = [...(media?.image && !isUnit ? [{ id: -1, name: stop.name, url: media.image }] : []), ...(unitImage && isUnit ? [{ id: -2, name: stop.name, url: unitImage }] : []), ...(media?.photos ?? [])];
+  const photoInput = useRef<HTMLInputElement>(null);
+  const onPickPhoto = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    p.onPhoto(await readPhoto(file));
+  };
 
   const where = stop.floor || stop.floorLabel;
-  // A lock this app cannot open (Zerv, Latch, Dwelo, …): the door is not unlocked, so the strip says so instead of claiming a code was accepted.
-  const unsupported = !p.virtual && !!realLock && !realLock.supported;
-  const stripTitle = p.virtual ? 'Virtual tour' : !realLock && !demoSlide ? 'Open access' : unsupported ? 'Staff-assisted door' : realLock?.method === 'pin' ? 'Code accepted — push the door to enter' : 'Door unlocked — push the door to enter';
-  const stripSub = p.virtual ? 'Doors stay locked. Explore everything below.' : !realLock && !demoSlide ? (isUnit ? 'No smart lock on this door. Ask the leasing office if it is locked.' : 'Walk right in. No unlock needed.') : unsupported ? 'This lock cannot be opened from the app. The leasing office can let you in; you can still continue.' : 'Lock the door behind you when you leave.';
-  const termRent = facts?.terms ? facts.terms[p.leaseTerm] : null;
-  const feeTotal = MOVE_IN_FEES.reduce((a, f) => a + f.amount, 0);
+  const termRent = facts ? rentForTerm(facts.terms, p.leaseTerm) : null;
+  const estimate = stop.unit && !facts?.termsDemo ? moveInEstimate(stop.unit, termRent ?? stop.unit.rent) : null;
+  const hasVideo = !!stop.amenity?.videoUrl;
+  const has360 = !!media?.virtualTourUrl;
+  const stripTitle = p.virtual ? 'Virtual tour' : !hasLock ? 'Open access' : method === 'unsupported' ? 'Staff-assisted door' : method === 'pin' ? 'Code entered — push the door to enter' : method === 'gate' ? 'Gate open — walk through' : 'Door unlocked — push the door to enter';
+  const stripSub = p.virtual ? 'Doors stay locked. Explore everything below.' : !hasLock ? (isUnit ? 'No smart lock on this door. Ask the leasing office if it is locked.' : 'Walk right in. No unlock needed.') : method === 'unsupported' ? 'This lock cannot be opened from the app. The leasing office can let you in; you can still continue.' : method === 'pin' ? 'If the door did not open, get a new code from the unlock card.' : 'Lock the door behind you when you leave.';
 
   return (
     <LightShell
@@ -162,7 +203,7 @@ export const StopScreen = (p: Props) => {
             </div>
             <div className="pw-stop__headline">
               <div>{isUnit && facts ? facts.price : `~${stop.duration} min`}</div>
-              <div>{isUnit && facts ? facts.avail : stop.amenity?.hours ? `Open ${stop.amenity.hours}${p.mark}` : 'Open to visitors'}</div>
+              <div>{isUnit && facts ? facts.avail : stop.amenity?.hours ? `Open ${stop.amenity.hours}` : 'Open to visitors'}</div>
             </div>
           </div>
           <div className="pw-stop__facts">
@@ -170,67 +211,57 @@ export const StopScreen = (p: Props) => {
               <>
                 <span>{facts.beds}</span>
                 {facts.sqft ? <span>{facts.sqft}</span> : null}
+                {stop.unit && usableUnitType(stop.unit) ? <span>{usableUnitType(stop.unit)}</span> : null}
                 {stop.unit?.model ? <span className="pw-stop__fact--hi">Model unit</span> : null}
               </>
             ) : (
               <>
-                <span>{realLock ? (realLock.method === 'pin' ? 'Door code' : 'Mobile key') : 'Open access'}</span>
-                {stop.amenity?.hours ? <span>{stop.amenity.hours}{p.mark}</span> : null}
+                <span>{method === 'none' ? 'Open access' : method === 'pin' ? 'Door code' : method === 'ble' ? 'Mobile key' : method === 'remote' ? 'Remote unlock' : method === 'gate' ? 'Gate' : 'Staff-assisted'}</span>
+                {stop.amenity?.hours ? <span>{stop.amenity.hours}</span> : null}
               </>
             )}
           </div>
 
-          {realLock && realLock.supported && !p.virtual ? (
-            // The card stays after a code was issued or the door opened: the code must remain
-            // readable (and renewable) at the keypad, and a re-locked Bluetooth door must be
-            // openable again. Only the help / skip link belongs to the still-locked state.
+          {hasLock && !p.virtual ? (
             <div className="pw-stop__lockcard">
-              <div className="pw-stop__lockhead">
-                <span className="pw-stop__lockicon">
-                  <Icon name={locked ? 'lock' : 'check'} size={14} strokeWidth={2.2} />
-                </span>
-                <div>
-                  <div className="pw-stop__locktitle">{realLock.method === 'pin' ? (locked ? 'Enter the door code' : 'Your door code') : locked ? 'Unlock the door' : 'Door unlocked'}</div>
-                  <div className="pw-stop__locksub">{realLock.method === 'pin' ? 'Get the code, then type it on the keypad next to the door.' : locked ? 'Hold your phone near the lock, then unlock.' : 'Closed again? Unlock once more from here.'}</div>
-                </div>
-              </div>
-              <LockAccessCard lock={realLock} pin={p.lockPin} busy={p.lockBusy} error={p.lockError} onRequest={p.onRequestPin} bluetooth={p.lockBluetooth} />
-              {locked ? (
-                <button type="button" className="pw-textlink pw-textlink--muted" onClick={p.onSkip}>
-                  Lock not working? Get help or skip
-                </button>
-              ) : null}
+              <UnlockPanel
+                stopName={stop.name}
+                stopKind={stop.kind}
+                lock={stop.lock}
+                method={method}
+                alternates={p.alternates}
+                provider={p.provider}
+                demo={p.demo}
+                demoSwitch={p.demo}
+                accessLeftMs={p.accessLeftMs}
+                unlocked={p.unlocked}
+                codeEntered={p.codeEntered}
+                pin={p.lockPin}
+                key={`${stop.node}:${method}`}
+                bleKey={p.lockKey}
+                request={p.lockRequest && p.lockRequest.node === stop.node ? { status: p.lockRequest.status, error: p.lockRequest.error, code: p.lockRequest.errorCode ?? null } : null}
+                bluetoothAvailable={p.bluetoothAvailable}
+                isLast={p.isLast}
+                onPickMethod={p.onPickMethod}
+                onRequestPin={p.onRequestPin}
+                onBluetoothUnlock={p.onBluetoothUnlock}
+                onBluetoothCancel={p.onBluetoothCancel}
+                onDemoUnlock={p.onDemoUnlock}
+                onCodeEntered={p.onCodeEntered}
+                onExtend={p.onExtend}
+                onReport={p.onReport}
+                onCall={p.onCall}
+                onSkip={p.onSkip}
+                onNext={p.onNext}
+                onToast={p.onToast}
+              />
             </div>
           ) : null}
 
-          {locked && demoSlide ? (
-            <div className="pw-stop__lockcard">
-              <div className="pw-stop__lockhead">
-                <span className="pw-stop__lockicon">
-                  <Icon name="lock" size={14} strokeWidth={2.2} />
-                </span>
-                <div>
-                  <div className="pw-stop__locktitle">Unlock the door{DEMO}</div>
-                  <div className="pw-stop__locksub">Hold your phone near the lock, then slide to unlock.</div>
-                </div>
-              </div>
-              <div ref={track} className="pw-slide" role="slider" aria-label="Slide to unlock" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
-                <div className="pw-slide__fill" style={{ width: `calc((100% - 52px) * ${(pct / 100).toFixed(3)} + 48px)`, transition: drag ? 'none' : undefined }} />
-                <div className="pw-slide__label">{unlocking ? 'Unlocking…' : 'Slide to unlock'}</div>
-                <div className="pw-slide__thumb" style={{ left: `calc(4px + (100% - 52px) * ${(pct / 100).toFixed(3)})`, transition: drag ? 'none' : undefined }}>
-                  <Icon name="chevronRight" size={18} color="#fff" strokeWidth={2.4} />
-                </div>
-              </div>
-              <button type="button" className="pw-textlink pw-textlink--muted" onClick={p.onSkip}>
-                Lock not working? Get help or skip
-              </button>
-            </div>
-          ) : null}
-
-          {open ? (
-            <div className={`pw-stop__strip${unsupported ? ' pw-stop__strip--muted' : ''}`}>
+          {open && (p.virtual || !hasLock || method === 'unsupported') ? (
+            <div className={`pw-stop__strip${method === 'unsupported' ? ' pw-stop__strip--muted' : ''}`}>
               <span>
-                <Icon name={unsupported ? 'lock' : 'check'} size={12} color="#fff" strokeWidth={3} />
+                <Icon name={method === 'unsupported' ? 'lock' : 'check'} size={12} color="#fff" strokeWidth={3} />
               </span>
               <div>
                 <div className="pw-stop__striptitle">{stripTitle}</div>
@@ -239,57 +270,109 @@ export const StopScreen = (p: Props) => {
             </div>
           ) : null}
 
-          {!locked && realLock && !realLock.supported ? <LockAccessCard lock={realLock} pin={p.lockPin} busy={p.lockBusy} error={p.lockError} onRequest={p.onRequestPin} bluetooth={p.lockBluetooth} /> : null}
-
           {isUnit ? (
             <div className="pw-stop__section">
-              <Eyebrow>Floor plan</Eyebrow>
-              <div className="pw-stop__plan">
-                <Icon name="bed" size={36} color="var(--pw-text-subtle)" />
-                <div>
-                  {facts?.beds}
-                  {facts?.sqft ? ` · ${facts.sqft}` : ''}
-                </div>
-                <div className="pw-stop__plannote">{stop.unit?.floorplanName ? `${stop.unit.floorplanName} plan` : 'Floor plan image not published yet'}</div>
+              <div className="pw-stop__sectionhead">
+                <Eyebrow>Floor plan</Eyebrow>
+                <button type="button" className="pw-textlink pw-textlink--sm" onClick={p.onLocate}>
+                  <Icon name="pin" size={12} strokeWidth={2.2} /> On map
+                </button>
               </div>
+              {plan ? (
+                <div className="pw-stop__planimg" data-testid="floor-plan">
+                  <div className="pw-stop__planscroll">
+                    <img src={plan} alt={`${stop.name} floor plan`} style={{ width: `${planZoom * 100}%` }} />
+                  </div>
+                  <div className="pw-stop__planzoom" aria-label="Floor plan zoom">
+                    <button type="button" aria-label="Zoom in" onClick={() => setPlanZoom((z) => Math.min(3, +(z + 0.5).toFixed(1)))} disabled={planZoom >= 3}>
+                      <Icon name="plus" size={13} />
+                    </button>
+                    <button type="button" aria-label="Zoom out" onClick={() => setPlanZoom((z) => Math.max(1, +(z - 0.5).toFixed(1)))} disabled={planZoom <= 1}>
+                      <Icon name="minus" size={13} />
+                    </button>
+                    <button type="button" aria-label="Full screen" onClick={() => p.onGallery(cmsPhotos.findIndex((x) => x.url === plan) >= 0 ? cmsPhotos.findIndex((x) => x.url === plan) : 0)}>
+                      <Icon name="expand" size={13} strokeWidth={2.4} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="pw-stop__plan">
+                  <Icon name="bed" size={36} color="var(--pw-text-subtle)" />
+                  <div>
+                    {facts?.beds}
+                    {facts?.sqft ? ` · ${facts.sqft}` : ''}
+                  </div>
+                  <div className="pw-stop__plannote">{stop.unit?.floorplanName ? `${stop.unit.floorplanName} plan · image not published yet` : 'Floor plan image not published yet'}</div>
+                </div>
+              )}
             </div>
-          ) : stop.amenity?.description ? (
-            <div className="pw-stop__about">{stop.amenity.description}</div>
-          ) : null}
+          ) : (
+            <div className="pw-stop__section">
+              <div className="pw-stop__sectionhead">
+                <Eyebrow>Where it is</Eyebrow>
+                <button type="button" className="pw-textlink pw-textlink--sm" onClick={p.onLocate}>
+                  <Icon name="pin" size={12} strokeWidth={2.2} /> On map
+                </button>
+              </div>
+              {media?.image ? <img className="pw-stop__hero" src={media.image} alt={stop.name} /> : null}
+            </div>
+          )}
+
+          <div className="pw-stop__section">
+            <Eyebrow>About this space</Eyebrow>
+            <div className="pw-stop__about" data-testid="about-space">
+              {about}
+            </div>
+          </div>
 
           <div className="pw-stop__section">
             <div className="pw-stop__sectionhead">
               <Eyebrow>Photos</Eyebrow>
-              <button type="button" className="pw-textlink pw-textlink--sm" onClick={p.onGallery}>
-                See all
-              </button>
+              {cmsPhotos.length + p.shots.length ? (
+                <button type="button" className="pw-textlink pw-textlink--sm" onClick={() => p.onGallery(0)}>
+                  See all · {cmsPhotos.length + p.shots.length}
+                </button>
+              ) : null}
             </div>
             <div className="pw-stop__photos">
-              {Array.from({ length: p.photos }, (_, i) => (
-                <span key={i} className="pw-stop__photo">
-                  <Icon name="camera" size={18} color="var(--pw-primary)" />
-                </span>
+              {plan && isUnit ? (
+                <button type="button" className="pw-stop__photo pw-stop__photo--img" onClick={() => p.onGallery(0)} aria-label="Floor plan">
+                  <img src={plan} alt="" />
+                </button>
+              ) : null}
+              {cmsPhotos.map((ph, i) => (
+                <button key={ph.id} type="button" className="pw-stop__photo pw-stop__photo--img" onClick={() => p.onGallery((plan && isUnit ? 1 : 0) + i)} aria-label={ph.name ?? `Photo ${i + 1}`}>
+                  <img src={ph.url} alt="" loading="lazy" />
+                </button>
               ))}
-              <button type="button" className="pw-stop__photo pw-stop__photo--add" onClick={p.onPhoto}>
+              {p.shots.map((src, i) => (
+                <button key={`shot-${i}`} type="button" className="pw-stop__photo pw-stop__photo--img pw-stop__photo--mine" onClick={() => p.onGallery((plan && isUnit ? 1 : 0) + cmsPhotos.length + i)} aria-label={`Your photo ${i + 1}`}>
+                  <img src={src} alt="" />
+                  <span>Yours</span>
+                </button>
+              ))}
+              <button type="button" className="pw-stop__photo pw-stop__photo--add" onClick={() => photoInput.current?.click()}>
                 <Icon name="plus" size={16} />
                 <span>Add</span>
               </button>
+              <input ref={photoInput} type="file" accept="image/*" capture="environment" hidden onChange={(e) => void onPickPhoto(e)} aria-label="Add a photo" />
             </div>
+            {!cmsPhotos.length && !p.shots.length ? <div className="pw-stop__plannote">No photos published for this stop yet. Add your own for reference; they stay on this phone.</div> : null}
           </div>
 
           <div className="pw-stop__narr">
-            <button type="button" aria-label={narrPlaying ? 'Pause narration' : 'Play narration'} onClick={toggleNarr}>
+            <button type="button" aria-label={narrPlaying ? 'Pause narration' : mine && audio.status === 'paused' ? 'Resume narration' : 'Play narration'} onClick={toggleNarr}>
               <Icon name={narrPlaying ? 'pause' : 'play'} size={13} color="#fff" />
             </button>
             <div>
               <div className="pw-stop__narrhead">
-                <span>{isUnit ? 'Unit narration' : 'About this space'}{DEMO}</span>
+                <span>{isUnit ? 'Unit narration' : 'About this space'}</span>
                 <span>
-                  0:{String(Math.floor(cur)).padStart(2, '0')} / 0:{NARRATION_S}
+                  {clock(narrAt)} / {clock(narrLength)}
                 </span>
               </div>
               <div className="pw-stop__narrbar">
-                <div style={{ width: `${Math.round((cur / NARRATION_S) * 100)}%` }} />
+                <div style={{ width: `${Math.round(progress * 100)}%` }} />
               </div>
             </div>
           </div>
@@ -309,7 +392,7 @@ export const StopScreen = (p: Props) => {
           </div>
 
           <div className="pw-stop__actions">
-            {!isUnit && (stop.amenity?.videoUrl || p.demo) ? (
+            {hasVideo ? (
               <button type="button" onClick={p.onVideo}>
                 <span>
                   <Icon name="play" size={14} />
@@ -317,7 +400,7 @@ export const StopScreen = (p: Props) => {
                 Video
               </button>
             ) : null}
-            {p.demo ? (
+            {has360 ? (
               <button type="button" onClick={p.onPano}>
                 <span className="pw-stop__action360">360°</span>
                 360° view
@@ -329,7 +412,7 @@ export const StopScreen = (p: Props) => {
               </span>
               Notes
             </button>
-            <button type="button" onClick={p.onPhoto}>
+            <button type="button" onClick={() => photoInput.current?.click()}>
               <span>
                 <Icon name="camera" size={15} />
               </span>
@@ -350,47 +433,77 @@ export const StopScreen = (p: Props) => {
 
           {isUnit && facts ? (
             <div className="pw-stop__section pw-stop__unit">
-              {facts.terms ? (
+              <Eyebrow>Unit facts</Eyebrow>
+              <div className="pw-stop__factlist">
+                <div>
+                  <span>Rent</span>
+                  <b>{facts.price}</b>
+                </div>
+                <div>
+                  <span>Beds · baths</span>
+                  <b>{facts.beds}</b>
+                </div>
+                {facts.sqft ? (
+                  <div>
+                    <span>Size</span>
+                    <b>{facts.sqft}</b>
+                  </div>
+                ) : null}
+                <div>
+                  <span>Move-in</span>
+                  <b>{facts.avail}</b>
+                </div>
+                {stop.unit && (usableUnitType(stop.unit) || stop.unit.floorplanName) ? (
+                  <div>
+                    <span>Type</span>
+                    <b>{usableUnitType(stop.unit) ?? stop.unit.floorplanName}</b>
+                  </div>
+                ) : null}
+              </div>
+              {facts.terms.length ? (
                 <>
-                  <Eyebrow>Price by lease term{DEMO}</Eyebrow>
+                  <Eyebrow>Price by lease term{facts.termsDemo ? DEMO : ''}</Eyebrow>
                   <div className="pw-stop__terms">
-                    {([3, 6, 9, 12] as const).map((t) => (
-                      <Chip key={t} on={p.leaseTerm === t} onClick={() => p.onLeaseTerm(t)} className="pw-stop__term">
-                        <span>{t} mo</span>
-                        <b>{money(facts.terms![t])}</b>
+                    {facts.terms.map((t) => (
+                      <Chip key={t.months} on={p.leaseTerm === t.months} onClick={() => p.onLeaseTerm(t.months)} className="pw-stop__term">
+                        <span>{t.months} mo</span>
+                        <b>{money(t.rent)}</b>
                       </Chip>
                     ))}
                   </div>
                 </>
-              ) : null}
-              <Eyebrow>Finishes{DEMO}</Eyebrow>
-              <div className="pw-stop__finishes">
-                {FINISHES.map((f) => (
-                  <div key={f}>
-                    <Icon name="check" size={14} color="var(--pw-primary)" strokeWidth={2.6} />
-                    {f}
+              ) : (
+                <div className="pw-stop__plannote">Lease-term pricing is not published for this unit.</div>
+              )}
+              {p.demo ? (
+                <>
+                  <Eyebrow>Finishes{DEMO}</Eyebrow>
+                  <div className="pw-stop__finishes">
+                    {FINISHES.map((f) => (
+                      <div key={f}>
+                        <Icon name="check" size={14} color="var(--pw-primary)" strokeWidth={2.6} />
+                        {f}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              {termRent != null ? (
+                </>
+              ) : null}
+              {estimate ? (
                 <div className="pw-stop__movein">
-                  <div className="pw-stop__moveinhead">Move-in cost estimate{DEMO}</div>
+                  <div className="pw-stop__moveinhead">Move-in cost estimate</div>
                   <div className="pw-stop__moveinbody">
-                    <div>
-                      <span>First month rent</span>
-                      <b>{money(termRent)}</b>
-                    </div>
-                    {MOVE_IN_FEES.map((f) => (
-                      <div key={f.label}>
-                        <span>{f.label}</span>
-                        <b>{money(f.amount)}</b>
+                    {estimate.lines.map((l) => (
+                      <div key={l.label}>
+                        <span>{l.label}</span>
+                        <b>{money(l.amount)}</b>
                       </div>
                     ))}
                     <div className="pw-stop__moveintotal">
                       <span>Total due at move-in</span>
-                      <b>{money(termRent + feeTotal)}</b>
+                      <b>{money(estimate.total)}</b>
                     </div>
-                    <div className="pw-stop__moveinnote">Based on a {p.leaseTerm}-month lease. Final amounts are confirmed in your lease.</div>
+                    {estimate.feeNote ? <div className="pw-stop__moveinnote">Additional fees: {estimate.feeNote}</div> : null}
+                    <div className="pw-stop__moveinnote">{termRent != null ? `Based on a ${p.leaseTerm}-month lease. ` : ''}An estimate from the published figures, not a quote. Final amounts are confirmed in your lease.</div>
                   </div>
                 </div>
               ) : null}
@@ -399,7 +512,7 @@ export const StopScreen = (p: Props) => {
                   {p.compared ? '✓ In compare' : 'Add to compare'}
                 </Button>
                 <Button variant="secondary" height={46} onClick={p.onHold} style={{ fontSize: 13 }} disabled={p.held}>
-                  {p.held ? `Held for ${HOLD_HOURS}h` : `Hold this unit (${HOLD_HOURS}h)`}
+                  {p.held ? 'Held' : `Hold this unit${p.mark}`}
                 </Button>
               </div>
             </div>

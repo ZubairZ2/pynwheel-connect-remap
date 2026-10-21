@@ -7,7 +7,7 @@ module Api
       # (the CMS's "Show in Stops List" state), grouped as the app shows them.
       class StopsController < PropertyController
         def index
-          render json: TourApi::Stops.list(@property, built)
+          render json: TourApi::Stops.list(@property, built, base_url: request.base_url)
         end
       end
     end

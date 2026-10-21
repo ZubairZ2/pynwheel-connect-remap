@@ -21,9 +21,12 @@ import type {
   TourStopPlace,
   Unit,
   VerticalConnection,
-  WayfindingGraph
+  WayfindingGraph,
+  StopLock
 } from '~/models';
 import heroImage from '~/assets/images/site-plan.png';
+import { DEMO, LEASING_PHONE } from '~/content/demoFixtures';
+import { emptyMedia } from '~/models';
 import { LEVELS, OUTDOOR_LINKS, PROPERTY_ADDRESS, PROPERTY_CITY, PROPERTY_NAME, TOUR_STOPS, TOWER_A, TOWER_B, type LevelDef, type PlaceDef, type RoomDef } from './floorplans.dummy';
 
 const rect = (r: RoomDef): [number, number][] => [
@@ -162,6 +165,10 @@ export interface DummyProperty {
   demo: boolean;
 }
 
+/** The design's Unlock variant a demo stop shows: a lock the demo vendor "assigned", marked as demo data and never `supported` (nothing is sent to a vendor). */
+const demoLockOf = (p: PlaceDef): StopLock | null =>
+  p.demoLock ? { provider: `${p.demoLock.provider}${DEMO}`, mode: null, method: p.demoLock.method === 'pin' ? 'pin' : 'bluetooth', deviceId: null, supported: false, demoMethod: p.demoLock.method } : null;
+
 export const buildDummyProperty = (): DummyProperty => {
   const levels = LEVELS.map(levelOf);
   const nodes = LEVELS.flatMap(nodesOf);
@@ -255,7 +262,10 @@ export const buildDummyProperty = (): DummyProperty => {
           model: p.unit.model,
           description: p.unit.description,
           polygon: p.room ? rect(p.room) : null,
-          showInStopsList: p.showInStopsList ?? false
+          showInStopsList: p.showInStopsList ?? false,
+          availabilityKnown: true,
+          lock: demoLockOf(p),
+          media: emptyMedia()
         });
       } else if (p.kind === 'amenity' && p.amenity) {
         amenities.push({
@@ -269,7 +279,9 @@ export const buildDummyProperty = (): DummyProperty => {
           hours: p.amenity.hours,
           description: p.amenity.description,
           polygon: p.room ? rect(p.room) : null,
-          showInStopsList: p.showInStopsList ?? false
+          showInStopsList: p.showInStopsList ?? false,
+          lock: demoLockOf(p),
+          media: emptyMedia()
         });
       } else if (p.kind !== 'unit' && p.kind !== 'amenity' && p.kind !== 'tour_start') {
         if (seenStops.has(p.node)) return;
@@ -298,6 +310,8 @@ export const buildDummyProperty = (): DummyProperty => {
     address: PROPERTY_ADDRESS,
     city: PROPERTY_CITY,
     heroImage,
+    phone: `${LEASING_PHONE}${DEMO}`,
+    email: null,
     isSitemap: true,
     autoWayfinding: true,
     floorsCount: 15,

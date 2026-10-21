@@ -79,6 +79,9 @@ const bboxOf = (points: [number, number][]): Box | null => {
 };
 
 const ZOOM_STEP = 1.4;
+/** "Locate": zoom to this many times the fit-to-level scale, capped at an absolute scale. */
+const FOCUS_ZOOM = 2.6;
+const FOCUS_SCALE = 3.2;
 
 const BASE_ERROR_TEXT: Record<BaseErrorKind, { title: string; body: string }> = {
   unavailable: { title: 'Map unavailable', body: 'The floor plan could not be loaded from the server.' },
@@ -92,6 +95,10 @@ export const MapView = ({ level, floor, nodes, edges, units, amenities, route, w
   const frameWidth = base.frame.width || level.width;
   const frameHeight = base.frame.height || level.height;
   const { container, viewport, fit, centerOn, zoomAt, wasTap, handlers } = useMapViewport(frameWidth, frameHeight);
+  // The latest viewport and the fit-to-level scale, for the focus effect (which must not re-run on every pan).
+  const viewportRef = useRef(viewport);
+  viewportRef.current = viewport;
+  const baseScaleRef = useRef(1);
 
   const levelNodes = useMemo(() => nodes.filter((n) => n.level === level.id && onFloor(floor, n.floor)), [nodes, level.id, floor]);
   const levelEdges = useMemo(() => edges.filter((e) => e.level === level.id), [edges, level.id]);
@@ -136,7 +143,9 @@ export const MapView = ({ level, floor, nodes, edges, units, amenities, route, w
     const points = routeHere.lines.flat();
     const box = fitTo === 'route' ? bboxOf(points) : null;
     fit(box ?? { x: 0, y: 0, w: frameWidth, h: frameHeight }, 14, box ? 1.7 : 1);
-  }, [routeHere.lines, fitTo, fit, frameWidth, frameHeight]);
+    const el = container.current;
+    if (el && frameWidth > 0 && frameHeight > 0) baseScaleRef.current = Math.min((el.clientWidth - 28) / frameWidth, (el.clientHeight - 28) / frameHeight) || 1;
+  }, [routeHere.lines, fitTo, fit, frameWidth, frameHeight, container]);
   useEffect(() => {
     if (lastFit.current === fitSignature) return;
     lastFit.current = fitSignature;
@@ -167,9 +176,17 @@ export const MapView = ({ level, floor, nodes, edges, units, amenities, route, w
     if (!n) return;
     lastFocus.current = focusNode;
     const [x, y] = centreOf(n, floor);
-    const id = window.setTimeout(() => centerOn(x, y), 80);
+    // Centre on the stop, then zoom in to read its surroundings (a comfortable level, never past the max).
+    const id = window.setTimeout(() => {
+      centerOn(x, y);
+      const el = container.current;
+      if (!el) return;
+      const target = Math.max(viewportRef.current.scale, Math.min(FOCUS_SCALE, baseScaleRef.current * FOCUS_ZOOM));
+      const factor = target / viewportRef.current.scale;
+      if (factor > 1.02) window.setTimeout(() => zoomAt(factor, el.clientWidth / 2, el.clientHeight / 2), 30);
+    }, 80);
     return () => window.clearTimeout(id);
-  }, [focusNode, levelNodes, nodes, level.id, floor, centerOn]);
+  }, [focusNode, levelNodes, nodes, level.id, floor, centerOn, zoomAt, container]);
 
   const pinsHere = useMemo(() => (pins ?? []).map((p) => ({ ...p, node: nodes.find((n) => n.id === p.node && n.level === level.id && onFloor(floor, n.floor)) ?? null })).filter((p) => p.node), [pins, nodes, level.id, floor]);
   const pinsKey = pinsHere.map((p) => `${p.node!.id}:${p.on ? 1 : 0}${p.focus ? 'f' : ''}`).join(',');

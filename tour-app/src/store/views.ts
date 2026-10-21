@@ -6,6 +6,7 @@ import type { AppContent, AvailabilitySlot, BookingSettings, PropertyBundle } fr
 import type { AppState, BookingState } from './appState';
 import { dayKey } from './appState';
 import { slotTime } from './scenarios';
+import { availabilityText } from './access';
 import { markOf, unitLabel, unitPrice, type TourStopView } from './selectors';
 
 /**
@@ -118,20 +119,30 @@ export interface UnitFacts {
   sqft: string | null;
   avail: string;
   availShort: string;
-  /** Rent per lease term (demo factors over the published rent). */
-  terms: Record<3 | 6 | 9 | 12, number> | null;
+  /**
+   * Rent per lease term: the property's published lease pricing on real
+   * data (`unit.leaseTerms`, empty when the CMS publishes none); the demo
+   * factors over the rent only on demo data, where the labels carry `*`.
+   */
+  terms: { months: number; rent: number }[];
+  /** True when `terms` are demo factors, not published pricing. */
+  termsDemo: boolean;
 }
 
 export const unitFacts = (unit: Unit, mark = ''): UnitFacts => {
-  const terms = unit.rent != null ? { 3: Math.round(unit.rent * LEASE_TERM_FACTORS[3]), 6: Math.round(unit.rent * LEASE_TERM_FACTORS[6]), 9: Math.round(unit.rent * LEASE_TERM_FACTORS[9]), 12: unit.rent } : null;
+  const published = unit.leaseTerms ?? [];
+  const demoTerms = mark && unit.rent != null ? ([3, 6, 9, 12] as const).map((m) => ({ months: m, rent: Math.round(unit.rent! * LEASE_TERM_FACTORS[m]) })) : [];
+  const terms = published.length ? published : demoTerms;
+  const availability = availabilityText(unit);
   return {
     price: unitPrice(unit, mark),
     rent: unit.rent,
     beds: unitLabel(unit, mark),
     sqft: unit.sqft != null ? `${unit.sqft.toLocaleString('en-US')} sq ft` : null,
-    avail: unit.available ? 'Available now' : 'Leased',
-    availShort: unit.available ? 'Now' : 'Leased',
-    terms
+    avail: availability ?? 'Availability not published',
+    availShort: availability == null ? '—' : unit.available ? (unit.availableDate && Date.parse(unit.availableDate) > Date.now() ? unit.availableDate.slice(5, 10).replace('-', '/') : 'Now') : 'Leased',
+    terms,
+    termsDemo: !published.length && demoTerms.length > 0
   };
 };
 

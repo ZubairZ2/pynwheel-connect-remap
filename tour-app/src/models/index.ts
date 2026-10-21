@@ -13,7 +13,8 @@ export type {
   VerticalKind,
   WayfindingGraph
 } from './graph.model';
-export type { Amenity, AmenityIcon, LockBluetoothKey, LockPin, Place, PlaceKind, StopLock, TourStopPlace, Unit } from './inventory.model';
+export type { AccessMethod, Amenity, AmenityIcon, LeaseTerm, LockBluetoothKey, LockPin, Place, PlaceKind, StopLock, StopMedia, TourStopPlace, Unit } from './inventory.model';
+export { emptyMedia } from './inventory.model';
 export type {
   Route,
   RouteError,

@@ -1,11 +1,14 @@
 import { useMemo, useRef } from 'react';
 import { CONCIERGE_GREETING_GUEST } from '~/content/appCopy';
-import { ACCESS_MINUTES, DEMO, EXTEND_MINUTES, HOLD_HOURS, LEASING_EMAIL, LEASING_PHONE } from '~/content/demoFixtures';
+import { ACCESS_MINUTES, DEMO, EXTEND_MINUTES, HOLD_HOURS, LEASING_EMAIL } from '~/content/demoFixtures';
+import type { AccessMethod } from '~/models';
+import { guidedSlots, guidedToursOffered } from './access';
+import { levelOfStop } from './views';
 import type { TourHistoryEntry } from '~/models';
 import { ApiError } from '~/repositories/pynwheelApi/apiClient';
 import { useRepository } from '~/repositories/repositoryContext';
 import { FeatureUnavailableError } from '~/repositories/tourRepository';
-import { unlockOverBluetooth } from '~/services/iglooBle';
+import { BluetoothUnlockError, unlockOverBluetooth } from '~/services/iglooBle';
 import { success, tap } from '~/services/native';
 import { useApp } from './appContext';
 import type { AppState, ScheduleDraft, TourPass, VerifyStep } from './appState';
@@ -54,9 +57,18 @@ export const useAppActions = () => {
 
     const runTour = async (mode: 'self' | 'ar', stepFree = state.guided.stepFree) => {
       if (!bundle) return;
+      const views = tourStopViews(bundle);
+      const nameOf = (node: string) => views.find((v) => v.node === node)?.name.replace(/ \*$/, '') ?? node;
       const chosen = selectedNodes(state, bundle);
-      const all = tourStopViews(bundle).map((v) => v.node);
-      const nodes = chosen.length ? chosen : all;
+      const all = views.map((v) => v.node);
+      const wanted = chosen.length ? chosen : all;
+      // A stop the CMS has not plotted (or not joined to a path) cannot be routed to: it is left out and named, never faked.
+      const unmapped = wanted.filter((node) => (views.find((v) => v.node === node)?.unit ?? views.find((v) => v.node === node)?.amenity)?.routable === false);
+      const nodes = wanted.filter((node) => !unmapped.includes(node));
+      if (!nodes.length) {
+        dispatch({ type: 'tourFailed', message: unmapped.length ? `${unmapped.map(nameOf).join(', ')} ${unmapped.length === 1 ? 'is' : 'are'} not on the map yet, so no route can reach ${unmapped.length === 1 ? 'it' : 'them'}.` : 'Choose at least one stop.' });
+        return;
+      }
       dispatch({ type: 'tourCalculating', mode });
       try {
         // The entry gate chosen on Before You Start (a real graph node: `bsp:<id>` or the tour start); the
@@ -73,6 +85,9 @@ export const useAppActions = () => {
           return;
         }
         dispatch({ type: 'tourReady', tour: result.tour, order, mode });
+        // Stops the route could not reach (no path, no floor link) and stops not on the map are reported, not silently dropped.
+        const leftOut = [...nodes.filter((node) => !order.includes(node)), ...unmapped];
+        if (leftOut.length) toast(`${leftOut.length === 1 ? 'One stop was' : `${leftOut.length} stops were`} left out of the route: ${leftOut.map(nameOf).join(', ')}${result.tour.route.warnings[0] ? ` — ${result.tour.route.warnings[0]}` : ''}`);
         void success();
       } catch (error) {
         // A typed error (the API's own message, a malformed answer) is readable; a programming error is not.
@@ -249,7 +264,9 @@ export const useAppActions = () => {
             phone,
             desiredUnit: d.unit && d.unit !== 'No preference' ? d.unit : undefined,
             lengthMinutes: d.length,
-            partySize: d.party
+            partySize: d.party,
+            desiredBedroom: state.booking.settings?.form.showDesiredBedroom && d.bedroom ? d.bedroom : undefined,
+            desiredMoveInDate: state.booking.settings?.form.showDesiredMoveInDate && d.moveIn ? d.moveIn : undefined
           });
           if (d.first && d.first !== profile.first) dispatch({ type: 'setProfileField', field: 'first', value: d.first });
           if (d.last && d.last !== profile.last) dispatch({ type: 'setProfileField', field: 'last', value: d.last });
@@ -395,12 +412,14 @@ export const useAppActions = () => {
       launchArTour: () => runTour('ar'),
       /** Avoid stairs: the real tour route is recalculated step-free (and back). */
       toggleStepFree: async () => {
-        if (!bundle) return;
+        if (!bundle || state.guided.rerouting) return;
         const next = !state.guided.stepFree;
         dispatch({ type: 'guidedStepFree', on: next });
         if (!state.tourOrder.length) return;
+        dispatch({ type: 'guidedRerouting', on: true });
         try {
-          const result = await repository.getTourRoute(state.tourOrder, { stepFree: next });
+          const startId = state.startPointId && state.startPointId !== 'start' ? state.startPointId : null;
+          const result = await repository.getTourRoute(state.tourOrder, { stepFree: next, startId });
           // Only a route that still reaches every stop replaces the current one: a shorter list would drop
           // stops (and the visitor's place in the tour) silently.
           const reachesAll = result.ok && result.tour.segments.length === state.tourOrder.length && state.tourOrder.every((node) => result.tour.segments.some((s) => s.node === node));
@@ -412,8 +431,26 @@ export const useAppActions = () => {
         } catch (error) {
           dispatch({ type: 'guidedStepFree', on: !next });
           toast(messageOf(error, 'The route could not be recalculated.'));
+        } finally {
+          dispatch({ type: 'guidedRerouting', on: false });
         }
       },
+
+      /** "On map" from a stop: the guided map on the stop's own floor, centred on it. */
+      locateStop: (node: string) => {
+        if (!bundle) return;
+        const at = levelOfStop(bundle, node);
+        dispatch({ type: 'locateStop', node, view: at ? { level: at.level, floor: at.floor } : null });
+      },
+
+      /** The design's Demo · Method switch: demo data only; a real lock keeps the method the CMS configured. */
+      setDemoMethod: (node: string, method: AccessMethod) => {
+        if (!bundle?.demo) return;
+        dispatch({ type: 'setDemoMethod', node, method });
+      },
+
+      /** "I've entered the code": the visitor's confirmation, recorded on the phone; the door's state is not claimed. */
+      codeEntered: (node: string) => dispatch({ type: 'codeEntered', node }),
 
       arrive: () => dispatch({ type: 'arrive', now: Date.now() }),
 
@@ -500,7 +537,7 @@ export const useAppActions = () => {
             dispatch({ type: 'lockPinDismiss' });
             return;
           }
-          dispatch({ type: 'lockPinFailed', node, propertyId, message: messageOf(error, 'The lock could not be opened. Please try again.') });
+          dispatch({ type: 'lockPinFailed', node, propertyId, message: messageOf(error, 'The lock could not be opened. Please try again.'), code: error instanceof BluetoothUnlockError ? error.code : null });
         } finally {
           lockRequests.current.delete(node);
           if (bluetoothUnlocks.current.get(node) === controller) bluetoothUnlocks.current.delete(node);
@@ -590,15 +627,41 @@ export const useAppActions = () => {
         dispatch({ type: 'aiHuman', text: content.concierge.humanReply });
       },
 
+      /** Call leasing: the property's own number from the CMS, dialled by the phone; nothing on a property without one. */
       callLeasing: () => {
         dispatch({ type: 'closeOverlay', overlay: 'call' });
-        toast(`Calling ${propertyName} leasing · ${LEASING_PHONE}${DEMO}`);
+        const phone = bundle?.property.phone ?? null;
+        if (!phone) {
+          toast('This property has no leasing phone number in Pynwheel yet.');
+          return;
+        }
+        if (bundle?.demo) {
+          toast(`Calling ${propertyName} leasing · ${phone}`);
+          return;
+        }
+        const digits = phone.replace(/[^\d+]/g, '');
+        try {
+          window.open(`tel:${digits}`, '_self');
+        } catch {
+          /* the web view may refuse; the number is on screen */
+        }
+        toast(`Calling ${propertyName} leasing · ${phone}`);
       },
-      emailLeasing: () => toast(`Opening email to ${LEASING_EMAIL}${DEMO}`),
+      emailLeasing: () => {
+        const email = bundle?.property.email ?? null;
+        if (email && !bundle?.demo) {
+          try {
+            window.open(`mailto:${email}`, '_self');
+          } catch {
+            /* the address is shown in the toast */
+          }
+          toast(`Opening email to ${email}`);
+        } else toast(`Opening email to ${email ?? LEASING_EMAIL}${DEMO}`);
+      },
+      /** Report an issue: the CMS has no endpoint for reports yet, so the choice is kept on the phone and the toast says so. */
       reportIssue: (label: string) => {
         dispatch({ type: 'closeOverlay', overlay: 'report' });
-        toast(`Thanks. The leasing team has been notified.${DEMO}`);
-        void label;
+        toast(`Noted: ${label}. Reports are not sent to the office in this build — call or chat for help now.`);
       },
       call911: () => {
         dispatch({ type: 'closeOverlay', overlay: 'sos' });
@@ -609,34 +672,59 @@ export const useAppActions = () => {
         toast(`Live location shared with the leasing team${DEMO}`);
       },
 
-      // ── booking a live tour (the repository decides whether the backend offers it) ──
+      // ── booking a live tour: the property's agent-guided calendar, the same CMS rules and endpoint as the self-tour ──
       openBook: guarded('book a live tour', 'book', () => {
         if (!bundle || !content) return;
-        const unit = bundle.units.find((u) => u.showInStopsList && u.available)?.name ?? `No preference${mark}`;
-        dispatch({ type: 'openBook', day: content.booking.days[0] ?? '', time: content.booking.times[2] ?? content.booking.times[0] ?? '', unit });
+        const unit = bundle.units.find((u) => u.showInStopsList && u.available)?.name ?? 'No preference';
+        // The first day with an agent-guided time still open, from the calendar already loaded (the sheet reloads it).
+        const days = Object.keys(state.booking.days).sort();
+        const day = days.find((key) => guidedSlots(state.booking, key).length > 0) ?? days[0] ?? dayKey(0);
+        const time = guidedSlots(state.booking, day)[0]?.label ?? '';
+        dispatch({ type: 'openBook', day, time, unit });
+        void loadBooking();
       }),
 
       submitBooking: async () => {
         if (!content) return;
+        if (!guidedToursOffered(state.booking.settings)) {
+          toast('This property does not offer agent-guided tours.');
+          return;
+        }
+        const slots = guidedSlots(state.booking, state.book.day);
+        const slot = slots.find((s) => s.label === state.book.time) ?? slots[0] ?? null;
+        if (!slot) {
+          toast('Pick a day with an open guided-tour time.');
+          return;
+        }
+        const profile = profileOf(state, content);
+        if (!profile.first || !profile.email) {
+          toast('Add your name and email in your profile to book.');
+          return;
+        }
         dispatch({ type: 'bookSubmitting' });
         try {
-          // The sheet lists the content's day and time labels; the booking needs the date and the slot's HH:MM.
-          const dayIndex = Math.max(0, content.booking.days.indexOf(state.book.day));
-          const m = /(\d+):(\d+)\s*(AM|PM)/i.exec(state.book.time);
-          const hour = m ? (Number(m[1]) % 12) + (m[3].toUpperCase() === 'PM' ? 12 : 0) : 0;
-          const profile = profileOf(state, content);
-          await repository.requestBooking({
-            date: dayKey(dayIndex),
-            time: m ? `${String(hour).padStart(2, '0')}:${m[2]}` : '00:00',
+          const result = await repository.requestBooking({
+            date: state.book.day,
+            time: slot.time,
             tourType: 'guided_tour',
             firstName: profile.first,
             lastName: profile.last,
             email: profile.email,
             phone: profile.phone,
-            desiredUnit: state.book.unit.replace(/ \*$/, '')
+            desiredUnit: state.book.unit && state.book.unit !== 'No preference' ? state.book.unit.replace(/ \*$/, '') : undefined
           });
+          dispatch({ type: 'setBook', field: 'time', value: slot.label });
           dispatch({ type: 'bookDone' });
+          // The CMS keeps one upcoming booking per visitor: a self-tour booked earlier is moved to this time, and the card must say so.
+          if (result.rescheduled) {
+            toast('Your earlier booking was moved to this live tour.');
+            if (state.scheduledTour && state.scheduledTour.status !== 'past' && state.scheduledTour.status !== 'cancelled') {
+              dispatch({ type: 'confirmSchedule', tour: { ...state.scheduledTour, id: result.id, date: result.date || state.book.day, time: result.timeLabel || slot.label, tourType: result.tourType, endTime: result.endTime, createdAt: Date.now() } });
+            }
+          }
           void success();
+          // The calendar moved: the next read shows what is left.
+          void loadBooking(true);
         } catch (error) {
           dispatch({ type: 'toast', message: error instanceof FeatureUnavailableError || error instanceof ApiError ? error.message : `The request could not be sent. Please try again.${mark}` });
           dispatch({ type: 'setBook', field: 'day', value: state.book.day });
@@ -678,10 +766,15 @@ export const useAppActions = () => {
         dispatch({ type: 'toggleFavourite', node });
         toast(on ? 'Saved to favourites' : 'Removed from favourites');
       },
-      addPhoto: (node: string) => {
+      /** A reference photo the visitor took: kept on this phone for the tour, never uploaded. */
+      addPhoto: (node: string, dataUrl: string | null) => {
         const stop = bundle ? tourStopViews(bundle).find((v) => v.node === node) : null;
-        dispatch({ type: 'addPhoto', node });
-        toast(`Photo added to ${stop?.name ?? 'this stop'}${DEMO}`);
+        if (!dataUrl) {
+          toast('That photo could not be read.');
+          return;
+        }
+        dispatch({ type: 'addPhoto', node, dataUrl });
+        toast(`Photo added to ${stop?.name ?? 'this stop'} · stays on this phone`);
       },
 
       // ── the summary ──

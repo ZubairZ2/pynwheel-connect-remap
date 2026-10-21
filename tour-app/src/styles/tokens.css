@@ -35,6 +35,9 @@
   --pw-warn-soft-border: #FFE58F;
   --pw-warn-soft-text: #664D03;
   --pw-success: #5C8E1C;
+  /* The design's "live" green (the Unlock frame's Bluetooth pill and success panel), October 21, 2026. */
+  --pw-live: #5C8E1C;
+  --pw-live-soft: #EEF5E1;
   --pw-route: #4A7212;
   --pw-route-soft: #E3F1D6;
   --pw-danger: #C62534;

@@ -7,6 +7,10 @@ export class IgloohomeBleWeb extends WebPlugin implements IgloohomeBlePlugin {
     return { supported: false, enabled: false, platform: 'web' };
   }
 
+  async enableBluetooth(): Promise<{ enabled: boolean }> {
+    return { enabled: false };
+  }
+
   async checkPermissions(): Promise<IgloohomeBlePermissionStatus> {
     return { bluetooth: 'denied' };
   }

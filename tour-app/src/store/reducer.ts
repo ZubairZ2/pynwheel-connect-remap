@@ -1,4 +1,4 @@
-import type { LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
+import type { AccessMethod, LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
 import type { AvailabilityDay, BookingSettings } from '~/repositories/tourRepository';
 import { slotsForDay } from './views';
 import { DEMO_SCENARIOS_ENABLED } from '~/config/env';
@@ -81,7 +81,7 @@ export type Action =
   | { type: 'demoUnlock'; node: string }
   | { type: 'lockPinStart'; node: string }
   | { type: 'lockPinReady'; node: string; propertyId: number | null; pin: LockPin }
-  | { type: 'lockPinFailed'; node: string; propertyId: number | null; message: string }
+  | { type: 'lockPinFailed'; node: string; propertyId: number | null; message: string; code?: string | null }
   | { type: 'lockPinDismiss' }
   | { type: 'lockKeyReady'; node: string; propertyId: number | null; key: LockBluetoothKey }
   | { type: 'lockPhase'; node: string; propertyId: number | null; status: Exclude<LockRequestStatus, 'error'> }
@@ -127,6 +127,7 @@ export type Action =
   | { type: 'guidedView'; view: MapView }
   | { type: 'guidedSim'; sim: SimulationState }
   | { type: 'guidedStepFree'; on: boolean }
+  | { type: 'guidedRerouting'; on: boolean }
   | { type: 'setFloor'; level: string; floor: number | null }
   | { type: 'addStop'; node: string }
   | { type: 'tourUpdated'; tour: TourRoute; order: string[] }
@@ -170,10 +171,13 @@ export type Action =
   | { type: 'skipStop'; node: string; reason: string }
   | { type: 'setReaction'; node: string; reaction: Reaction }
   | { type: 'toggleFavourite'; node: string }
-  | { type: 'addPhoto'; node: string }
+  | { type: 'addPhoto'; node: string; dataUrl?: string }
+  | { type: 'setDemoMethod'; node: string; method: AccessMethod }
+  | { type: 'codeEntered'; node: string }
+  | { type: 'locateStop'; node: string; view: MapView | null }
   | { type: 'toggleCompare'; node: string }
   | { type: 'holdUnit'; node: string }
-  | { type: 'setLeaseTerm'; term: AppState['leaseTerm'] }
+  | { type: 'setLeaseTerm'; term: number }
   | { type: 'toggleAudio' }
   | { type: 'narration'; node: string | null; base: number; startAt: number | null }
   | { type: 'setSurvey'; patch: Partial<AppState['survey']> }
@@ -203,6 +207,9 @@ const propertyScoped = (): Partial<AppState> => ({
   lockKeys: {},
   lockRequest: null,
   notes: {},
+  shots: {},
+  demoMethod: {},
+  codeEntered: {},
   guided: initialGuided(),
   wayfinding: initialWayfinding(),
   floorByLevel: {},
@@ -233,6 +240,8 @@ const tourScoped = (): Partial<AppState> => ({
   lockPins: {},
   lockKeys: {},
   lockRequest: null,
+  shots: {},
+  codeEntered: {},
   guided: initialGuided(),
   checkedIn: false,
   accessEndsAt: null,
@@ -257,12 +266,15 @@ export const reducer = (state: AppState, action: Action): AppState => {
       const next: AppState = { ...state, ...action.state, auth: { status: 'idle', error: null } };
       // A simulation that was playing resumes paused; overlays never persist.
       next.wayfinding = { ...initialWayfinding(), ...next.wayfinding, status: 'idle', sim: { ...next.wayfinding.sim, status: next.wayfinding.sim.status === 'playing' ? 'paused' : next.wayfinding.sim.status } };
-      next.guided = { ...initialGuided(), ...next.guided, status: next.guided.tour ? 'ready' : 'idle', sim: { ...next.guided.sim, status: next.guided.sim.status === 'playing' ? 'paused' : next.guided.sim.status } };
+      next.guided = { ...initialGuided(), ...next.guided, status: next.guided.tour ? 'ready' : 'idle', rerouting: false, sim: { ...next.guided.sim, status: next.guided.sim.status === 'playing' ? 'paused' : next.guided.sim.status } };
       next.overlays = [];
       next.toast = null;
       next.lockRequest = null;
       next.lockPins = next.lockPins ?? {};
       next.lockKeys = {};
+      next.shots = {};
+      next.demoMethod = {};
+      next.codeEntered = {};
       // A build without the Demo scenarios panel cannot reset a forced scenario, so it never restores one.
       next.demo = DEMO_SCENARIOS_ENABLED ? { ...initialDemoScenarios(), ...(next.demo ?? {}) } : initialDemoScenarios();
       next.notifs = { ...initialAppState().notifs, ...(next.notifs ?? {}) };
@@ -369,7 +381,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'tourReady': {
       const guided = { ...state.guided, status: 'ready' as const, tour: action.tour, error: null, view: firstView(action.tour), sim: initialSimulationState('stop') };
       // A new tour means new door codes, as the legacy app regenerated its lock accesses on every tour start.
-      return { ...state, tourMode: action.mode, tourOrder: action.order, stopIndex: 0, unlocked: {}, lockPins: {}, lockKeys: {}, lockRequest: null, skipped: {}, screen: action.mode === 'ar' ? 'arLive' : 'guided', overlays: [], guided };
+      return { ...state, tourMode: action.mode, tourOrder: action.order, stopIndex: 0, unlocked: {}, lockPins: {}, lockKeys: {}, lockRequest: null, codeEntered: {}, skipped: {}, screen: action.mode === 'ar' ? 'arLive' : 'guided', overlays: [], guided };
     }
     case 'tourFailed':
       return { ...state, guided: { ...state.guided, status: 'error', error: action.message } };
@@ -436,7 +448,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, lockPins: { ...state.lockPins, [action.node]: action.pin }, unlocked: { ...state.unlocked, [action.node]: true }, lockRequest: state.lockRequest?.node === action.node ? null : state.lockRequest };
     case 'lockPinFailed':
       if (action.propertyId !== state.propertyId) return state;
-      return { ...state, lockRequest: { node: action.node, propertyId: action.propertyId, status: 'error', error: action.message } };
+      return { ...state, lockRequest: { node: action.node, propertyId: action.propertyId, status: 'error', error: action.message, errorCode: action.code ?? null } };
     case 'lockPinDismiss':
       return { ...state, lockRequest: null };
     case 'lockKeyReady':
@@ -556,6 +568,8 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, guided: { ...state.guided, sim: action.sim } };
     case 'guidedStepFree':
       return { ...state, guided: { ...state.guided, stepFree: action.on } };
+    case 'guidedRerouting':
+      return { ...state, guided: { ...state.guided, rerouting: action.on } };
     case 'setFloor':
       return { ...state, floorByLevel: { ...state.floorByLevel, [action.level]: action.floor } };
     case 'addStop':
@@ -688,8 +702,24 @@ export const reducer = (state: AppState, action: Action): AppState => {
     }
     case 'toggleFavourite':
       return { ...state, favourites: { ...state.favourites, [action.node]: !state.favourites[action.node] } };
-    case 'addPhoto':
-      return { ...state, photos: { ...state.photos, [action.node]: Math.min(4, (state.photos[action.node] ?? 0) + 1) } };
+    case 'addPhoto': {
+      const shots = action.dataUrl ? { ...state.shots, [action.node]: [...(state.shots[action.node] ?? []), action.dataUrl].slice(-8) } : state.shots;
+      return { ...state, shots, photos: { ...state.photos, [action.node]: Math.min(8, (state.photos[action.node] ?? 0) + 1) } };
+    }
+    case 'setDemoMethod':
+      return { ...state, demoMethod: { ...state.demoMethod, [action.node]: action.method } };
+    case 'codeEntered':
+      return { ...state, codeEntered: { ...state.codeEntered, [action.node]: true } };
+    case 'locateStop':
+      // "Show on map" from a stop: back to the guided map, on the stop's own floor, centred on it.
+      return {
+        ...state,
+        screen: state.tourMode === 'ar' ? 'arLive' : 'guided',
+        overlays: [],
+        guided: action.view ? { ...state.guided, view: action.view } : state.guided,
+        floorByLevel: action.view ? { ...state.floorByLevel, [action.view.level]: action.view.floor } : state.floorByLevel,
+        build: { ...state.build, focusNode: action.node }
+      };
     case 'toggleCompare':
       return { ...state, compare: { ...state.compare, [action.node]: !state.compare[action.node] } };
     case 'holdUnit':

@@ -23,6 +23,8 @@ interface Props {
   virtual: boolean;
   calculating: boolean;
   error: string | null;
+  /** Minutes of the whole route the backend calculated for exactly these stops, when it has (null otherwise). */
+  routeMinutes: number | null;
   mark: string;
   onView: (patch: Partial<AppState['build']>) => void;
   onMapView: (view: MapViewState) => void;
@@ -31,24 +33,43 @@ interface Props {
   onGenerate: () => void;
 }
 
-/** The thumbnail of a stop: the app has no stop photos from the backend, so a glyph tile stands in. */
-const StopThumb = ({ stop, size = 'md' }: { stop: TourStopView; size?: 'sm' | 'md' | 'lg' }) => (
-  <span className={`pw-thumb pw-thumb--${size}${stop.kind === 'unit' ? ' pw-thumb--unit' : ''}`} aria-hidden>
-    <Icon name={stop.kind === 'unit' ? 'bed' : stopIconOf(stop.icon)} size={size === 'lg' ? 40 : size === 'md' ? 22 : 18} />
-  </span>
-);
+/** The thumbnail of a stop: its CMS image or floor plan when published, else a glyph tile. */
+const StopThumb = ({ stop, size = 'md' }: { stop: TourStopView; size?: 'sm' | 'md' | 'lg' }) => {
+  const media = stop.unit?.media ?? stop.amenity?.media;
+  const src = stop.kind === 'unit' ? (media?.floorplanImage ?? media?.image ?? null) : (media?.image ?? null);
+  if (src) {
+    return (
+      <span className={`pw-thumb pw-thumb--${size} pw-thumb--img${stop.kind === 'unit' ? ' pw-thumb--unit' : ''}`} aria-hidden>
+        <img src={src} alt="" loading="lazy" />
+      </span>
+    );
+  }
+  return (
+    <span className={`pw-thumb pw-thumb--${size}${stop.kind === 'unit' ? ' pw-thumb--unit' : ''}`} aria-hidden>
+      <Icon name={stop.kind === 'unit' ? 'bed' : stopIconOf(stop.icon)} size={size === 'lg' ? 40 : size === 'md' ? 22 : 18} />
+    </span>
+  );
+};
+
+/** Whether the CMS has plotted the stop and joined it to a path (else no route can reach it and the map cannot show it). */
+const onMap = (s: TourStopView): boolean => (s.unit ?? s.amenity)?.routable !== false;
 
 const metaOf = (s: TourStopView, distances: Record<string, StopDistance>, mark: string) => {
+  const tail = onMap(s) ? '' : ' · not on the map yet';
   if (s.kind === 'unit' && s.unit) {
     const f = unitFacts(s.unit, mark);
-    return `${f.beds} · ${f.price} · ${f.availShort}`;
+    return `${f.beds} · ${f.price} · ${f.availShort}${tail}`;
   }
-  return `${s.floor || s.floorLabel} · ~${s.duration} min · ${distanceLabel(distances[s.node])}`;
+  return `${s.floor || s.floorLabel} · ~${s.duration} min · ${distanceLabel(distances[s.node])}${tail}`;
 };
+
+/** The label of the "All floors" entry: the site plan when the property has one, else the whole stacked plate. */
+const ALL = 'all';
 
 /**
  * Build Your Tour: the property map (the real levels, with a pin on every
- * chosen stop), "Your Tour" grouped by building and floor, Add Stops, a stop
+ * chosen stop), the All floors / floor selector, maximize, locate, "Your
+ * Tour" grouped by building and floor, Add Stops with its filters, a stop
  * preview, and "Let's go!" which asks the backend for the tour route. The
  * four layouts of the design's `buildLayout` tweak: list + map (default),
  * map + cards, list / map tabs, and the floating list / map switch.
@@ -56,7 +77,10 @@ const metaOf = (s: TourStopView, distances: Record<string, StopDistance>, mark: 
 export const BuildTourScreen = (p: Props) => {
   const { bundle, stops, distances, selected, layout, view, mark } = p;
   const chosen = stops.filter((s) => selected[s.node]);
-  const minutes = chosen.reduce((sum, s) => sum + s.duration, 0);
+  const unmapped = chosen.filter((s) => !onMap(s));
+  const dwell = chosen.reduce((sum, s) => sum + s.duration, 0);
+  // The estimate: the backend's route time for exactly these stops when it was calculated, else the dwell time alone.
+  const minutes = p.routeMinutes != null ? p.routeMinutes : dwell;
   const canGenerate = chosen.length > 0;
   const groups = useMemo(() => groupStops(chosen), [chosen]);
   const tabbed = layout === 'tabs' || layout === 'switch';
@@ -64,43 +88,62 @@ export const BuildTourScreen = (p: Props) => {
   const showMap = !tabbed || tabMap;
   const showList = layout !== 'mapCards' && !(tabbed && tabMap);
   const showCards = layout === 'mapCards' || (tabbed && tabMap);
-  const mapHeight = layout === 'mapCards' ? (view.expanded ? 440 : 300) : tabbed ? (view.expanded ? 420 : 250) : view.expanded ? 300 : 170;
+  const mapHeight = view.expanded ? Math.max(360, Math.round((typeof window !== 'undefined' ? window.innerHeight : 800) * 0.62)) : layout === 'mapCards' ? 300 : tabbed ? 250 : 170;
   const [addOpen, setAddOpen] = useState(false);
   const [floorMenu, setFloorMenu] = useState(false);
 
   const options = floorOptions(bundle.levels);
-  const level = bundle.levels.find((l) => l.id === p.mapView?.level) ?? bundle.levels.find((l) => l.kind === 'sitemap') ?? bundle.levels[0];
-  const floor = p.mapView?.level === level.id ? (p.mapView.floor ?? level.floors[0] ?? null) : (level.floors[0] ?? null);
-  const curLabel = options.find((o) => o.level === level.id && (o.floor ?? null) === (floor ?? null))?.label ?? level.name.replace(/ \*$/, '');
+  const sitemap = bundle.levels.find((l) => l.kind === 'sitemap') ?? null;
+  const level = bundle.levels.find((l) => l.id === p.mapView?.level) ?? sitemap ?? bundle.levels[0];
+  // `floor` null on a stacked plate = every floor of it ("All floors"); on the site plan there are no floors.
+  const allFloors = p.mapView?.level === level.id ? p.mapView.floor == null : false;
+  const floor = allFloors ? null : p.mapView?.level === level.id ? (p.mapView.floor ?? level.floors[0] ?? null) : (level.floors[0] ?? null);
+  const offersAll = !!sitemap || bundle.levels.some((l) => l.floors.length > 1);
+  const curLabel = allFloors && (level.kind === 'sitemap' || level.floors.length > 1) ? 'All floors' : (options.find((o) => o.level === level.id && (o.floor ?? null) === (floor ?? null))?.label ?? level.name.replace(/ \*$/, ''));
   const focus = view.focusNode ? stops.find((s) => s.node === view.focusNode) : null;
   const preview = view.previewNode ? stops.find((s) => s.node === view.previewNode) : null;
 
   const locate = (node: string) => {
     const at = levelOfStop(bundle, node);
+    // The stop's own level and floor first (a stop on another floor switches the map), then centre and zoom.
     if (at && (at.level !== level.id || (at.floor != null && at.floor !== floor))) p.onMapView({ level: at.level, floor: at.floor });
     p.onView({ focusNode: node, previewNode: null, tab: 'map' });
+  };
+
+  const pickAll = () => {
+    // "All floors": the site plan when the property has one; else the current stacked plate with every floor shown.
+    const target = sitemap ?? (level.floors.length > 1 ? level : bundle.levels.find((l) => l.floors.length > 1) ?? level);
+    p.onMapView({ level: target.id, floor: null });
+    p.onView({ focusNode: null });
+    setFloorMenu(false);
   };
 
   const pins = useMemo(() => stops.filter((s) => selected[s.node] || s.node === view.focusNode).map((s) => ({ node: s.node, on: !!selected[s.node], focus: s.node === view.focusNode, label: s.name })), [stops, selected, view.focusNode]);
 
   const map = showMap ? (
-    <div className="pw-build__mapwrap" style={{ zIndex: 4 }}>
+    <div className={`pw-build__mapwrap${view.expanded ? ' pw-build__mapwrap--big' : ''}`} style={{ zIndex: 4 }}>
       <div className="pw-build__map" style={{ height: mapHeight }}>
-        <MapView level={level} floor={floor} nodes={bundle.graph.nodes} edges={bundle.graph.edges} units={bundle.units} amenities={bundle.amenities} highlight={{ from: p.startNode }} pins={pins} focusNode={view.focusNode} fitTo="all" fitKey={`build-${level.id}-${floor ?? ''}`} onTapNode={(n) => p.onView({ focusNode: view.focusNode === n.id ? null : n.id })}>
+        <MapView level={level} floor={floor} nodes={bundle.graph.nodes} edges={bundle.graph.edges} units={bundle.units} amenities={bundle.amenities} highlight={{ from: p.startNode }} pins={pins} focusNode={view.focusNode} fitTo="all" fitKey={`build-${level.id}-${floor ?? 'all'}-${view.expanded ? 'big' : 'small'}`} onTapNode={(n) => p.onView({ focusNode: view.focusNode === n.id ? null : n.id })}>
           <button type="button" className="pw-build__size" aria-label={view.expanded ? 'Smaller map' : 'Bigger map'} onPointerDown={(e) => e.stopPropagation()} onClick={() => p.onView({ expanded: !view.expanded })}>
             <Icon name={view.expanded ? 'shrink' : 'expand'} size={13} strokeWidth={2.4} />
           </button>
-          {options.length > 1 ? (
+          {options.length > 1 || offersAll ? (
             <div className="pw-build__floor" onPointerDown={(e) => e.stopPropagation()}>
-              <button type="button" className="pw-build__floorbtn" onClick={() => setFloorMenu((v) => !v)} aria-expanded={floorMenu}>
+              <button type="button" className="pw-build__floorbtn" onClick={() => setFloorMenu((v) => !v)} aria-expanded={floorMenu} aria-label="Choose floor">
                 <Icon name="layers" size={12} strokeWidth={2.2} />
                 {curLabel}
                 <Icon name="chevronDown" size={11} strokeWidth={2.6} style={{ transform: floorMenu ? 'rotate(180deg)' : undefined, transition: 'transform 0.15s' }} />
               </button>
               {floorMenu ? (
                 <div className="pw-build__floormenu" role="menu">
+                  {offersAll ? (
+                    <button type="button" role="menuitem" className={`pw-build__flooritem${allFloors ? ' pw-build__flooritem--on' : ''}`} onClick={pickAll}>
+                      <span>All floors</span>
+                      {chosen.length ? <b>{chosen.length}</b> : null}
+                    </button>
+                  ) : null}
                   {options.map((o) => {
-                    const on = o.level === level.id && (o.floor ?? null) === (floor ?? null);
+                    const on = !allFloors && o.level === level.id && (o.floor ?? null) === (floor ?? null);
                     const count = chosen.filter((s) => {
                       const at = levelOfStop(bundle, s.node);
                       return at?.level === o.level && (o.floor == null || at.floor == null || at.floor === o.floor);
@@ -150,7 +193,7 @@ export const BuildTourScreen = (p: Props) => {
         <span className="pw-build__itemname">{s.name}</span>
         <span className="pw-build__itemmeta">{metaOf(s, distances, mark)}</span>
       </span>
-      <IconButton icon="pin" label={`Show ${s.name} on map`} onClick={() => locate(s.node)} className="pw-build__iconbtn--primary" />
+      {onMap(s) ? <IconButton icon="pin" label={`Show ${s.name} on map`} onClick={() => locate(s.node)} className="pw-build__iconbtn--primary" /> : null}
       <IconButton icon="trash" label={`Remove ${s.name}`} onClick={() => p.onToggle(s.node)} className="pw-build__iconbtn--danger" />
     </div>
   );
@@ -195,7 +238,7 @@ export const BuildTourScreen = (p: Props) => {
           <div>
             <div className="pw-build__yourtitle">Your Tour</div>
             <div className="pw-build__yoursub">
-              {chosen.length} stops · ~{minutes} min
+              {chosen.length} stops · ~{minutes} min{p.routeMinutes != null ? ' with walking' : ''}
             </div>
           </div>
           <button type="button" className="pw-build__add" onClick={() => setAddOpen(true)}>
@@ -238,6 +281,7 @@ export const BuildTourScreen = (p: Props) => {
           </div>
         ))}</div> : null}
         {!chosen.length ? <div className="pw-build__empty">Your tour is empty. Add at least one stop to start.</div> : null}
+        {unmapped.length ? <div className="pw-build__empty">{unmapped.map((s) => s.name).join(', ')} {unmapped.length === 1 ? 'is' : 'are'} not plotted on the map in Pynwheel yet, so the route will leave {unmapped.length === 1 ? 'it' : 'them'} out.</div> : null}
         {layout === 'switch' ? (
           <div className="pw-build__switchwrap">
             <div className="pw-build__switch">
@@ -251,15 +295,19 @@ export const BuildTourScreen = (p: Props) => {
           </div>
         ) : null}
       </div>
-      <AddStopsSheet open={addOpen} stops={stops} selected={selected} distances={distances} mark={mark} onToggle={p.onToggle} onPreview={(node) => p.onView({ previewNode: node })} onClose={() => setAddOpen(false)} />
+      <AddStopsSheet open={addOpen} bundle={bundle} stops={stops} selected={selected} distances={distances} mark={mark} onToggle={p.onToggle} onPreview={(node) => p.onView({ previewNode: node })} onClose={() => setAddOpen(false)} />
       {preview ? (
         <div className="pw-preview" onClick={() => p.onView({ previewNode: null })} role="presentation">
           <button type="button" className="pw-preview__close" aria-label="Close preview" onClick={() => p.onView({ previewNode: null })}>
             <Icon name="close" size={14} color="#fff" strokeWidth={2.4} />
           </button>
           <div className="pw-preview__pic" onClick={(e) => e.stopPropagation()} role="presentation">
-            <StopThumb stop={preview} size="lg" />
-            {preview.kind === 'amenity' && preview.amenity?.description ? <p>{preview.amenity.description}</p> : preview.kind === 'unit' && preview.unit?.description ? <p>{preview.unit.description}</p> : <p className="pw-preview__nophoto">No photo for this stop yet.</p>}
+            {(preview.kind === 'unit' ? (preview.unit?.media?.floorplanImage ?? preview.unit?.media?.image) : preview.amenity?.media?.image) ? (
+              <img className="pw-preview__img" src={(preview.kind === 'unit' ? (preview.unit?.media?.floorplanImage ?? preview.unit?.media?.image) : preview.amenity?.media?.image) ?? undefined} alt={preview.name} />
+            ) : (
+              <StopThumb stop={preview} size="lg" />
+            )}
+            {preview.kind === 'amenity' && preview.amenity?.description ? <p>{preview.amenity.description}</p> : preview.kind === 'unit' && preview.unit?.description ? <p>{preview.unit.description}</p> : !(preview.unit?.media?.floorplanImage || preview.unit?.media?.image || preview.amenity?.media?.image) ? <p className="pw-preview__nophoto">No photo for this stop yet.</p> : null}
           </div>
           <div className="pw-preview__text" onClick={(e) => e.stopPropagation()} role="presentation">
             <div className="pw-preview__name">{preview.name}</div>
@@ -284,6 +332,7 @@ export const BuildTourScreen = (p: Props) => {
 
 interface AddProps {
   open: boolean;
+  bundle: PropertyBundle;
   stops: TourStopView[];
   selected: Record<string, boolean>;
   distances: Record<string, StopDistance>;
@@ -293,39 +342,73 @@ interface AddProps {
   onClose: () => void;
 }
 
+/** The building a stop stands in, from its level (null on the site plan or when the level names none). */
+const buildingOf = (bundle: PropertyBundle, s: TourStopView): string | null => {
+  const at = levelOfStop(bundle, s.node);
+  const level = at ? bundle.levels.find((l) => l.id === at.level) : null;
+  return level?.building ?? s.unit?.building ?? s.amenity?.building ?? null;
+};
+
+/**
+ * Whether a unit passes the "Available now" filter: only a unit the feed
+ * marks available, and available today when it carries a date. A unit
+ * without availability data never passes (a missing value is not "now").
+ */
+export const availableNow = (s: TourStopView): boolean => {
+  const u = s.unit;
+  if (!u) return false;
+  if (u.availabilityKnown === false && !u.availableDate) return false;
+  if (!u.available) return false;
+  if (u.availableDate) return Date.parse(u.availableDate) <= Date.now();
+  return true;
+};
+
 /** Add stops: search, All / Units / Amenities, building & floor chips, unit preferences, grouped rows with Add / Added. */
 /** Mounted only while open, so the "already in your tour" baseline is taken fresh each time the sheet opens. */
 const AddStopsSheet = (p: AddProps) => (p.open ? <AddStopsBody {...p} /> : null);
 
-const AddStopsBody = ({ open, stops, selected, distances, mark, onToggle, onPreview, onClose }: AddProps) => {
+const AddStopsBody = ({ open, bundle, stops, selected, distances, mark, onToggle, onPreview, onClose }: AddProps) => {
   const [q, setQ] = useState('');
   const [tab, setTab] = useState<'all' | 'units' | 'amenities'>('all');
-  const [floor, setFloor] = useState('all');
+  const [floor, setFloor] = useState(ALL);
+  const [building, setBuilding] = useState(ALL);
   const [beds, setBeds] = useState<'any' | '0' | '1' | '2' | '3'>('any');
   const [availNow, setAvailNow] = useState(false);
   const [base] = useState<Record<string, boolean>>(() => ({ ...selected }));
   if (!open) return null;
-  const floors = [...new Set(stops.map((s) => s.floor).filter(Boolean))];
+  const buildings = [...new Set(stops.map((s) => buildingOf(bundle, s)).filter((b): b is string => !!b))];
+  const floors = [...new Set(stops.filter((s) => building === ALL || buildingOf(bundle, s) === building).map((s) => s.floor).filter(Boolean))];
   const pool = stops.filter((s) => !base[s.node]);
   const query = q.trim().toLowerCase();
   const matches = (s: TourStopView) => {
     if (tab === 'units' && s.kind !== 'unit') return false;
     if (tab === 'amenities' && s.kind !== 'amenity') return false;
-    if (floor !== 'all' && s.floor !== floor) return false;
-    if (query && !`${s.name} ${s.floor} ${s.floorLabel}`.toLowerCase().includes(query)) return false;
-    if (s.kind === 'unit' && s.unit) {
-      if (beds !== 'any' && (s.unit.bedrooms ?? -1) !== Number(beds)) return false;
-      if (availNow && !s.unit.available) return false;
+    if (building !== ALL && buildingOf(bundle, s) !== building) return false;
+    if (floor !== ALL && s.floor !== floor) return false;
+    if (query && !`${s.name} ${s.floor} ${s.floorLabel} ${s.unit?.unitType ?? ''} ${s.unit?.floorplanName ?? ''}`.toLowerCase().includes(query)) return false;
+    if (s.kind === 'unit') {
+      // A missing bedroom count never passes a bedroom filter; a missing availability never passes "Available now".
+      if (beds !== 'any' && (s.unit?.bedrooms ?? -1) !== Number(beds)) return false;
+      if (availNow && !availableNow(s)) return false;
     }
     return true;
   };
   const shown = pool.filter(matches);
   const groups = groupStops(shown);
   const added = pool.filter((s) => selected[s.node]).length;
-  const filtered = !!query || tab !== 'all' || floor !== 'all' || beds !== 'any' || availNow;
+  const filtered = !!query || tab !== 'all' || floor !== ALL || building !== ALL || beds !== 'any' || availNow;
   const hasBedData = stops.some((s) => s.unit?.bedrooms != null);
+  const hasAvailData = stops.some((s) => s.unit && (s.unit.availabilityKnown !== false || s.unit.availableDate));
+  const clear = () => {
+    setQ('');
+    setTab('all');
+    setFloor(ALL);
+    setBuilding(ALL);
+    setBeds('any');
+    setAvailNow(false);
+  };
   return (
-    <Sheet open onClose={onClose} size="tall" zIndex={320} className="pw-addstops" headerPadding="tight">
+    <Sheet open onClose={onClose} size="tall" zIndex={320} className="pw-addstops" headerPadding="tight" testId="add-stops">
       <div className="pw-addstops__head">
         <div>
           <div className="pw-addstops__title">Add stops</div>
@@ -343,33 +426,52 @@ const AddStopsBody = ({ open, stops, selected, distances, mark, onToggle, onPrev
         ) : null}
       </div>
       <Segmented options={[{ id: 'all', label: 'All' }, { id: 'units', label: 'Units' }, { id: 'amenities', label: 'Amenities' }]} value={tab} onChange={setTab} />
-      {floors.length > 1 ? (
+      {buildings.length > 1 || floors.length > 1 ? (
         <div className="pw-addstops__filters">
           <Eyebrow>Building &amp; floor</Eyebrow>
           <div className="pw-addstops__chips">
-            <Chip size="sm" on={floor === 'all'} onClick={() => setFloor('all')}>
+            <Chip size="sm" on={floor === ALL && building === ALL} onClick={() => {
+              setFloor(ALL);
+              setBuilding(ALL);
+            }}>
               All
             </Chip>
-            {floors.map((f) => (
-              <Chip key={f} size="sm" on={floor === f} onClick={() => setFloor(f)}>
-                {f}
-              </Chip>
-            ))}
+            {buildings.length > 1
+              ? buildings.map((b) => (
+                  <Chip key={`b-${b}`} size="sm" on={building === b} onClick={() => {
+                    setBuilding(building === b ? ALL : b);
+                    setFloor(ALL);
+                  }}>
+                    {b}
+                  </Chip>
+                ))
+              : null}
+            {floors.length > 1
+              ? floors.map((f) => (
+                  <Chip key={f} size="sm" on={floor === f} onClick={() => setFloor(floor === f ? ALL : f)}>
+                    {building !== ALL ? f.replace(`${building} · `, '') : f}
+                  </Chip>
+                ))
+              : null}
           </div>
         </div>
       ) : null}
-      {tab !== 'amenities' && hasBedData ? (
+      {tab !== 'amenities' && (hasBedData || hasAvailData) ? (
         <div className="pw-addstops__filters">
           <Eyebrow>Unit preferences</Eyebrow>
           <div className="pw-addstops__chips">
-            {(['any', '0', '1', '2', '3'] as const).map((b) => (
-              <Chip key={b} size="sm" on={beds === b} onClick={() => setBeds(b)}>
-                {b === 'any' ? 'Any beds' : b === '0' ? 'Studio' : `${b} Bed`}
+            {hasBedData
+              ? (['any', '0', '1', '2', '3'] as const).map((b) => (
+                  <Chip key={b} size="sm" on={beds === b} onClick={() => setBeds(b)}>
+                    {b === 'any' ? 'Any beds' : b === '0' ? 'Studio' : `${b} Bed`}
+                  </Chip>
+                ))
+              : null}
+            {hasAvailData ? (
+              <Chip size="sm" on={availNow} onClick={() => setAvailNow((v) => !v)}>
+                Available now
               </Chip>
-            ))}
-            <Chip size="sm" on={availNow} onClick={() => setAvailNow((v) => !v)}>
-              Available now
-            </Chip>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -404,13 +506,7 @@ const AddStopsBody = ({ open, stops, selected, distances, mark, onToggle, onPrev
             <div>{pool.length && filtered ? 'No matches' : tab === 'units' ? 'All available units are already in your tour' : tab === 'amenities' ? 'All amenities are already in your tour' : 'Everything is already in your tour'}</div>
             <div>{pool.length && filtered ? 'Try a different search or clear your filters.' : tab === 'all' ? 'Remove a stop first if you want to swap something.' : 'Switch tabs to add something else.'}</div>
             {pool.length && filtered ? (
-              <button type="button" className="pw-addstops__clear" onClick={() => {
-                setQ('');
-                setTab('all');
-                setFloor('all');
-                setBeds('any');
-                setAvailNow(false);
-              }}>
+              <button type="button" className="pw-addstops__clear" onClick={clear}>
                 Clear filters
               </button>
             ) : null}

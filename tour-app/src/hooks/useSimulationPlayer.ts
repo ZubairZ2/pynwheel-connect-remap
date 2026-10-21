@@ -106,6 +106,8 @@ export const useSimulationPlayer = (route: Route | null, state: SimulationState,
     return {
       toggle: () => emit(play(current.current)),
       stop: () => emit(stop(current.current)),
+      /** Replay: the whole route again from its start (a new run), whatever the walker was doing. */
+      replay: () => emit({ ...stop(current.current), status: 'playing', run: current.current.run + 1 }),
       next: () => sim && emit(stepBy(sim, current.current, 1)),
       prev: () => sim && emit(stepBy(sim, current.current, -1)),
       setMode: (mode: SimulationMode) => emit(setMode(current.current, mode)),

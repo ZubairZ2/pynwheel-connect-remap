@@ -31,6 +31,7 @@ public class IgloohomeBlePlugin: CAPPlugin, CAPBridgedPlugin {
     public let jsName = "IgloohomeBle"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "initialize", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "enableBluetooth", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "checkPermissions", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "requestPermissions", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "startScan", returnType: CAPPluginReturnPromise),
@@ -158,6 +159,12 @@ public class IgloohomeBlePlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func initialize(_ call: CAPPluginCall) {
         let state = manager().getCentralManager().state
         call.resolve(["platform": "ios", "supported": state != .unsupported, "enabled": state == .poweredOn])
+    }
+
+    /// iOS offers no API to switch Bluetooth on from an app (the system shows its own alert when a Core Bluetooth
+    /// manager starts while the radio is off); the answer is the current state and the app points to Control Centre.
+    @objc func enableBluetooth(_ call: CAPPluginCall) {
+        call.resolve(["enabled": manager().getCentralManager().state == .poweredOn])
     }
 
     @objc public override func checkPermissions(_ call: CAPPluginCall) {
@@ -327,6 +334,7 @@ public class IgloohomeBlePlugin: CAPPlugin, CAPBridgedPlugin {
     // The SDK is not in this build: `initialize` rejects with `unavailable` (the app then says the Bluetooth unlock is
     // not in this build) rather than answering `supported: false`, which would read as "this phone has no Bluetooth LE".
     @objc func initialize(_ call: CAPPluginCall) { reject(call, "unavailable", IgloohomeBlePlugin.unavailableMessage) }
+    @objc func enableBluetooth(_ call: CAPPluginCall) { call.resolve(["enabled": false]) }
     @objc public override func checkPermissions(_ call: CAPPluginCall) { call.resolve(["bluetooth": permissionValue()]) }
     @objc public override func requestPermissions(_ call: CAPPluginCall) { requestBluetoothPermission(call) }
     @objc func startScan(_ call: CAPPluginCall) { reject(call, "unavailable", IgloohomeBlePlugin.unavailableMessage) }

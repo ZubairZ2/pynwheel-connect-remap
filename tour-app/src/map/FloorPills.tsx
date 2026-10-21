@@ -31,6 +31,15 @@ export const floorOptions = (levels: MapLevel[]): FloorOption[] => {
       const floors = l.floors.length ? l.floors : [null];
       floors.forEach((f) => out.push({ level: l.id, floor: f, label: f != null ? `Floor ${f}` : l.name.replace(/ \*$/, ''), building: l.building }));
     });
+  // Two plans of the same building and floor (a raster plate and an SVG plate, say) are told apart by the plan's name.
+  const seen = new Map<string, number>();
+  out.forEach((o) => seen.set(`${o.building ?? ''}|${o.label}`, (seen.get(`${o.building ?? ''}|${o.label}`) ?? 0) + 1));
+  out.forEach((o) => {
+    if ((seen.get(`${o.building ?? ''}|${o.label}`) ?? 0) > 1) {
+      const name = levels.find((l) => l.id === o.level)?.name.replace(/ \*$/, '');
+      if (name && name !== o.label) o.label = `${o.label} · ${name}`;
+    }
+  });
   levels.filter((l) => l.kind === 'sitemap').forEach((l) => out.push({ level: l.id, floor: null, label: 'Property map', building: null }));
   return out;
 };

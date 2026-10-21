@@ -50,6 +50,10 @@ export interface RouteStep {
   sub: string;
   /** Seconds to stay at an `arrive` step of a tour (from the stop's duration). */
   dwellS?: number;
+  /** The connector a transition step rides (`elevator:1`), so the screen can look its lock up in the graph. */
+  via?: string | null;
+  /** The stop's own visitor instruction (the CMS's directional text), when it holds one. */
+  instruction?: string | null;
 }
 
 export interface Route {

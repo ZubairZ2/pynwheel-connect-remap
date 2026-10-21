@@ -34,7 +34,15 @@ module TourApi
         raise ApiError.unprocessable('invalid_stop', "Some chosen stops are not on this property's stops list.", { invalid_stops: invalid })
       end
 
-      result, segments = RouteService.new(community, step_free: step_free, avoid_blockers: avoid_blockers, graph: built.graph).tour(stop_keys: wanted, start_key: start_stop_id.presence)
+      # A stop on the list that the CMS has not plotted (no map node) cannot be routed to: it is left out and
+      # reported in `skipped`, like a stop no path reaches, instead of refusing the whole tour (October 21, 2026).
+      unmapped = wanted.reject { |id| built.graph.nodes.key?(id) }
+      mapped = wanted - unmapped
+      if mapped.empty?
+        raise ApiError.unprocessable('no_path', 'None of the chosen stops is plotted on the map yet.', { skipped: unmapped, graph_version: built.version })
+      end
+
+      result, segments = RouteService.new(community, step_free: step_free, avoid_blockers: avoid_blockers, graph: built.graph).tour(stop_keys: mapped, start_key: start_stop_id.presence)
       raise failure(result, built.version) unless result.ok
 
       out = segments.filter_map do |segment|

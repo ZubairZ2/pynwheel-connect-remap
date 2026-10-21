@@ -1391,3 +1391,21 @@ index migration on production, set `HOST_URL`, wire the iOS plugin into CapApp-S
   (use a cookie jar) with `X-CSRF-Token` from the read's meta.
 - **Guest-table rows in tests:** the models declare a required `pynwheel_access_user` the legacy writers never set — create
   them with `save!(validate: false)`.
+
+## 41. The Self Tour App's Start Tour experience — implementation knowledge (October 21, 2026)
+
+- The live Claude Design file can be read from a signed-in browser-pane session with the design service's Connect-JSON RPC
+  (`POST /design/anthropic.omelette.api.v1alpha.OmeletteService/GetFile`, `{projectId, path}`, header `Content-Type: application/json`);
+  `ListFiles` lists the project. The 12 "pages" are the project files; "Pynwheel Self Tour App.dc.html" (Oct 16) is the app design.
+- A stop's access method on screen comes from `TourApi::Locks.describe` only (`store/access.ts#accessMethodOf`); the design's Remote
+  and Gate variants have no backend integration and exist on demo data alone. `Demo · Method` is `state.demoMethod`, memory-only.
+- The audit clone (`pynwheel_audit_clone`) holds no graph for Cypress Terra 8005 (plates only); `pynwheel_development` has no 8005.
+  Hazel's igloohome account sits in `v1` there (Bluetooth), so its 1508 shows the BLE panel; its elevators carry `Zerv` (the
+  secured-floor note); Jennifer Demo FP's SVG plate has no vertical link to its raster floors (5 units unreachable, reported).
+- The CMS keeps one upcoming booking per visitor: a second booking through the app (self-tour then live tour on Oeuvre 229) moves
+  the first (`rescheduled: true`); the app says so and updates its card.
+- Headless verification recipe: `scratchpad/pw/run.mjs` (Playwright from `pyn-connect-web/node_modules`, channel `chrome`), a
+  Doorkeeper token minted with `rails runner` for the clone's Super admin 2181 injected into `CapacitorStorage.pynwheel_tour_session_v1`,
+  scenarios `build | guided | stops [--mock-pin] | demo (--dummy, :3019) | booking [--submit]`. The browser pane renders stale
+  screenshots while its document is hidden; read the DOM instead. Launch entries `rails-start-tour-clone` (:3104),
+  `tour-app-start-tour` (:3018), `tour-app-start-tour-dummy` (:3019).

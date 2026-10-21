@@ -68,6 +68,13 @@ export interface ScanStoppedEvent {
 export interface IgloohomeBlePlugin {
   /** The SDK's state on this device; never throws. */
   initialize(): Promise<IgloohomeBleState>;
+  /**
+   * Asks the system to switch Bluetooth on without leaving the app (Android: the "Allow Pynwheel Tour to turn on
+   * Bluetooth?" dialog, `BluetoothAdapter.ACTION_REQUEST_ENABLE`; it needs the Bluetooth permission on Android 12+).
+   * Resolves with the adapter's state afterwards: `enabled` false when the visitor declined. iOS cannot switch the
+   * radio on from an app, so it answers the current state and the app points to Control Centre.
+   */
+  enableBluetooth(): Promise<{ enabled: boolean }>;
   checkPermissions(): Promise<IgloohomeBlePermissionStatus>;
   requestPermissions(): Promise<IgloohomeBlePermissionStatus>;
   /** Starts a low-latency scan; each lock seen is a `lockFound` event. Stops itself after `timeoutMs` (default 60 000). */

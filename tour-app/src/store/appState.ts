@@ -1,4 +1,4 @@
-import type { LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
+import type { AccessMethod, LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
 import type { AvailabilityDay, BookingSettings } from '~/repositories/tourRepository';
 import type { Overlay, Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
@@ -57,6 +57,8 @@ export interface GuidedState {
   sim: SimulationState;
   /** Avoid stairs: the tour is recalculated step-free (a real route option). */
   stepFree: boolean;
+  /** The step-free recalculation is in flight. */
+  rerouting: boolean;
 }
 
 export interface AuthState {
@@ -74,6 +76,8 @@ export interface LockRequestState {
   propertyId: number | null;
   status: LockRequestStatus;
   error: string | null;
+  /** The failure's code when known (`bluetooth_off`, `permission_denied`, …), so the screen can offer the matching action. */
+  errorCode?: string | null;
 }
 
 // ───────── The design refresh's UI-only state ─────────
@@ -125,6 +129,10 @@ export interface ScheduleDraft {
   first: string;
   last: string;
   phone: string;
+  /** The CMS Booking Form's optional fields, asked only when the property's form shows them. */
+  bedroom: string;
+  /** `YYYY-MM-DD` */
+  moveIn: string;
 }
 
 /**
@@ -232,10 +240,17 @@ export interface AppState {
   lockRequest: LockRequestState | null;
   notes: Record<string, string>;
   noteDraft: string;
+  /** The visitor's own reference photos per stop (data URLs, this tour only, never persisted or uploaded). */
+  shots: Record<string, string[]>;
+  /** Demo data only: the Unlock screen's `Demo · Method` choice per stop (never applied to a real lock). */
+  demoMethod: Record<string, AccessMethod>;
+  /** Door codes the visitor confirmed typing on a keypad (the design's "I've entered the code"), per stop and tour. */
+  codeEntered: Record<string, boolean>;
   tourHistory: TourHistoryEntry[];
   historyLoaded: boolean;
   arInitStep: number;
   ai: { context: 'stop' | 'general'; messages: AiMessage[]; input: string; typing: boolean; mode: 'ai' | 'agent'; listening: boolean };
+  /** Book a Live Tour: `day` is a `YYYY-MM-DD` key of the loaded calendar, `time` a slot label of that day. */
   book: { day: string; time: string; unit: string; done: boolean; submitting: boolean };
   applyUnit: string | null;
   applySubmitting: boolean;
@@ -281,7 +296,8 @@ export interface AppState {
   compare: Record<string, boolean>;
   holds: Record<string, boolean>;
   skipped: Record<string, string>;
-  leaseTerm: 3 | 6 | 9 | 12;
+  /** The lease term (months) the unit screens price by; a published term of the unit when it has any. */
+  leaseTerm: number;
   skipReason: string | null;
   audioOn: boolean;
   narration: { node: string | null; base: number; startAt: number | null };
@@ -306,7 +322,7 @@ export const initialWayfinding = (): WayfindingState => ({
   picker: 'from'
 });
 
-export const initialGuided = (): GuidedState => ({ status: 'idle', tour: null, error: null, view: null, sim: initialSimulationState('point'), stepFree: false });
+export const initialGuided = (): GuidedState => ({ status: 'idle', tour: null, error: null, view: null, sim: initialSimulationState('point'), stepFree: false, rerouting: false });
 
 export const initialVerify = (): VerifyFlow => ({ step: 'intro', consent: false, scanning: false, card: { number: '', expiry: '', zip: '' }, then: null });
 
@@ -320,7 +336,7 @@ export const dayKey = (offset = 0, from: Date = new Date()): string => {
   return `${d.getFullYear()}-${m}-${day}`;
 };
 
-export const initialSchedule = (): ScheduleDraft => ({ date: dayKey(0), time: '', length: 45, unit: '', party: 1, first: '', last: '', phone: '' });
+export const initialSchedule = (): ScheduleDraft => ({ date: dayKey(0), time: '', length: 45, unit: '', party: 1, first: '', last: '', phone: '', bedroom: '', moveIn: '' });
 
 export const initialBooking = (): BookingState => ({ propertyId: null, fetchedAt: 0, status: 'idle', error: null, settings: null, days: {}, saving: false, saveError: null });
 
@@ -352,6 +368,9 @@ export const initialAppState = (): AppState => ({
   lockRequest: null,
   notes: {},
   noteDraft: '',
+  shots: {},
+  demoMethod: {},
+  codeEntered: {},
   tourHistory: [],
   historyLoaded: false,
   arInitStep: 0,

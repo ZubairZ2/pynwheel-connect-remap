@@ -90,8 +90,8 @@ describe('API parsers', () => {
     expect(parsed.lengthPx).toBe(1032.4);
     expect(parsed.legs[0]).toMatchObject({ kind: 'walk', level: 'floorplate:10', floor: 1, lengthPx: 1032.4 });
     expect(parsed.steps).toEqual([
-      { kind: 'walk', leg: 0, title: 'Walk on Floor 1', sub: 'From Main Tour to 101 · 1,032 px', dwellS: undefined },
-      { kind: 'arrive', leg: 0, title: 'Arrive at 101', sub: 'Floor 1 · Turn left', dwellS: 240 }
+      { kind: 'walk', leg: 0, title: 'Walk on Floor 1', sub: 'From Main Tour to 101 · 1,032 px', dwellS: undefined, via: null, instruction: null },
+      { kind: 'arrive', leg: 0, title: 'Arrive at 101', sub: 'Floor 1 · Turn left', dwellS: 240, via: null, instruction: 'Turn left' }
     ]);
     expect(parsed.stages).toEqual([{ level: 'floorplate:10', floor: 1, building: 'A', leg: 0 }]);
   });
@@ -104,6 +104,29 @@ describe('API parsers', () => {
     const distances = parseDistances({ success: true, graph_version: 'wf-1-abc', from_stop_id: 'tour_start:7', distances: { 'unit:101': { reachable: true, distance: 1032.4, unit: 'px', distance_ft: null, duration_s: null, direction: 'level', error: null }, 'unit:999': { reachable: false, distance: 0, unit: 'px', distance_ft: null, duration_s: null, direction: 'level', error: { code: 'not_linked', message: 'Island is not connected to a path on Floor 1.' } } } });
     expect(distances['unit:101']).toEqual({ lengthPx: 1032.4, lengthFt: null, durationS: null, direction: 'level', unreachable: null });
     expect(distances['unit:999'].unreachable).toContain('Island');
+  });
+
+  it('reads the detail facts and media of a stop, and defaults what the CMS does not hold', () => {
+    const rich = {
+      ...stops,
+      groups: stops.groups.map((g) => ({
+        ...g,
+        stops: g.stops.map((s) =>
+          s.type === 'unit'
+            ? { ...s, unit: { ...s.unit!, unit_type: 'Apartment', available_date: '2026-11-15', availability: 'Unoccupied', lease_terms: [{ months: 12, rent: 2750 }, { months: 6, rent: 2900 }, { months: 0, rent: 1 }], deposit: 500, additional_fee: '<p>Admin fee $250</p>', virtual_tour_url: 'https://my.matterport.com/show/?m=x' }, media: { image: null, floorplan_image: 'https://img/plan.png', photos: [{ id: 3, name: 'Kitchen', url: 'https://img/k.jpg' }, { id: 4, name: null, url: '' }], virtual_tour_url: null } }
+            : s
+        )
+      }))
+    };
+    const unit = parseBundle(detail, graph, rich, 'fallback.jpg').units[0];
+    expect(unit).toMatchObject({ unitType: 'Apartment', availableDate: '2026-11-15', availability: 'Unoccupied', availabilityKnown: true, deposit: 500, additionalFee: 'Admin fee $250' });
+    expect(unit.leaseTerms).toEqual([{ months: 6, rent: 2900 }, { months: 12, rent: 2750 }]);
+    expect(unit.media).toEqual({ image: null, floorplanImage: 'https://img/plan.png', photos: [{ id: 3, name: 'Kitchen', url: 'https://img/k.jpg' }], virtualTourUrl: 'https://my.matterport.com/show/?m=x' });
+    const plain = parseBundle(detail, graph, stops, 'fallback.jpg').units[0];
+    expect(plain.leaseTerms).toEqual([]);
+    expect(plain.media).toEqual({ image: null, floorplanImage: null, photos: [], virtualTourUrl: null });
+    expect(plain.availabilityKnown).toBe(true);
+    expect(parseBundle({ ...detail, phone: '7789000352', email: 'hazel@quadreal.com' }, graph, stops, 'x').property).toMatchObject({ phone: '7789000352', email: 'hazel@quadreal.com' });
   });
 
   it('never crashes on missing fields', () => {
