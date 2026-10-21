@@ -5426,6 +5426,70 @@
     },
 
     // ─────────────────────────────────────────────────────────────────────────
+    // PYNWHEEL TOUCH SETTINGS
+    // One settings document per property, shared by every Touch device logged
+    // into it. The server stores `settings` exactly as sent and never reads
+    // inside it, so the Touch app owns its shape. The property comes from the
+    // session token. See docs/touch-settings/frontend-integration.md.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Load the property's saved Touch settings.
+     *
+     * Before anything is saved, `settings` and `device` are {} and
+     * `updated_at` is null. Never rejects.
+     *
+     * @returns {Promise<{success: boolean, property_id?: number, settings?: Object,
+     *   device?: Object, updated_at?: string|null, status?: number, message?: string}>}
+     */
+    async getTouchSettings() {
+      return this._touchSettingsRequest("GET");
+    },
+
+    /**
+     * Replace the property's Touch settings. A full replace, not a merge: send
+     * the whole document, because any key left out is removed on the server.
+     *
+     * `device` is optional ({ device_type, platform, app_version, ... }). When
+     * omitted, the server keeps the device info from the last save that sent one.
+     * Never rejects.
+     *
+     * @param {Object} settings - the whole settings document (must be an object)
+     * @param {Object} [device] - info about the device saving
+     * @returns {Promise<{success: boolean, property_id?: number, settings?: Object,
+     *   device?: Object, updated_at?: string|null, status?: number, message?: string}>}
+     */
+    async saveTouchSettings(settings, device) {
+      if (!settings || typeof settings !== "object" || Array.isArray(settings)) {
+        return { success: false, status: 422, message: "settings must be an object." };
+      }
+
+      const body = { settings };
+      if (device && typeof device === "object") body.device = device;
+
+      return this._touchSettingsRequest("PUT", body);
+    },
+
+    async _touchSettingsRequest(method, body) {
+      try {
+        const res = await this._authorizedFetch(`${this._apiBase()}/api/partner/maps/touch_settings`, {
+          method,
+          headers: body ? { "Content-Type": "application/json" } : {},
+          body: body ? JSON.stringify(body) : undefined
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          return { success: false, status: res.status, message: data.message || "Touch settings request failed." };
+        }
+
+        return data;
+      } catch {
+        return { success: false, status: 0, message: "Network error. Please try again." };
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
     // IMAGE MAP SUBSYSTEM
     // Used when data.property.map.enableSvgMode === false.
     // Renders a raster image (PNG/JPG) and overlays absolutely-positioned
@@ -5997,6 +6061,8 @@
       deleteFavorite(itemIds, communityId, sessionId, type) { return PynMapSDK.deleteFavorite.call(PynMapSDK, itemIds, communityId, sessionId, type); },
       clearAllFavorites(communityId, sessionId)             { return PynMapSDK.clearAllFavorites.call(PynMapSDK, communityId, sessionId); },
       shareFavoritesEmail(userEmail, favoritesUrl)          { return PynMapSDK.shareFavoritesEmail.call(PynMapSDK, userEmail, favoritesUrl); },
+      getTouchSettings()                                    { return PynMapSDK.getTouchSettings.call(PynMapSDK); },
+      saveTouchSettings(settings, device)                   { return PynMapSDK.saveTouchSettings.call(PynMapSDK, settings, device); },
       onFloorplanHover(floorplanId){ return PynMapSDK.onFloorplanHover.call(PynMapSDK, floorplanId); },
       offFloorplanHover()          { return PynMapSDK.offFloorplanHover.call(PynMapSDK); },
       setExpandedMode(expanded)    { return PynMapSDK.setExpandedMode.call(PynMapSDK, expanded); },

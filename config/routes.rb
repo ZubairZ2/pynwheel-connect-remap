@@ -737,6 +737,8 @@ Rails.application.routes.draw do
         get    :get_favorites,            to: 'sdk#get_favorites'
         post   :share_favorites_email,    to: 'sdk#share_favorites_email'
         post   :events,                   to: 'sdk#track_events'
+        get    :touch_settings,           to: 'touch_settings#show'
+        put    :touch_settings,           to: 'touch_settings#update'
       end
     end
 
