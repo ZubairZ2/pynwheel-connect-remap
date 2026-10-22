@@ -24,7 +24,7 @@ module Api
             built = TourApi::Engine.built(community)
             stops = TourApi::Stops.list(community, built)
           end
-          render json: TourApi::Properties.detail(community, built: built, stops: stops)
+          render json: TourApi::Properties.detail(community, built: built, stops: stops).merge(capabilities: Connect::Flags.tour_capabilities)
         end
       end
     end

@@ -2809,3 +2809,38 @@ Book a Live Tour on the real calendar. Backend: additive stop facts / media and 
 `tour-route`. Verified headless on Hazel, John Demo, Jennifer Demo FP, Cypress Terra (no graph on the clone), Oeuvre (two bookings
 written, the second moved the first, listed by Connect's Visitors query) and the dummy property; vitest 103, Rails 95 runs, Android
 debug APK built. Open: vendor / hardware checks, Cypress Terra routes, remote-unlock and gate integrations, Report an issue endpoint.
+
+## 48. Visitor sign-in and visits on the new Tour App; the Visitors tab reads them (October 23, 2026)
+
+Branch `feature/legacy-visitor-auth-flow` (renamed from the docs branch that holds `LEGACY_VISITOR_SIGNUP_AUTH_FLOW.md` and
+`VISITOR_MANAGEMENT_ARCHITECTURE_PLAN.md`). Report `VISITOR_AUTH_IMPLEMENTATION_REPORT.md`; contract `tour-app-backend-api.md` §21;
+knowledge `context.md` §42; gaps doc updated.
+
+- **Finding first.** Visitors do not log in to Connect: the Visitors tab is staff-only behind Devise, CSRF and property scoping
+  (verified again end to end on the clone: sign-in, list, profile, reload keeps the session, anonymous API 401 at Next and at
+  Rails, sign-out redirects). The visitor identity the brief asks for lives in the Tour App, as in the legacy app: a phone
+  number proven by a one-time code.
+- **Backend (Rails, additive).** `Api::TourApp::V1` gained a visitor principal (`vst_` session tokens, `Visitors::Otp` /
+  `Visitors::Session`, tables `visitor_otps` and `visitor_sessions`), the visitor's own bookings (list, reschedule, cancel through
+  the shared `Bookings::Cancel`), visits (`Visits::Start` / `Record` / `End` writing `tour_histories`, `visited_stops`,
+  `lock_histories` with linking and idempotency columns), lock issuance attributed to the visitor and the visit, Rack::Attack
+  throttles on sign-ins, bookings, locks and events, PaperTrail audit on every write, `filter_parameters` for the new secrets,
+  a per-property advisory lock around the booking slot check, and two switches advertised as `capabilities`
+  (`PYN_TOUR_VISITS`, `PYN_TOUR_VISITOR_AUTH`, production off). Legacy controllers, models and views untouched; `Visitors::Profile`
+  and Connect's generator label skipped stops and reported issues; Connect's cancel now calls the shared service.
+- **Tour App (Capacitor).** "Sign in with your phone" (shown only when the server offers it; staff sign-in collapsed under it),
+  the code and profile steps, a two-kind session (`staff` / `visitor`) restored through `/auth/me` or `/visitor/me`, a persisted
+  visit outbox (`visitQueue.ts`, `visitSync.ts`) that posts check-in, stops, skips, notes, photos, issues, unlocks and the end,
+  idempotently and with retries, a heartbeat while checked in, cancel through the server, lock requests carrying the visit.
+  One bug found in the browser run and fixed with a test: the shell forced the landing step before sign-in, so the phone
+  steps could never show (`authStepShown`).
+- **Verified.** Rails: 327 runs / 2,048 assertions, 1 pre-existing failure (`PartnerConfigurationsControllerTest`); new tests
+  28 runs. Tour App: typecheck clean, 133 vitest, production build. Connect: typecheck clean, 26 vitest. On the audit clone:
+  the API journey (OTP → profile → sign-in → property → visit → events with a duplicate → end → logout → 401), the app
+  journey in the browser pane (phone → code read from the local queue → profile → signed in → properties → reload restores),
+  Connect's Visitors tab showing the Tour App visit with its stop, code, note and timeline, the legacy All Visitors and detail
+  pages rendering the same rows, the legacy self-tour API still answering.
+- **Not done / to decide.** Token storage on the device is still Preferences (Keychain / Keystore needs a plugin); ID verification
+  in the new app stays a server-side flag; geolocation needs a plugin; `bundle-audit` is not installed (not run); the in-app
+  check-in → end journey was proven by unit tests and the API run, not by a browser click-through; `fog_public`, Doorkeeper
+  token hashing and the retention jobs of the plan are untouched (owner decisions D7–D10).

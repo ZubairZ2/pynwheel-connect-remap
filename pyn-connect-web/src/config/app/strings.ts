@@ -3086,6 +3086,8 @@ export const CORE_STRINGS = {
         onSite: 'tourModules.visitors.profile.onSite',
         stopsVisited: 'tourModules.visitors.profile.stopsVisited',
         arrived: 'tourModules.visitors.profile.arrived',
+        skipped: 'tourModules.visitors.profile.skipped',
+        issue: 'tourModules.visitors.profile.issue',
         pin: 'tourModules.visitors.profile.pin',
         doorEvents: 'tourModules.visitors.profile.doorEvents',
         noStops: 'tourModules.visitors.profile.noStops',

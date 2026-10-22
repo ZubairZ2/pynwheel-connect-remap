@@ -12,7 +12,7 @@ import type { TourRepository } from '~/repositories/tourRepository';
 import { bluetoothUnlockAvailable } from '~/services/iglooBle';
 import { AppProvider } from '~/store/AppProvider';
 import { useApp } from '~/store/appContext';
-import type { MapView } from '~/store/appState';
+import type { AuthStep, MapView } from '~/store/appState';
 import type { AccessMethod } from '~/models';
 import type { TourStopView } from '~/store/selectors';
 import { checkinModel, extraTours, isVerified, locationModel, tourCard, effectiveTour } from '~/store/scenarios';
@@ -26,6 +26,17 @@ import type { SimulationState } from '~/wayfinding/simulation';
 import { ArInitScreen, ArLiveScreen, ChooseStopsScreen, ScanQrScreen } from './screens/ArScreens';
 import { BuildTourScreen } from './screens/BuildTourScreen';
 import { GetStartedScreen } from './screens/GetStartedScreen';
+
+/**
+ * Which Get Started step the screen shows: before sign-in the landing
+ * (`email`) and the visitor steps (`phone` → `code` → `profile`); `confirm`
+ * only once signed in (a stale `confirm` from an expired session must not
+ * trap a signed-out user). October 23, 2026.
+ */
+export const authStepShown = (signedIn: boolean, step: AuthStep): AuthStep => {
+  if (signedIn) return step;
+  return step === 'phone' || step === 'code' || step === 'profile' ? step : 'email';
+};
 import { GuidedScreen } from './screens/GuidedScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { OnboardingScreen } from './screens/OnboardingScreen';
@@ -265,7 +276,7 @@ const Shell = () => {
         actions.openSchedule();
         break;
       case 'cancel':
-        actions.cancelTour();
+        void actions.cancelTour();
         break;
       case 'call':
         dispatch({ type: 'closeOverlay', overlay: 'checkin' });
@@ -291,7 +302,7 @@ const Shell = () => {
   const onCheckinPrimary = () => {
     switch (ci.primaryAction) {
       case 'start':
-        actions.checkIn();
+        void actions.checkIn();
         break;
       case 'verify':
         actions.openVerify('start');
@@ -347,7 +358,7 @@ const Shell = () => {
     if (state.screen === 'getStarted' || (!state.signedIn && !state.guest)) {
       return (
         <GetStartedScreen
-          step={state.signedIn ? state.authStep : 'email'}
+          step={authStepShown(state.signedIn, state.authStep)}
           guest={state.guest}
           email={state.email}
           password={state.password}
@@ -358,11 +369,22 @@ const Shell = () => {
           onLogin={() => void actions.login()}
           onBack={actions.authBack}
           onGuest={actions.continueAsGuest}
+          visitorAuth={state.capabilities.visitorAuth && repository.source === 'pynwheel-api'}
+          phoneAuth={state.phoneAuth}
+          now={now}
+          onPhoneSignIn={actions.signInWithPhone}
+          onStaffSignIn={actions.staffSignIn}
+          onPhone={actions.setPhone}
+          onSendCode={() => void actions.sendCode()}
+          onCode={actions.setOtpCode}
+          onVerifyCode={() => void actions.verifyCode()}
+          onOtpProfile={actions.setOtpProfile}
           profile={profile}
+          visitor={state.user?.kind === 'visitor'}
           editing={state.editingProfile}
           tourCard={card}
           propertyLine={`${propertyName} · ${propertyAddress}`}
-          onEdit={(on) => dispatch({ type: 'editProfile', on })}
+          onEdit={(on) => (on ? dispatch({ type: 'editProfile', on }) : void actions.saveProfile())}
           onField={(field, value) => dispatch({ type: 'setProfileField', field, value })}
           onConfirm={actions.confirmProfile}
           mark={DEMO}
@@ -930,7 +952,7 @@ const Shell = () => {
             <>
               <ItinerarySheet open={has('itinerary')} stops={order} stopIndex={state.stopIndex} skipped={state.skipped} onAdd={() => open('addStop')} onJump={(node) => dispatch({ type: 'jumpToStop', node })} onClose={() => close('itinerary')} />
               <AddStopSheet open={has('addStop')} stops={stops.filter((s) => !state.tourOrder.includes(s.node))} onAdd={(node) => dispatch({ type: 'addStop', node })} onClose={() => close('addStop')} />
-              <NoteSheet open={has('note')} stopName={stop?.name ?? ''} draft={state.noteDraft} onChange={(v) => dispatch({ type: 'setNoteDraft', value: v })} onSave={() => stop && dispatch({ type: 'saveNote', node: stop.node })} onClose={() => close('note')} />
+              <NoteSheet open={has('note')} stopName={stop?.name ?? ''} draft={state.noteDraft} onChange={(v) => dispatch({ type: 'setNoteDraft', value: v })} onSave={() => stop && actions.saveNote(stop.node)} onClose={() => close('note')} />
               <VideoModal open={has('video')} stopName={stop?.name ?? ''} videoUrl={stop?.amenity?.videoUrl ?? null} onClose={() => close('video')} />
               <PanoSheet open={has('pano')} stopName={stop?.name ?? ''} url={stop?.unit?.media?.virtualTourUrl ?? stop?.amenity?.media?.virtualTourUrl ?? null} demo={bundle.demo} onClose={() => close('pano')} />
               <GallerySheet open={has('gallery')} stopName={stop?.name ?? ''} photos={galleryOf(stop)} start={galleryStart} onClose={() => close('gallery')} />

@@ -1,24 +1,27 @@
 import communityPhoto from '~/assets/images/community-pool.jpg';
 import { APP_VERSION, AR_INIT_LABELS, BOOKING_TIMES, CONCIERGE_GREETING_GENERAL, CONCIERGE_GREETING_STOP, CONCIERGE_HUMAN_REPLY, CONCIERGE_NOT_CONNECTED, CONCIERGE_PROMPTS, HELP_ITEMS, ONBOARDING_SLIDES, SUPPORT_EMAIL, upcomingDays } from '~/content/appCopy';
 import type { LockBluetoothKey, LockPin, MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
-import { clearSession, loadSession, saveSession, type Session } from '~/services/session';
+import { clearSession, loadSession, NO_CAPABILITIES, parseCapabilities, saveSession, type Capabilities, type Session, type SessionVisitor } from '~/services/session';
 import { placesFromBundle } from '../places';
-import { FeatureUnavailableError, type AppContent, type AvailabilityWindow, type BookingRequest, type BookingResult, type BookingSettings, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult } from '../tourRepository';
+import { FeatureUnavailableError, type AppContent, type AvailabilityWindow, type BookingRequest, type BookingResult, type BookingSettings, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult, type VisitEndInput, type VisitEventInput, type VisitEventsResult, type VisitorBooking, type VisitorCodeSent, type VisitorProfilePatch, type VisitorVerifyRequest, type VisitRecord, type VisitStartInput } from '../tourRepository';
 import { ApiClient, ApiError } from './apiClient';
-import type { ApiAvailabilityResponse, ApiBookingCreateResponse, ApiBookingSettings, ApiDistancesResponse, ApiGraph, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiLoginResponse, ApiMapResponse, ApiPropertyDetail, ApiPropertySummary, ApiRouteResponse, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
-import { parseAvailability, parseBookingResult, parseBookingSettings, parseBundle, parseDistances, parseListing, parseLockBluetoothKey, parseLockPin, parseRoute, parseTourRoute } from './parsers';
+import type { ApiAvailabilityResponse, ApiBookingCreateResponse, ApiBookingSettings, ApiDistancesResponse, ApiGraph, ApiHealthResponse, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiLoginResponse, ApiMapResponse, ApiPropertyDetail, ApiPropertySummary, ApiRouteResponse, ApiStopsResponse, ApiTourRouteResponse, ApiVisitEventsResponse, ApiVisitorMeResponse, ApiVisitorOtpResponse, ApiVisitorVerifyResponse, ApiVisitStartResponse } from './apiTypes';
+import { parseAvailability, parseBookingResult, parseBookingSettings, parseBundle, parseDistances, parseListing, parseLockBluetoothKey, parseLockPin, parseRoute, parseTourRoute, parseVisit, parseVisitEvents, parseVisitor, parseVisitorBookings } from './parsers';
 
 /**
  * The production provider: the Pynwheel Tour App API, served by the Rails CMS
  * (`Api::TourApp::V1`, prefix `/api/tour/v1`) over the real Pynwheel data.
  *
- *   POST {API}/auth/login, /logout, GET /auth/me
+ *   GET  {API}/health                                   (no token: the server's capabilities)
+ *   POST {API}/auth/login, /logout, GET /auth/me        (staff: a CMS Super Admin)
+ *   POST {API}/visitor/otp, /visitor/otp/verify, /visitor/logout, GET|PUT /visitor/me   (a visitor: a prospect's phone)
  *   GET  {API}/properties, /properties/{id}
  *   GET  {API}/properties/{id}/stops | /map | /map/levels/{id} | /map/levels/{id}/svg | /graph
  *   POST {API}/properties/{id}/route | /tour-route | /stops/distances
  *   POST {API}/properties/{id}/locks/pin | /locks/bluetooth-key
  *   GET  {API}/properties/{id}/booking/settings | /booking/availability
- *   POST {API}/properties/{id}/bookings
+ *   POST {API}/properties/{id}/bookings, DELETE /bookings/{booking}
+ *   POST {API}/properties/{id}/visits | /visits/{visit}/events | /visits/{visit}/end
  *
  * The session (token, user, selected property) is persisted by
  * `services/session.ts`; the graph is cached per property with its ETag.
@@ -51,6 +54,13 @@ export class PynwheelApiTourRepository implements TourRepository {
   private propertiesInflight: Promise<PropertyListing[]> | null = null;
 
   private readonly expiredHandlers = new Set<(message: string) => void>();
+
+  /** The server's capabilities as last answered (`/health` or a sign-in); null until read. */
+  private capabilities: Capabilities | null = null;
+
+  private capabilitiesInflight: Promise<Capabilities> | null = null;
+
+  private bookings: VisitorBooking[] = [];
 
   constructor(options: { baseUrl: string; timeoutMs: number; fetchImpl?: typeof fetch }) {
     this.client = new ApiClient({
@@ -86,21 +96,25 @@ export class PynwheelApiTourRepository implements TourRepository {
     if (!data.access_token || !data.user) throw new ApiError('malformed_response', 'The sign-in answer was incomplete. Please try again.', 200);
     const previous = await loadSession();
     this.sessionChecked = true;
-    this.session = { accessToken: data.access_token, expiresAt: data.expires_at ?? null, user: data.user, propertyId: previous?.user.id === data.user.id ? previous.propertyId : null };
+    this.capabilities = this.rememberCapabilities(data);
+    this.session = { kind: 'staff', accessToken: data.access_token, expiresAt: data.expires_at ?? null, user: data.user, visitor: null, propertyId: previous?.kind === 'staff' && previous.user.id === data.user.id ? previous.propertyId : null, capabilities: this.capabilities };
     this.propertiesCache = null;
+    this.bookings = [];
     await saveSession(this.session);
     return this.session;
   }
 
   async logout(): Promise<void> {
     const token = this.session?.accessToken;
+    const path = this.session?.kind === 'visitor' ? `${API}/visitor/logout` : `${API}/auth/logout`;
     this.session = null;
     this.bundleCache = null;
     this.propertiesCache = null;
+    this.bookings = [];
     await clearSession();
     if (token) {
       try {
-        await this.client.request('POST', `${API}/auth/logout`, undefined, { Authorization: `Bearer ${token}` }, false);
+        await this.client.request('POST', path, undefined, { Authorization: `Bearer ${token}` }, false);
       } catch {
         /* the token is dropped locally either way; it expires server-side */
       }
@@ -117,7 +131,19 @@ export class PynwheelApiTourRepository implements TourRepository {
     this.session = stored;
     this.sessionChecked = true;
     try {
-      await this.client.get(`${API}/auth/me`);
+      if (stored.kind === 'visitor') {
+        const { data } = await this.client.get<ApiVisitorMeResponse>(`${API}/visitor/me`);
+        // The server's copy of the profile wins over the stored one (it may have been edited elsewhere).
+        const visitor = parseVisitor(data.visitor);
+        this.capabilities = this.rememberCapabilities(data);
+        this.bookings = parseVisitorBookings(data.bookings);
+        this.session = { ...stored, expiresAt: data.expires_at ?? stored.expiresAt, visitor, user: visitorUser(visitor), capabilities: this.capabilities };
+        await saveSession(this.session);
+      } else {
+        const { data } = await this.client.get<{ capabilities?: unknown }>(`${API}/auth/me`);
+        this.capabilities = this.rememberCapabilities(data);
+        if (data?.capabilities) this.session = { ...this.session, capabilities: this.capabilities };
+      }
     } catch (error) {
       if (error instanceof ApiError && (error.isAuth || error.status === 403)) {
         this.session = null;
@@ -126,6 +152,84 @@ export class PynwheelApiTourRepository implements TourRepository {
       }
       // Offline: keep the session; requests will fail with a network error the UI shows.
     }
+    return this.session;
+  }
+
+  currentSession(): Session | null {
+    return this.session;
+  }
+
+  private rememberCapabilities(body: { capabilities?: unknown } | null | undefined): Capabilities {
+    const caps = body && typeof body === 'object' && body.capabilities ? parseCapabilities(body.capabilities) : (this.capabilities ?? NO_CAPABILITIES);
+    this.capabilities = caps;
+    return caps;
+  }
+
+  async getCapabilities(): Promise<Capabilities> {
+    if (this.capabilities) return this.capabilities;
+    if (this.capabilitiesInflight) return this.capabilitiesInflight;
+    const promise = this.client
+      .request<ApiHealthResponse>('GET', `${API}/health`, undefined, {}, false)
+      .then(({ data }) => this.rememberCapabilities(data))
+      .finally(() => {
+        if (this.capabilitiesInflight === promise) this.capabilitiesInflight = null;
+      });
+    this.capabilitiesInflight = promise;
+    return promise;
+  }
+
+  // ------------------------------------------------- the visitor sign-in
+  async requestVisitorCode(phone: string, countryCode = 'US'): Promise<VisitorCodeSent> {
+    const { data } = await this.client.post<ApiVisitorOtpResponse>(`${API}/visitor/otp`, { phone: phone.trim(), country_code: countryCode, ...(this.currentPropertyId() != null ? { property_id: this.currentPropertyId() } : {}) }, false);
+    return { resendAfterS: typeof data?.resend_after === 'number' ? data.resend_after : 60 };
+  }
+
+  async verifyVisitorCode(request: VisitorVerifyRequest): Promise<{ session: Session; bookings: VisitorBooking[] }> {
+    const { data } = await this.client.post<ApiVisitorVerifyResponse>(
+      `${API}/visitor/otp/verify`,
+      {
+        phone: request.phone.trim(),
+        code: request.code.trim(),
+        country_code: request.countryCode ?? 'US',
+        ...(request.firstName ? { first_name: request.firstName.trim() } : {}),
+        ...(request.lastName ? { last_name: request.lastName.trim() } : {}),
+        ...(request.email ? { email: request.email.trim() } : {}),
+        ...(request.propertyId != null ? { property_id: request.propertyId } : {})
+      },
+      false
+    );
+    if (!data.access_token || !data.visitor) throw new ApiError('malformed_response', 'The sign-in answer was incomplete. Please try again.', 200);
+    const visitor = parseVisitor(data.visitor);
+    const previous = await loadSession();
+    this.sessionChecked = true;
+    this.capabilities = this.rememberCapabilities(data);
+    this.bookings = parseVisitorBookings(data.bookings);
+    // The property: the one this phone used last as this visitor, else the one the visitor's next booking is at.
+    const remembered = previous?.kind === 'visitor' && previous.user.id === visitor.id ? previous.propertyId : null;
+    const next = this.bookings.find((b) => b.status === 'upcoming') ?? null;
+    this.session = { kind: 'visitor', accessToken: data.access_token, expiresAt: data.expires_at ?? null, user: visitorUser(visitor), visitor, propertyId: remembered ?? request.propertyId ?? next?.propertyId ?? null, capabilities: this.capabilities };
+    this.propertiesCache = null;
+    this.bundleCache = null;
+    await saveSession(this.session);
+    return { session: this.session, bookings: this.bookings };
+  }
+
+  visitorBookings(): VisitorBooking[] {
+    return this.bookings;
+  }
+
+  async updateVisitorProfile(patch: VisitorProfilePatch): Promise<Session> {
+    await this.ensureSession();
+    if (!this.session || this.session.kind !== 'visitor') throw new ApiError('visitor_only', 'Sign in with your phone to edit this profile.', 403);
+    const { data } = await this.client.put<{ visitor: ApiVisitorMeResponse['visitor'] }>(`${API}/visitor/me`, {
+      ...(patch.firstName !== undefined ? { first_name: patch.firstName.trim() } : {}),
+      ...(patch.lastName !== undefined ? { last_name: patch.lastName.trim() } : {}),
+      ...(patch.email !== undefined ? { email: patch.email.trim() } : {}),
+      ...(patch.smsEnabled !== undefined ? { is_sms_enabled: patch.smsEnabled } : {})
+    });
+    const visitor = parseVisitor(data.visitor);
+    this.session = { ...this.session, visitor, user: visitorUser(visitor) };
+    await saveSession(this.session);
     return this.session;
   }
 
@@ -292,16 +396,16 @@ export class PynwheelApiTourRepository implements TourRepository {
   }
 
   // ------------------------------------------------------------- smart locks
-  async getStopLockPin(node: string): Promise<LockPin> {
+  async getStopLockPin(node: string, visitId: number | null = null): Promise<LockPin> {
     const id = await this.requireProperty();
-    const { data } = await this.client.post<ApiLockPinResponse>(`${API}/properties/${id}/locks/pin`, { stop_id: node });
+    const { data } = await this.client.post<ApiLockPinResponse>(`${API}/properties/${id}/locks/pin`, { stop_id: node, ...(visitId != null ? { visit_id: visitId } : {}) });
     if (typeof data.pin !== 'string' || !data.pin) throw new ApiError('malformed_response', 'The lock service answered without a door code. Please try again.', 200);
     return parseLockPin(data);
   }
 
-  async getStopLockBluetoothKey(node: string): Promise<LockBluetoothKey> {
+  async getStopLockBluetoothKey(node: string, visitId: number | null = null): Promise<LockBluetoothKey> {
     const id = await this.requireProperty();
-    const { data } = await this.client.post<ApiLockBluetoothKeyResponse>(`${API}/properties/${id}/locks/bluetooth-key`, { stop_id: node });
+    const { data } = await this.client.post<ApiLockBluetoothKeyResponse>(`${API}/properties/${id}/locks/bluetooth-key`, { stop_id: node, ...(visitId != null ? { visit_id: visitId } : {}) });
     if (typeof data.bluetooth_key !== 'string' || !data.bluetooth_key) throw new ApiError('malformed_response', 'The lock service answered without a Bluetooth key. Please try again.', 200);
     return parseLockBluetoothKey(data);
   }
@@ -328,16 +432,14 @@ export class PynwheelApiTourRepository implements TourRepository {
 
   async requestBooking(request: BookingRequest): Promise<BookingResult> {
     const id = await this.requireProperty();
+    // A visitor books as themselves: the CMS ignores identity fields for a `vst_` token, so none are sent.
+    const identity = this.session?.kind === 'visitor' ? {} : { first_name: request.firstName, last_name: request.lastName, email: request.email, phone_number: request.phone, ...(request.countryCode ? { country_code: request.countryCode } : {}) };
     const { data } = await this.client.post<ApiBookingCreateResponse>(`${API}/properties/${id}/bookings`, {
       tour_type: request.tourType,
       property_tour_type: 'scheduled_tour',
       tour_date: request.date,
       tour_time: request.time,
-      first_name: request.firstName,
-      last_name: request.lastName,
-      email: request.email,
-      phone_number: request.phone,
-      ...(request.countryCode ? { country_code: request.countryCode } : {}),
+      ...identity,
       ...(request.desiredUnit ? { unit: request.desiredUnit } : {}),
       ...(request.lengthMinutes ? { length_minutes: request.lengthMinutes } : {}),
       ...(request.partySize ? { party_size: request.partySize } : {}),
@@ -347,7 +449,53 @@ export class PynwheelApiTourRepository implements TourRepository {
     return parseBookingResult(data);
   }
 
+  async cancelBooking(bookingId: number): Promise<void> {
+    const id = await this.requireProperty();
+    await this.client.delete(`${API}/properties/${id}/bookings/${bookingId}`);
+  }
+
   async startApplication(_unitNode: string): Promise<{ id: string }> {
     throw new FeatureUnavailableError('Online applications');
   }
+
+  // ----------------------------------------------------------------- visits
+  async startVisit(input: VisitStartInput): Promise<VisitRecord> {
+    const id = await this.requireProperty();
+    const { data } = await this.client.post<ApiVisitStartResponse>(`${API}/properties/${id}/visits`, {
+      client_visit_id: input.clientVisitId,
+      ...(input.bookingId != null ? { booking_id: input.bookingId } : {}),
+      tour_type: input.tourType,
+      started_at: input.startedAt,
+      ...(input.latitude != null && input.longitude != null ? { latitude: input.latitude, longitude: input.longitude } : {}),
+      device_time_zone: deviceTimeZone(),
+      app_version: APP_VERSION,
+      ...(input.tourUserId != null ? { tour_user_id: input.tourUserId } : {})
+    });
+    return parseVisit(data.visit);
+  }
+
+  async sendVisitEvents(visitId: number, events: VisitEventInput[]): Promise<VisitEventsResult> {
+    const id = await this.requireProperty();
+    const { data } = await this.client.post<ApiVisitEventsResponse>(`${API}/properties/${id}/visits/${visitId}/events`, {
+      events: events.slice(0, 100).map((e) => ({ client_event_id: e.clientEventId, kind: e.kind, ...(e.stopId ? { stop_id: e.stopId } : {}), occurred_at: e.occurredAt, ...(e.payload ? { payload: e.payload } : {}) }))
+    });
+    return parseVisitEvents(data);
+  }
+
+  async endVisit(visitId: number, input: VisitEndInput): Promise<VisitRecord> {
+    const id = await this.requireProperty();
+    const { data } = await this.client.post<{ visit: ApiVisitStartResponse['visit'] }>(`${API}/properties/${id}/visits/${visitId}/end`, { ended_at: input.endedAt, reason: input.reason, ...(input.abandonedAtStop ? { abandoned_at_stop: input.abandonedAtStop } : {}) });
+    return parseVisit(data.visit);
+  }
 }
+
+/** The principal summary of a visitor session: the app's `user` for a prospect. */
+const visitorUser = (visitor: SessionVisitor) => ({ id: visitor.id, name: visitor.name, email: visitor.email, role: 'visitor', phone: visitor.phone });
+
+const deviceTimeZone = (): string => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  } catch {
+    return 'UTC';
+  }
+};

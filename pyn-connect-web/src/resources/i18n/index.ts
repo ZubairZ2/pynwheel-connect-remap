@@ -2621,6 +2621,8 @@ const ENGLISH: Record<string, string> = {
   [CORE_STRINGS.tourModules.visitors.profile.onSite]: ' · On site',
   [CORE_STRINGS.tourModules.visitors.profile.stopsVisited]: 'Stops visited',
   [CORE_STRINGS.tourModules.visitors.profile.arrived]: 'Arrived {time}',
+  [CORE_STRINGS.tourModules.visitors.profile.skipped]: 'Skipped {time}',
+  [CORE_STRINGS.tourModules.visitors.profile.issue]: 'Issue reported: {text}',
   [CORE_STRINGS.tourModules.visitors.profile.pin]: 'Code {pin}',
   [CORE_STRINGS.tourModules.visitors.profile.doorEvents]: 'Door events',
   [CORE_STRINGS.tourModules.visitors.profile.noStops]: 'The app reported no stops for this session.',

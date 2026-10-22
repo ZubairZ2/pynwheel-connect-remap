@@ -230,3 +230,14 @@ The new Tour App books but records no visit, stop or unlock rows (no `tour_histo
 user is a CMS user), so its tours never appear as sessions in Connect › Visitors. That is a product gap for the app
 (it needs to post an arrival, its stops and an end, as the legacy app does through `/api/v1/save_tour_history`, or
 through new `Api::TourApp::V1` endpoints), not something the Visitors branch can fill.
+
+## October 23, 2026 update — the new Tour App records visits and signs visitors in (branch `feature/legacy-visitor-auth-flow`)
+
+Closed: the "new Tour App and Visitors" gap above. The Tour App API gained a visitor (prospect) sign-in by phone and one-time
+code (`/api/tour/v1/visitor/*`, `visitor_sessions`, `visitor_otps`), visits (`/properties/:id/visits*` → `tour_histories`,
+`visited_stops`, `lock_histories`, the same rows the legacy app wrote), lock issuance attributed to the visitor and the visit
+(`igloohome_guests.tour_user_id`, `tour_history_id`, `issued_by_user_id`), and the visitor's own booking list, reschedule and
+cancel. Connect › Visitors shows a Tour App tour as a session with its stops, notes, codes and timeline; a skipped stop and a
+reported issue are labelled. Still open: ID verification in the new app is a server-side flag only (no provider), geolocation
+needs a plugin (coordinates are optional), door-unlock events for igloohome come from the app's report (`unlocked` /
+`unlock_failed`), not the vendor. Report: `VISITOR_AUTH_IMPLEMENTATION_REPORT.md`; contract: `tour-app-backend-api.md` §21.

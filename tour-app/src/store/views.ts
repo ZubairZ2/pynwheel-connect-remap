@@ -99,7 +99,7 @@ export interface Profile {
   initial: string;
 }
 
-/** The signed-in user with the visitor's local edits over it. */
+/** The signed-in user with the visitor's local edits over it; a visitor session's phone comes from the visitor record. */
 export const profileOf = (state: Pick<AppState, 'user' | 'profileEdits' | 'guest'>, content: AppContent | null): Profile => {
   const name = (state.user?.name ?? content?.visitor.name ?? '').replace(/ \*$/, '').trim();
   const [first = '', ...rest] = name.split(/\s+/);
@@ -107,7 +107,7 @@ export const profileOf = (state: Pick<AppState, 'user' | 'profileEdits' | 'guest
     first: state.profileEdits.first ?? first,
     last: state.profileEdits.last ?? rest.join(' '),
     email: state.profileEdits.email ?? state.user?.email ?? content?.visitor.email.replace(/ \*$/, '') ?? '',
-    phone: state.profileEdits.phone ?? (content?.visitor.phone ?? '')
+    phone: state.profileEdits.phone ?? state.user?.phone ?? (content?.visitor.phone ?? '')
   };
   return { ...p, initial: (p.first || 'G').charAt(0).toUpperCase() };
 };

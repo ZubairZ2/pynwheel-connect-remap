@@ -6,26 +6,64 @@ import { Preferences } from '@capacitor/preferences';
  * Preferences / localStorage), separately from the UI state, so a relaunch
  * restores the session and signing out removes exactly this.
  *
+ * October 23, 2026: two kinds of principal. `staff` is a CMS Super Admin
+ * (Doorkeeper token, `POST /auth/login`); `visitor` is a prospect who proved
+ * a phone number (`vst_…` token, `POST /visitor/otp/verify`). `user` is
+ * always present as the principal's summary (for a visitor it is derived
+ * from `visitor`, with role `visitor`); `visitor` carries the full profile.
+ * `capabilities` is what the server said it can do when it issued the token.
+ *
  * Note: Preferences is not an encrypted store. Moving the token to the
- * Keychain / Keystore means swapping the two calls below for a secure
- * storage plugin; nothing else reads the token directly.
+ * Keychain / Keystore (a secure-storage plugin) is the follow-up; it means
+ * swapping the two calls below, nothing else reads the token directly.
  */
 
 const KEY = 'pynwheel_tour_session_v1';
+
+export type SessionKind = 'staff' | 'visitor';
 
 export interface SessionUser {
   id: number;
   name: string;
   email: string;
   role: string;
+  /** The visitor's phone (E.164 as the server keeps it); staff have none here. */
+  phone?: string | null;
 }
 
+export interface SessionVisitor {
+  id: number;
+  firstName: string;
+  lastName: string;
+  name: string;
+  email: string;
+  phone: string;
+  phoneMasked: string | null;
+  smsEnabled: boolean;
+}
+
+/** The optional server features (`GET /health` and every sign-in answer): visit recording and the visitor sign-in. */
+export interface Capabilities {
+  visits: boolean;
+  visitorAuth: boolean;
+}
+
+export const NO_CAPABILITIES: Capabilities = { visits: false, visitorAuth: false };
+
 export interface Session {
+  kind: SessionKind;
   accessToken: string;
   expiresAt: string | null;
   user: SessionUser;
+  visitor: SessionVisitor | null;
   propertyId: number | null;
+  capabilities: Capabilities;
 }
+
+export const parseCapabilities = (raw: unknown): Capabilities => {
+  const c = raw && typeof raw === 'object' ? (raw as { visits?: unknown; visitor_auth?: unknown; visitorAuth?: unknown }) : {};
+  return { visits: c.visits === true, visitorAuth: c.visitor_auth === true || c.visitorAuth === true };
+};
 
 export const loadSession = async (): Promise<Session | null> => {
   try {
@@ -33,7 +71,17 @@ export const loadSession = async (): Promise<Session | null> => {
     if (!value) return null;
     const parsed = JSON.parse(value) as Partial<Session>;
     if (!parsed || typeof parsed.accessToken !== 'string' || !parsed.user) return null;
-    return { accessToken: parsed.accessToken, expiresAt: parsed.expiresAt ?? null, user: parsed.user, propertyId: typeof parsed.propertyId === 'number' ? parsed.propertyId : null };
+    // A session saved before the visitor sign-in existed has no kind: it was a staff token.
+    const kind: SessionKind = parsed.kind === 'visitor' ? 'visitor' : 'staff';
+    return {
+      kind,
+      accessToken: parsed.accessToken,
+      expiresAt: parsed.expiresAt ?? null,
+      user: parsed.user,
+      visitor: kind === 'visitor' && parsed.visitor ? parsed.visitor : null,
+      propertyId: typeof parsed.propertyId === 'number' ? parsed.propertyId : null,
+      capabilities: parseCapabilities(parsed.capabilities)
+    };
   } catch {
     return null;
   }

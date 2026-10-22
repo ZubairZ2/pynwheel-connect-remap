@@ -85,7 +85,7 @@ module TourApi
       }
     end
 
-    def pin!(community, built, stop_id)
+    def pin!(community, built, stop_id, visit: nil, issued_by: nil)
       record = stop_record!(community, built, stop_id)
       lock = describe(index(community), record)
       raise ApiError.unprocessable('no_lock', 'This stop has no smart lock.') unless lock
@@ -100,7 +100,7 @@ module TourApi
       valid_until = (now + PIN_HOURS.hours).strftime('%Y-%m-%dT%H:00:00%:z')
       access_name = access_name_of(target, lock[:mode])
       pin = issue(community, lock, now, access_name, valid_from, valid_until, stop_id)
-      record_issue!(community, record, target, guest_pin: pin)
+      record_issue!(community, record, target, guest_pin: pin, visit: visit, issued_by: issued_by)
       {
         success: true,
         stop_id: stop_id,
@@ -121,7 +121,7 @@ module TourApi
     # client instead (`/devices/:id/ekey`, the developer API's eKey), because
     # the partner key only knows locks enrolled under Pynwheel's partner
     # account. The key travels to the phone once and is never logged.
-    def bluetooth_key!(community, built, stop_id)
+    def bluetooth_key!(community, built, stop_id, visit: nil, issued_by: nil)
       record = stop_record!(community, built, stop_id)
       idx = index(community)
       lock = describe(idx, record)
@@ -148,7 +148,7 @@ module TourApi
         Rails.logger.warn("[tour-api] lock key refused property=#{community.id} stop=#{stop_id} status=#{access[:status]}#{" reason=#{access[:reason].inspect}" if access[:reason]}")
         raise ApiError.new(502, 'lock_unavailable', 'The lock service did not issue a Bluetooth key. Please try again.')
       end
-      record_issue!(community, record, target, guest_pin: access[:guest_pin], guest_bluetooth_key: access[:bluetooth_key], guest_key: access[:key_id])
+      record_issue!(community, record, target, guest_pin: access[:guest_pin], guest_bluetooth_key: access[:bluetooth_key], guest_key: access[:key_id], visit: visit, issued_by: issued_by)
 
       {
         success: true,
@@ -184,12 +184,16 @@ module TourApi
     end
 
     # The audit row the legacy tour start wrote per issuance (`igloohome_guests`,
-    # what the Locks tab lists as "issued codes"). The app's visitor is a CMS
-    # user, not a TourUser, so `tour_user_id` stays nil; a failure to write
-    # the row never fails the issuance.
-    def record_issue!(community, record, target, guest_pin: nil, guest_bluetooth_key: nil, guest_key: nil)
+    # what the Locks tab lists as "issued codes" and Connect's Visitors shows
+    # per visitor). Since October 23, 2026 the row names the visitor and the
+    # visit it was issued for (`visit`, a TourHistory) and the staff user who
+    # issued it in staff mode (`issued_by`); a code issued with neither
+    # (staff mode before a visit was started) has no visitor to name, as
+    # before. A failure to write the row never fails the issuance.
+    def record_issue!(community, record, target, guest_pin: nil, guest_bluetooth_key: nil, guest_key: nil, visit: nil, issued_by: nil)
       IgloohomeGuest.create!(
-        community_id: community.id, tour_user_id: nil, guest_pin: guest_pin, guest_bluetooth_key: guest_bluetooth_key, guest_key: guest_key,
+        community_id: community.id, tour_user_id: visit&.tour_user_id, tour_history_id: visit&.id, issued_by_user_id: issued_by&.id,
+        guest_pin: guest_pin, guest_bluetooth_key: guest_bluetooth_key, guest_key: guest_key,
         stop_id: target.id, stop_type: target.class.name, guest_of_stop_type: record.class.name, guest_of_stop_id: record.id
       )
     rescue StandardError => e

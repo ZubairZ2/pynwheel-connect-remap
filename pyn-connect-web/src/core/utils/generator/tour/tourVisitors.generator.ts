@@ -204,7 +204,9 @@ export interface SessionView {
 
 /** "Arrived 10:42 · next stop 10:51": the app records arrivals only; the next stop's arrival bounds the time spent. */
 const stopTimes = (stop: SessionStop, tz: string): string =>
-  [stop.at ? t(V.profile.arrived, { time: timeLabel(stop.at, tz) }) : null, stop.nextAt ? t(V.profile.nextStop, { time: timeLabel(stop.nextAt, tz) }) : null].filter(Boolean).join(' · ');
+  [stop.at ? t(stop.skipped ? V.profile.skipped : V.profile.arrived, { time: timeLabel(stop.at, tz) }) : null, stop.nextAt ? t(V.profile.nextStop, { time: timeLabel(stop.nextAt, tz) }) : null]
+    .filter(Boolean)
+    .join(' · ');
 
 export const generateSessionView = (session: VisitorSession, profile: VisitorProfile): SessionView => {
   const tz = profile.timeZone;
@@ -227,7 +229,7 @@ export const generateSessionView = (session: VisitorSession, profile: VisitorPro
       times: stopTimes(stop, tz),
       pin: stop.pin ? t(V.profile.pin, { pin: profile.codesVisible === false ? '••••' : stop.pin }) : null,
       instruction: stop.instruction ?? null,
-      notes: stop.notes ?? (stop.note ? [stop.note] : []),
+      notes: [...(stop.notes ?? (stop.note ? [stop.note] : [])), ...(stop.issues ?? []).map((text) => t(V.profile.issue, { text }))],
       photos: stop.photos ?? (stop.imageUrl ? [stop.imageUrl] : []),
       events: stop.events ?? 1
     })),

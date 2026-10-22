@@ -4,10 +4,12 @@ import { slotsForDay } from './views';
 import { DEMO_SCENARIOS_ENABLED } from '~/config/env';
 import { backScreenOf, topOverlay, type Overlay, type Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
+import type { Capabilities } from '~/services/session';
 import {
   initialAppState,
   initialDemoScenarios,
   initialGuided,
+  initialPhoneAuth,
   initialSchedule,
   initialVerify,
   initialWayfinding,
@@ -23,7 +25,7 @@ import {
   type ScheduledTour,
   type TourMode,
   type TourPass,
-  type VerifyStep, type BookingState } from './appState';
+  type VerifyStep, type BookingState, type VisitState } from './appState';
 
 /**
  * Every state change of the app, in one pure reducer. The async flows
@@ -46,7 +48,16 @@ export type Action =
   | { type: 'setPassword'; value: string }
   | { type: 'loginStart' }
   | { type: 'loginFailed'; message: string }
-  | { type: 'loginSucceeded'; user: { name: string; email: string }; propertyId: number | null }
+  | { type: 'loginSucceeded'; user: NonNullable<AppState['user']>; propertyId: number | null }
+  | { type: 'setUser'; user: NonNullable<AppState['user']> }
+  | { type: 'setCapabilities'; capabilities: Capabilities }
+  // ── the visitor sign-in (phone + one-time code) ──
+  | { type: 'authStep'; step: Exclude<AppState['authStep'], 'confirm'> }
+  | { type: 'setPhone'; value: string }
+  | { type: 'setOtpCode'; value: string }
+  | { type: 'setOtpProfile'; field: 'first' | 'last' | 'email'; value: string }
+  | { type: 'otpSent'; resendAt: number }
+  | { type: 'otpProfileRequired' }
   | { type: 'confirmProfile' }
   | { type: 'editProfile'; on: boolean }
   | { type: 'setProfileField'; field: 'first' | 'last' | 'email' | 'phone'; value: string }
@@ -146,6 +157,8 @@ export type Action =
   | { type: 'openSchedule'; draft: ScheduleDraft }
   | { type: 'setSchedule'; patch: Partial<ScheduleDraft> }
   | { type: 'confirmSchedule'; tour: ScheduledTour }
+  /** A booking the CMS already holds for the signed-in visitor: shown on Home unless a live one is already there. */
+  | { type: 'adoptBooking'; tour: ScheduledTour }
   | { type: 'cancelTour' }
   | { type: 'bookingLoading'; propertyId: number }
   | { type: 'bookingLoaded'; propertyId: number; settings: BookingSettings; days: AvailabilityDay[]; now: number }
@@ -161,7 +174,11 @@ export type Action =
   | { type: 'verified' }
   | { type: 'verifyFinish' }
   | { type: 'openCheckin'; for: string | null }
-  | { type: 'checkIn'; now: number; accessMs: number }
+  | { type: 'checkIn'; now: number; accessMs: number; visit?: VisitState | null }
+  | { type: 'visitStarted'; clientVisitId: string; id: number; accessEndsAt: number | null }
+  | { type: 'visitLocal'; clientVisitId: string }
+  | { type: 'visitEnding'; clientVisitId: string; end: NonNullable<VisitState['end']> }
+  | { type: 'visitClosed'; clientVisitId: string }
   | { type: 'extendAccess'; ms: number }
   | { type: 'goTourStart'; startPointId: string | null; virtual: boolean }
   | { type: 'setStartPoint'; id: string }
@@ -279,11 +296,15 @@ export const reducer = (state: AppState, action: Action): AppState => {
       next.demo = DEMO_SCENARIOS_ENABLED ? { ...initialDemoScenarios(), ...(next.demo ?? {}) } : initialDemoScenarios();
       next.notifs = { ...initialAppState().notifs, ...(next.notifs ?? {}) };
       next.authStep = 'email';
+      next.phoneAuth = initialPhoneAuth();
+      next.capabilities = { ...initialAppState().capabilities, ...(next.capabilities ?? {}) };
+      next.visit = next.visit ?? null;
       next.location = { ...state.location, sheet: null, locating: false };
       next.verify = initialVerify();
-      // An access window that ended while the app was closed is over.
+      // An access window that ended while the app was closed is over, and its door codes with it.
       if (next.accessEndsAt != null && next.accessEndsAt <= Date.now()) {
         next.checkedIn = false;
+        next.lockPins = {};
       }
       return next;
     }
@@ -322,8 +343,24 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'loginFailed':
       return { ...state, auth: { status: 'error', error: action.message } };
     case 'loginSucceeded':
-      // The design confirms the profile ("Does everything look good?") before Home.
-      return { ...state, screen: 'getStarted', authStep: 'confirm', signedIn: true, guest: false, guestProperty: null, user: action.user, propertyId: action.propertyId, password: '', editingProfile: false, auth: { status: 'idle', error: null } };
+      // The design confirms the profile ("Does everything look good?") before Home. A visitor's details are the CMS's own, so no earlier local edits are laid over them.
+      return { ...state, screen: 'getStarted', authStep: 'confirm', signedIn: true, guest: false, guestProperty: null, user: action.user, propertyId: action.propertyId, password: '', profileEdits: action.user.kind === 'visitor' ? {} : state.profileEdits, phoneAuth: { ...state.phoneAuth, code: '' }, editingProfile: false, auth: { status: 'idle', error: null } };
+    case 'setUser':
+      return { ...state, user: action.user, profileEdits: {}, editingProfile: false };
+    case 'setCapabilities':
+      return state.capabilities.visits === action.capabilities.visits && state.capabilities.visitorAuth === action.capabilities.visitorAuth ? state : { ...state, capabilities: action.capabilities };
+    case 'authStep':
+      return { ...state, authStep: action.step, auth: { status: 'idle', error: null }, phoneAuth: action.step === 'phone' ? { ...state.phoneAuth, code: '' } : state.phoneAuth };
+    case 'setPhone':
+      return { ...state, phoneAuth: { ...state.phoneAuth, phone: action.value } };
+    case 'setOtpCode':
+      return { ...state, phoneAuth: { ...state.phoneAuth, code: action.value.replace(/\D/g, '').slice(0, 6) }, auth: state.auth.status === 'error' ? { status: 'idle', error: null } : state.auth };
+    case 'setOtpProfile':
+      return { ...state, phoneAuth: { ...state.phoneAuth, [action.field]: action.value } };
+    case 'otpSent':
+      return { ...state, authStep: 'code', phoneAuth: { ...state.phoneAuth, code: '', resendAt: action.resendAt }, auth: { status: 'idle', error: null } };
+    case 'otpProfileRequired':
+      return { ...state, authStep: 'profile', auth: { status: 'idle', error: null } };
     case 'confirmProfile': {
       const pending = state.pendingAfterAuth;
       const screen: Screen = state.propertyId == null ? 'search' : pending === 'schedule' ? 'schedule' : 'home';
@@ -339,6 +376,9 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'authBack':
       // Back from the confirmation abandons the sign-in: the session is gone (the action logs the token out).
       if (state.authStep === 'confirm') return { ...state, authStep: 'email', editingProfile: false, signedIn: false, user: null, propertyId: null, password: '', profileEdits: {} };
+      // The phone flow steps back to the phone, then to the landing.
+      if (state.authStep === 'code' || state.authStep === 'profile') return { ...state, authStep: 'phone', auth: { status: 'idle', error: null }, phoneAuth: { ...state.phoneAuth, code: '' } };
+      if (state.authStep === 'phone') return { ...state, authStep: 'email', auth: { status: 'idle', error: null } };
       return state.guest ? { ...state, screen: 'home', pendingAfterAuth: null, guestGateWhy: null } : { ...state, screen: 'onboarding' };
     case 'continueAsGuest':
       // Guest mode never coexists with a live session.
@@ -361,10 +401,10 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, ...propertyScoped(), propertyId: action.propertyId, screen: then === 'schedule' ? 'schedule' : 'home', overlays: [], searchQuery: '', pendingAfterAuth: null, exploreId: null };
       }
     case 'sessionExpired':
-      return { ...initialAppState(), screen: 'getStarted', signedIn: false, email: state.email, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, demo: state.demo, toast: action.message };
+      return { ...initialAppState(), screen: 'getStarted', signedIn: false, email: state.email, capabilities: state.capabilities, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, demo: state.demo, toast: action.message };
     case 'signOut':
       // `verified` belongs to the account that signed out: the next account on this phone must not inherit it.
-      return { ...initialAppState(), screen: 'getStarted', signedIn: false, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, demo: state.demo };
+      return { ...initialAppState(), screen: 'getStarted', signedIn: false, capabilities: state.capabilities, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, demo: state.demo };
     case 'toggleStop':
       return { ...state, selected: { ...state.selected, [action.node]: !state.selected[action.node] } };
     case 'selectStops': {
@@ -610,6 +650,11 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, schedule: { ...state.schedule, ...action.patch } };
     case 'confirmSchedule':
       return { ...state, scheduledTour: action.tour, scheduleDone: true, checkedIn: false, accessEndsAt: null, overlays: [], booking: { ...state.booking, saving: false, saveError: null, fetchedAt: 0 } };
+    case 'adoptBooking': {
+      const live = state.scheduledTour && state.scheduledTour.status !== 'past' && state.scheduledTour.status !== 'cancelled' && state.scheduledTour.status !== 'missed';
+      if (live && state.scheduledTour?.bookingId !== action.tour.bookingId) return state;
+      return { ...state, scheduledTour: action.tour };
+    }
     case 'bookingLoading':
       return { ...state, booking: { ...state.booking, propertyId: action.propertyId, status: 'loading', error: null, ...(state.booking.propertyId === action.propertyId ? {} : { settings: null, days: {} }) } };
     case 'bookingLoaded': {
@@ -667,8 +712,20 @@ export const reducer = (state: AppState, action: Action): AppState => {
         accessEndsAt: action.now + action.accessMs,
         passStart: action.now,
         overlays: [],
+        visit: action.visit === undefined ? state.visit : action.visit,
         scheduledTour: state.scheduledTour && state.scheduledTour.status !== 'past' ? { ...state.scheduledTour, status: 'checkedIn' } : state.scheduledTour
       };
+    case 'visitStarted':
+      if (state.visit?.clientVisitId !== action.clientVisitId) return state;
+      return { ...state, visit: { ...state.visit, id: action.id, status: state.visit.end ? 'ended' : 'active' }, accessEndsAt: action.accessEndsAt ?? state.accessEndsAt };
+    case 'visitLocal':
+      if (state.visit?.clientVisitId !== action.clientVisitId) return state;
+      return { ...state, visit: { ...state.visit, status: 'local' } };
+    case 'visitEnding':
+      if (state.visit?.clientVisitId !== action.clientVisitId) return state;
+      return { ...state, visit: { ...state.visit, status: 'ended', end: state.visit.end ?? action.end } };
+    case 'visitClosed':
+      return state.visit?.clientVisitId === action.clientVisitId ? { ...state, visit: null } : state;
     case 'extendAccess':
       return { ...state, accessEndsAt: Math.max(state.accessEndsAt ?? 0, Date.now()) + action.ms };
     case 'goTourStart':

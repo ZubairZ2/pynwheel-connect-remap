@@ -57,8 +57,7 @@ module Connect
     def cancel
       booking = booking!
       visitor = booking.tour_user
-      booking.destroy!
-      audit('booking_cancelled', booking_id: booking.id, tour_user_id: visitor&.id)
+      Bookings::Cancel.call!(@community, booking, whodunnit: current_user&.id&.to_s, source: 'connect')
       render_write(booking: visitor ? profile_for(visitor) : nil, cancelled: booking.id)
     end
 

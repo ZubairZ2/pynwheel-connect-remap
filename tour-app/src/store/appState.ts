@@ -1,5 +1,6 @@
 import type { AccessMethod, LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
 import type { AvailabilityDay, BookingSettings } from '~/repositories/tourRepository';
+import { NO_CAPABILITIES, type Capabilities } from '~/services/session';
 import type { Overlay, Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
 
@@ -82,8 +83,49 @@ export interface LockRequestState {
 
 // ───────── The design refresh's UI-only state ─────────
 
-/** Where the sign-in flow is: the credentials, or the "Does everything look good?" confirmation after a successful sign-in. */
-export type AuthStep = 'email' | 'confirm';
+/**
+ * Where the sign-in flow is: the landing with the staff credentials (`email`),
+ * the visitor's phone number (`phone`), the one-time code (`code`), the new
+ * visitor's name and email (`profile`), or the "Does everything look good?"
+ * confirmation after a successful sign-in (`confirm`).
+ */
+export type AuthStep = 'email' | 'phone' | 'code' | 'profile' | 'confirm';
+
+/** The visitor sign-in's drafts: the phone, the code typed, when another code may be asked for, and the profile asked of a new visitor. */
+export interface PhoneAuthDraft {
+  phone: string;
+  code: string;
+  /** When "Resend code" becomes available (ms since the epoch), null before a code was sent. */
+  resendAt: number | null;
+  first: string;
+  last: string;
+  email: string;
+}
+
+export const initialPhoneAuth = (): PhoneAuthDraft => ({ phone: '', code: '', resendAt: null, first: '', last: '', email: '' });
+
+/**
+ * The visit the CMS records for the tour in progress (October 23, 2026).
+ * `id` is null until `POST /visits` answered (offline at check-in: the
+ * persisted `clientVisitId` makes the retry idempotent); `local` means the
+ * CMS refused it for good and the tour carries on as a phone-only tour;
+ * `end` is set once the visitor finished and waits until `POST /end` got
+ * through. Only ever created for a real property on the real provider, never
+ * for demo data or a forced demo scenario.
+ */
+export interface VisitState {
+  clientVisitId: string;
+  propertyId: number;
+  id: number | null;
+  status: 'active' | 'local' | 'ended';
+  tourType: 'self_tour' | 'guided_tour' | 'virtual_tour';
+  /** ISO 8601 */
+  startedAt: string;
+  bookingId: number | null;
+  /** Staff sessions: the visitor the admin tours with. */
+  tourUserId: number | null;
+  end: { endedAt: string; reason: 'completed' | 'abandoned'; abandonedAtStop: string | null } | null;
+}
 
 /** How a guest found the property they are looking at (the design's `guestProperty`). */
 export type GuestPropertySource = 'near' | 'qr' | 'link';
@@ -116,6 +158,10 @@ export interface ScheduledTour {
   tourType?: string;
   /** `HH:MM`, when the CMS answered one. */
   endTime?: string | null;
+  /** The CMS booking id (`schedual_tours.id`) when the CMS made the booking; null for a local / demo one. */
+  bookingId?: number | null;
+  /** The CMS visitor the booking belongs to (`tour_users.id`), when the CMS answered one. */
+  visitorId?: number | null;
 }
 
 export interface ScheduleDraft {
@@ -207,8 +253,12 @@ export interface AppState {
   overlays: Overlay[];
   /** Whether the visitor has signed in (the session itself lives in the repository's session store). */
   signedIn: boolean;
-  /** Who is signed in, for the Profile screen. */
-  user: { name: string; email: string } | null;
+  /** Who is signed in, for the Profile screen: a CMS Super Admin (`staff`) or a prospect who signed in with their phone (`visitor`). */
+  user: { name: string; email: string; phone?: string; kind?: 'staff' | 'visitor' } | null;
+  /** What the server can do (visit recording, the visitor sign-in): `GET /health` on launch, refreshed by every sign-in answer. */
+  capabilities: Capabilities;
+  phoneAuth: PhoneAuthDraft;
+  visit: VisitState | null;
   /** The selected property (null right after sign-in until one is chosen). */
   propertyId: number | null;
   auth: AuthState;
@@ -346,6 +396,9 @@ export const initialAppState = (): AppState => ({
   signedIn: false,
   user: null,
   propertyId: null,
+  capabilities: NO_CAPABILITIES,
+  phoneAuth: initialPhoneAuth(),
+  visit: null,
   auth: { status: 'idle', error: null },
   authStep: 'email',
   guest: false,
@@ -429,6 +482,8 @@ export const PERSISTED_KEYS = [
   'screen',
   'signedIn',
   'user',
+  'capabilities',
+  'visit',
   'propertyId',
   'guest',
   'guestProperty',

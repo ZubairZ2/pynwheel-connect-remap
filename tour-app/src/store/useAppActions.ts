@@ -5,17 +5,43 @@ import type { AccessMethod } from '~/models';
 import { guidedSlots, guidedToursOffered } from './access';
 import { levelOfStop } from './views';
 import type { TourHistoryEntry } from '~/models';
-import { ApiError } from '~/repositories/pynwheelApi/apiClient';
+import { ApiError, isRetryable } from '~/repositories/pynwheelApi/apiClient';
 import { useRepository } from '~/repositories/repositoryContext';
-import { FeatureUnavailableError } from '~/repositories/tourRepository';
+import { FeatureUnavailableError, type VisitorBooking } from '~/repositories/tourRepository';
 import { BluetoothUnlockError, unlockOverBluetooth } from '~/services/iglooBle';
 import { success, tap } from '~/services/native';
+import { uuid, visitQueue, type VisitEventKind } from '~/services/visitQueue';
 import { useApp } from './appContext';
-import type { AppState, ScheduleDraft, TourPass, VerifyStep } from './appState';
+import type { AppState, ScheduleDraft, ScheduledTour, TourPass, VerifyStep, VisitState } from './appState';
 import { dayKey } from './appState';
 import { fmtTime, slotTime } from './scenarios';
 import { bestMatchUnit, currentStop, markOf, selectedNodes, tourStopViews } from './selectors';
 import { profileOf, slotByLabel, slotsForDay } from './views';
+import { accessEndsAtMs, syncVisit, visitRecording } from './visitSync';
+
+/** A photo larger than this (as a data URL) is not uploaded; a note with the caption goes instead. */
+const MAX_PHOTO_CHARS = 4 * 1024 * 1024;
+const MAX_NOTE_CHARS = 2000;
+
+/** The CMS booking id behind a `BookingResult.id` (the dummy provider's `bk-…` ids are not one). */
+const bookingIdOf = (id: string): number | null => (/^\d+$/.test(id) ? Number(id) : null);
+
+/** The CMS booking as the Home card shows it (the booking's own time; the app's length / party defaults). */
+export const tourFromBooking = (b: VisitorBooking, now: number): ScheduledTour => ({
+  id: String(b.id),
+  status: b.status === 'cancelled' ? 'cancelled' : b.status === 'completed' ? 'past' : b.status === 'missed' ? 'missed' : 'scheduled',
+  date: b.date ?? dayKey(0, new Date(now)),
+  time: b.timeLabel ?? '',
+  length: 45,
+  unit: 'No preference',
+  party: 1,
+  source: b.createdBy === 'tour_app' ? 'app' : 'website',
+  createdAt: now,
+  tourType: b.tourType ?? undefined,
+  endTime: b.endTime,
+  bookingId: b.id,
+  visitorId: null
+});
 
 /**
  * The async flows of the app: they call the repository and dispatch plain
@@ -48,6 +74,32 @@ export const useAppActions = () => {
       timers.current[key] = window.setTimeout(fn, ms);
     };
     const propertyName = bundle?.property.name ?? 'the property';
+    const session = repository.currentSession();
+    const isVisitor = state.user?.kind === 'visitor' || session?.kind === 'visitor';
+
+    // ── visit recording (the CMS's Visitors) ──
+    // Only a real property on the real provider, with the server feature on and no forced demo scenario, is ever recorded.
+    const recordingAllowed = repository.source === 'pynwheel-api' && !!bundle && !bundle.demo && state.capabilities.visits && state.demo.tour === 'auto' && state.demo.location === 'auto';
+    const sync = (visit: VisitState | null = state.visit) => syncVisit({ repository, dispatch }, visit);
+    /** Appends a lifecycle event to the outbox and tries to send it; nothing happens without a recorded visit. */
+    const record = (kind: VisitEventKind, stopId: string | null, payload?: Record<string, unknown>) => {
+      const visit = state.visit;
+      if (!recordingAllowed || !visitRecording(visit) || visit.propertyId !== state.propertyId) return;
+      if (kind !== 'heartbeat' && !stopId) return;
+      void visitQueue
+        .append({ clientVisitId: visit.clientVisitId, propertyId: visit.propertyId, kind, stopId, ...(payload ? { payload } : {}) })
+        .then(() => sync(visit))
+        .catch(() => undefined);
+    };
+    const lockProviderOf = (node: string): string => (bundle ? (tourStopViews(bundle).find((v) => v.node === node)?.lock?.provider ?? 'unknown') : 'unknown');
+    const currentNode = (): string | null => state.tourOrder[state.stopIndex] ?? null;
+    /** The visitor's bookings the CMS holds: the next one at the chosen property becomes the Home card. */
+    const adoptBookings = (bookings: VisitorBooking[], propertyId: number | null) => {
+      if (propertyId == null) return;
+      const now = Date.now();
+      const next = bookings.find((b) => b.propertyId === propertyId && b.status === 'upcoming') ?? null;
+      if (next) dispatch({ type: 'adoptBooking', tour: tourFromBooking(next, now) });
+    };
 
     /** A guest is asked to sign in before anything that needs an account; the action resumes after sign-in. */
     const guarded = (why: string, pending: AppState['pendingAfterAuth'], run: () => void) => () => {
@@ -109,6 +161,12 @@ export const useAppActions = () => {
           : null;
       dispatch({ type: 'finishTour', entry, pass });
       void success();
+      // The CMS's visit ends once the outbox is through; the sync retries later if the phone is offline now.
+      if (visitRecording(state.visit)) {
+        const end = { endedAt: new Date(now).toISOString(), reason: 'completed' as const, abandonedAtStop: null };
+        dispatch({ type: 'visitEnding', clientVisitId: state.visit.clientVisitId, end });
+        void sync({ ...state.visit, status: 'ended', end });
+      }
     };
 
     /**
@@ -147,12 +205,67 @@ export const useAppActions = () => {
       void loadBooking();
     };
 
-    const checkIn = () => {
-      const now = Date.now();
-      dispatch({ type: 'checkIn', now, accessMs: ACCESS_MINUTES * 60000 });
+    /** The phone-only check-in of the design: a simulated window, marked as such. */
+    const checkInLocally = (now: number, visit: VisitState | null = null) => {
+      dispatch({ type: 'checkIn', now, accessMs: ACCESS_MINUTES * 60000, visit });
       dispatch({ type: 'goTourStart', startPointId: state.startPointId, virtual: false });
       toast(`Checked in. Door access is active for ${ACCESS_MINUTES} min${DEMO}`);
       void success();
+    };
+
+    /**
+     * Check-in. On a real property with visit recording on, the CMS records the
+     * visit (`POST /visits`) and its access window is the one shown; the CMS's
+     * refusal (outside the booking's window, not at the property, …) keeps the
+     * visitor where they are with the reason. Offline, the check-in is kept on
+     * the phone with its `clientVisitId` and sent as soon as the phone is back.
+     * A staff session tours on behalf of the booking's visitor; without one the
+     * check-in stays on the phone as before.
+     */
+    const checkIn = async () => {
+      const now = Date.now();
+      const booked = state.scheduledTour && state.scheduledTour.status !== 'past' && state.scheduledTour.status !== 'cancelled' ? state.scheduledTour : null;
+      const tourUserId = isVisitor ? null : (booked?.visitorId ?? null);
+      if (!recordingAllowed || state.propertyId == null || (!isVisitor && tourUserId == null)) {
+        checkInLocally(now);
+        return;
+      }
+      // A visit left unfinished (the app died before the end was sent) is given one last chance, then forgotten.
+      if (state.visit && state.visit.propertyId === state.propertyId && state.visit.end) await sync(state.visit).catch(() => undefined);
+      const visit: VisitState = {
+        clientVisitId: uuid(),
+        propertyId: state.propertyId,
+        id: null,
+        status: 'active',
+        tourType: booked?.tourType === 'guided_tour' ? 'guided_tour' : 'self_tour',
+        startedAt: new Date(now).toISOString(),
+        bookingId: booked?.bookingId ?? null,
+        tourUserId,
+        end: null
+      };
+      try {
+        const record = await repository.startVisit({ clientVisitId: visit.clientVisitId, bookingId: visit.bookingId, tourType: visit.tourType, startedAt: visit.startedAt, tourUserId });
+        const endsAt = accessEndsAtMs(record.accessEndsAt);
+        const accessMs = endsAt != null && endsAt > now ? endsAt - now : ACCESS_MINUTES * 60000;
+        dispatch({ type: 'checkIn', now, accessMs, visit: { ...visit, id: record.id } });
+        dispatch({ type: 'goTourStart', startPointId: state.startPointId, virtual: false });
+        const minutes = Math.max(1, Math.round(accessMs / 60000));
+        toast(record.verificationRequired ? `Checked in. Door access is active for ${minutes} min once your ID is verified.` : `Checked in. Door access is active for ${minutes} min.`);
+        void success();
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 404 && error.code === 'disabled') {
+          // The server switched visit recording off: back to the phone-only check-in, and the UI stops asking.
+          dispatch({ type: 'setCapabilities', capabilities: { ...state.capabilities, visits: false } });
+          checkInLocally(now);
+          return;
+        }
+        if (isRetryable(error)) {
+          // Offline: the check-in is kept with its id and sent when the phone is back.
+          checkInLocally(now, visit);
+          return;
+        }
+        toast(messageOf(error, 'The check-in was refused. Please try again.'));
+      }
     };
 
     return {
@@ -169,11 +282,88 @@ export const useAppActions = () => {
         }
         dispatch({ type: 'loginStart' });
         try {
-          const session = await repository.login(email, state.password);
-          dispatch({ type: 'loginSucceeded', user: { name: session.user.name, email: session.user.email }, propertyId: session.propertyId });
+          const signedIn = await repository.login(email, state.password);
+          dispatch({ type: 'setCapabilities', capabilities: signedIn.capabilities });
+          dispatch({ type: 'loginSucceeded', user: { name: signedIn.user.name, email: signedIn.user.email, kind: 'staff' }, propertyId: signedIn.propertyId });
           void success();
         } catch (error) {
           dispatch({ type: 'loginFailed', message: messageOf(error, 'Sign-in failed. Please try again.') });
+        }
+      },
+
+      // ── the visitor sign-in: a phone number, a one-time code, and for a new visitor their name and email ──
+      signInWithPhone: () => dispatch({ type: 'authStep', step: 'phone' }),
+      staffSignIn: () => dispatch({ type: 'authStep', step: 'email' }),
+      setPhone: (value: string) => dispatch({ type: 'setPhone', value }),
+      setOtpCode: (value: string) => dispatch({ type: 'setOtpCode', value }),
+      setOtpProfile: (field: 'first' | 'last' | 'email', value: string) => dispatch({ type: 'setOtpProfile', field, value }),
+      /** Sends (or resends) the code; the server always answers the same way for a valid number, and says when another may be asked for. */
+      sendCode: async () => {
+        const phone = state.phoneAuth.phone.trim();
+        if (phone.replace(/\D/g, '').length < 7) {
+          dispatch({ type: 'loginFailed', message: 'Enter your mobile number to continue.' });
+          return;
+        }
+        if (state.phoneAuth.resendAt != null && state.phoneAuth.resendAt > Date.now()) return;
+        dispatch({ type: 'loginStart' });
+        try {
+          const sent = await repository.requestVisitorCode(phone, 'US');
+          dispatch({ type: 'otpSent', resendAt: Date.now() + Math.max(0, sent.resendAfterS) * 1000 });
+          toast(`Code sent to ${phone}`);
+        } catch (error) {
+          if (error instanceof ApiError && error.status === 404 && error.code === 'disabled') dispatch({ type: 'setCapabilities', capabilities: { ...state.capabilities, visitorAuth: false } });
+          dispatch({ type: 'loginFailed', message: messageOf(error, 'The code could not be sent. Please try again.') });
+        }
+      },
+      /** Proves the code; a new visitor is asked for their name and email first (`profile_required`), then the same code is sent again with them. */
+      verifyCode: async () => {
+        const { phone, code, first, last, email } = state.phoneAuth;
+        if (!/^\d{6}$/.test(code)) {
+          dispatch({ type: 'loginFailed', message: 'Enter the 6-digit code from the text message.' });
+          return;
+        }
+        const withProfile = state.authStep === 'profile';
+        if (withProfile && (!first.trim() || !last.trim() || !/^[^\s@]+@[^\s@]+$/.test(email.trim()))) {
+          dispatch({ type: 'loginFailed', message: 'Add your first name, last name and email to finish signing in.' });
+          return;
+        }
+        dispatch({ type: 'loginStart' });
+        try {
+          const { session: signedIn, bookings } = await repository.verifyVisitorCode({ phone: phone.trim(), code, countryCode: 'US', ...(withProfile ? { firstName: first, lastName: last, email } : {}), propertyId: state.propertyId });
+          dispatch({ type: 'setCapabilities', capabilities: signedIn.capabilities });
+          dispatch({ type: 'loginSucceeded', user: { name: signedIn.user.name, email: signedIn.user.email, phone: signedIn.visitor?.phone ?? phone, kind: 'visitor' }, propertyId: signedIn.propertyId });
+          adoptBookings(bookings, signedIn.propertyId);
+          void success();
+        } catch (error) {
+          if (error instanceof ApiError && error.code === 'profile_required') {
+            dispatch({ type: 'otpProfileRequired' });
+            return;
+          }
+          dispatch({ type: 'loginFailed', message: messageOf(error, 'The code could not be checked. Please try again.') });
+        }
+      },
+      /** The "Does everything look good?" edits: a visitor's go to their CMS profile (`PUT /visitor/me`); a staff user's stay on the phone as before. */
+      saveProfile: async () => {
+        if (!isVisitor || !state.editingProfile) {
+          dispatch({ type: 'editProfile', on: false });
+          return;
+        }
+        const e = state.profileEdits;
+        if (e.first === undefined && e.last === undefined && e.email === undefined) {
+          dispatch({ type: 'editProfile', on: false });
+          return;
+        }
+        const profile = profileOf(state, content);
+        if (!profile.first.trim() || !profile.last.trim() || !/^[^\s@]+@[^\s@]+$/.test(profile.email.trim())) {
+          toast('Your first name, last name and email are needed.');
+          return;
+        }
+        try {
+          const updated = await repository.updateVisitorProfile({ firstName: profile.first, lastName: profile.last, email: profile.email });
+          dispatch({ type: 'setUser', user: { name: updated.user.name, email: updated.user.email, phone: updated.visitor?.phone ?? state.user?.phone, kind: 'visitor' } });
+          toast('Profile updated.');
+        } catch (error) {
+          toast(messageOf(error, 'Your profile could not be updated. Please try again.'));
         }
       },
 
@@ -185,6 +375,7 @@ export const useAppActions = () => {
 
       signOut: async () => {
         dispatch({ type: 'signOut' });
+        void visitQueue.clear();
         try {
           await repository.logout();
         } catch {
@@ -273,7 +464,7 @@ export const useAppActions = () => {
           if (d.phone && d.phone !== profile.phone) dispatch({ type: 'setProfileField', field: 'phone', value: d.phone });
           dispatch({
             type: 'confirmSchedule',
-            tour: { id: result.id, status: 'scheduled', date: result.date || d.date, time: result.timeLabel || d.time, length: d.length, unit: d.unit, party: d.party, source: 'app', createdAt: Date.now(), tourType: result.tourType, endTime: result.endTime }
+            tour: { id: result.id, status: 'scheduled', date: result.date || d.date, time: result.timeLabel || d.time, length: d.length, unit: d.unit, party: d.party, source: 'app', createdAt: Date.now(), tourType: result.tourType, endTime: result.endTime, bookingId: bookingIdOf(result.id), visitorId: result.visitorId }
           });
           toast(result.rescheduled ? 'Your earlier booking was moved to this time.' : 'Self-tour booked. The property has your details.');
           void success();
@@ -285,7 +476,18 @@ export const useAppActions = () => {
           if (error instanceof ApiError && (error.code === 'slot_unavailable' || error.code === 'slot_full')) void loadBooking(true);
         }
       },
-      cancelTour: () => {
+      /** Cancels the tour: in the CMS when the booking is the CMS's (an error keeps it), on the phone alone otherwise. */
+      cancelTour: async () => {
+        const tour = state.scheduledTour;
+        const bookingId = tour?.bookingId ?? null;
+        if (tour && bookingId != null && repository.source === 'pynwheel-api') {
+          try {
+            await repository.cancelBooking(bookingId);
+          } catch (error) {
+            toast(messageOf(error, 'The tour could not be cancelled. Please try again.'));
+            return;
+          }
+        }
         dispatch({ type: 'cancelTour' });
         toast('Tour cancelled. You can book a new time any time.');
       },
@@ -358,7 +560,7 @@ export const useAppActions = () => {
       verifyFinish: () => {
         if (state.verify.then === 'start') {
           dispatch({ type: 'verifyFinish' });
-          checkIn();
+          void checkIn();
         } else dispatch({ type: 'verifyFinish' });
       },
 
@@ -394,7 +596,7 @@ export const useAppActions = () => {
       qrFound: () => {
         const mode = state.qrMode;
         dispatch({ type: 'closeOverlay', overlay: 'qr' });
-        if (mode === 'checkin') checkIn();
+        if (mode === 'checkin') void checkIn();
         else {
           dispatch({ type: 'guestFound', via: 'qr' });
           toast(`${propertyName} found${DEMO}`);
@@ -449,10 +651,17 @@ export const useAppActions = () => {
         dispatch({ type: 'setDemoMethod', node, method });
       },
 
-      /** "I've entered the code": the visitor's confirmation, recorded on the phone; the door's state is not claimed. */
-      codeEntered: (node: string) => dispatch({ type: 'codeEntered', node }),
+      /** "I've entered the code": the visitor's confirmation (the CMS logs it as the door opened with the code); the door's state is not claimed. */
+      codeEntered: (node: string) => {
+        dispatch({ type: 'codeEntered', node });
+        record('unlocked', node, { provider: lockProviderOf(node), method: 'pin' });
+      },
 
-      arrive: () => dispatch({ type: 'arrive', now: Date.now() }),
+      arrive: () => {
+        const node = currentNode();
+        dispatch({ type: 'arrive', now: Date.now() });
+        if (node) record('arrived', node, state.lockPins[node] ? { code: state.lockPins[node].pin } : undefined);
+      },
 
       nextStop: () => {
         if (!bundle) return;
@@ -470,7 +679,9 @@ export const useAppActions = () => {
         const stop = currentStop(state, bundle);
         const reason = state.skipReason;
         const last = state.stopIndex + 1 >= state.tourOrder.length;
-        toast(`${stop?.name ?? 'Stop'} skipped${reason === 'lock' ? ` — we let the leasing team know${DEMO}` : ''}`);
+        const recorded = visitRecording(state.visit);
+        toast(`${stop?.name ?? 'Stop'} skipped${reason === 'lock' ? (recorded ? ' — the leasing team is told' : ` — we let the leasing team know${DEMO}`) : ''}`);
+        record('skipped', node, { reason });
         if (last && (state.virtualTour || state.tourMode === 'ar')) {
           dispatch({ type: 'skipStop', node, reason });
           finish();
@@ -488,7 +699,7 @@ export const useAppActions = () => {
         lockRequests.current.add(node);
         dispatch({ type: 'lockPinStart', node });
         try {
-          const pin = await repository.getStopLockPin(node);
+          const pin = await repository.getStopLockPin(node, state.visit?.id ?? null);
           dispatch({ type: 'lockPinReady', node, propertyId, pin });
           void success();
         } catch (error) {
@@ -515,7 +726,7 @@ export const useAppActions = () => {
           const stale = key?.validUntil ? Date.parse(key.validUntil) <= Date.now() : false;
           if (!key || stale) {
             dispatch({ type: 'lockPhase', node, propertyId, status: 'loading' });
-            key = await repository.getStopLockBluetoothKey(node);
+            key = await repository.getStopLockBluetoothKey(node, state.visit?.id ?? null);
             if (controller.signal.aborted) {
               // Cancelled while the key was being fetched: clear the "Getting your key…" status,
               // or the stop stays loading with a Cancel button that no longer does anything.
@@ -531,12 +742,16 @@ export const useAppActions = () => {
             onPhase: (phase) => dispatch({ type: 'lockPhase', node, propertyId, status: phase === 'preparing' ? 'loading' : phase })
           });
           dispatch({ type: 'lockUnlocked', node, propertyId });
+          record('unlocked', node, { provider: lockProviderOf(node), method: 'bluetooth' });
           void success();
         } catch (error) {
           if (controller.signal.aborted) {
             dispatch({ type: 'lockPinDismiss' });
             return;
           }
+          const code = error instanceof BluetoothUnlockError ? error.code : error instanceof ApiError ? error.code : 'unknown';
+          // A key the CMS refused is not a door that failed; only the lock's own failure is logged against it.
+          if (!(error instanceof ApiError)) record('unlock_failed', node, { provider: lockProviderOf(node), method: 'bluetooth', error_code: code });
           dispatch({ type: 'lockPinFailed', node, propertyId, message: messageOf(error, 'The lock could not be opened. Please try again.'), code: error instanceof BluetoothUnlockError ? error.code : null });
         } finally {
           lockRequests.current.delete(node);
@@ -658,9 +873,15 @@ export const useAppActions = () => {
           toast(`Opening email to ${email}`);
         } else toast(`Opening email to ${email ?? LEASING_EMAIL}${DEMO}`);
       },
-      /** Report an issue: the CMS has no endpoint for reports yet, so the choice is kept on the phone and the toast says so. */
+      /** Report an issue: logged on the CMS's visit when one is recorded (the office sees it in Visitors); kept on the phone otherwise, and the toast says which. */
       reportIssue: (label: string) => {
         dispatch({ type: 'closeOverlay', overlay: 'report' });
+        const node = currentNode();
+        if (visitRecording(state.visit) && node) {
+          record('issue', node, { category: label, text: label });
+          toast(`Reported to the leasing team: ${label}. Call or chat for help right now.`);
+          return;
+        }
         toast(`Noted: ${label}. Reports are not sent to the office in this build — call or chat for help now.`);
       },
       call911: () => {
@@ -719,7 +940,7 @@ export const useAppActions = () => {
           if (result.rescheduled) {
             toast('Your earlier booking was moved to this live tour.');
             if (state.scheduledTour && state.scheduledTour.status !== 'past' && state.scheduledTour.status !== 'cancelled') {
-              dispatch({ type: 'confirmSchedule', tour: { ...state.scheduledTour, id: result.id, date: result.date || state.book.day, time: result.timeLabel || slot.label, tourType: result.tourType, endTime: result.endTime, createdAt: Date.now() } });
+              dispatch({ type: 'confirmSchedule', tour: { ...state.scheduledTour, id: result.id, date: result.date || state.book.day, time: result.timeLabel || slot.label, tourType: result.tourType, endTime: result.endTime, createdAt: Date.now(), bookingId: bookingIdOf(result.id), visitorId: result.visitorId } });
             }
           }
           void success();
@@ -760,13 +981,19 @@ export const useAppActions = () => {
         toast(`${unit?.name ?? 'Unit'} is held for ${HOLD_HOURS} hours${DEMO}`);
       },
 
-      // ── stop extras (local) ──
+      // ── stop extras ──
+      /** Saves the note draft for the stop; on a recorded visit the CMS gets it too. */
+      saveNote: (node: string) => {
+        const text = state.noteDraft.trim();
+        dispatch({ type: 'saveNote', node });
+        if (text) record('note', node, { text: text.slice(0, MAX_NOTE_CHARS) });
+      },
       toggleFavourite: (node: string) => {
         const on = !state.favourites[node];
         dispatch({ type: 'toggleFavourite', node });
         toast(on ? 'Saved to favourites' : 'Removed from favourites');
       },
-      /** A reference photo the visitor took: kept on this phone for the tour, never uploaded. */
+      /** A reference photo the visitor took: kept on this phone for the tour; on a recorded visit a copy goes to the CMS (a note with the caption when it is too large). */
       addPhoto: (node: string, dataUrl: string | null) => {
         const stop = bundle ? tourStopViews(bundle).find((v) => v.node === node) : null;
         if (!dataUrl) {
@@ -774,7 +1001,14 @@ export const useAppActions = () => {
           return;
         }
         dispatch({ type: 'addPhoto', node, dataUrl });
-        toast(`Photo added to ${stop?.name ?? 'this stop'} · stays on this phone`);
+        const stopName = stop?.name.replace(/ \*$/, '') ?? 'this stop';
+        const recorded = visitRecording(state.visit);
+        if (recorded) {
+          const caption = `Photo at ${stopName}`;
+          if (dataUrl.startsWith('data:image/') && dataUrl.length <= MAX_PHOTO_CHARS) record('photo', node, { image: dataUrl, caption });
+          else record('note', node, { text: caption });
+        }
+        toast(recorded ? `Photo added to ${stopName}` : `Photo added to ${stopName} · stays on this phone`);
       },
 
       // ── the summary ──

@@ -1,9 +1,10 @@
 import type { Amenity, AmenityIcon, Building, GraphNode, LeaseTerm, LockBluetoothKey, LockPin, MapLevel, Property, PropertyListing, Route, RouteLeg, RouteStage, RouteStep, StopLock, StopMedia, TourRoute, TourStopPlace, Unit, WayfindingGraph } from '~/models';
 import { emptyMedia } from '~/models';
 import type { StopKind } from '~/models';
-import type { AvailabilityDay, AvailabilityWindow, BookingResult, BookingSettings, PropertyBundle, StopDistance } from '../tourRepository';
+import type { SessionVisitor } from '~/services/session';
+import type { AvailabilityDay, AvailabilityWindow, BookingResult, BookingSettings, PropertyBundle, StopDistance, VisitEventsResult, VisitRecord, VisitorBooking } from '../tourRepository';
 import { ApiError } from './apiClient';
-import type { ApiAvailabilityDay, ApiAvailabilityResponse, ApiBookingCreateResponse, ApiBookingSettings, ApiDistancesResponse, ApiGraph, ApiLeg, ApiLevel, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiMapResponse, ApiNode, ApiPropertyDetail, ApiPropertySummary, ApiRoute, ApiRouteStep, ApiStop, ApiStopLock, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
+import type { ApiAvailabilityDay, ApiAvailabilityResponse, ApiBookingCreateResponse, ApiBookingSettings, ApiDistancesResponse, ApiGraph, ApiLeg, ApiLevel, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiMapResponse, ApiNode, ApiPropertyDetail, ApiPropertySummary, ApiRoute, ApiRouteStep, ApiStop, ApiStopLock, ApiStopsResponse, ApiTourRouteResponse, ApiVisit, ApiVisitEventsResponse, ApiVisitor, ApiVisitorBooking } from './apiTypes';
 
 /**
  * snake_case API JSON → the camelCase models the screens consume. The only
@@ -417,6 +418,65 @@ export const parseBookingResult = (r: ApiBookingCreateResponse): BookingResult =
     timeLabel: str(b.tour_time_label),
     endTime: strOrNull(b.end_time),
     tourType: str(b.tour_type, 'self_tour'),
-    rescheduled: bool(b.rescheduled, false)
+    rescheduled: bool(b.rescheduled, false),
+    visitorId: numOrNull(r.visitor?.id)
   };
 };
+
+// ---- the visitor sign-in and visits (October 23, 2026) ----
+export const parseVisitor = (v: ApiVisitor): SessionVisitor => {
+  if (!v || typeof v !== 'object' || typeof v.id !== 'number') throw new ApiError('malformed_response', 'The sign-in answer was incomplete. Please try again.', 200);
+  const first = str(v.first_name).trim();
+  const last = str(v.last_name).trim();
+  return {
+    id: v.id,
+    firstName: first,
+    lastName: last,
+    name: str(v.name).trim() || `${first} ${last}`.trim(),
+    email: str(v.email).trim(),
+    phone: str(v.phone_number),
+    phoneMasked: strOrNull(v.phone_masked),
+    smsEnabled: bool(v.is_sms_enabled, true)
+  };
+};
+
+export const parseVisitorBooking = (b: ApiVisitorBooking): VisitorBooking => ({
+  id: num(b.id),
+  propertyId: num(b.property_id),
+  propertyName: strOrNull(b.property_name),
+  status: str(b.status, 'upcoming'),
+  date: strOrNull(b.tour_date),
+  time: strOrNull(b.tour_time),
+  timeLabel: strOrNull(b.tour_time_label),
+  endTime: strOrNull(b.end_time),
+  tourType: strOrNull(b.tour_type),
+  createdBy: strOrNull(b.created_by)
+});
+
+export const parseVisitorBookings = (raw: unknown): VisitorBooking[] =>
+  list<ApiVisitorBooking>(raw)
+    .filter((b) => b && typeof b.id === 'number' && typeof b.property_id === 'number')
+    .map(parseVisitorBooking);
+
+export const parseVisit = (v: ApiVisit | null | undefined): VisitRecord => {
+  if (!v || typeof v !== 'object' || typeof v.id !== 'number') throw new ApiError('malformed_response', 'The server answered without a visit. Please try again.', 200);
+  return {
+    id: v.id,
+    status: str(v.status, 'in_progress'),
+    tourKey: strOrNull(v.tour_key),
+    tourType: strOrNull(v.tour_type),
+    bookingId: numOrNull(v.booking_id),
+    startedAt: strOrNull(v.started_at),
+    endedAt: strOrNull(v.ended_at),
+    active: bool(v.active, false),
+    accessEndsAt: strOrNull(v.access_window?.ends_at),
+    accessMinutes: numOrNull(v.access_window?.minutes),
+    verificationRequired: bool(v.verification_required, false),
+    created: bool(v.created, true)
+  };
+};
+
+export const parseVisitEvents = (r: ApiVisitEventsResponse): VisitEventsResult => ({
+  accepted: list<ApiVisitEventsResponse['accepted'][number]>(r?.accepted).map((a) => ({ index: num(a.index, -1), clientEventId: strOrNull(a.client_event_id), kind: str(a.kind), id: numOrNull(a.id), duplicate: bool(a.duplicate, false) })),
+  rejected: list<ApiVisitEventsResponse['rejected'][number]>(r?.rejected).map((x) => ({ index: num(x.index, -1), clientEventId: strOrNull(x.client_event_id), code: str(x.code, 'rejected'), message: str(x.message) }))
+});

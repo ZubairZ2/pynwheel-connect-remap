@@ -3,7 +3,9 @@
 module Api
   module TourApp
     module V1
-      # Liveness and database reachability; no token needed.
+      # Liveness and database reachability; no token needed. `capabilities`
+      # tells the app which optional server features are switched on
+      # (visit recording, visitor sign-in) before anyone signs in.
       class HealthController < BaseController
         skip_before_action :authenticate!
 
@@ -13,7 +15,7 @@ module Api
           rescue StandardError
             false
           end
-          render json: { success: true, status: 'ok', database: database, env: Rails.env.to_s }
+          render json: { success: true, status: 'ok', database: database, env: Rails.env.to_s, capabilities: Connect::Flags.tour_capabilities }
         end
       end
     end

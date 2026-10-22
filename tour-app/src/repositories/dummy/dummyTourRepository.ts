@@ -1,6 +1,6 @@
 import type { LockBluetoothKey, LockPin, MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
 import { AFTER_HOURS_SLOTS, DAY_SLOTS, PARTY_MAX, TOUR_LENGTHS } from '~/content/demoFixtures';
-import type { Session } from '~/services/session';
+import { NO_CAPABILITIES, type Capabilities, type Session } from '~/services/session';
 import { placesFromBundle } from '../places';
 import {
   APP_VERSION,
@@ -27,7 +27,7 @@ import {
   type DummyProperty
 } from '~/dummy';
 import { RouteService } from '~/wayfinding/routeService';
-import { FeatureUnavailableError, type AppContent, type AvailabilityWindow, type BookingRequest, type BookingResult, type BookingSettings, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult } from '../tourRepository';
+import { FeatureUnavailableError, type AppContent, type AvailabilityWindow, type BookingRequest, type BookingResult, type BookingSettings, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult, type VisitEndInput, type VisitEventInput, type VisitEventsResult, type VisitorBooking, type VisitorCodeSent, type VisitorProfilePatch, type VisitorVerifyRequest, type VisitRecord, type VisitStartInput } from '../tourRepository';
 
 /**
  * The dummy provider: answers every repository call from local dummy data,
@@ -59,7 +59,7 @@ export class DummyTourRepository implements TourRepository {
   // --- session: any email and password sign in (demo data, no backend)
   async login(email: string, _password: string): Promise<Session> {
     await this.delay('write');
-    this.session = { accessToken: 'dummy', expiresAt: null, user: { id: 0, name: FIRST_NAME.replace(/ \*$/, ''), email, role: 'demo' }, propertyId: this.propertyId };
+    this.session = { kind: 'staff', accessToken: 'dummy', expiresAt: null, user: { id: 0, name: FIRST_NAME.replace(/ \*$/, ''), email, role: 'demo' }, visitor: null, propertyId: this.propertyId, capabilities: NO_CAPABILITIES };
     return this.session;
   }
 
@@ -73,6 +73,31 @@ export class DummyTourRepository implements TourRepository {
 
   onSessionExpired(): () => void {
     return () => undefined;
+  }
+
+  currentSession(): Session | null {
+    return this.session;
+  }
+
+  // The demo backend has none of the optional server features: no visitor sign-in, no visit recording.
+  async getCapabilities(): Promise<Capabilities> {
+    return NO_CAPABILITIES;
+  }
+
+  async requestVisitorCode(_phone: string): Promise<VisitorCodeSent> {
+    throw new FeatureUnavailableError('Signing in with a phone number');
+  }
+
+  async verifyVisitorCode(_request: VisitorVerifyRequest): Promise<{ session: Session; bookings: VisitorBooking[] }> {
+    throw new FeatureUnavailableError('Signing in with a phone number');
+  }
+
+  visitorBookings(): VisitorBooking[] {
+    return [];
+  }
+
+  async updateVisitorProfile(_patch: VisitorProfilePatch): Promise<Session> {
+    throw new FeatureUnavailableError('Editing a visitor profile');
   }
 
   async getProperties(): Promise<PropertyListing[]> {
@@ -249,7 +274,24 @@ export class DummyTourRepository implements TourRepository {
     const m = /^(\d{2}):(\d{2})$/.exec(request.time);
     const hour = m ? Number(m[1]) : 0;
     const label = m ? `${hour % 12 === 0 ? 12 : hour % 12}:${m[2]} ${hour < 12 ? 'AM' : 'PM'}` : request.time;
-    return { id: `bk-${Date.now()}`, status: 'upcoming', date: request.date, time: request.time, timeLabel: label, endTime: null, tourType: request.tourType, rescheduled: false };
+    return { id: `bk-${Date.now()}`, status: 'upcoming', date: request.date, time: request.time, timeLabel: label, endTime: null, tourType: request.tourType, rescheduled: false, visitorId: null };
+  }
+
+  async cancelBooking(_bookingId: number): Promise<void> {
+    await this.delay('write');
+  }
+
+  // Visits are never recorded against demo data: the store never calls these on the dummy provider, and a caller that does gets the honest answer.
+  async startVisit(_input: VisitStartInput): Promise<VisitRecord> {
+    throw new FeatureUnavailableError('Visit recording');
+  }
+
+  async sendVisitEvents(_visitId: number, _events: VisitEventInput[]): Promise<VisitEventsResult> {
+    throw new FeatureUnavailableError('Visit recording');
+  }
+
+  async endVisit(_visitId: number, _input: VisitEndInput): Promise<VisitRecord> {
+    throw new FeatureUnavailableError('Visit recording');
   }
 
   async startApplication(unitNode: string): Promise<{ id: string }> {

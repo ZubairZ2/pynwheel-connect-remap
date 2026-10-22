@@ -1409,3 +1409,50 @@ index migration on production, set `HOST_URL`, wire the iOS plugin into CapApp-S
   scenarios `build | guided | stops [--mock-pin] | demo (--dummy, :3019) | booking [--submit]`. The browser pane renders stale
   screenshots while its document is hidden; read the DOM instead. Launch entries `rails-start-tour-clone` (:3104),
   `tour-app-start-tour` (:3018), `tour-app-start-tour-dummy` (:3019).
+
+## 42. Visitor sign-in and visits on the Tour App API — implementation knowledge (October 23, 2026)
+
+Branch `feature/legacy-visitor-auth-flow`; plan `VISITOR_MANAGEMENT_ARCHITECTURE_PLAN.md`; legacy study
+`LEGACY_VISITOR_SIGNUP_AUTH_FLOW.md`; contract `tour-app-backend-api.md` §21; report `VISITOR_AUTH_IMPLEMENTATION_REPORT.md`.
+
+- **Where a visitor logs in.** Nowhere in Connect: the Visitors tab is a staff tool behind the Devise session
+  (`Connect::BaseController`, `can_access_community?`, X-CSRF-Token on writes, Super Admin for the privacy actions). A visitor
+  (prospect) signs in only in the Tour App, with a phone number and a one-time code (`Api::TourApp::V1::VisitorAuthController`,
+  `Visitors::Otp`, `Visitors::Session`). The two identities never meet: a `vst_` token is refused by every Devise-protected page
+  and by Connect's Next route (401), and a visitor context has no `user`.
+- **Two principals, one API.** `TourApi::Auth.authenticate` answers a `Context` (staff: Doorkeeper token + `User`) or a
+  `VisitorContext` (session row + `TourUser`); `BaseController#require_staff!` / `require_visitor!`; `TourApi::Properties.accessible?`
+  takes the context (a visitor sees tour-enabled properties, minus `restrict_access` ones unless their email is allowed).
+  `user_for_paper_trail` gives every version the principal (`visitor:<id>` or the user id).
+- **OTP state is its own table** (`visitor_otps`, keyed by phone) so an unknown phone can be proven before the `tour_users` row
+  exists and the legacy `pin_code` / `ExpireOtpJob` flow stays as it is for the legacy app. Codes are HMAC digests with the
+  secret key base; sessions are SHA-256 digests; neither plaintext is ever stored or logged (`filter_parameters` now masks
+  `otp`, `code`, `phone`, `email`, `guest_pin`, `guest_key`, `id_card`, `*digest`, `access_token`).
+- **Visits write the legacy tables** (`Visits::Start` / `Record` / `End`), with additive columns that link and de-duplicate:
+  `tour_histories.schedual_tour_id`, `source` ('legacy' | 'tour_app'), `client_visit_id`, `ended_reason`, `location_received`;
+  `visited_stops.kind` ('arrived' default so legacy rows read as before, `skipped`, `note`, `photo`, `issue`), `occurred_at`,
+  `tour_history_id`, `client_event_id`, `payload`; `lock_histories.provider`, `method`, `success`, `error_code`, `client_event_id`;
+  `igloohome_guests.tour_history_id`, `issued_by_user_id`. `Visitors::Status` needed no change: a Tour App visit is `in_progress` /
+  `completed` / `abandoned` by the same rules. `Visitors::Profile` reads `kind` (a skipped stop is "Skipped", an issue is listed
+  apart from the notes) and reports `source` on sessions; Connect's generator and strings follow.
+- **Check-in rules** (`Visits::Rules`) are the legacy `user_tour_status` ones re-expressed: `opening_hours` compared as the
+  legacy SQL does, the 1 km radius through `Geocoder`, the booking window = booked time ± `grace_period`. Coordinates are
+  optional (the app has no geolocation plugin); ID verification is a server-side state read from the legacy columns.
+- **Concurrency.** `Bookings::Create` takes `pg_advisory_xact_lock(7312026, community_id)` and runs the slot check inside the
+  transaction (shared by the widget, Connect and the app); visit start is idempotent on `client_visit_id` and on an open visit;
+  events are idempotent on `(tour_history_id, client_event_id)` with partial unique indexes and per-item savepoints.
+- **Cancel is shared.** `Bookings::Cancel` (destroy + `booking_cancelled` audit version) is what Connect's cancel and the
+  visitor's cancel both call; the destroy semantics stay because the CRM callbacks and `Visitors::Cancelled` depend on them.
+- **Switches.** `Connect::Flags.tour_visits_enabled?` / `tour_visitor_auth_enabled?` (`PYN_TOUR_VISITS`, `PYN_TOUR_VISITOR_AUTH`;
+  production off, elsewhere on), advertised as `capabilities` so an old app and a new server, or the reverse, keep working.
+- **Throttles** (`Rack::Attack`): staff login per IP and per email, OTP send per phone (minute and day) and per IP, OTP verify
+  per phone and per IP, bookings, locks and visit events per IP. The middleware is off in the test environment unless a test
+  turns it on with a memory store (`throttle_test.rb`).
+- **Test traps.** `Rack::Attack` must stay off for the rest of the suite; a non-transactional test (the concurrency test) must
+  restore every fixture column it touches and delete the rows it makes, or the whole suite fails in order-dependent ways;
+  the `versions` table has no primary key, so `.last` needs an explicit order; a `TourUser` with an empty phone can only be
+  made with `update_column`. The test database must be migrated by hand (`RAILS_ENV=test rails db:migrate`): the harness refuses
+  to run with pending migrations rather than loading `schema.rb`.
+- **Local servers.** `.claude/launch.json` `rails-visitor-clone` (:3102, audit clone, `PYN_TOUR_VISITS=on PYN_TOUR_VISITOR_AUTH=on`,
+  PID in this session's scratchpad) with `connect-settings-verify` (:3007). The OTP code of a local run is read from the Sidekiq
+  queue in Redis (`queue:message`), where it waits because no worker runs locally; it is deleted after use so nothing is ever sent.

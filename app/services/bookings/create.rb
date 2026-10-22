@@ -16,6 +16,12 @@ module Bookings
   #      (SchedualTours::Notifications), exactly as for a widget booking.
   # `created_by` is "Staff" so the lists and the CSV say where it came from
   # ("Tour App" when the Pynwheel Tour app books through the Tour App API).
+  #
+  # October 23, 2026: a signed-in visitor of the Tour App books as themselves
+  # (`visitor:`), so step 1 is skipped and their identity is never
+  # overwritten by form fields; and the slot check now runs inside the
+  # transaction under a per-property advisory lock, so two bookings racing
+  # for the last place in a slot cannot both pass the capacity count.
   class Create
     include SchedualTours::Notifications
 
@@ -25,16 +31,19 @@ module Bookings
 
     Result = Struct.new(:booking, :visitor, :rescheduled, :notifications, keyword_init: true)
 
-    def initialize(community, user: nil, request_ip: nil, created_by: CREATED_BY)
+    LOCK_NAMESPACE = 7_312_026 # pg_advisory_xact_lock(LOCK_NAMESPACE, community_id)
+
+    def initialize(community, user: nil, visitor: nil, request_ip: nil, created_by: CREATED_BY)
       @community = community
       @user = user
+      @visitor = visitor
       @request_ip = request_ip
       @created_by = created_by.presence || CREATED_BY
       @availability = Availability.new(community)
     end
 
-    def self.call!(community, attrs, user: nil, request_ip: nil, created_by: CREATED_BY)
-      new(community, user: user, request_ip: request_ip, created_by: created_by).call!(attrs)
+    def self.call!(community, attrs, user: nil, visitor: nil, request_ip: nil, created_by: CREATED_BY)
+      new(community, user: user, visitor: visitor, request_ip: request_ip, created_by: created_by).call!(attrs)
     end
 
     def call!(attrs)
@@ -47,13 +56,15 @@ module Bookings
       raise Connect::DomainError.invalid('invalid_tour_type', 'Pick an app-guided or a person-guided tour.') unless TOUR_TYPES.include?(tour_type)
       raise Connect::DomainError.invalid('tour_type_off', "#{Availability::TYPE_LABELS[tour_type]} is turned off for this property.") unless type_allowed?(tour_type)
 
-      date, time = slot!(attrs, tour_type, property_tour_type)
-      visitor = visitor!(attrs)
+      visitor = @visitor ? own_visitor!(attrs) : visitor!(attrs)
 
       booking = nil
       rescheduled = false
       previous = {}
+      date = time = nil
       ApplicationRecord.transaction do
+        ApplicationRecord.connection.execute("SELECT pg_advisory_xact_lock(#{LOCK_NAMESPACE}, #{community.id.to_i})")
+        date, time = slot!(attrs, tour_type, property_tour_type)
         existing = MaxDateScheduledTourService.new(visitor, community, true).get_scheduled_tour
         # The legacy service answers the visitor's first row unchecked when that
         # row has no date (an old unscheduled visit); only a dated booking that
@@ -84,6 +95,13 @@ module Bookings
       notifications = notify(booking, previous, rescheduled, property_tour_type)
       audit(booking, rescheduled ? 'booking_rescheduled' : 'booking_created')
       Result.new(booking: booking, visitor: visitor, rescheduled: rescheduled, notifications: notifications)
+    end
+
+    # The signed-in visitor books as themselves; only the booking's own
+    # preferences (bedrooms) are taken from the form.
+    def own_visitor!(attrs)
+      @visitor.update_columns(desired_bedroom: attrs[:desired_bedroom].presence) if attrs.key?(:desired_bedroom)
+      @visitor
     end
 
     private
@@ -202,7 +220,7 @@ module Bookings
 
       def audit(booking, event)
         PaperTrail::Version.create!(
-          item_type: 'SchedualTour', item_id: booking.id, event: event, whodunnit: @user&.id&.to_s,
+          item_type: 'SchedualTour', item_id: booking.id, event: event, whodunnit: @user ? @user.id.to_s : (@visitor && "visitor:#{@visitor.id}"),
           community_id: community.id, company_id: community.company_id,
           object: { tour_user_id: booking.tour_user_id, tour_date: booking.tour_date, tour_time: booking.tour_time&.strftime('%H:%M'), tour_type: booking.tour_type, created_by: booking.created_by }.to_json
         )

@@ -354,6 +354,10 @@ export interface SessionStop {
   note: string | null;
   notes?: string[];
   photos?: string[];
+  /** The new Tour App reports what each row is; a stop the visitor skipped has no arrival (October 23, 2026). */
+  skipped?: boolean;
+  /** Issues the visitor reported at the stop, apart from the notes. */
+  issues?: string[];
   imageUrl: string | null;
 }
 
