@@ -370,6 +370,8 @@ export interface ApiVisitorOtpResponse {
   success: true;
   sent: boolean;
   resend_after: number;
+  /** Testing only: the server returns the code when PYN_TOUR_OTP_DEBUG is on (never in production). */
+  debug_code?: string;
 }
 
 export interface ApiVisitorVerifyResponse {

@@ -57,7 +57,16 @@ module Visitors
       row.assign_attributes(code_digest: digest(number, code), expires_at: now + TTL, attempts: 0, sends_today: sends_today + 1, last_sent_at: now, created_ip: ip)
       row.save!
       deliver(number, code, community_id) unless test_phone?(number)
-      { sent: true, resend_after: RESEND_AFTER }
+      answer = { sent: true, resend_after: RESEND_AFTER }
+      answer[:debug_code] = code if debug_codes?
+      answer
+    end
+
+    # Testing on a machine that cannot send SMS: `PYN_TOUR_OTP_DEBUG=on` makes
+    # the "code sent" answer carry the code, and the app shows it on the code
+    # step. Never honoured in production, whatever the variable says.
+    def debug_codes?
+      !Rails.env.production? && ENV['PYN_TOUR_OTP_DEBUG'].to_s.strip.downcase == 'on'
     end
 
     # The visitor the code proves, or ApiError 401 `invalid_code` (one message

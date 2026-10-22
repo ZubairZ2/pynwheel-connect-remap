@@ -165,6 +165,11 @@ export const GetStartedScreen = (p: Props) => {
         <div className="pw-auth__title">Enter your code</div>
         <div className="pw-auth__sub">We sent a 6-digit code to {p.phoneAuth.phone.trim() || 'your phone'}.</div>
       </div>
+      {p.phoneAuth.debugCode ? (
+        <button type="button" className="pw-auth__debugcode" onClick={() => p.onCode(p.phoneAuth.debugCode ?? '')} data-testid="otp-debug-code">
+          Test server · your code is <strong>{p.phoneAuth.debugCode}</strong> (tap to fill)
+        </button>
+      ) : null}
       <label className="pw-auth__field">
         <Eyebrow>Code</Eyebrow>
         <input type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={6} placeholder="123456" value={p.phoneAuth.code} onChange={(e) => p.onCode(e.target.value)} className="pw-input pw-input--lg" aria-label="One-time code" disabled={p.busy} autoFocus />

@@ -193,6 +193,8 @@ export interface VisitorBooking {
 export interface VisitorCodeSent {
   /** Seconds before another code may be requested. */
   resendAfterS: number;
+  /** Testing only: the code itself, when the server was started with PYN_TOUR_OTP_DEBUG=on. */
+  debugCode?: string | null;
 }
 
 export interface VisitorVerifyRequest {

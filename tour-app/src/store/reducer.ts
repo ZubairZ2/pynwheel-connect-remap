@@ -56,7 +56,7 @@ export type Action =
   | { type: 'setPhone'; value: string }
   | { type: 'setOtpCode'; value: string }
   | { type: 'setOtpProfile'; field: 'first' | 'last' | 'email'; value: string }
-  | { type: 'otpSent'; resendAt: number }
+  | { type: 'otpSent'; resendAt: number; debugCode?: string | null }
   | { type: 'otpProfileRequired' }
   | { type: 'confirmProfile' }
   | { type: 'editProfile'; on: boolean }
@@ -358,7 +358,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'setOtpProfile':
       return { ...state, phoneAuth: { ...state.phoneAuth, [action.field]: action.value } };
     case 'otpSent':
-      return { ...state, authStep: 'code', phoneAuth: { ...state.phoneAuth, code: '', resendAt: action.resendAt }, auth: { status: 'idle', error: null } };
+      return { ...state, authStep: 'code', phoneAuth: { ...state.phoneAuth, code: '', resendAt: action.resendAt, debugCode: action.debugCode ?? null }, auth: { status: 'idle', error: null } };
     case 'otpProfileRequired':
       return { ...state, authStep: 'profile', auth: { status: 'idle', error: null } };
     case 'confirmProfile': {

@@ -308,7 +308,7 @@ export const useAppActions = () => {
         dispatch({ type: 'loginStart' });
         try {
           const sent = await repository.requestVisitorCode(phone, 'US');
-          dispatch({ type: 'otpSent', resendAt: Date.now() + Math.max(0, sent.resendAfterS) * 1000 });
+          dispatch({ type: 'otpSent', resendAt: Date.now() + Math.max(0, sent.resendAfterS) * 1000, debugCode: sent.debugCode ?? null });
           toast(`Code sent to ${phone}`);
         } catch (error) {
           if (error instanceof ApiError && error.status === 404 && error.code === 'disabled') dispatch({ type: 'setCapabilities', capabilities: { ...state.capabilities, visitorAuth: false } });

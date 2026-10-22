@@ -232,6 +232,25 @@ class Api::TourApp::V1::VisitorAuthTest < ActionDispatch::IntegrationTest
     ENV.delete('PYN_TOUR_VISITOR_AUTH')
   end
 
+  test 'the code is shown in the answer only while the testing switch is on' do
+    request_code
+    refute body.key?('debug_code'), 'off by default'
+    ENV['PYN_TOUR_OTP_DEBUG'] = 'on'
+    VisitorOtp.delete_all
+    request_code('+13035550160')
+    assert_response :accepted
+    assert_equal last_code, body['debug_code']
+    verify('+13035550160', body['debug_code'], first_name: 'Dbg', last_name: 'Code', email: 'dbg@example.test')
+    assert_response :success, response.body
+    Rails.env.stub(:production?, true) do
+      VisitorOtp.delete_all
+      request_code('+13035550161')
+      refute body.key?('debug_code'), 'never in production'
+    end
+  ensure
+    ENV.delete('PYN_TOUR_OTP_DEBUG')
+  end
+
   test 'a store-review phone takes the configured code outside production and gets no SMS' do
     ENV['PYN_TOUR_OTP_TEST_PHONES'] = PHONE
     ENV['PYN_TOUR_OTP_TEST_CODE'] = '246810'

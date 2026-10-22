@@ -97,12 +97,14 @@ export interface PhoneAuthDraft {
   code: string;
   /** When "Resend code" becomes available (ms since the epoch), null before a code was sent. */
   resendAt: number | null;
+  /** Testing only: the code the server disclosed (PYN_TOUR_OTP_DEBUG); shown on the code step. */
+  debugCode: string | null;
   first: string;
   last: string;
   email: string;
 }
 
-export const initialPhoneAuth = (): PhoneAuthDraft => ({ phone: '', code: '', resendAt: null, first: '', last: '', email: '' });
+export const initialPhoneAuth = (): PhoneAuthDraft => ({ phone: '', code: '', resendAt: null, debugCode: null, first: '', last: '', email: '' });
 
 /**
  * The visit the CMS records for the tour in progress (October 23, 2026).

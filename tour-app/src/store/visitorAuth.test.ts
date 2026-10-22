@@ -138,3 +138,14 @@ describe('door codes and the access window', () => {
     expect(over.checkedIn).toBe(false);
   });
 });
+
+describe('otpSent debug code (testing servers only)', () => {
+  it('keeps the disclosed code for the code step and drops it when absent', () => {
+    const base = initialAppState();
+    const withCode = reducer(base, { type: 'otpSent', resendAt: 1, debugCode: '123456' });
+    expect(withCode.authStep).toBe('code');
+    expect(withCode.phoneAuth.debugCode).toBe('123456');
+    const without = reducer(withCode, { type: 'otpSent', resendAt: 2 });
+    expect(without.phoneAuth.debugCode).toBeNull();
+  });
+});

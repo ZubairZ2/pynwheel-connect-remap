@@ -181,7 +181,7 @@ export class PynwheelApiTourRepository implements TourRepository {
   // ------------------------------------------------- the visitor sign-in
   async requestVisitorCode(phone: string, countryCode = 'US'): Promise<VisitorCodeSent> {
     const { data } = await this.client.post<ApiVisitorOtpResponse>(`${API}/visitor/otp`, { phone: phone.trim(), country_code: countryCode, ...(this.currentPropertyId() != null ? { property_id: this.currentPropertyId() } : {}) }, false);
-    return { resendAfterS: typeof data?.resend_after === 'number' ? data.resend_after : 60 };
+    return { resendAfterS: typeof data?.resend_after === 'number' ? data.resend_after : 60, debugCode: typeof data?.debug_code === 'string' && /^\d{4,8}$/.test(data.debug_code) ? data.debug_code : null };
   }
 
   async verifyVisitorCode(request: VisitorVerifyRequest): Promise<{ session: Session; bookings: VisitorBooking[] }> {
