@@ -630,12 +630,17 @@
       };
 
       // Stable session ID persisted in localStorage so favorites survive page reloads.
+      // Storage can be full or blocked (QuotaExceededError, private mode); that
+      // must only cost persistence, never init — an uncaught throw here left the
+      // SDK with no session token and every later call answering 401.
       const lsKey = `pyn_sdk_session_${cfg.propertyId}`;
-      this._sdkSessionId = localStorage.getItem(lsKey) || (() => {
+      let storedSessionId = null;
+      try { storedSessionId = localStorage.getItem(lsKey); } catch {}
+      this._sdkSessionId = storedSessionId || (() => {
         const id = (typeof crypto !== "undefined" && crypto.randomUUID)
           ? crypto.randomUUID()
           : Math.random().toString(36).slice(2) + Date.now().toString(36);
-        localStorage.setItem(lsKey, id);
+        try { localStorage.setItem(lsKey, id); } catch {}
         return id;
       })();
 
