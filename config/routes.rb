@@ -743,7 +743,11 @@ Rails.application.routes.draw do
         delete :clear_all_favorites,      to: 'sdk#clear_all_favorites'
         get    :get_favorites,            to: 'sdk#get_favorites'
         post   :share_favorites_email,    to: 'sdk#share_favorites_email'
+        post   :share_favorites,          to: 'shared_favorites#create'
+        get    :get_shared_favorites,     to: 'shared_favorites#show'
         post   :events,                   to: 'sdk#track_events'
+        get    :touch_settings,           to: 'touch_settings#show'
+        put    :touch_settings,           to: 'touch_settings#update'
       end
     end
 

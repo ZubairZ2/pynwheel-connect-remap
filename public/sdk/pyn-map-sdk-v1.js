@@ -630,12 +630,17 @@
       };
 
       // Stable session ID persisted in localStorage so favorites survive page reloads.
+      // Storage can be full or blocked (QuotaExceededError, private mode); that
+      // must only cost persistence, never init — an uncaught throw here left the
+      // SDK with no session token and every later call answering 401.
       const lsKey = `pyn_sdk_session_${cfg.propertyId}`;
-      this._sdkSessionId = localStorage.getItem(lsKey) || (() => {
+      let storedSessionId = null;
+      try { storedSessionId = localStorage.getItem(lsKey); } catch {}
+      this._sdkSessionId = storedSessionId || (() => {
         const id = (typeof crypto !== "undefined" && crypto.randomUUID)
           ? crypto.randomUUID()
           : Math.random().toString(36).slice(2) + Date.now().toString(36);
-        localStorage.setItem(lsKey, id);
+        try { localStorage.setItem(lsKey, id); } catch {}
         return id;
       })();
 
@@ -4582,6 +4587,11 @@
      *
      * `map.hideUnitNumbers` is the CMS "Hide unit numbers" toggle. The SDK
      * already applies it to the SVGs it renders; hosts need do nothing.
+     *
+     * `products` is which Pynwheel products the property has switched on;
+     * `design.themeName` is its CMS theme:
+     *   products: { pynwheelTouch: boolean, pynwheelTour: boolean }
+     *   design:   { themeName: "futurist" | "modernist" | "expressionist" | ... }
      */
     getPropertyConfig() {
       return this.data.property || null;
@@ -5076,8 +5086,8 @@
 
     /**
      * Returns the stable session UUID stored in localStorage for this property.
-     * Use this to build a shareable URL: append ?session_id=<value>&community_id=<id>
-     * and pass those values back into the favorites methods on the receiving page.
+     * It is the write key for this visitor's favorites, so don't put it in a
+     * share link: use createFavoritesShare() for that.
      *
      * @returns {string}
      */
@@ -5226,16 +5236,75 @@
           }
         });
         if (!res.ok) return empty;
-        const data = await res.json();
-        return {
-          units:         data.units          || [],
-          amenities:     data.amenities      || [],
-          floorplans:    data.floorplans     || [],
-          galleryImages: data.gallery_images || []
-        };
+        return this._favoritesFromResponse(await res.json());
       } catch {
         return empty;
       }
+    },
+
+    /**
+     * Freezes the session's current favorites into a share and returns its
+     * token. Build the share link with the token (?share=<token>) instead of
+     * the session id: later favorite changes in this session don't change a
+     * link already sent, and the token can't be used to edit the favorites.
+     * Sharing an unchanged list again returns the same token.
+     *
+     * The property comes from the session token.
+     *
+     * @param {string} [sessionId] - defaults to this SDK's session
+     * @returns {Promise<{success: boolean, token?: string, message?: string}>}
+     *   success is false when there is nothing to share or the call failed.
+     */
+    async createFavoritesShare(sessionId) {
+      try {
+        const res = await this._authorizedFetch(`${this._apiBase()}/api/partner/maps/share_favorites`, {
+          method: "POST",
+          headers: { "X-SDK-Session-Id": sessionId || this._sdkSessionId }
+        });
+        const data = await res.json();
+        if (!res.ok || !data.token) return { success: false, message: data.message };
+
+        return { success: true, token: data.token };
+      } catch {
+        return { success: false, message: "Network error. Please try again." };
+      }
+    },
+
+    /**
+     * Fetches a shared favorites list by its share token (see
+     * createFavoritesShare). Same result shape as getAllFavorites. The list is
+     * the one frozen at share time; the items in it are current.
+     *
+     * @param {string} token
+     * @returns {Promise<{units: object[], amenities: object[], floorplans: object[], galleryImages: object[]}>}
+     *   Empty lists when the token is unknown or the call failed.
+     */
+    async getSharedFavorites(token) {
+      const empty = { units: [], amenities: [], floorplans: [], galleryImages: [] };
+      if (!token) return empty;
+
+      this._captureFavorite("view_favorites");
+
+      try {
+        const query = new URLSearchParams({ share: String(token) });
+        if (this.config.mapType === "ops") query.append("map_type", "ops");
+
+        const res = await this._authorizedFetch(`${this._apiBase()}/api/partner/maps/get_shared_favorites?${query}`);
+        if (!res.ok) return empty;
+        return this._favoritesFromResponse(await res.json());
+      } catch {
+        return empty;
+      }
+    },
+
+    /** Internal: the favorites lists out of a get_favorites-shaped response. */
+    _favoritesFromResponse(data) {
+      return {
+        units:         data.units          || [],
+        amenities:     data.amenities      || [],
+        floorplans:    data.floorplans     || [],
+        galleryImages: data.gallery_images || []
+      };
     },
 
     /**
@@ -5417,6 +5486,82 @@
         return { success: true, message: data.message || "Email sent successfully." };
       } catch {
         return { success: false, message: "Network error. Please try again." };
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // PYNWHEEL TOUCH SETTINGS
+    // One layout per property per screen type: a device type (mobile / ipad /
+    // desktop) and an orientation (portrait / landscape), so at most six. The
+    // server stores `settings` exactly as sent and never reads inside it, so the
+    // Touch app owns its shape. The property comes from the session token.
+    // See docs/touch-settings/frontend-integration.md.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Load the property's saved Touch layouts.
+     *
+     * With no arguments, returns every saved layout (at most six), so the app
+     * can switch layouts on rotation without another request. Pass deviceType
+     * and/or deviceOrientation to narrow it. A screen type that was never saved
+     * is simply absent from `layouts`. Never rejects.
+     *
+     * @param {{deviceType?: "mobile"|"ipad"|"desktop", deviceOrientation?: "portrait"|"landscape"}} [filter]
+     * @returns {Promise<{success: boolean, property_id?: number, layouts?: Array<{device_type: string,
+     *   device_orientation: string, settings: Object, device_details: Object, updated_at: string}>,
+     *   status?: number, message?: string}>}
+     */
+    async getTouchSettings({ deviceType, deviceOrientation } = {}) {
+      const params = new URLSearchParams();
+      if (deviceType)        params.append("device_type", deviceType);
+      if (deviceOrientation) params.append("device_orientation", deviceOrientation);
+      const query = params.toString() ? `?${params}` : "";
+
+      return this._touchSettingsRequest("GET", query);
+    },
+
+    /**
+     * Replace one screen type's layout. A full replace, not a merge: send the
+     * whole settings document, because any key left out is removed on the
+     * server. Other screen types are untouched.
+     *
+     * `deviceDetails` is optional ({ platform, app_version, ... }). When
+     * omitted, the server keeps the details from the last save that sent them.
+     * Never rejects.
+     *
+     * @param {{deviceType: "mobile"|"ipad"|"desktop", deviceOrientation: "portrait"|"landscape",
+     *   settings: Object, deviceDetails?: Object}} layout
+     * @returns {Promise<{success: boolean, property_id?: number, layout?: {device_type: string,
+     *   device_orientation: string, settings: Object, device_details: Object, updated_at: string},
+     *   status?: number, message?: string}>}
+     */
+    async saveTouchSettings({ deviceType, deviceOrientation, settings, deviceDetails } = {}) {
+      if (!settings || typeof settings !== "object" || Array.isArray(settings)) {
+        return { success: false, status: 422, message: "settings must be an object." };
+      }
+
+      const body = { device_type: deviceType, device_orientation: deviceOrientation, settings };
+      if (deviceDetails && typeof deviceDetails === "object") body.device_details = deviceDetails;
+
+      return this._touchSettingsRequest("PUT", "", body);
+    },
+
+    async _touchSettingsRequest(method, query, body) {
+      try {
+        const res = await this._authorizedFetch(`${this._apiBase()}/api/partner/maps/touch_settings${query}`, {
+          method,
+          headers: body ? { "Content-Type": "application/json" } : {},
+          body: body ? JSON.stringify(body) : undefined
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          return { success: false, status: res.status, message: data.message || "Touch settings request failed." };
+        }
+
+        return data;
+      } catch {
+        return { success: false, status: 0, message: "Network error. Please try again." };
       }
     },
 
@@ -5992,6 +6137,10 @@
       deleteFavorite(itemIds, communityId, sessionId, type) { return PynMapSDK.deleteFavorite.call(PynMapSDK, itemIds, communityId, sessionId, type); },
       clearAllFavorites(communityId, sessionId)             { return PynMapSDK.clearAllFavorites.call(PynMapSDK, communityId, sessionId); },
       shareFavoritesEmail(userEmail, favoritesUrl)          { return PynMapSDK.shareFavoritesEmail.call(PynMapSDK, userEmail, favoritesUrl); },
+      createFavoritesShare(sessionId)                       { return PynMapSDK.createFavoritesShare.call(PynMapSDK, sessionId); },
+      getSharedFavorites(token)                             { return PynMapSDK.getSharedFavorites.call(PynMapSDK, token); },
+      getTouchSettings(filter)                              { return PynMapSDK.getTouchSettings.call(PynMapSDK, filter); },
+      saveTouchSettings(layout)                             { return PynMapSDK.saveTouchSettings.call(PynMapSDK, layout); },
       onFloorplanHover(floorplanId){ return PynMapSDK.onFloorplanHover.call(PynMapSDK, floorplanId); },
       offFloorplanHover()          { return PynMapSDK.offFloorplanHover.call(PynMapSDK); },
       setExpandedMode(expanded)    { return PynMapSDK.setExpandedMode.call(PynMapSDK, expanded); },

@@ -616,7 +616,18 @@ class SdkPayloadBuilderService
 
       fontFamily: @community.font_setting&.svg_labels_font_family,
 
-      themeConfig: design_system_config.to_theme_config
+      themeConfig: design_system_config.to_theme_config,
+
+      # Which Pynwheel products the property has switched on.
+      products: {
+        pynwheelTouch: @community.pynwheel_touch_enabled?,
+        pynwheelTour:  @community.pynwheel_tour_enabled?
+      },
+
+      design: {
+        # futurist | cubist | modernist | expressionist | gables_organic | gables_refined
+        themeName: @community.theme_name
+      }
     }
   end
 
