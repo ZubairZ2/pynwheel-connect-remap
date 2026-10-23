@@ -1123,6 +1123,21 @@ Rails.application.routes.draw do
     get  'properties/:property_id/booking/settings', to: 'bookings#settings'
     get  'properties/:property_id/booking/availability', to: 'bookings#availability'
     post 'properties/:property_id/bookings', to: 'bookings#create'
+    # October 23, 2026: the visitor (prospect) sign-in, the visitor's own
+    # bookings, and the visits the app records (Connect's Visitors reads them).
+    post   'visitor/otp', to: 'visitor_auth#otp'
+    post   'visitor/otp/verify', to: 'visitor_auth#verify'
+    get    'visitor/me', to: 'visitor_auth#me'
+    put    'visitor/me', to: 'visitor_auth#update'
+    delete 'visitor/me', to: 'visitor_auth#destroy'
+    post   'visitor/logout', to: 'visitor_auth#logout'
+    get    'properties/:property_id/bookings', to: 'bookings#index'
+    put    'properties/:property_id/bookings/:booking_id', to: 'bookings#reschedule'
+    delete 'properties/:property_id/bookings/:booking_id', to: 'bookings#cancel'
+    post   'properties/:property_id/visits', to: 'visits#create'
+    get    'properties/:property_id/visits/:visit_id', to: 'visits#show'
+    post   'properties/:property_id/visits/:visit_id/events', to: 'visits#events'
+    post   'properties/:property_id/visits/:visit_id/end', to: 'visits#finish'
     match '*unmatched', to: 'errors#not_found', via: :all
   end
 

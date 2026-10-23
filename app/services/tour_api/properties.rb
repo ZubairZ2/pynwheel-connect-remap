@@ -44,13 +44,33 @@ module TourApi
       LIST_CACHE.clear
     end
 
-    # `User#can_access_community?`: a Super Admin (the only role admitted) sees every property.
-    def accessible?(user, community_id)
-      user.can_access_community?(community_id)
+    # Staff: `User#can_access_community?` (a Super Admin, the only staff role
+    # admitted, sees every property). A visitor (October 23, 2026): any
+    # property whose Self-Guided Tour is on, unless the property restricts
+    # access to an email allowlist (`communities.restrict_access` +
+    # `allowed_emails`), as the legacy app's community list did.
+    def accessible?(context, community_id, community: nil)
+      return context.user.can_access_community?(community_id) if context.staff?
+
+      community ||= Community.find_by(id: community_id)
+      visitor_accessible?(context.visitor, community)
+    end
+
+    def visitor_accessible?(visitor, community)
+      return false if community.nil? || !Connect::ProductState.tour?(community)
+      return true unless community.restrict_access
+
+      AllowedEmail.where(community_id: community.id).where('lower(email) = ?', visitor.email.to_s.downcase).exists?
     end
 
     def list(context, query: nil, tour_only: false)
-      rows = all_summaries.select { |row| accessible?(context.user, row[:id]) }
+      rows = if context.staff?
+               all_summaries.select { |row| accessible?(context, row[:id]) }
+             else
+               restricted = Community.where(restrict_access: true).pluck(:id)
+               allowed = AllowedEmail.where('lower(email) = ?', context.visitor.email.to_s.downcase).pluck(:community_id)
+               all_summaries.select { |row| row[:tour_enabled] && (!restricted.include?(row[:id]) || allowed.include?(row[:id])) }
+             end
       rows = rows.select { |row| row[:tour_enabled] } if tour_only
       if query.present?
         q = query.strip.downcase
@@ -70,7 +90,7 @@ module TourApi
       raise ApiError.validation([{ loc: %w[path property_id], message: 'Input should be greater than or equal to 1' }]) if id.to_i < 1
 
       community = Community.includes(:company).find_by(id: id.to_i)
-      raise ApiError.not_found if community.nil? || !accessible?(context.user, community.id)
+      raise ApiError.not_found if community.nil? || !accessible?(context, community.id, community: community)
 
       community
     end

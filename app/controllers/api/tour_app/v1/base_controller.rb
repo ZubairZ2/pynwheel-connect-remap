@@ -6,14 +6,19 @@ module Api
       # The Pynwheel Tour mobile app's API (`/api/tour/v1`), ported into Rails
       # on October 7, 2026 from the FastAPI service `tour-api/` with the same
       # contract. JSON only, no session, no CSRF: every request after sign-in
-      # carries `Authorization: Bearer <token>`, a Doorkeeper access token of
-      # a CMS Super Admin (`TourApi::Auth`). Every error is
+      # carries `Authorization: Bearer <token>`: a Doorkeeper access token of
+      # a CMS Super Admin (staff), or, since October 23, 2026, a `vst_…`
+      # visitor session token of a prospect who proved a phone number
+      # (`TourApi::Auth`). `@auth` is the principal; `staff?` / `visitor?`
+      # say which, and an endpoint that is for one of them says so with
+      # `require_staff!` / `require_visitor!`. Every error is
       # `{"success": false, "error": {"code", "message", "details"?}}`;
       # an unexpected exception is logged with a reference and answered as
       # `internal_error`, never with a trace.
       #
       # Separate from the legacy self-tour API (`Api::SelfTour::V1`, JWT /
-      # API_ACCESS) and from `Api::V1` (vendor endpoints), which are untouched.
+      # API_ACCESS) and from `Api::V1` (vendor endpoints), which are untouched;
+      # nothing here goes through their request logger.
       class BaseController < ActionController::API
         rescue_from StandardError, with: :render_internal_error
         rescue_from TourApi::ApiError, with: :render_api_error
@@ -22,11 +27,26 @@ module Api
         end
 
         before_action :authenticate!
+        before_action :set_paper_trail_whodunnit
 
         private
 
           def authenticate!
             @auth = TourApi::Auth.authenticate(bearer_token)
+          end
+
+          # PaperTrail's own per-request hook; every version a request writes
+          # names the staff user or `visitor:<id>` (nil before sign-in).
+          def user_for_paper_trail
+            @auth&.whodunnit
+          end
+
+          def require_staff!
+            raise TourApi::ApiError.forbidden('staff_only', 'This is for Pynwheel staff.') unless @auth&.staff?
+          end
+
+          def require_visitor!
+            raise TourApi::ApiError.forbidden('visitor_only', 'Sign in as a visitor to do this.') unless @auth&.visitor?
           end
 
           def bearer_token

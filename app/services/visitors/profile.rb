@@ -176,6 +176,7 @@ module Visitors
           onsite: history.tour_site != 'offsite',
           tour_type: history.tour_type,
           tour_status: history.tour_status,
+          source: history.source,
           verified_by: history.verified_by,
           id_mismatch: history.id_mismatch == true,
           abandoned_at_stop: history.abandoned_tour_at_stop && stop_names[history.abandoned_tour_at_stop]&.name,
@@ -220,8 +221,13 @@ module Visitors
             pins: rows.filter_map { |row| Status.stop_code(row.stop_pin) }.uniq,
             pin: rows.filter_map { |row| Status.stop_code(row.stop_pin) }.first,
             instruction: rows.filter_map { |row| Status.stop_instruction(row.stop_pin) }.first,
-            notes: rows.filter_map { |row| row.description.presence },
-            note: rows.filter_map { |row| row.description.presence }.first,
+            # The new Tour App says what each row is (`kind`, October 23, 2026);
+            # legacy rows are arrivals. A stop the visitor skipped has no
+            # arrival; an issue reported there is listed apart from the notes.
+            skipped: rows.all? { |row| row.kind == 'skipped' },
+            issues: rows.select { |row| row.kind == 'issue' }.filter_map { |row| row.description.presence },
+            notes: rows.reject { |row| row.kind == 'issue' }.filter_map { |row| row.description.presence },
+            note: rows.reject { |row| row.kind == 'issue' }.filter_map { |row| row.description.presence }.first,
             photos: rows.select { |row| row.image.present? }.filter_map { |row| Connect::UploadUrl.upload(row, :image, @base_url, bucket: bucket) },
             image_url: nil
           }
@@ -308,7 +314,9 @@ module Visitors
           events << { at: (h.updated_at || h.arrived), title: 'Tour abandoned', sub: 'The app never reported an end', kind: 'visit' } if h.abandoned_tour_at_stop.present?
           if h.tour_key.present?
             grouped_stops(*visited_for(h)).first(STOP_EVENTS_PER_SESSION).each do |stop|
-              events << { at: stop[:at], title: "Arrived at #{stop[:name]}", sub: stop[:pin] ? "Code #{@include_codes ? stop[:pin] : '••••'} shown" : nil, kind: 'stop' }
+              title = stop[:skipped] ? "Skipped #{stop[:name]}" : "Arrived at #{stop[:name]}"
+              events << { at: stop[:at], title: title, sub: stop[:pin] ? "Code #{@include_codes ? stop[:pin] : '••••'} shown" : nil, kind: 'stop' }
+              stop[:issues].each { |issue| events << { at: stop[:at], title: "Issue reported at #{stop[:name]}", sub: issue, kind: 'stop' } }
             end
           end
           LockHistory.where(tour_history_id: h.id).order(:occured_at, :id).each do |event|

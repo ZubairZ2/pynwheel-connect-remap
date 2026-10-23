@@ -65,7 +65,7 @@ export class ApiClient {
     return this.options.baseUrl;
   }
 
-  async request<T>(method: 'GET' | 'POST', path: string, body?: unknown, extraHeaders: Record<string, string> = {}, auth = true): Promise<{ data: T; status: number; headers: Headers }> {
+  async request<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown, extraHeaders: Record<string, string> = {}, auth = true): Promise<{ data: T; status: number; headers: Headers }> {
     if (auth) await this.options.beforeRequest?.();
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), this.options.timeoutMs);
@@ -142,4 +142,15 @@ export class ApiClient {
   post<T>(path: string, body: unknown, auth = true): Promise<{ data: T; status: number; headers: Headers }> {
     return this.request<T>('POST', path, body, {}, auth);
   }
+
+  put<T>(path: string, body: unknown): Promise<{ data: T; status: number; headers: Headers }> {
+    return this.request<T>('PUT', path, body);
+  }
+
+  delete<T>(path: string): Promise<{ data: T; status: number; headers: Headers }> {
+    return this.request<T>('DELETE', path);
+  }
 }
+
+/** Whether a failed request may succeed later unchanged: offline / timed out, the server broke (5xx) or throttled (429). */
+export const isRetryable = (error: unknown): boolean => error instanceof ApiError && (error.status === 0 || error.status === 429 || error.status >= 500);

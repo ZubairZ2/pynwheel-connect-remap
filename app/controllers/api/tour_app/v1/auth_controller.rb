@@ -16,6 +16,7 @@ module Api
         include Doorkeeper::Helpers::Controller
 
         skip_before_action :authenticate!, only: :login
+        before_action :require_staff!, only: :logout
 
         EMAIL = /\A[^@\s]+@[^@\s]+\z/
 
@@ -25,7 +26,7 @@ module Api
           context = TourApi::Auth.login(granted)
           Rails.logger.info("[tour-api] login ok user_id=#{context.user.id}")
           render json: { success: true, access_token: context.token.plaintext_token, token_type: 'bearer',
-                         expires_at: TourApi::Text.timestamp(context.expires_at), user: context.user_json }
+                         expires_at: TourApi::Text.timestamp(context.expires_at), user: context.user_json, capabilities: Connect::Flags.tour_capabilities }
         end
 
         def logout
@@ -34,8 +35,14 @@ module Api
           render json: { success: true, revoked: revoked }
         end
 
+        # Who holds this token: `user` for staff, `visitor` for a visitor
+        # (the visitor's own `/visitor/me` says more). Both carry the server's capabilities.
         def me
-          render json: { success: true, user: @auth.user_json, expires_at: TourApi::Text.timestamp(@auth.expires_at) }
+          if @auth.visitor?
+            render json: { success: true, visitor: @auth.visitor_json, expires_at: TourApi::Text.timestamp(@auth.expires_at), capabilities: Connect::Flags.tour_capabilities }
+          else
+            render json: { success: true, user: @auth.user_json, expires_at: TourApi::Text.timestamp(@auth.expires_at), capabilities: Connect::Flags.tour_capabilities }
+          end
         end
 
         private

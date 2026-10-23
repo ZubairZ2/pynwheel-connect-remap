@@ -9,11 +9,16 @@
 # `client_secret`, `iglooworks_api_key`, `image` and `csv` mask the lock
 # provider credentials and the base64 uploads the Connect Locks page sends
 # (October 20, 2026).
-Rails.application.config.filter_parameters += [:password, :token, :guest_bluetooth_key, :client_secret, :iglooworks_api_key, :image, :csv]
+# `otp`, `code`, `pin_code`, `phone`, `email`, `guest_pin`, `guest_key`, `id_card`
+# and the `*_digest` columns mask the Tour App's visitor sign-in and the
+# visitor's contact details (October 23, 2026). `phone` also covers
+# `phone_number`, `code` also covers `pin_code` and `country_code`.
+Rails.application.config.filter_parameters += [:password, :token, :guest_bluetooth_key, :client_secret, :iglooworks_api_key, :image, :csv,
+                                               :otp, :code, :phone, :email, :guest_pin, :guest_key, :id_card, :digest, :access_token]
 
 # ActiveRecord copies `filter_parameters` into `filter_attributes` when it
 # loads; an earlier initializer of this app loads it before this file runs, so
 # the attribute filter is set here as well (runs at once when it is already loaded).
 ActiveSupport.on_load(:active_record) do
-  self.filter_attributes += [:password, :token, :guest_bluetooth_key, :client_secret, :iglooworks_api_key]
+  self.filter_attributes += [:password, :token, :guest_bluetooth_key, :client_secret, :iglooworks_api_key, :pin_code, :guest_pin, :guest_key, :digest]
 end

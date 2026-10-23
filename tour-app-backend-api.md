@@ -784,3 +784,73 @@ Additive, for the Start Tour experience (`SELF_TOUR_START_EXPERIENCE_QA.md`); no
   `details.skipped`. `invalid_stop` still answers for stops that are not on the list.
 - Tests: `stops_test.rb` (contract keys, the detail facts / media case), `properties_test.rb` (keys), `routing_test.rb` (the skipped
   case); the whole `test/controllers/api/tour_app` + `test/services/tour_api` suite: 95 runs, 714 assertions, 0 failures.
+
+## 21. Visitor sign-in, the visitor's bookings, and visits (October 23, 2026)
+
+Two kinds of bearer token now open the API: the staff Doorkeeper token of a CMS Super Admin (as before) and a visitor session
+token (`vst_…`) of a prospect who proved a phone number. `@auth.staff?` / `@auth.visitor?` say which; a visitor is never a CMS
+user and reaches only their own rows. Both kinds are switched on per server: `GET /health`, `POST /auth/login`, `GET /auth/me`,
+`POST /visitor/otp/verify`, `GET /visitor/me` and `GET /properties/{id}` carry `capabilities: {visits, visitor_auth}`
+(`PYN_TOUR_VISITS`, `PYN_TOUR_VISITOR_AUTH`; off by default in production, on elsewhere). Throttled by Rack::Attack
+(`config/initializers/rack_attack.rb`): 429 `rate_limit_exceeded` with `Retry-After`.
+
+### Visitor sign-in (`Visitors::Otp`, `Visitors::Session`)
+- `POST /visitor/otp` `{phone, country_code?, property_id?}` → 202 `{sent: true, resend_after: 60}` whether or not the phone is known.
+  Six digits, 10 minutes, five wrong tries; one send a minute and five a day per phone, ten an hour per address. The code is sent by
+  the CMS's `TwilioSmsWorker` and stored only as an HMAC digest (`visitor_otps`); the legacy `tour_users.pin_code` is untouched.
+- `POST /visitor/otp/verify` `{phone, code, country_code?, first_name?, last_name?, email?, property_id?}` → `{access_token: "vst_…",
+  token_type, expires_at, visitor, bookings, capabilities}`. 401 `invalid_code` (one message for wrong, expired, exhausted or never
+  sent), 422 `profile_required` (`details.fields`) when the phone has no `tour_users` row and no profile was sent — the row is then
+  created through the legacy dedupe (`TourUserSearcherService`), so a widget booking made with the same email is reused.
+  The session lives 30 days, slides on use, and is stored as a SHA-256 digest (`visitor_sessions`).
+- `GET /visitor/me` → `{visitor, expires_at, bookings (every property), open_visit, capabilities}`; `PUT /visitor/me`
+  `{first_name, last_name, email, is_sms_enabled}` (the phone is not editable here); `POST /visitor/logout` revokes the session;
+  `DELETE /visitor/me` deletes the account through the model's `dependent: :destroy` chain (the legacy `delete_account`).
+- 401 `token_revoked` / `token_expired` / `invalid_token` mean sign in again; a `vst_` token is 401 `invalid_token` while the switch is off.
+- Removing a visitor's personal data in Connect revokes every session of theirs (`Visitors::Privacy`).
+
+### Bookings
+- `POST /properties/{id}/bookings`: with a visitor token the identity fields are ignored and the booking is the signed-in visitor's
+  (`Bookings::Create` `visitor:`); staff book on behalf of the form's visitor as before. The slot check now runs inside the
+  transaction under `pg_advisory_xact_lock` per property, so two bookings cannot both take the last place in a slot.
+- `GET /properties/{id}/bookings` (visitor only) → `{bookings}`; `PUT /properties/{id}/bookings/{booking_id}` `{tour_date, tour_time}`
+  (`Bookings::Reschedule`); `DELETE /properties/{id}/bookings/{booking_id}` (`Bookings::Cancel`: the row is destroyed as the
+  legacy page does, the CRM appointment cancelled by the model's callbacks, the destroy version kept for Connect's Cancelled tab,
+  one audit version `booking_cancelled` with `whodunnit` `visitor:<id>` or the staff id). A visitor's own bookings only; 404 otherwise.
+
+### Visits (`Visits::Start`, `Visits::Record`, `Visits::End`)
+What the legacy app wrote through `/api/v1/save_tour_history`, on the same tables, so Connect › Visitors and the legacy pages
+show a Tour App tour as a session. 404 `disabled` while `PYN_TOUR_VISITS` is off.
+- `POST /properties/{id}/visits` `{client_visit_id (uuid), booking_id?, tour_type?, started_at?, latitude?, longitude?,
+  device_time_zone?, app_version?, tour_user_id? (staff only)}` → 201 (200 when reused) `{visit, booking}`. `visit`:
+  `{id, status, tour_key, tour_type, tour_site, booking_id, source: "tour_app", started_at, ended_at, active, access_window
+  {starts_at, ends_at, minutes (tour_settings.length_stay_limit, 45)}, within_radius, in_hours, location_received,
+  verification_required, events, created}`. Rules: outside visiting hours the visit is a `virtual_tour` (`offsite`); a named
+  booking must be the visitor's, at this property, not completed and inside booked time ± `grace_period` (422 `outside_window`
+  with `details.booked_at`, `grace_minutes`); without `booking_id` the booking whose window covers now is linked; coordinates
+  are optional and only refuse (422 `outside_property`) a visitor outside 1 km on a property with `only_scheduled_tour`;
+  `verification_required` is true on a `visual_id_verification` property whose visitor has no verification within 30 days.
+  Idempotent on `client_visit_id`, and a visit still open (no end, started within 120 minutes) is answered instead of a second one.
+  Writes `tour_histories` (`arrived`, `active_app`, `tour_key`, `source`, `schedual_tour_id`, `client_visit_id`, …) and the
+  visitor's `tour_type` / `tour_key` / coordinates / `lock_access_time` as `initialize_tour` did; the model's arrival mail fires.
+- `GET /properties/{id}/visits/{visit_id}` → `{visit, booking}`.
+- `POST /properties/{id}/visits/{visit_id}/events` `{device_id?, events: [{client_event_id?, kind, stop_id, occurred_at?, payload?}]}`
+  (1..100) → 200, or 207 when some were rejected: `{accepted: [{index, client_event_id, kind, id, duplicate}], rejected:
+  [{index, client_event_id, code, message}]}`. Kinds: `arrived` (`payload.code` = the door code shown → `visited_stops.stop_pin`),
+  `skipped` (`payload.reason`), `note` (`payload.text`), `photo` (`payload.image` data URL ≤ 5 MB, `payload.caption`), `issue`
+  (`payload.category`, `payload.text`; also audited), `unlocked` / `unlock_failed` (`payload.provider`, `payload.method`,
+  `payload.error_code` → `lock_histories`), `heartbeat`. `stop_id` is `unit:N` / `amenity:N` / `elevator:N` and must be a tour
+  stop of the visit's tour (422 `invalid_stop` per item). Each item is its own savepoint; a repeated `client_event_id` is
+  acknowledged as `duplicate` and never written twice (unique indexes guard the race). 422 `visit_ended` once the visit ended.
+- `POST /properties/{id}/visits/{visit_id}/end` `{ended_at?, reason: completed|abandoned, abandoned_at_stop?}` → `{visit}`; sets
+  `left`, `tour_state`, `ended_reason`; completes the linked booking; the model's end-of-tour mail and `complete_scheduled_tour`
+  run as for the legacy app. Idempotent.
+- Locks: `POST /properties/{id}/locks/pin` and `/bluetooth-key` take `visit_id`; a visitor needs an open visit here (422
+  `visit_required`, 422 `verification_required` on a verified-ID property) and the issued row (`igloohome_guests`) now names the
+  visitor, the visit and, in staff mode, the issuing user.
+- Audit (`TourApi::Audit`, PaperTrail versions on the property): `visitor_login`, `visit_started`, `visit_issue`, `visit_ended`,
+  `booking_created` / `booking_rescheduled` / `booking_cancelled`; `whodunnit` is `visitor:<id>` or the staff user id, and the
+  Tour App base controller now sets PaperTrail's whodunnit for the automatic versions too.
+- Tests: `visitor_auth_test.rb` (11), `visits_test.rb` (9), `visitor_bookings_test.rb` (4), `throttle_test.rb` (3),
+  `test/services/bookings/create_concurrency_test.rb` (1); the suite: 327 runs, 2048 assertions, 1 pre-existing failure
+  (`PartnerConfigurationsControllerTest`).

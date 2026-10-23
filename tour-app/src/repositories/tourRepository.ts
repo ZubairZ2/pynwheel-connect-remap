@@ -20,7 +20,10 @@ import type {
   Visitor,
   WayfindingGraph
 } from '~/models';
-import type { Session } from '~/services/session';
+import type { Capabilities, Session } from '~/services/session';
+import type { VisitEventInput, VisitEventKind } from '~/services/visitQueue';
+
+export type { Capabilities, VisitEventInput, VisitEventKind };
 
 /**
  * The data boundary of the Tour App.
@@ -163,6 +166,96 @@ export interface BookingResult {
   tourType: string;
   /** True when the CMS moved the visitor's existing upcoming booking instead of adding one. */
   rescheduled: boolean;
+  /** The CMS visitor (`tour_users.id`) the booking belongs to, when the CMS answered one. */
+  visitorId: number | null;
+}
+
+/** One of the signed-in visitor's bookings, as `POST /visitor/otp/verify`, `GET /visitor/me` and `GET /properties/{id}/bookings` list them. */
+export interface VisitorBooking {
+  id: number;
+  propertyId: number;
+  propertyName: string | null;
+  /** `upcoming` | `missed` | `completed` | `cancelled`. */
+  status: string;
+  /** `YYYY-MM-DD` */
+  date: string | null;
+  /** `HH:MM` */
+  time: string | null;
+  /** "6:00 PM" */
+  timeLabel: string | null;
+  endTime: string | null;
+  tourType: string | null;
+  /** `tour_app` when booked in this app. */
+  createdBy: string | null;
+}
+
+/** `POST /visitor/otp`: the code was sent (always the same answer for a valid number). */
+export interface VisitorCodeSent {
+  /** Seconds before another code may be requested. */
+  resendAfterS: number;
+  /** Testing only: the code itself, when the server was started with PYN_TOUR_OTP_DEBUG=on. */
+  debugCode?: string | null;
+}
+
+export interface VisitorVerifyRequest {
+  phone: string;
+  code: string;
+  countryCode?: string;
+  /** Asked only after `profile_required`: a new visitor's name and email. */
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  propertyId?: number | null;
+}
+
+export interface VisitorProfilePatch {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  smsEnabled?: boolean;
+}
+
+/** `POST /properties/{id}/visits`: the check-in the CMS records (`Visits::Start`). */
+export interface VisitStartInput {
+  /** A UUID made once per check-in and kept, so a retry answers the same visit. */
+  clientVisitId: string;
+  bookingId?: number | null;
+  tourType: 'self_tour' | 'guided_tour' | 'virtual_tour';
+  /** ISO 8601 */
+  startedAt: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  /** Staff sessions only: the visitor the admin tours with (the booking's visitor id). */
+  tourUserId?: number | null;
+}
+
+export interface VisitRecord {
+  id: number;
+  status: string;
+  tourKey: string | null;
+  tourType: string | null;
+  bookingId: number | null;
+  startedAt: string | null;
+  endedAt: string | null;
+  active: boolean;
+  /** When the door access the CMS granted ends (ISO 8601), when the visit is open. */
+  accessEndsAt: string | null;
+  accessMinutes: number | null;
+  verificationRequired: boolean;
+  /** False when the same `clientVisitId` had already been answered. */
+  created: boolean;
+}
+
+export interface VisitEndInput {
+  endedAt: string;
+  reason: 'completed' | 'abandoned';
+  abandonedAtStop?: string | null;
+}
+
+/** `POST /properties/{id}/visits/{visit}/events`: what the CMS kept (duplicates count as kept) and what it refused. */
+export interface VisitEventsResult {
+  accepted: { index: number; clientEventId: string | null; kind: string; id: number | null; duplicate: boolean }[];
+  rejected: { index: number; clientEventId: string | null; code: string; message: string }[];
 }
 
 export type { TourRouteResult };
@@ -189,6 +282,20 @@ export interface TourRepository {
   restoreSession(): Promise<Session | null>;
   /** Called when the backend says the session is gone (expired / revoked). */
   onSessionExpired(handler: (message: string) => void): () => void;
+  /** The session in memory (its kind and the server's capabilities), without a request. */
+  currentSession(): Session | null;
+  /** What the server can do (`GET /health`, no token): visit recording, the visitor sign-in. Cached once read; every sign-in answer refreshes it. */
+  getCapabilities(): Promise<Capabilities>;
+
+  // --- the visitor (prospect) sign-in: a phone number and a one-time code
+  /** Sends a code to the phone; rejects with `validation_error` for a number that is not one, `rate_limit_exceeded` when throttled. */
+  requestVisitorCode(phone: string, countryCode?: string): Promise<VisitorCodeSent>;
+  /** Proves the code; rejects with `invalid_code` (wrong / expired / too many tries), `profile_required` (a new visitor: send the name and email too), `validation_error`. */
+  verifyVisitorCode(request: VisitorVerifyRequest): Promise<{ session: Session; bookings: VisitorBooking[] }>;
+  /** The visitor's bookings the last sign-in or restore answered (memory only). */
+  visitorBookings(): VisitorBooking[];
+  /** `PUT /visitor/me`: the visitor's own name, email and SMS preference (the phone cannot change here). */
+  updateVisitorProfile(patch: VisitorProfilePatch): Promise<Session>;
 
   // --- property selection
   getProperties(): Promise<PropertyListing[]>;
@@ -212,13 +319,13 @@ export interface TourRepository {
    * property's own vendor account exactly as the legacy Pynwheel Tour app had it. Rejects with the API's reason
    * (`no_lock`, `lock_unsupported`, `locks_disabled`, `lock_unavailable`, `invalid_stop`) or a network error.
    */
-  getStopLockPin(node: string): Promise<LockPin>;
+  getStopLockPin(node: string, visitId?: number | null): Promise<LockPin>;
   /**
    * The igloohome v1 guest access for a stop whose lock opens over Bluetooth: the guest key (90 minutes) the native
    * igloohome SDK presents to the lock, issued by Pynwheel's partner account exactly as the legacy tour start did.
    * Rejects with the API's reason (`lock_unsupported` for door-code locks, `no_lock`, `lock_unavailable`, …).
    */
-  getStopLockBluetoothKey(node: string): Promise<LockBluetoothKey>;
+  getStopLockBluetoothKey(node: string, visitId?: number | null): Promise<LockBluetoothKey>;
   askConcierge(question: string, context: { stopName: string | null }): Promise<string>;
   // --- booking (the property's Settings › Scheduling rules, the CMS is authoritative)
   getBookingSettings(): Promise<BookingSettings>;
@@ -226,7 +333,16 @@ export interface TourRepository {
   getAvailability(fromDate: string, days: number): Promise<AvailabilityWindow>;
   /** Books a tour; rejects with the CMS's reason (`slot_unavailable`, `slot_full`, `invalid_visitor`, `tour_type_off`, …). */
   requestBooking(request: BookingRequest): Promise<BookingResult>;
+  /** `DELETE /properties/{id}/bookings/{booking}`: the visitor's own booking (staff: any of the property's). Rejects with the CMS's reason. */
+  cancelBooking(bookingId: number): Promise<void>;
   startApplication(unitNode: string): Promise<{ id: string }>;
+
+  // --- visits: the tour as the CMS records it (Connect's Visitors reads these)
+  /** Check-in. Rejects with `outside_window` (details.booked_at, grace_minutes), `outside_property`, `tour_disabled`, `disabled` (404: the feature is off), `visit_required`. */
+  startVisit(input: VisitStartInput): Promise<VisitRecord>;
+  /** Up to 100 events in order; a refused request (network, 5xx, 429) rejects as a whole, a refused event is listed in `rejected`. */
+  sendVisitEvents(visitId: number, events: VisitEventInput[]): Promise<VisitEventsResult>;
+  endVisit(visitId: number, input: VisitEndInput): Promise<VisitRecord>;
 }
 
 /** Thrown by a provider for a feature its backend does not offer. */

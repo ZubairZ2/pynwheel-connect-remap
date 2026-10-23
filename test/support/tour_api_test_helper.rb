@@ -113,3 +113,25 @@ module TourApiTestHelper
     reset_tour_api_caches!
   end
 end
+
+# The jobs a booking or a visit enqueues, kept in memory (Sidekiq fake mode)
+# or recorded (the SuckerPunch mailer job renders a legacy template
+# in-process), never delivered. Include in a test class's `setup`/`teardown`
+# through `fake_jobs!` / `restore_jobs!` (October 23, 2026).
+module TourApiJobsStub
+  def fake_jobs!
+    require 'sidekiq/testing'
+    Sidekiq::Testing.fake!
+    Sidekiq::Worker.clear_all
+    @mail_jobs = []
+    unless ScheduledTourMailerJob.respond_to?(:perform_async_without_test)
+      ScheduledTourMailerJob.singleton_class.alias_method(:perform_async_without_test, :perform_async)
+    end
+    jobs = @mail_jobs
+    ScheduledTourMailerJob.define_singleton_method(:perform_async) { |*args| jobs << args; true }
+  end
+
+  def restore_jobs!
+    ScheduledTourMailerJob.singleton_class.alias_method(:perform_async, :perform_async_without_test) if ScheduledTourMailerJob.respond_to?(:perform_async_without_test)
+  end
+end

@@ -2,9 +2,12 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type Rea
 import { useRepository } from '~/repositories/repositoryContext';
 import { onAppStateChange } from '~/services/native';
 import { loadPersisted, savePersisted } from '~/services/persistence';
+import { visitQueue } from '~/services/visitQueue';
 import { AppContext, type AppContextValue, type AppData } from './appContext';
 import { PERSISTED_KEYS, STATE_VERSION, initialAppState, initialGuided, initialWayfinding, type AppState, type PersistedState } from './appState';
 import { reducer } from './reducer';
+import { tourFromBooking } from './useAppActions';
+import { syncVisit, syncableVisit } from './visitSync';
 
 export { useApp } from './appContext';
 export type { AppContextValue, AppData, DataStatus } from './appContext';
@@ -13,8 +16,13 @@ export type { AppContextValue, AppData, DataStatus } from './appContext';
  * Holds the UI state (reducer), restores the session and the UI state on
  * launch, loads the chosen property through the repository (and the
  * property list for the picker), persists the UI state, and signs the
- * visitor out when the backend says the session is gone.
+ * visitor out when the backend says the session is gone. Since October 23,
+ * 2026 it also reads the server's capabilities on launch and keeps the
+ * recorded visit in sync (on resume, when the phone is back online, and
+ * with a heartbeat every two minutes while checked in).
  */
+
+const HEARTBEAT_MS = 2 * 60000;
 
 const pick = (state: AppState): PersistedState => {
   const out = {} as Record<string, unknown>;
@@ -44,7 +52,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const base: PersistedState = { ...(persisted ?? ({} as PersistedState)), screen: 'splash' };
         if (session) {
           base.signedIn = true;
-          base.user = { name: session.user.name, email: session.user.email };
+          base.user = { name: session.user.name, email: session.user.email, kind: session.kind, ...(session.visitor ? { phone: session.visitor.phone } : {}) };
+          base.capabilities = session.capabilities;
           if (persisted && persisted.propertyId !== session.propertyId) {
             // The UI state was saved for another property (or the session store moved on): nothing of that
             // property's tour, selection, routes or floors may leak into this one.
@@ -59,6 +68,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
         dispatch({ type: 'hydrate', state: base });
         setHydrated(true);
+        // A visitor's next booking at the property, as the CMS holds it, is the Home card unless a live one is already there.
+        if (session?.kind === 'visitor' && session.propertyId != null) {
+          const next = repository.visitorBookings().find((b) => b.propertyId === session.propertyId && b.status === 'upcoming');
+          if (next) dispatch({ type: 'adoptBooking', tour: tourFromBooking(next, Date.now()) });
+        }
       })
       .catch(() => setHydrated(true));
     return () => {
@@ -66,8 +80,29 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [repository]);
 
-  // 2. The backend says the token is gone: back to sign-in with the reason.
-  useEffect(() => repository.onSessionExpired((message) => dispatch({ type: 'sessionExpired', message: message || 'Your session has ended. Please sign in again.' })), [repository]);
+  // 1b. What the server can do (visit recording, the visitor sign-in), before anyone signs in; a failure keeps the last known answer.
+  useEffect(() => {
+    let cancelled = false;
+    repository
+      .getCapabilities()
+      .then((capabilities) => {
+        if (!cancelled) dispatch({ type: 'setCapabilities', capabilities });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [repository]);
+
+  // 2. The backend says the token is gone: back to sign-in with the reason. The visit outbox goes with the session.
+  useEffect(
+    () =>
+      repository.onSessionExpired((message) => {
+        void visitQueue.clear();
+        dispatch({ type: 'sessionExpired', message: message || 'Your session has ended. Please sign in again.' });
+      }),
+    [repository]
+  );
 
   // 3. The property list, while signed in (for the picker on Search).
   useEffect(() => {
@@ -139,8 +174,38 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (!hydrated) return;
     return onAppStateChange((active) => {
       if (!active) void savePersisted(STATE_VERSION, pick(latest.current));
+      // Back in the foreground: whatever the outbox holds (and a check-in or end made offline) is sent.
+      else void syncVisit({ repository, dispatch }, syncableVisit(latest.current));
     });
-  }, [hydrated]);
+  }, [hydrated, repository]);
+
+  // 6. The recorded visit: sent again when the phone is back online, and a heartbeat every two minutes while checked in and active.
+  useEffect(() => {
+    if (!hydrated) return;
+    const online = () => void syncVisit({ repository, dispatch }, syncableVisit(latest.current));
+    window.addEventListener('online', online);
+    return () => window.removeEventListener('online', online);
+  }, [hydrated, repository]);
+
+  const visitId = state.visit?.id ?? null;
+  const visitClientId = state.visit?.clientVisitId ?? null;
+  const heartbeat = hydrated && state.signedIn && state.checkedIn && state.visit?.status === 'active' && visitId != null && visitClientId != null && state.visit.propertyId === state.propertyId;
+  useEffect(() => {
+    if (!heartbeat || visitClientId == null) return;
+    const propertyId = latest.current.visit?.propertyId;
+    if (propertyId == null) return;
+    const beat = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      const visit = syncableVisit(latest.current);
+      if (!visit || visit.clientVisitId !== visitClientId || visit.end) return;
+      void visitQueue
+        .append({ clientVisitId: visitClientId, propertyId, kind: 'heartbeat', stopId: null })
+        .then(() => syncVisit({ repository, dispatch }, visit))
+        .catch(() => undefined);
+    };
+    const id = window.setInterval(beat, HEARTBEAT_MS);
+    return () => window.clearInterval(id);
+  }, [heartbeat, visitClientId, repository]);
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
   const reloadProperties = useCallback(() => setPropertiesKey((k) => k + 1), []);

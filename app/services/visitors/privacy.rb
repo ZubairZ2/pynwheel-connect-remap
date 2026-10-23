@@ -50,6 +50,8 @@ module Visitors
         hide_history!(community, tour_user)
         changed << 'history'
       end
+      # A visitor whose contact details were removed cannot keep a Tour App session (October 23, 2026).
+      Visitors::Session.revoke_all!(tour_user) if changed.intersect?(%w[email name phone])
       changed
     end
 
@@ -118,6 +120,9 @@ module Visitors
       tour_user.visited_stops.where(tour_id: record_ids).delete_all
       tour_user.schedual_tours.where(community_id: community.id).delete_all
       tour_user.prospects.where(community_id: community.id).delete_all
+      # The Tour App's rows of this property (October 23, 2026): the visit
+      # histories above took their stop and door events through `tour_id`;
+      # sessions are not per property, so they stay.
       true
     end
   end

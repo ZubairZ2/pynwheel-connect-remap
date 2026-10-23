@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_10_20_120000) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_23_100002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -1466,8 +1466,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_20_120000) do
     t.string "guest_key"
     t.string "guest_of_stop_type"
     t.integer "guest_of_stop_id"
+    t.integer "tour_history_id"
+    t.integer "issued_by_user_id"
     t.index ["community_id"], name: "index_igloohome_guests_on_community_id"
     t.index ["guest_of_stop_type", "guest_of_stop_id"], name: "index_igloohome_guest_of_stop"
+    t.index ["tour_history_id"], name: "index_igloohome_guests_on_tour_history_id"
     t.index ["tour_user_id"], name: "index_igloohome_guests_on_tour_user_id"
   end
 
@@ -1641,6 +1644,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_20_120000) do
     t.integer "tour_history_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.string "provider"
+    t.string "method"
+    t.boolean "success"
+    t.string "error_code"
+    t.uuid "client_event_id"
+    t.index ["tour_history_id", "client_event_id"], name: "index_lock_histories_on_visit_and_client_event", unique: true, where: "(client_event_id IS NOT NULL)"
     t.index ["tour_history_id"], name: "index_lock_histories_on_tour_history_id"
     t.index ["tour_user_id"], name: "index_lock_histories_on_tour_user_id"
   end
@@ -2170,6 +2179,20 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_20_120000) do
     t.index ["session_id", "community_id", "start_datetime"], name: "idx_sdk_sessions_session_community_date"
   end
 
+  create_table "shared_favorites", force: :cascade do |t|
+    t.string "token", null: false
+    t.integer "community_id", null: false
+    t.string "session_id"
+    t.jsonb "unit_ids", default: [], null: false
+    t.jsonb "amenity_ids", default: [], null: false
+    t.jsonb "floorplan_ids", default: [], null: false
+    t.jsonb "gallery_image_ids", default: [], null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["community_id", "session_id"], name: "index_shared_favorites_on_community_id_and_session_id"
+    t.index ["token"], name: "index_shared_favorites_on_token", unique: true
+  end
+
   create_table "shared_tours", id: :serial, force: :cascade do |t|
     t.string "name"
     t.string "recipient_name"
@@ -2295,6 +2318,19 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_20_120000) do
     t.index ["community_id"], name: "index_three_d_maps_configurations_on_community_id"
   end
 
+  create_table "touch_settings", force: :cascade do |t|
+    t.integer "community_id", null: false
+    t.string "device_type", null: false
+    t.string "device_orientation", null: false
+    t.jsonb "settings", default: {}, null: false
+    t.jsonb "device_details", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["community_id", "device_type", "device_orientation"], name: "idx_touch_settings_screen", unique: true
+    t.check_constraint "device_orientation::text = ANY (ARRAY['portrait'::character varying, 'landscape'::character varying]::text[])", name: "touch_settings_device_orientation"
+    t.check_constraint "device_type::text = ANY (ARRAY['mobile'::character varying, 'ipad'::character varying, 'desktop'::character varying]::text[])", name: "touch_settings_device_type"
+  end
+
   create_table "tour_closures", force: :cascade do |t|
     t.integer "community_id", null: false
     t.date "date", null: false
@@ -2344,7 +2380,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_20_120000) do
     t.string "tour_site", default: ""
     t.integer "community_id"
     t.string "community_time_zone", default: "UTC"
+    t.integer "schedual_tour_id"
+    t.string "source", default: "legacy", null: false
+    t.uuid "client_visit_id"
+    t.string "ended_reason"
+    t.boolean "location_received", default: false, null: false
+    t.index ["client_visit_id"], name: "index_tour_histories_on_client_visit_id", unique: true, where: "(client_visit_id IS NOT NULL)"
     t.index ["community_id"], name: "index_tour_histories_on_community_id"
+    t.index ["schedual_tour_id"], name: "index_tour_histories_on_schedual_tour_id"
     t.index ["tour_id"], name: "index_tour_histories_on_tour_id"
     t.index ["tour_user_id"], name: "index_tour_histories_on_tour_user_id"
   end
@@ -2794,7 +2837,42 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_20_120000) do
     t.jsonb "lat_lang", default: []
     t.string "stop_type"
     t.string "stop_pin"
+    t.string "kind", default: "arrived", null: false
+    t.datetime "occurred_at", precision: nil
+    t.integer "tour_history_id"
+    t.uuid "client_event_id"
+    t.jsonb "payload", default: {}, null: false
+    t.index ["tour_history_id", "client_event_id"], name: "index_visited_stops_on_visit_and_client_event", unique: true, where: "(client_event_id IS NOT NULL)"
+    t.index ["tour_history_id"], name: "index_visited_stops_on_tour_history_id"
     t.index ["tour_user_id"], name: "index_visited_stops_on_tour_user_id"
+  end
+
+  create_table "visitor_otps", force: :cascade do |t|
+    t.string "phone_number", null: false
+    t.string "code_digest", null: false
+    t.datetime "expires_at", precision: nil, null: false
+    t.integer "attempts", default: 0, null: false
+    t.integer "sends_today", default: 0, null: false
+    t.datetime "last_sent_at", precision: nil
+    t.string "created_ip"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["phone_number"], name: "index_visitor_otps_on_phone_number", unique: true
+  end
+
+  create_table "visitor_sessions", force: :cascade do |t|
+    t.integer "tour_user_id", null: false
+    t.string "token_digest", null: false
+    t.datetime "expires_at", precision: nil, null: false
+    t.datetime "revoked_at", precision: nil
+    t.datetime "last_used_at", precision: nil
+    t.string "created_ip"
+    t.string "user_agent"
+    t.integer "community_id"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["token_digest"], name: "index_visitor_sessions_on_token_digest", unique: true
+    t.index ["tour_user_id"], name: "index_visitor_sessions_on_tour_user_id"
   end
 
   create_table "wayfinding_stops", force: :cascade do |t|

@@ -13,6 +13,8 @@ export interface ApiLoginResponse {
   token_type: string;
   expires_at: string | null;
   user: ApiUser;
+  /** Since October 23, 2026: the optional server features, so the app can gate its UI right after sign-in. */
+  capabilities?: ApiCapabilities;
 }
 
 export interface ApiPropertySummary {
@@ -319,4 +321,108 @@ export interface ApiBookingCreateResponse {
   booking: { id: number; status: string; tour_date: string | null; tour_time: string | null; tour_time_label: string | null; end_time: string | null; tour_type: string; property_tour_type: string; created_by: string; rescheduled: boolean };
   visitor: { id: number; first_name: string; last_name: string; email: string; phone_number: string };
   notifications: { email: boolean; sms: boolean; web: boolean };
+}
+
+// ---- the visitor sign-in, visits and capabilities (October 23, 2026) ----
+export interface ApiCapabilities {
+  visits: boolean;
+  visitor_auth: boolean;
+}
+
+export interface ApiHealthResponse {
+  success: true;
+  status: string;
+  database: boolean;
+  env: string;
+  capabilities: ApiCapabilities;
+}
+
+export interface ApiVisitor {
+  id: number;
+  first_name: string | null;
+  last_name: string | null;
+  name: string | null;
+  email: string | null;
+  phone_number: string | null;
+  phone_masked: string | null;
+  is_sms_enabled: boolean;
+  role: 'visitor';
+}
+
+export interface ApiVisitorBooking {
+  id: number;
+  property_id: number;
+  property_name?: string | null;
+  status: string;
+  tour_date: string | null;
+  tour_time: string | null;
+  tour_time_label: string | null;
+  end_time: string | null;
+  tour_type: string | null;
+  property_tour_type: string | null;
+  created_by: string | null;
+  is_tour_completed: boolean;
+  desired_bedroom: string | null;
+  desired_move_in_date: string | null;
+}
+
+export interface ApiVisitorOtpResponse {
+  success: true;
+  sent: boolean;
+  resend_after: number;
+  /** Testing only: the server returns the code when PYN_TOUR_OTP_DEBUG is on (never in production). */
+  debug_code?: string;
+}
+
+export interface ApiVisitorVerifyResponse {
+  success: true;
+  access_token: string;
+  token_type: string;
+  expires_at: string | null;
+  visitor: ApiVisitor;
+  bookings: ApiVisitorBooking[];
+  capabilities: ApiCapabilities;
+}
+
+export interface ApiVisit {
+  id: number;
+  status: string;
+  tour_key: string | null;
+  tour_type: string | null;
+  tour_site: string | null;
+  booking_id: number | null;
+  source: string | null;
+  started_at: string | null;
+  ended_at?: string | null;
+  ended_reason?: string | null;
+  active: boolean;
+  access_window: { starts_at: string | null; ends_at: string | null; minutes: number | null } | null;
+  within_radius?: boolean | null;
+  in_hours?: boolean | null;
+  verification_required?: boolean;
+  created?: boolean;
+  property_id?: number;
+  property_name?: string;
+}
+
+export interface ApiVisitorMeResponse {
+  success: true;
+  visitor: ApiVisitor;
+  expires_at: string | null;
+  bookings: ApiVisitorBooking[];
+  open_visit: ApiVisit | null;
+  capabilities: ApiCapabilities;
+}
+
+export interface ApiVisitStartResponse {
+  success: true;
+  visit: ApiVisit;
+  booking: ApiVisitorBooking | null;
+}
+
+export interface ApiVisitEventsResponse {
+  success: true;
+  visit_id: number;
+  accepted: { index: number; client_event_id: string | null; kind: string; id: number | null; duplicate: boolean }[];
+  rejected: { index: number; client_event_id: string | null; code: string; message: string }[];
 }
