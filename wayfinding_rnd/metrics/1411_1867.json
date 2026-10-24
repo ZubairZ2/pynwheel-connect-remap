@@ -1,0 +1,170 @@
+{
+  "case": {
+    "name": "1411_1867",
+    "floor": "1411_1867.svg",
+    "background": null,
+    "stops": {
+      "kind": "db",
+      "file": "stops_1411_1867.json"
+    }
+  },
+  "stops": 40,
+  "baseline": {
+    "ok": true,
+    "failure": null,
+    "source": "both",
+    "layers": [
+      "Path",
+      "Building outlines",
+      "Units"
+    ],
+    "warnings": [
+      {
+        "code": "weak-walkway-match",
+        "message": "No Walkway / Corridor / Hallway layer; using the generically named \"Path\" layer."
+      }
+    ],
+    "ms": 818,
+    "metrics": {
+      "nodes": 177,
+      "edges": 205,
+      "lengthUnits": 11803,
+      "components": 1,
+      "edgeSamplesInWalk": 72,
+      "edgeSamplesInBuilding": 26,
+      "edgeSamplesOffWalk": 28,
+      "centring": 0.58,
+      "coverage12": 29,
+      "coverageClearance": 46,
+      "joined": 40,
+      "stops": 40,
+      "linksThroughOtherBuilding": 0,
+      "doorBridges": 0,
+      "routes": [
+        {
+          "from": "201",
+          "to": "218",
+          "ok": true,
+          "length": 666,
+          "points": 17,
+          "inWalk": 74,
+          "inBuilding": 26
+        },
+        {
+          "from": "253",
+          "to": "224",
+          "ok": true,
+          "length": 722,
+          "points": 26,
+          "inWalk": 41,
+          "inBuilding": 59
+        },
+        {
+          "from": "210",
+          "to": "247",
+          "ok": true,
+          "length": 1338,
+          "points": 40,
+          "inWalk": 25,
+          "inBuilding": 75
+        }
+      ]
+    }
+  },
+  "proposed": {
+    "ok": true,
+    "failure": null,
+    "source": "streets+inferred",
+    "streetsMode": "layers",
+    "layers": [
+      "Road",
+      "Path_2",
+      "Path_3",
+      "Pool_base",
+      "Parking",
+      "Parking_2",
+      "Parking_3",
+      "Parking_4",
+      "Parking_5",
+      "Parking_6",
+      "Parking_7",
+      "COURTYARD",
+      "Building outlines",
+      "Units"
+    ],
+    "doorBridges": 4,
+    "components": 1,
+    "warnings": [
+      {
+        "code": "weak-walkway-match",
+        "message": "No Walkway / Corridor / Hallway layer; using the generically named \"Path\" layer."
+      }
+    ],
+    "stats": {
+      "walkCells": 501052,
+      "skeletonCells": 12206,
+      "thinPasses": 59,
+      "spursPruned": 18,
+      "piecesDropped": 0,
+      "bridges": 0,
+      "bridgesRejected": 0,
+      "throughBuilding": 0,
+      "indoorRuns": 0,
+      "ms": {
+        "classify": 12,
+        "paint": 7,
+        "open": 190,
+        "thin": 555,
+        "prune": 17,
+        "graph": 50,
+        "stops": 0
+      }
+    },
+    "ms": 1635,
+    "metrics": {
+      "nodes": 315,
+      "edges": 390,
+      "lengthUnits": 16057,
+      "components": 1,
+      "edgeSamplesInWalk": 86,
+      "edgeSamplesInBuilding": 12,
+      "edgeSamplesOffWalk": 14,
+      "centring": 0.8,
+      "coverage12": 57,
+      "coverageClearance": 68,
+      "joined": 40,
+      "stops": 40,
+      "linksThroughOtherBuilding": 0,
+      "doorBridges": 6,
+      "routes": [
+        {
+          "from": "201",
+          "to": "218",
+          "ok": true,
+          "length": 904,
+          "points": 44,
+          "inWalk": 95,
+          "inBuilding": 3
+        },
+        {
+          "from": "253",
+          "to": "224",
+          "ok": true,
+          "length": 259,
+          "points": 12,
+          "inWalk": 0,
+          "inBuilding": 100
+        },
+        {
+          "from": "210",
+          "to": "247",
+          "ok": true,
+          "length": 720,
+          "points": 24,
+          "inWalk": 29,
+          "inBuilding": 70
+        }
+      ]
+    }
+  }
+}

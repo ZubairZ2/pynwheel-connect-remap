@@ -1,0 +1,53 @@
+{
+  "case": {
+    "name": "7860_4439",
+    "floor": "7860_4439.svg",
+    "background": null,
+    "stops": {
+      "kind": "db",
+      "file": "stops_7860.json"
+    }
+  },
+  "stops": 0,
+  "baseline": {
+    "ok": false,
+    "failure": "no-hallway-layer",
+    "source": null,
+    "layers": [],
+    "warnings": [],
+    "ms": 4,
+    "metrics": null
+  },
+  "proposed": {
+    "ok": false,
+    "failure": "no-hallway-layer",
+    "source": null,
+    "streetsMode": "colour",
+    "layers": [],
+    "doorBridges": 0,
+    "components": 0,
+    "warnings": [
+      {
+        "code": "no-walkable-area",
+        "message": "No road, parking, walkway or deck layer, and no pavement-coloured shape."
+      }
+    ],
+    "stats": {
+      "walkCells": 0,
+      "skeletonCells": 0,
+      "thinPasses": 0,
+      "spursPruned": 0,
+      "piecesDropped": 0,
+      "bridges": 0,
+      "bridgesRejected": 0,
+      "throughBuilding": 0,
+      "indoorRuns": 0,
+      "ms": {
+        "classify": 2,
+        "paint": 5
+      }
+    },
+    "ms": 18,
+    "metrics": null
+  }
+}

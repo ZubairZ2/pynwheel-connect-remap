@@ -1,0 +1,179 @@
+{
+  "case": {
+    "name": "8005_f3",
+    "floor": "8005_4604_f3.svg",
+    "background": "8005_bg.svg",
+    "stops": {
+      "kind": "db",
+      "file": "stops_8005.json",
+      "floor": 3
+    }
+  },
+  "stops": 110,
+  "baseline": {
+    "ok": true,
+    "failure": null,
+    "source": "both",
+    "layers": [
+      "Path",
+      "PATH",
+      "Building outlines",
+      "Units"
+    ],
+    "warnings": [
+      {
+        "code": "weak-walkway-match",
+        "message": "No Walkway / Corridor / Hallway layer; using the generically named \"Path\" layer. (shared background map)"
+      },
+      {
+        "code": "walkway-from-background",
+        "message": "The walkways were read from the shared background map (Path, PATH)."
+      },
+      {
+        "code": "footprints-from-background",
+        "message": "The building footprints were read from the shared background map."
+      }
+    ],
+    "ms": 152,
+    "metrics": {
+      "nodes": 205,
+      "edges": 298,
+      "lengthUnits": 11486,
+      "components": 1,
+      "edgeSamplesInWalk": 59,
+      "edgeSamplesInBuilding": 40,
+      "edgeSamplesOffWalk": 41,
+      "centring": 0.67,
+      "coverage12": 18,
+      "coverageClearance": 26,
+      "joined": 110,
+      "stops": 110,
+      "linksThroughOtherBuilding": 0,
+      "doorBridges": 0,
+      "routes": [
+        {
+          "from": "8309",
+          "to": "10302",
+          "ok": true,
+          "length": 2647,
+          "points": 42,
+          "inWalk": 91,
+          "inBuilding": 6
+        },
+        {
+          "from": "4301",
+          "to": "9302",
+          "ok": true,
+          "length": 1197,
+          "points": 30,
+          "inWalk": 76,
+          "inBuilding": 22
+        },
+        {
+          "from": "5309",
+          "to": "10308",
+          "ok": true,
+          "length": 1594,
+          "points": 34,
+          "inWalk": 88,
+          "inBuilding": 9
+        }
+      ]
+    }
+  },
+  "proposed": {
+    "ok": true,
+    "failure": null,
+    "source": "streets",
+    "streetsMode": "layers",
+    "layers": [
+      "Road",
+      "Path",
+      "BASE",
+      "Pool_base",
+      "PATH"
+    ],
+    "doorBridges": 0,
+    "components": 1,
+    "warnings": [
+      {
+        "code": "weak-walkway-match",
+        "message": "No Walkway / Corridor / Hallway layer; using the generically named \"Path\" layer. (shared background map)"
+      },
+      {
+        "code": "walkway-from-background",
+        "message": "The walkways were read from the shared background map (Path, PATH)."
+      },
+      {
+        "code": "footprints-from-background",
+        "message": "The building footprints were read from the shared background map."
+      }
+    ],
+    "stats": {
+      "walkCells": 312564,
+      "skeletonCells": 12741,
+      "thinPasses": 38,
+      "spursPruned": 19,
+      "piecesDropped": 0,
+      "bridges": 0,
+      "bridgesRejected": 0,
+      "throughBuilding": 0,
+      "indoorRuns": 0,
+      "ms": {
+        "classify": 8,
+        "paint": 6,
+        "open": 175,
+        "thin": 386,
+        "prune": 29,
+        "graph": 55,
+        "stops": 0
+      }
+    },
+    "ms": 796,
+    "metrics": {
+      "nodes": 247,
+      "edges": 349,
+      "lengthUnits": 16444,
+      "components": 1,
+      "edgeSamplesInWalk": 96,
+      "edgeSamplesInBuilding": 0,
+      "edgeSamplesOffWalk": 4,
+      "centring": 0.75,
+      "coverage12": 62,
+      "coverageClearance": 69,
+      "joined": 110,
+      "stops": 110,
+      "linksThroughOtherBuilding": 22,
+      "doorBridges": 0,
+      "routes": [
+        {
+          "from": "8309",
+          "to": "10302",
+          "ok": true,
+          "length": 1021,
+          "points": 46,
+          "inWalk": 98,
+          "inBuilding": 0
+        },
+        {
+          "from": "4301",
+          "to": "9302",
+          "ok": true,
+          "length": 988,
+          "points": 33,
+          "inWalk": 96,
+          "inBuilding": 0
+        },
+        {
+          "from": "5309",
+          "to": "10308",
+          "ok": true,
+          "length": 879,
+          "points": 25,
+          "inWalk": 97,
+          "inBuilding": 0
+        }
+      ]
+    }
+  }
+}

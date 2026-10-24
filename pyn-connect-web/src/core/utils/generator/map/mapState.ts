@@ -336,7 +336,7 @@ export interface WfDetectRow {
   points: number;
   paths: number;
   /** Traced from a walkway layer, inferred from the footprints and rooms, or both joined. */
-  source: 'vector' | 'inferred' | 'both' | null;
+  source: 'streets' | 'streets+inferred' | 'vector' | 'inferred' | 'both' | null;
   /** Why it was skipped or found nothing, in a few words; for a detected floorplate, where the paths came from and how many stops they reached. */
   note: string;
 }

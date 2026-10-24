@@ -1,0 +1,156 @@
+{
+  "case": {
+    "name": "1412_1865",
+    "floor": "1412_1865.svg",
+    "background": null,
+    "stops": {
+      "kind": "units-layer"
+    }
+  },
+  "stops": 874,
+  "baseline": {
+    "ok": true,
+    "failure": null,
+    "source": "both",
+    "layers": [
+      "Walkways",
+      "Building outlines",
+      "Units"
+    ],
+    "warnings": [],
+    "ms": 264,
+    "metrics": {
+      "nodes": 265,
+      "edges": 289,
+      "lengthUnits": 10121,
+      "components": 1,
+      "edgeSamplesInWalk": 83,
+      "edgeSamplesInBuilding": 13,
+      "edgeSamplesOffWalk": 17,
+      "centring": 0.67,
+      "coverage12": 19,
+      "coverageClearance": 30,
+      "joined": 874,
+      "stops": 874,
+      "linksThroughOtherBuilding": 5,
+      "doorBridges": 0,
+      "routes": [
+        {
+          "from": "Balcony_240",
+          "to": "220",
+          "ok": true,
+          "length": 1311,
+          "points": 35,
+          "inWalk": 100,
+          "inBuilding": 0
+        },
+        {
+          "from": "Vector 13_5",
+          "to": "610",
+          "ok": true,
+          "length": 1200,
+          "points": 56,
+          "inWalk": 75,
+          "inBuilding": 22
+        },
+        {
+          "from": "247",
+          "to": "220",
+          "ok": true,
+          "length": 1199,
+          "points": 44,
+          "inWalk": 97,
+          "inBuilding": 0
+        }
+      ]
+    }
+  },
+  "proposed": {
+    "ok": true,
+    "failure": null,
+    "source": "streets+inferred",
+    "streetsMode": "layers",
+    "layers": [
+      "Walkways",
+      "Parking",
+      "Roads ",
+      "W YAMATO ROAD",
+      "Internal Road",
+      "Cover Rd Gaps",
+      "Cover Rd Gaps_2",
+      "Cover Rd Gaps_3",
+      "Road",
+      "Building outlines",
+      "Units"
+    ],
+    "doorBridges": 1,
+    "components": 1,
+    "warnings": [],
+    "stats": {
+      "walkCells": 544194,
+      "skeletonCells": 17833,
+      "thinPasses": 62,
+      "spursPruned": 51,
+      "piecesDropped": 0,
+      "bridges": 2,
+      "bridgesRejected": 0,
+      "throughBuilding": 0,
+      "indoorRuns": 0,
+      "ms": {
+        "classify": 56,
+        "paint": 7,
+        "open": 212,
+        "thin": 642,
+        "prune": 20,
+        "graph": 62,
+        "stops": 0
+      }
+    },
+    "ms": 1355,
+    "metrics": {
+      "nodes": 544,
+      "edges": 662,
+      "lengthUnits": 21580,
+      "components": 1,
+      "edgeSamplesInWalk": 96,
+      "edgeSamplesInBuilding": 0,
+      "edgeSamplesOffWalk": 4,
+      "centring": 0.8,
+      "coverage12": 60,
+      "coverageClearance": 67,
+      "joined": 803,
+      "stops": 874,
+      "linksThroughOtherBuilding": 0,
+      "doorBridges": 2,
+      "routes": [
+        {
+          "from": "Balcony_240",
+          "to": "220",
+          "ok": true,
+          "length": 1190,
+          "points": 64,
+          "inWalk": 100,
+          "inBuilding": 0
+        },
+        {
+          "from": "437_2",
+          "to": "324",
+          "ok": true,
+          "length": 698,
+          "points": 36,
+          "inWalk": 100,
+          "inBuilding": 0
+        },
+        {
+          "from": "247",
+          "to": "220",
+          "ok": true,
+          "length": 1016,
+          "points": 51,
+          "inWalk": 100,
+          "inBuilding": 0
+        }
+      ]
+    }
+  }
+}

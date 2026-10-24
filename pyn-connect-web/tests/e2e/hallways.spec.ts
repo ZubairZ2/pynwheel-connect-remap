@@ -487,12 +487,14 @@ test.describe('Hallway engine', () => {
 
       const result = detectHallways(floor, BEANS_STOPS, { background: svg(BEANS_BACKGROUND()) });
       expect(result.ok).toBe(true);
-      expect(result.source).toBe('both');
+      expect(result.source).toBe('streets+inferred');
+      expect(result.streetsMode).toBe('layers');
       expect(result.fromBackground).toBe(true);
       expect(result.layers).toEqual(['Path', 'Building outlines', 'Units']);
-      // The sidewalk is traced (confirmed); the corridor between the two unit rows is inferred (pending), and the two are one connected graph.
+      // The sidewalk's centreline is the street (confirmed, on the drawn stroke's middle); the corridor between the two unit rows is inferred (pending), and the two are one connected graph.
       expect(structure.walkwayMatch).toBe('weak');
-      expect(result.nodes.some((n) => n.source === 'vector' && n.review === 'confirmed' && Math.abs(n.y - 170) < 1e-6)).toBe(true);
+      expect(result.nodes.some((n) => n.source === 'vector' && n.review === 'confirmed' && Math.abs(n.y - 170) < 1)).toBe(true);
+      expect(result.nodes.filter((n) => n.source === 'vector').every((n) => Math.abs(n.y - 170) < 1 || Math.abs(n.x - 165) < 1)).toBe(true);
       const corridor = result.nodes.filter((n) => n.source === 'inferred');
       expect(corridor.length).toBeGreaterThan(0);
       expect(corridor.every((n) => n.review === 'pending' && n.y > 90 && n.y < 120)).toBe(true);
@@ -506,14 +508,19 @@ test.describe('Hallway engine', () => {
       expect(obstaclesOf(floor, svg(BEANS_BACKGROUND())).length).toBeGreaterThan(obstaclesOf(floor).length);
     });
 
-    test('a labelled Walkways layer is the designer’s word: traced alone, with no corridors inferred beside it unless asked', () => {
+    test('a labelled Walkways layer is walked along its middle like any pavement; corridors inside the buildings are inferred only where wider than a drawn wall margin', () => {
       const labelled = svg(BEANS_FLOOR + BEANS_BACKGROUND().replace('id="Path"', 'id="Walkways"'));
       expect(detectSvgStructure(labelled).walkwayMatch).toBe('strong');
-      const traced = detectHallways(labelled, BEANS_STOPS);
-      expect(traced.source).toBe('vector');
-      expect(traced.nodes.every((n) => n.source === 'vector')).toBe(true);
-      expect(detectHallways(labelled, BEANS_STOPS, { inferBesideWalkways: true }).source).toBe('both');
-      expect(detectHallways(svg(BEANS_FLOOR + BEANS_BACKGROUND()), BEANS_STOPS, { inferBesideWalkways: false }).source).toBe('vector');
+      const result = detectHallways(labelled, BEANS_STOPS);
+      expect(result.source).toBe('streets+inferred');
+      expect(result.layers[0]).toBe('Walkways');
+      expect(result.nodes.filter((n) => n.source === 'vector').every((n) => Math.abs(n.y - 170) < 1 || Math.abs(n.x - 165) < 1)).toBe(true);
+      // The corridor between the rows is 30 units wide (half-width 15): kept by the default gate, dropped by a stricter one.
+      expect(detectHallways(labelled, BEANS_STOPS, { indoorMinHalfWidth: 20 }).source).toBe('streets');
+      // The engine as it was before the street pass: the drawn art traced as drawn, the corridor inferred beside it.
+      const legacy = detectHallways(labelled, BEANS_STOPS, { streets: false });
+      expect(legacy.source).toBe('both');
+      expect(legacy.nodes.some((n) => n.source === 'vector' && Math.abs(n.y - 170) < 1e-6)).toBe(true);
     });
 
     test('a background drawn in another viewBox is mapped into the floor’s frame', () => {
@@ -523,7 +530,7 @@ test.describe('Hallway engine', () => {
       expect(map).toEqual({ a: 0.5, b: 0, c: 0, d: 0.5, e: 0, f: 0 });
       const result = detectHallways(floor, BEANS_STOPS, { background });
       expect(result.ok).toBe(true);
-      expect(result.nodes.some((n) => n.source === 'vector' && Math.abs(n.y - 170) < 1e-6 && Math.abs(n.x - 20) < 1e-6)).toBe(true);
+      expect(result.nodes.some((n) => n.source === 'vector' && Math.abs(n.y - 170) < 1 && Math.abs(n.x - 20) < 2)).toBe(true);
       expect(result.viewBox).toEqual({ minX: 0, minY: 0, maxX: 400, maxY: 200 });
     });
 
@@ -545,12 +552,22 @@ test.describe('Hallway engine', () => {
       expect(result.nodes.every((n) => n.review === 'pending' || n.confidence === null)).toBe(true);
     });
 
-    test('a flattened export with no named layers is told apart from one whose layers just lack a walkway', () => {
-      const flattened = svg(`
-        <path d="M5.5 26.5V96.5L68 95Z" fill="#E6E6E6"/><path d="M100 100 H 200 V 150 Z" fill="#CCC"/><g><path d="M 1 1 L 2 2"/></g>
-        <defs><pattern id="pattern0_1_2"><use transform="scale(0.1)"/></pattern><filter id="filter0_d_1_2"/><clipPath id="clip0_1_2"><rect width="10" height="10"/></clipPath></defs>`);
+    test('a flattened export with no named layers is read by its fill colours when it draws pavement, reported when it draws none, and told apart from one whose layers just lack a walkway', () => {
+      const defs = `<defs><pattern id="pattern0_1_2"><use transform="scale(0.1)"/></pattern><filter id="filter0_d_1_2"/><clipPath id="clip0_1_2"><rect width="10" height="10"/></clipPath></defs>`;
+      // Grey pavement with a beige room on it: the road's centreline comes out, every point a proposal.
+      const flattened = svg(`<rect x="0" y="80" width="400" height="40" fill="#7F807B"/><rect x="150" y="20" width="100" height="50" fill="#F0E3D0"/><g><path d="M 1 1 L 2 2"/></g>${defs}`);
       expect(detectSvgStructure(flattened).namedLayers).toBe(0);
-      const none = detectHallways(flattened, []);
+      const byColour = detectHallways(flattened, []);
+      expect(byColour.ok).toBe(true);
+      expect(byColour.source).toBe('streets');
+      expect(byColour.streetsMode).toBe('colour');
+      expect(byColour.nodes.length).toBeGreaterThan(1);
+      expect(byColour.nodes.every((n) => n.source === 'inferred' && n.review === 'pending')).toBe(true);
+      expect(byColour.nodes.every((n) => Math.abs(n.y - 100) < 1)).toBe(true);
+      expect(byColour.warnings.map((w) => w.code)).toContain('streets-from-colour');
+      // Nothing pavement-coloured: a flattened export with nothing to read.
+      const blank = svg(`<rect x="150" y="20" width="100" height="50" fill="#F0E3D0"/><path d="M 10 10 L 300 10 L 300 12 L 10 12 Z" fill="black"/>${defs}`);
+      const none = detectHallways(blank, []);
       expect(none.ok).toBe(false);
       expect(none.failure).toBe('no-layers');
 
@@ -600,13 +617,21 @@ test.describe('Hallway engine', () => {
 
         const result = detectHallways(floor, stops, { background });
         expect(result.ok).toBe(true);
-        expect(result.source).toBe('both');
+        // The roads, parking, sidewalk and pool deck of the background are the network; the margin between each
+        // building's units and its outline is no corridor, so nothing is inferred inside the buildings (no rings).
+        expect(result.source).toBe('streets');
+        expect(result.streetsMode).toBe('layers');
         expect(result.fromBackground).toBe(true);
-        expect(result.layers.slice(0, 2)).toEqual(['Path', 'PATH']);
+        expect(result.layers).toEqual(['Road', 'Path', 'BASE', 'Pool_base', 'PATH']);
         expect(result.joined).toBe(113);
-        expect(result.nodes.filter((n) => n.source === 'vector').length).toBeGreaterThan(20);
-        expect(result.nodes.filter((n) => n.source === 'inferred').length).toBeGreaterThan(20);
-        expect(connected(result)).toBeLessThanOrEqual(3);
+        expect(result.nodes.filter((n) => n.source === 'vector').length).toBeGreaterThan(150);
+        expect(result.nodes.filter((n) => n.source === 'inferred' && !result.connections.some((c) => c.connectedNodeId === n.id)).length).toBe(0);
+        expect(result.components).toBe(1);
+        expect(connected(result)).toBe(1);
+        // Repeatable: the same file gives the same network.
+        const again = detectHallways(floor, stops, { background });
+        expect(again.nodes.map((n) => [n.id, Math.round(n.x * 10), Math.round(n.y * 10)])).toEqual(result.nodes.map((n) => [n.id, Math.round(n.x * 10), Math.round(n.y * 10)]));
+        expect(again.edges.length).toBe(result.edges.length);
         const floor1 = read('8005_4606_floor1.svg');
         expect(detectHallways(floor1, stopsOf(floor1), { background }).joined).toBe(stopsOf(floor1).length);
       });
@@ -617,18 +642,26 @@ test.describe('Hallway engine', () => {
         expect(stops.length).toBe(41);
         const result = detectHallways(floor, stops);
         expect(result.ok).toBe(true);
-        expect(result.source).toBe('both');
+        expect(result.source).toBe('streets+inferred');
         expect(result.fromBackground).toBe(false);
         expect(result.joined).toBe(41);
+        expect(result.layers).toEqual(expect.arrayContaining(['Road', 'Parking', 'Building outlines', 'Units']));
         expect(result.nodes.filter((n) => n.source === 'inferred').length).toBeGreaterThan(5);
+        expect(result.components).toBe(1);
       });
 
       test('Jennifer Demo FP: floors 1–3 is a flattened export (no named layers); floors 4–5 has a walkway layer; floor 5’s file is a whole-property export', () => {
         const flattened = read('1412_3638_floors1-3.svg');
-        const none = detectHallways(flattened, []);
-        expect(none.ok).toBe(false);
-        expect(none.failure).toBe('no-layers');
-        expect(none.namedLayers).toBe(0);
+        const byColour = detectHallways(flattened, []);
+        // No named layer at all — but the road, the sidewalk and the floor slab between the walls are pavement-coloured.
+        expect(byColour.ok).toBe(true);
+        expect(byColour.namedLayers).toBe(0);
+        expect(byColour.streetsMode).toBe('colour');
+        expect(byColour.source).toBe('streets');
+        expect(byColour.nodes.length).toBeGreaterThan(50);
+        expect(byColour.nodes.every((n) => n.review === 'pending')).toBe(true);
+        expect(byColour.components).toBe(1);
+        expect(detectHallways(flattened, [], { streets: false }).failure).toBe('no-layers');
 
         const vegas = read('1412_3659_floors4-5.svg');
         const structure = detectSvgStructure(vegas);
@@ -636,7 +669,8 @@ test.describe('Hallway engine', () => {
         expect(structure.walkwayLayerIds).toEqual(['walkway']);
         const result = detectHallways(vegas, stopsOf(vegas));
         expect(result.ok).toBe(true);
-        expect(['vector', 'both']).toContain(result.source);
+        expect(['streets', 'streets+inferred']).toContain(result.source);
+        expect(result.layers).toEqual(expect.arrayContaining(['Road', 'Walkway']));
 
         const boca = read('1412_1865_floor5.svg');
         expect(detectSvgStructure(boca).walkwayLayerIds).toEqual(['Walkways']);

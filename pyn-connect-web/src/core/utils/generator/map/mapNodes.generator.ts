@@ -298,9 +298,10 @@ const iconCentre = (x: number | null, y: number | null): { x: number; y: number 
  * the building entry/exit points on its floors, the tour's starting point on
  * the starting floor, the doors of the units and amenities plotted on it, the
  * page's temporary junctions, and the raster-space pins. On the SVG layer:
- * the pins placed in SVG units (stored pointers and polygon drops) and the
- * junctions dropped there. Hidden nodes are left out; moved ones carry their
- * stored centre.
+ * the hallways stored in SVG space (`space: 'svg'`, the viewBox point itself —
+ * no icon offset — with the stored edge polylines), the pins placed in SVG
+ * units (stored pointers and polygon drops) and the junctions dropped there.
+ * Hidden nodes are left out; moved ones carry their stored centre.
  */
 export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: MapLevel, state: LocalMapState, space: PlanSpace): LevelGraph => {
   const { graph, inventory } = map;
@@ -345,13 +346,14 @@ export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: 
 
   const parentType = level.kind === 'floorplate' ? 'Floorplate' : 'Sitemap';
 
-  if (space === 'raster') {
-    graph.hallways
-      .filter((hallway) => hallway.parentType === parentType && hallway.parentId === level.recordId)
-      .forEach((hallway) =>
-        place(nodeKey('hallway', hallway.id), 'hallway', `#${hallway.id}`, iconCentre(hallway.xPlot, hallway.yPlot))
-      );
-  }
+  const storedOnLevel = graph.hallways.filter((hallway) => hallway.parentType === parentType && hallway.parentId === level.recordId && (hallway.space ?? 'raster') === space);
+  storedOnLevel.forEach((hallway) =>
+    place(nodeKey('hallway', hallway.id), 'hallway', `#${hallway.id}`, space === 'raster' ? iconCentre(hallway.xPlot, hallway.yPlot) : { x: hallway.xPlot, y: hallway.yPlot }, {
+      source: hallway.source === 'inferred' ? 'inferred' : 'stored',
+      review: hallway.reviewStatus === 'pending' ? 'pending' : 'confirmed',
+      confidence: hallway.confidence ?? null
+    })
+  );
 
   state.tempNodes
     .filter((node) => node.levelId === level.id && node.space === space)
@@ -469,11 +471,13 @@ export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: 
     seen.add(key);
     edges.push({ key, a, b, x1: na.xPct, y1: na.yPct, x2: nb.xPct, y2: nb.yPct, temporary, points, kind });
   };
-  if (space === 'raster') {
-    graph.hallways.forEach((hallway) =>
-      hallway.nextPoints.forEach((next) => pushEdge(nodeKey('hallway', hallway.id), nodeKey('hallway', next), false, [], 'stored'))
-    );
-  }
+  // Stored links: the edge rows of this layer carry their polylines (a detected street bends); the legacy adjacency fills in the rest.
+  graph.hallwayEdges
+    .filter((edge) => edge.parentType === parentType && edge.parentId === level.recordId && (edge.space ?? 'raster') === space && edge.reviewStatus !== 'pending')
+    .forEach((edge) => pushEdge(nodeKey('hallway', edge.from), nodeKey('hallway', edge.to), false, edge.points.map(([x, y]) => (space === 'raster' ? iconCentre(x, y) ?? { x, y } : { x, y })), 'stored'));
+  storedOnLevel.forEach((hallway) =>
+    hallway.nextPoints.forEach((next) => pushEdge(nodeKey('hallway', hallway.id), nodeKey('hallway', next), false, [], 'stored'))
+  );
   state.tempEdges.forEach((edge) => pushEdge(edge.a, edge.b, true, edge.points ?? [], edge.kind ?? 'manual'));
 
   return { level, space, dims, pins, nodes, edges };

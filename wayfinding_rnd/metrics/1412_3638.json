@@ -1,0 +1,101 @@
+{
+  "case": {
+    "name": "1412_3638",
+    "floor": "1412_3638.svg",
+    "background": null,
+    "stops": {
+      "kind": "colour-rooms"
+    }
+  },
+  "stops": 173,
+  "baseline": {
+    "ok": false,
+    "failure": "no-layers",
+    "source": null,
+    "layers": [],
+    "warnings": [],
+    "ms": 1,
+    "metrics": null
+  },
+  "proposed": {
+    "ok": true,
+    "failure": null,
+    "source": "streets",
+    "streetsMode": "colour",
+    "layers": [],
+    "doorBridges": 0,
+    "components": 1,
+    "warnings": [
+      {
+        "code": "streets-from-colour",
+        "message": "The walkable areas were recognised by their fill colours: the file has no named road, parking or walkway layer."
+      }
+    ],
+    "stats": {
+      "walkCells": 540107,
+      "skeletonCells": 7169,
+      "thinPasses": 147,
+      "spursPruned": 17,
+      "piecesDropped": 0,
+      "bridges": 2,
+      "bridgesRejected": 0,
+      "throughBuilding": 0,
+      "indoorRuns": 0,
+      "ms": {
+        "classify": 52,
+        "paint": 18,
+        "open": 235,
+        "thin": 1401,
+        "prune": 30,
+        "graph": 51,
+        "stops": 0
+      }
+    },
+    "ms": 1693,
+    "metrics": {
+      "nodes": 141,
+      "edges": 141,
+      "lengthUnits": 7576,
+      "components": 1,
+      "edgeSamplesInWalk": 99,
+      "edgeSamplesInBuilding": 0,
+      "edgeSamplesOffWalk": 1,
+      "centring": 0.9,
+      "coverage12": 29,
+      "coverageClearance": 60,
+      "joined": 145,
+      "stops": 173,
+      "linksThroughOtherBuilding": 28,
+      "doorBridges": 0,
+      "routes": [
+        {
+          "from": "room 139",
+          "to": "room 189",
+          "ok": true,
+          "length": 1729,
+          "points": 12,
+          "inWalk": 100,
+          "inBuilding": 0
+        },
+        {
+          "from": "room 31",
+          "to": "room 47",
+          "ok": true,
+          "length": 2036,
+          "points": 63,
+          "inWalk": 100,
+          "inBuilding": 0
+        },
+        {
+          "from": "room 109",
+          "to": "room 170",
+          "ok": true,
+          "length": 1451,
+          "points": 24,
+          "inWalk": 100,
+          "inBuilding": 0
+        }
+      ]
+    }
+  }
+}

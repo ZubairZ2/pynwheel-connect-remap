@@ -49,8 +49,10 @@ export interface InferResult {
 const MAX_CELLS = 900_000;
 const LONG_SIDE_CELLS = 900;
 
+/* The raster primitives below are shared with `inferStreets` (the outdoor pass): the same grid, distance transform, opening, thinning, pruning and tracing. */
+
 /** Fills each shape's closed rings (even-odd within a shape) into `mask` with `value`, sampling at cell centres. */
-const fillShapes = (mask: Uint8Array, w: number, h: number, minX: number, minY: number, cell: number, shapes: RootShape[], value: 0 | 1) => {
+export const fillShapes = (mask: Uint8Array, w: number, h: number, minX: number, minY: number, cell: number, shapes: RootShape[], value: 0 | 1) => {
   for (const shape of shapes) {
     if (!shape.closed) continue;
     const rows = new Map<number, number[]>();
@@ -84,7 +86,7 @@ const fillShapes = (mask: Uint8Array, w: number, h: number, minX: number, minY: 
 };
 
 /** Chamfer (3-4) distance, in cells, from every cell to the nearest cell outside `inside`. */
-const distanceToOutside = (inside: Uint8Array, w: number, h: number): Float32Array => {
+export const distanceToOutside = (inside: Uint8Array, w: number, h: number): Float32Array => {
   const big = 1e9;
   const d = new Float32Array(w * h);
   for (let i = 0; i < d.length; i += 1) d[i] = inside[i] ? big : 0;
@@ -124,7 +126,7 @@ const distanceToOutside = (inside: Uint8Array, w: number, h: number): Float32Arr
 };
 
 /** Opening by radius r (cells): erode to the cells at least r inside, then grow those back by r. */
-const open = (mask: Uint8Array, w: number, h: number, r: number): Uint8Array => {
+export const open = (mask: Uint8Array, w: number, h: number, r: number): Uint8Array => {
   const inner = distanceToOutside(mask, w, h);
   const core = new Uint8Array(w * h);
   for (let i = 0; i < core.length; i += 1) core[i] = inner[i] > r ? 1 : 0;
@@ -137,7 +139,8 @@ const open = (mask: Uint8Array, w: number, h: number, r: number): Uint8Array => 
 };
 
 /** Drops 4-connected pieces smaller than `minArea` cells. */
-const dropSmall = (mask: Uint8Array, w: number, h: number, minArea: number): void => {
+export const dropSmall = (mask: Uint8Array, w: number, h: number, minArea: number): number => {
+  let dropped = 0;
   const seen = new Uint8Array(w * h);
   const stack: number[] = [];
   const piece: number[] = [];
@@ -157,12 +160,16 @@ const dropSmall = (mask: Uint8Array, w: number, h: number, minArea: number): voi
         stack.push(n);
       }
     }
-    if (piece.length < minArea) for (const i of piece) mask[i] = 0;
+    if (piece.length < minArea) {
+      for (const i of piece) mask[i] = 0;
+      dropped += 1;
+    }
   }
+  return dropped;
 };
 
 /** Zhang–Suen thinning, in place. */
-const thin = (mask: Uint8Array, w: number, h: number): void => {
+export const thin = (mask: Uint8Array, w: number, h: number): number => {
   const at = (x: number, y: number) => (x < 0 || y < 0 || x >= w || y >= h ? 0 : mask[y * w + x]);
   const remove: number[] = [];
   let changed = true;
@@ -199,6 +206,7 @@ const thin = (mask: Uint8Array, w: number, h: number): void => {
     }
     pass += 1;
   }
+  return pass;
 };
 
 const NEIGHBOURS = [
@@ -212,7 +220,7 @@ const NEIGHBOURS = [
   [1, 1]
 ] as const;
 
-const neighboursOf = (mask: Uint8Array, w: number, h: number, i: number): number[] => {
+export const neighboursOf = (mask: Uint8Array, w: number, h: number, i: number): number[] => {
   const x = i % w;
   const y = (i - x) / w;
   const out: number[] = [];
@@ -227,7 +235,8 @@ const neighboursOf = (mask: Uint8Array, w: number, h: number, i: number): number
 };
 
 /** Removes branches from an end to a junction shorter than `limit(junction)` cells; repeated, since pruning exposes new ends. */
-const pruneSpurs = (mask: Uint8Array, w: number, h: number, limit: (junction: number) => number): void => {
+export const pruneSpurs = (mask: Uint8Array, w: number, h: number, limit: (junction: number) => number): number => {
+  let total = 0;
   for (let round = 0; round < 3; round += 1) {
     let pruned = 0;
     for (let i = 0; i < mask.length; i += 1) {
@@ -254,8 +263,10 @@ const pruneSpurs = (mask: Uint8Array, w: number, h: number, limit: (junction: nu
         pruned += 1;
       }
     }
+    total += pruned;
     if (!pruned) break;
   }
+  return total;
 };
 
 interface Traced {
@@ -263,7 +274,7 @@ interface Traced {
 }
 
 /** The skeleton as runs between node clusters (cells whose neighbour count is not 2), plus closed loops split in two. */
-const trace = (mask: Uint8Array, w: number, h: number): { runs: Traced[]; nodeCentre: (cluster: number) => { x: number; y: number }; clusterOf: Int32Array } => {
+export const trace = (mask: Uint8Array, w: number, h: number): { runs: Traced[]; nodeCentre: (cluster: number) => { x: number; y: number }; clusterOf: Int32Array } => {
   const degree = new Uint8Array(w * h);
   for (let i = 0; i < mask.length; i += 1) if (mask[i]) degree[i] = neighboursOf(mask, w, h, i).length;
   const isNode = (i: number) => mask[i] === 1 && degree[i] !== 2;
