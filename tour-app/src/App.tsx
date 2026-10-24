@@ -69,10 +69,13 @@ const Shell = () => {
   const actions = useAppActions();
   // The Schedule screen and the Book a Live Tour sheet read the property's booking rules whichever way they were opened.
   const bookOpen = state.overlays.includes('book');
+  // October 25, 2026: a live booking needs the property's grace period too (the check-in window and the sheet's text), so the
+  // rules are read as soon as the property is up, not only when the Schedule screen opens. `loadBooking` keeps its 5-minute memo.
+  const liveTour = !!state.scheduledTour && (state.scheduledTour.status === 'scheduled' || state.scheduledTour.status === 'checkedIn');
   useEffect(() => {
-    if (state.screen === 'schedule' || bookOpen) void actions.loadBooking();
+    if (state.screen === 'schedule' || bookOpen || (liveTour && data.status === 'ready' && state.booking.fetchedAt === 0)) void actions.loadBooking();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.screen, state.propertyId, bookOpen]);
+  }, [state.screen, state.propertyId, bookOpen, liveTour, data.status, state.booking.fetchedAt]);
   // Which photo the gallery opens on (the floor plan, a CMS photo, the visitor's own).
   const [galleryStart, setGalleryStart] = useState(0);
   const repository = useRepository();
