@@ -2869,5 +2869,9 @@ the owner's decisions, the PASS/FAIL matrix); contract `tour-app-backend-api.md`
   property (network: `GET /properties/1618` → graph, stops, map); Connect published Hazel (version recorded, second click
   "already published"); the long readiness pill sits inside its tile at 1400 and 1000 px; the themed widget renders with Manrope
   and the primary button, the plain widget is byte-identical.
-- **Blocked.** No phone was attached on October 25; the on-device scenarios (1–12 of the brief) remain NOT RUN until the tenda
-  APK is rebuilt from this branch and installed.
+- **Phone.** The Samsung A02s was attached later the same night: `artifacts/pynwheel-tour-publish-tz-2026-10-25-tenda.apk` (→ :3020)
+  ran scenarios 1, 2, 4, 5, 7 and 8 of the brief (resume reload after a CMS stop change, new tour length after a settings change,
+  the sheet before the window with no Start option, a virtual tour that leaves the booking Upcoming, the zone labels, the visitor
+  list, the prefill). The WebView was driven through its DevTools socket (`adb forward tcp:9333 localabstract:webview_devtools_remote_<pid>`
+  + Playwright `connectOverCDP`). One fix came out of it: the booking rules now load as soon as a live booking exists, so the
+  check-in window uses the property's grace period from the first screen.
