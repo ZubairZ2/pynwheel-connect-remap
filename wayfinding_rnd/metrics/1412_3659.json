@@ -18,7 +18,7 @@
       "Units"
     ],
     "warnings": [],
-    "ms": 189,
+    "ms": 230,
     "metrics": {
       "nodes": 106,
       "edges": 111,
@@ -32,7 +32,7 @@
       "coverageClearance": 12,
       "joined": 54,
       "stops": 56,
-      "linksThroughOtherBuilding": 3,
+      "linksThroughOtherBuilding": 2,
       "doorBridges": 0,
       "routes": [
         {
@@ -91,16 +91,16 @@
       "throughBuilding": 0,
       "indoorRuns": 0,
       "ms": {
-        "classify": 3,
+        "classify": 4,
         "paint": 7,
-        "open": 219,
-        "thin": 587,
-        "prune": 26,
-        "graph": 46,
+        "open": 176,
+        "thin": 444,
+        "prune": 29,
+        "graph": 53,
         "stops": 0
       }
     },
-    "ms": 877,
+    "ms": 1002,
     "metrics": {
       "nodes": 290,
       "edges": 319,

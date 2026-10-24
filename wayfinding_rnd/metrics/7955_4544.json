@@ -25,7 +25,7 @@
         "message": "The building footprints were read from the shared background map."
       }
     ],
-    "ms": 95,
+    "ms": 100,
     "metrics": {
       "nodes": 371,
       "edges": 421,
@@ -105,16 +105,16 @@
       "throughBuilding": 0,
       "indoorRuns": 0,
       "ms": {
-        "classify": 10,
+        "classify": 12,
         "paint": 10,
-        "open": 220,
-        "thin": 279,
-        "prune": 20,
-        "graph": 57,
+        "open": 236,
+        "thin": 300,
+        "prune": 32,
+        "graph": 70,
         "stops": 0
       }
     },
-    "ms": 706,
+    "ms": 745,
     "metrics": {
       "nodes": 730,
       "edges": 882,

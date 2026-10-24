@@ -37,7 +37,7 @@ import type { BBox, Matrix2D, Point } from './types';
  * coordinates in (root user units), coordinates out.
  */
 
-export type StreetRole = 'walk' | 'walkStroke' | 'block' | 'ignore';
+export type StreetRole = 'walk' | 'walkStroke' | 'block' | 'ignore' | 'entrance';
 export type StreetRoleSource = 'layer' | 'colour';
 
 export interface StreetShape {
@@ -70,7 +70,9 @@ const BUILDING = new Set([
   'neighborhood', 'neighbourhood', 'external buildings', 'external building', 'buildings', 'building', 'office outline', 'office outlines'
 ]);
 /** Decoration and annotation, and the rooms layers (units and amenities are stops, and sit inside the buildings anyway). */
-const IGNORE = new Set(['trees', 'tree', 'bg 1', 'north', 'legend', 'compass', 'st', 'stairs', 'stair', 'elevator', 'elevators', 'amenities', 'amenity', 'units', 'unit', 'arrow', 'arrows']);
+const IGNORE = new Set(['trees', 'tree', 'bg 1', 'north', 'legend', 'compass', 'elevator', 'elevators', 'amenities', 'amenity', 'units', 'unit', 'arrow', 'arrows']);
+/** Where people enter a building: the stair / entrance / door icons a Beans export draws on the outline (`ST`, 26 on Cypress Terra). Not geometry for the mask — entrances for the links. */
+const ENTRANCE = new Set(['st', 'stairs', 'stair', 'stairs elevators', 'entrance', 'entrances', 'entry', 'entries', 'door', 'doors', 'exit', 'exits', 'access', 'access points']);
 const IGNORE_RX = /(name|number|label|sign|legend|north|compass|arrow|icon|text|logo|title)/;
 /** A street named for itself (`W YAMATO ROAD`, `Serenity Loop`). */
 const STREET_SUFFIX = /( road| rd| street| st| ave| avenue| blvd| boulevard| way| drive| dr| lane| ln| loop| court| ct| pkwy| parkway| hwy| highway)$/;
@@ -81,6 +83,7 @@ const isBuildingName = (base: string) =>
 const layerRole = (id: string): { role: StreetRole; building: boolean } | null => {
   const base = baseId(id);
   if (!base) return null;
+  if (ENTRANCE.has(base)) return { role: 'entrance', building: false };
   if (IGNORE.has(base) || IGNORE_RX.test(normalizeId(id))) return { role: 'ignore', building: false };
   if (WALK.has(base) || STREET_SUFFIX.test(base)) return { role: 'walk', building: false };
   if (BLOCK.has(base) || isBuildingName(base) || base.startsWith('pool')) return { role: 'block', building: isBuildingName(base) };
@@ -200,6 +203,8 @@ export interface ClassifiedFile {
   colourBlock: number;
   walkLayers: string[];
   blockLayers: string[];
+  /** The centre of each entrance icon (one per direct child of an entrance layer), in the target frame. */
+  entrances: Point[];
 }
 
 interface LayerContext {
@@ -216,6 +221,24 @@ export const classifyStreetShapes = (root: SvgEl, options: { flattenStep?: numbe
   const counts = { namedWalk: 0, namedBlock: 0, colourWalk: 0, colourBlock: 0 };
   const walkLayers = new Set<string>();
   const blockLayers = new Set<string>();
+  const entrances: Point[] = [];
+  /** An entrance icon is a small group of shapes (a filled glyph and its outline): one entrance per direct child of the layer. */
+  const entranceOf = (icon: SvgEl) => {
+    let sx = 0;
+    let sy = 0;
+    let n = 0;
+    const collect = (el: SvgEl) => {
+      if (isHidden(el) || SKIP_TAGS.has(el.tag)) return;
+      if (SHAPE_TAGS.has(el.tag)) {
+        const shape = shapeOf(el, root, step, frame, null);
+        shape?.rings.forEach((ring) => ring.forEach((p) => { sx += p.x; sy += p.y; n += 1; }));
+        return;
+      }
+      el.children.forEach(collect);
+    };
+    collect(icon);
+    if (n) entrances.push({ x: sx / n, y: sy / n });
+  };
   const visit = (el: SvgEl, above: LayerContext | null) => {
     if (isHidden(el) || SKIP_TAGS.has(el.tag)) return;
     let here = above;
@@ -224,6 +247,10 @@ export const classifyStreetShapes = (root: SvgEl, options: { flattenStep?: numbe
       // The nearest named layer wins; an unknown inner name (`Vector 12`, `Group 137`) keeps the outer layer's role.
       const r = layerRole(id);
       if (r) here = { ...r, layer: id };
+      if (r?.role === 'entrance') {
+        el.children.forEach(entranceOf);
+        return;
+      }
     }
     if (SHAPE_TAGS.has(el.tag)) {
       const shape = shapeOf(el, root, step, frame, here);
@@ -245,7 +272,7 @@ export const classifyStreetShapes = (root: SvgEl, options: { flattenStep?: numbe
     for (const child of el.children) visit(child, here);
   };
   visit(root, null);
-  return { shapes, viewBox: parseViewBoxOf(root), ...counts, walkLayers: [...walkLayers], blockLayers: [...blockLayers] };
+  return { shapes, viewBox: parseViewBoxOf(root), ...counts, walkLayers: [...walkLayers], blockLayers: [...blockLayers], entrances };
 };
 
 const shapeOf = (el: SvgEl, root: SvgEl, step: number, frame: Matrix2D, layer: LayerContext | null): StreetShape | null => {
@@ -278,7 +305,7 @@ const shapeOf = (el: SvgEl, root: SvgEl, step: number, frame: Matrix2D, layer: L
   const as = (role: StreetRole, source: StreetRoleSource, building = false): StreetShape => ({ ...base, role, source, building });
 
   if (layer) {
-    if (layer.role === 'ignore') return as('ignore', 'layer');
+    if (layer.role === 'ignore' || layer.role === 'entrance') return as('ignore', 'layer');
     if (layer.role === 'walk') {
       if (hasFill) {
         // White paint inside a road layer — lane dashes, a stall, a crossing — is paint, not pavement.
@@ -402,6 +429,8 @@ export interface StreetsResult {
   colourBlock: number;
   /** The building footprints, as rings in root units (a synthesised link must not cut them). */
   buildingRings: Point[][];
+  /** Entrance icon centres (stairs, doors) in root units: where a stop inside a building joins the street. */
+  entrances: Point[];
   grid: StreetGrid;
   /** The walkable mask after cleaning (1 = pavement), for diagnostics and tests. */
   walk: Uint8Array;
@@ -430,6 +459,7 @@ export const inferStreets = (floor: SvgEl, background: SvgEl | null, options: In
   let colourWalk = own.colourWalk;
   let colourBlock = own.colourBlock;
   let namedWalk = own.namedWalk;
+  const entrances = [...own.entrances];
   if (background) {
     // The background is drawn under the floor file, mapped into the floor's frame through the two viewBoxes.
     const bg = classifyStreetShapes(background, { flattenStep: options.flattenStep, frame: viewBoxMap(parseViewBoxOf(background), own.viewBox) });
@@ -439,6 +469,7 @@ export const inferStreets = (floor: SvgEl, background: SvgEl | null, options: In
     colourWalk += bg.colourWalk;
     colourBlock += bg.colourBlock;
     namedWalk += bg.namedWalk;
+    entrances.push(...bg.entrances);
   }
   lap('classify');
 
@@ -466,7 +497,7 @@ export const inferStreets = (floor: SvgEl, background: SvgEl | null, options: In
   }
   lap('paint');
   const mode: StreetsMode = namedWalk && !colourWalk ? 'layers' : namedWalk ? 'mixed' : 'colour';
-  const base = { mode, walkLayers: [...layers.walk], blockLayers: [...layers.block], colourWalk, colourBlock, buildingRings, grid, buildings, viewBox };
+  const base = { mode, walkLayers: [...layers.walk], blockLayers: [...layers.block], colourWalk, colourBlock, buildingRings, entrances, grid, buildings, viewBox };
   let walkCells = 0;
   for (let i = 0; i < walk.length; i += 1) walkCells += walk[i];
   if (!walkCells) return { ...base, runs: [], reason: 'no-walkable', walk, clearance: new Float32Array(0), stats: { walkCells: 0, skeletonCells: 0, thinPasses: 0, spursPruned: 0, piecesDropped: 0, ms } };

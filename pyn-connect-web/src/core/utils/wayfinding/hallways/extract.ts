@@ -58,6 +58,8 @@ export interface DetectedHallways {
   streetsMode: StreetsMode | null;
   /** Connected pieces of the network. */
   components: number;
+  /** How many stops joined the network through an entrance icon of their building rather than by the nearest point. */
+  entranceLinks: number;
 }
 
 export interface DetectOptions {
@@ -285,7 +287,8 @@ export const detectHallways = (root: SvgEl, stops: StopCandidate[], options: Det
     fromBackground,
     namedLayers: structure.namedLayers,
     streetsMode: streets?.mode ?? null,
-    components: 0
+    components: 0,
+    entranceLinks: 0
   });
 
   const footprints = rootShapes(structure.footprintShapes, flattenStep);
@@ -346,7 +349,12 @@ export const detectHallways = (root: SvgEl, stops: StopCandidate[], options: Det
   const obstacles = [...flattenShapes(structure.obstacleShapes, flattenStep), ...(inside ? [...rooms, ...footprints].flatMap((shape) => shape.rings) : []), ...buildingRings];
   const confidenceOf = inside?.confidenceOf ?? (() => null);
 
-  const snapped = snapStopsToGraph(stops, graph, { maxSnapDistance: computeMaxSnapDistance(diagonal), snapTolerance });
+  // A stop inside a building joins the street where its building is entered — the nearest entrance icon on that
+  // building's outline — not at the nearest point of the network through a wall. Stops with no entrance keep the
+  // nearest-edge rule.
+  const { candidates, viaEntrance } = aimAtEntrances(stops, buildingRings, streets?.entrances ?? [], diagonal);
+  const snappedRaw = snapStopsToGraph(candidates, graph, { maxSnapDistance: computeMaxSnapDistance(diagonal), snapTolerance });
+  const snapped = { graph: snappedRaw.graph, connections: snappedRaw.connections.map((connection, i) => ({ ...connection, anchor: stops[i].anchor })) };
   graph = snapped.graph;
 
   const obstacleIndex = obstacles.length ? buildObstacleIndex(obstacles) : NO_OBSTACLES;
@@ -403,6 +411,78 @@ export const detectHallways = (root: SvgEl, stops: StopCandidate[], options: Det
     fromBackground,
     namedLayers: structure.namedLayers,
     streetsMode: streets?.mode ?? null,
-    components: countComponents(graph)
+    components: countComponents(graph),
+    entranceLinks: snapped.connections.filter((connection, i) => viaEntrance[i] && connection.connectedNodeId).length
   };
+};
+
+const insideRing = (p: Point, ring: Point[]): boolean => {
+  let hit = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const a = ring[i];
+    const b = ring[j];
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) hit = !hit;
+  }
+  return hit;
+};
+
+const distanceToRing = (p: Point, ring: Point[]): number => {
+  let best = Infinity;
+  for (let i = 0; i + 1 < ring.length; i += 1) {
+    const a = ring[i];
+    const b = ring[i + 1];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len2 = dx * dx + dy * dy || 1e-9;
+    const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2));
+    best = Math.min(best, Math.hypot(a.x + t * dx - p.x, a.y + t * dy - p.y));
+  }
+  return best;
+};
+
+/**
+ * For each stop: the point to snap to the network. A stop inside a building whose outline carries entrance icons
+ * (within `reach` of the outline) is aimed at the entrance nearest to it; any other stop keeps its own anchor.
+ */
+export const aimAtEntrances = (stops: StopCandidate[], buildingRings: Point[][], entrances: Point[], diagonal: number): { candidates: StopCandidate[]; viaEntrance: boolean[] } => {
+  if (!entrances.length || !buildingRings.length) return { candidates: stops, viaEntrance: stops.map(() => false) };
+  const reach = Math.max(8, diagonal * 0.008);
+  // the entrances of each building: icons inside its outline or within reach of it
+  const byBuilding = buildingRings.map((ring) => entrances.filter((e) => insideRing(e, ring) || distanceToRing(e, ring) <= reach));
+  const viaEntrance: boolean[] = [];
+  const areaOf = (ring: Point[]) => {
+    let a = 0;
+    for (let i = 0; i < ring.length - 1; i += 1) a += ring[i].x * ring[i + 1].y - ring[i + 1].x * ring[i].y;
+    return Math.abs(a) / 2;
+  };
+  const candidates = stops.map((stop) => {
+    // the stop's building is the largest outline around it (a unit polygon inside the outline is a room, not the building)
+    let building = -1;
+    let largest = 0;
+    buildingRings.forEach((ring, i) => {
+      if (!insideRing(stop.anchor, ring)) return;
+      const area = areaOf(ring);
+      if (area > largest) {
+        largest = area;
+        building = i;
+      }
+    });
+    const doors = building >= 0 ? byBuilding[building] : [];
+    if (!doors.length) {
+      viaEntrance.push(false);
+      return stop;
+    }
+    let door = doors[0];
+    let best = Infinity;
+    for (const e of doors) {
+      const d = Math.hypot(e.x - stop.anchor.x, e.y - stop.anchor.y);
+      if (d < best) {
+        best = d;
+        door = e;
+      }
+    }
+    viaEntrance.push(true);
+    return { ...stop, anchor: door };
+  });
+  return { candidates, viaEntrance };
 };

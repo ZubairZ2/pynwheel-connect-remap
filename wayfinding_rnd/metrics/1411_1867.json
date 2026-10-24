@@ -24,7 +24,7 @@
         "message": "No Walkway / Corridor / Hallway layer; using the generically named \"Path\" layer."
       }
     ],
-    "ms": 818,
+    "ms": 1043,
     "metrics": {
       "nodes": 177,
       "edges": 205,
@@ -111,16 +111,16 @@
       "throughBuilding": 0,
       "indoorRuns": 0,
       "ms": {
-        "classify": 12,
-        "paint": 7,
-        "open": 190,
-        "thin": 555,
-        "prune": 17,
-        "graph": 50,
+        "classify": 13,
+        "paint": 14,
+        "open": 175,
+        "thin": 582,
+        "prune": 29,
+        "graph": 55,
         "stops": 0
       }
     },
-    "ms": 1635,
+    "ms": 2111,
     "metrics": {
       "nodes": 315,
       "edges": 390,

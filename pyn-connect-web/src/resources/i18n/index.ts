@@ -1429,7 +1429,7 @@ const ENGLISH: Record<string, string> = {
   [CORE_STRINGS.mapPlotting.wayfinding.units.svg]: 'SVG units',
   [CORE_STRINGS.mapPlotting.wayfinding.units.raster]: 'px',
   [CORE_STRINGS.mapPlotting.wayfinding.units.mixed]: 'units',
-  [CORE_STRINGS.mapPlotting.wayfinding.pending.text]: '{points} inferred from the floor’s footprints and rooms need review. Drag a point to confirm it, or confirm the confident ones.',
+  [CORE_STRINGS.mapPlotting.wayfinding.pending.text]: '{points} are proposals and need review — corridors inferred inside the buildings, pavement recognised by its colour, or links through a building. Drag a point to confirm it, or confirm the confident ones.',
   [CORE_STRINGS.mapPlotting.wayfinding.pending.confirm]: 'Confirm {count} above {threshold}',
   [CORE_STRINGS.mapPlotting.wayfinding.layer.detected]: 'Paths on the floor SVG — detected from it on this page.',
   [CORE_STRINGS.mapPlotting.wayfinding.layer.svgOnly]: 'Paths on the floor SVG — this floorplate has no floor image.',

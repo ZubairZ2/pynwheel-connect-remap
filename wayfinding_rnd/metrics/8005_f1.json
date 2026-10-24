@@ -34,7 +34,7 @@
         "message": "The building footprints were read from the shared background map."
       }
     ],
-    "ms": 241,
+    "ms": 234,
     "metrics": {
       "nodes": 208,
       "edges": 302,
@@ -120,38 +120,38 @@
       "throughBuilding": 0,
       "indoorRuns": 0,
       "ms": {
-        "classify": 10,
+        "classify": 11,
         "paint": 10,
-        "open": 201,
-        "thin": 406,
-        "prune": 50,
+        "open": 204,
+        "thin": 410,
+        "prune": 62,
         "graph": 59,
         "stops": 0
       }
     },
-    "ms": 805,
+    "ms": 836,
     "metrics": {
-      "nodes": 247,
-      "edges": 349,
-      "lengthUnits": 16444,
+      "nodes": 210,
+      "edges": 280,
+      "lengthUnits": 15091,
       "components": 1,
-      "edgeSamplesInWalk": 96,
+      "edgeSamplesInWalk": 97,
       "edgeSamplesInBuilding": 0,
-      "edgeSamplesOffWalk": 4,
-      "centring": 0.75,
-      "coverage12": 62,
-      "coverageClearance": 69,
+      "edgeSamplesOffWalk": 3,
+      "centring": 0.76,
+      "coverage12": 60,
+      "coverageClearance": 67,
       "joined": 113,
       "stops": 113,
-      "linksThroughOtherBuilding": 22,
+      "linksThroughOtherBuilding": 31,
       "doorBridges": 0,
       "routes": [
         {
           "from": "8112",
           "to": "10102",
           "ok": true,
-          "length": 1021,
-          "points": 46,
+          "length": 1007,
+          "points": 34,
           "inWalk": 98,
           "inBuilding": 0
         },
@@ -159,17 +159,17 @@
           "from": "7101",
           "to": "9102",
           "ok": true,
-          "length": 368,
+          "length": 417,
           "points": 10,
-          "inWalk": 92,
+          "inWalk": 89,
           "inBuilding": 0
         },
         {
           "from": "5112",
           "to": "10108",
           "ok": true,
-          "length": 964,
-          "points": 29,
+          "length": 969,
+          "points": 22,
           "inWalk": 97,
           "inBuilding": 0
         }

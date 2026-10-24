@@ -189,12 +189,15 @@ const evaluate = (graph: WayfindingGraph, connections: StopConnection[], ref: St
     }
     return false;
   };
+  // buildings proper: rings not drawn inside a larger ring (a unit polygon inside its building's outline is a room)
+  const areaOf = (ring: Point[]) => { let a = 0; for (let i = 0; i < ring.length - 1; i += 1) a += ring[i].x * ring[i + 1].y - ring[i + 1].x * ring[i].y; return Math.abs(a) / 2; };
+  const outer = ref.buildingRings.filter((r) => !ref.buildingRings.some((o) => o !== r && areaOf(o) > areaOf(r) && inside(r[0], o)));
   let linksThrough = 0;
   for (const c of connections) {
     if (!c.connectedNodeId) continue;
     const n = nodeById.get(c.connectedNodeId)!;
-    const own = ref.buildingRings.filter((r) => inside(c.anchor, r));
-    if (ref.buildingRings.some((r) => !own.includes(r) && crosses(c.anchor, n, r))) linksThrough += 1;
+    const own = outer.filter((r) => inside(c.anchor, r));
+    if (outer.some((r) => !own.includes(r) && crosses(c.anchor, n, r))) linksThrough += 1;
   }
   const doorBridges = graph.edges.filter((e) => e.id.startsWith('door_')).length;
   // routes

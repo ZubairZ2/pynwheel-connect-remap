@@ -15,5 +15,10 @@ Report: `BEANS_HALLWAY_DETECTION_RND_2026-10-25.md` · evidence: `wayfinding_rnd
 ## Measured on the real exports (shipped → this branch)
 Cypress Terra floor 1: on pavement 56 % → 96 %, inside buildings 43 % → 0 %, coverage 16 % → 62 %, pieces 2 → 1, sampled routes 0/3 → 3/3; live save + reload + backend route (624 px, 98 % on pavement) verified on the clone. Jennifer floors 1–3: nothing → 65 points / 68 paths (proposals). John Demo, Washington Way, Sterling College Station: same direction.
 
-## Not done (see report §11)
-Save still goes as `origin: 'edit'`; units link straight to the nearest point rather than through the building's entrance icons; public roads outside the fence are included; the Tour App client's rendering of an SVG-space route was read, not driven.
+## Completion pass (report §13)
+- A detected level is saved as a detect run (`origin: 'detect'`, request id, scope, detector source): the CMS records it in `hallway_detection_runs`, merges onto existing points, honours tombstones; verified live (one run row, 210 nodes / 280 edges).
+- Stops inside a building join the street through the building's entrance icons (`ST`, doors, exits): 113 of 113 on Cypress Terra; synthetic and real-export tests.
+- New Rails test for SVG-framed levels; review-panel wording.
+
+## Still open (report §11)
+Public roads outside the fence are included; the Tour App client's rendering of an SVG-space route was read, not driven; raster-in-SVG backgrounds (Savannah place) have nothing to read.

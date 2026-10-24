@@ -30,6 +30,9 @@ export interface GraphSavePayload {
   base_version: number;
   space: PlanSpace;
   origin: 'edit' | 'detect';
+  /** A detect run: what the page detected over (`plate` / `building` / `all`) and from what (`vector` / `inferred`). */
+  scope?: 'plate' | 'building' | 'all';
+  detector_source?: 'vector' | 'inferred' | 'autoconnect';
   nodes: { add: { temp_key: string; x: number; y: number; source?: string; review?: string; confidence?: number | null }[]; move: { id: number; x: number; y: number }[]; confirm: number[]; delete: number[] };
   edges: { add: { a: GraphRef; b: GraphRef; kind: string; points: [number, number][] }[]; reshape: never[]; delete: { a: number; b: number }[] };
   links: { set: { attachable_type: string; attachable_id: GraphRef; hallway: GraphRef; anchor?: { x: number; y: number } }[]; detach: { attachable_type: string; attachable_id: GraphRef }[]; clear: never[] };
@@ -289,6 +292,15 @@ const buildFor = (map: PropertyMap, levels: MapLevel[], level: MapLevel, state: 
   state.tempStops
     .filter((stop) => stop.levelId === level.id && (stop.space ?? 'raster') === space)
     .forEach((stop) => payload.stops.create.push(stopCreate(stop, offset)));
+
+  // A level the page only detected on (nothing moved, deleted or confirmed since) is saved as a detect run: the CMS
+  // records it (idempotent on `request_id`, undoable), merges proposals onto existing points and honours tombstones.
+  const onlyAdds = !payload.nodes.move.length && !payload.nodes.confirm.length && !payload.nodes.delete.length && !payload.edges.delete.length && !payload.links.detach.length && !payload.stops.update.length && !payload.stops.delete.length;
+  if (state.wfEdited[level.id] === 'detected' && onlyAdds && payload.nodes.add.length) {
+    payload.origin = 'detect';
+    payload.scope = state.wfDetect?.scope ?? 'plate';
+    payload.detector_source = payload.nodes.add.every((node) => node.source === 'inferred') ? 'inferred' : 'vector';
+  }
 
   return payload;
 };

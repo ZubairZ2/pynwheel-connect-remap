@@ -10,7 +10,9 @@ import { autoConnectNodes, computeAutoConnectDistance, connectNodeToNearest } fr
 import { bridgeComponentGaps, computeGapBridgeDistance } from '~/core/utils/wayfinding/hallways/bridgeGaps';
 import { buildWayfindingGraph, computeSnapTolerance } from '~/core/utils/wayfinding/hallways/buildGraph';
 import { addNode, confirmNodesAboveConfidence, deleteEdge, deleteNode, moveNode, rerouteEdge, type GraphState, type HallwayNode } from '~/core/utils/wayfinding/hallways/editing';
-import { detectHallways, dropShortComponents, obstaclesOf, type DetectedHallways } from '~/core/utils/wayfinding/hallways/extract';
+import { aimAtEntrances, detectHallways, dropShortComponents, obstaclesOf, type DetectedHallways } from '~/core/utils/wayfinding/hallways/extract';
+import { buildGraphSavePayloads } from '~/core/utils/wayfinding/graphDiff';
+import type { PropertyMap } from '~/core/models/data/propertyMap.data';
 import { polylineLength } from '~/core/utils/wayfinding/hallways/geometry';
 import { buildObstacleIndex } from '~/core/utils/wayfinding/hallways/obstacles';
 import { detectSvgStructure, normalizeId, viewBoxMap } from '~/core/utils/wayfinding/hallways/svg/detectLayers';
@@ -325,6 +327,41 @@ test.describe('Hallway engine', () => {
     const plate = { level, space: 'raster', points: [h1, h2, h3], paths: [path(h1, h2), path(h2, h3)] } as unknown as WfPlate;
     const base: LocalMapState = initialLocalMapState(level.id, null, 'raster');
 
+    test('a level the page only detected on is saved as a detect run; a level edited since is saved as an edit', () => {
+      const map = {
+        inventory: { property: { id: 1 }, units: [], amenities: [] },
+        graph: { hallways: [], hallwayEdges: [], hallwayAttachments: [], doors: [], elevators: [], buildingStartingPoints: [], tourStops: [], wayfindingStops: [], levelsMeta: [] }
+      } as unknown as PropertyMap;
+      const empty = { level, space: 'svg', points: [], paths: [] } as unknown as WfPlate;
+      const detected = {
+        ok: true,
+        nodes: [
+          { id: 's1', x: 50, y: 80, source: 'vector', review: 'confirmed', confidence: null },
+          { id: 's2', x: 150, y: 80, source: 'vector', review: 'confirmed', confidence: null }
+        ],
+        edges: [{ id: 'e1', fromNodeId: 's1', toNodeId: 's2', pathPoints: [{ x: 50, y: 80 }, { x: 150, y: 80 }], length: 100, kind: 'traced' }],
+        connections: []
+      } as unknown as DetectedHallways;
+      const state: LocalMapState = { ...initialLocalMapState(level.id, null, 'svg'), wfDetect: { scope: 'building', rows: [], running: false, stopped: false, snapshot: snapshotOf(base), undoDepth: 0 } };
+      const afterDetect: LocalMapState = { ...state, ...detectionPatch(state, level, empty, detected, (n) => `Point ${n}`) };
+      const [payload] = buildGraphSavePayloads(map, [level], level, afterDetect, 3, 'req-1');
+      expect(payload.space).toBe('svg');
+      expect(payload.origin).toBe('detect');
+      expect(payload.request_id).toBe('req-1-svg');
+      expect(payload.scope).toBe('building');
+      expect(payload.detector_source).toBe('vector');
+      expect(payload.nodes.add).toHaveLength(2);
+      expect(payload.edges.add).toHaveLength(1);
+      // Drag one of the detected points afterwards: no longer a pure detection.
+      const moved = afterDetect.tempNodes[0];
+      const edited: LocalMapState = { ...afterDetect, tempNodes: afterDetect.tempNodes.map((n) => (n === moved ? { ...n, x: n.x + 5 } : n)), wfEdited: { ...afterDetect.wfEdited, [level.id]: 'edited' } };
+      expect(buildGraphSavePayloads(map, [level], level, edited, 3, 'req-2')[0].origin).toBe('edit');
+      // Colour-recognised pavement is a proposal run.
+      const colour = { ...detected, nodes: detected.nodes.map((n) => ({ ...n, source: 'inferred', review: 'pending', confidence: 0.6 })) } as DetectedHallways;
+      const proposals: LocalMapState = { ...state, ...detectionPatch(state, level, empty, colour, (n) => `Point ${n}`) };
+      expect(buildGraphSavePayloads(map, [level], level, proposals, 3, 'req-3')[0].detector_source).toBe('inferred');
+    });
+
     test('a stored point deleted by the POC is hidden on the page; the rejoin is a page path; nothing about the stored map changes', () => {
       const before = plateGraph(plate);
       const after = deleteNode(before, 'h:2');
@@ -523,6 +560,25 @@ test.describe('Hallway engine', () => {
       expect(legacy.nodes.some((n) => n.source === 'vector' && Math.abs(n.y - 170) < 1e-6)).toBe(true);
     });
 
+    test('a stop inside a building joins the street through the building’s entrance icon, not through its wall', () => {
+      const floor = svg(BEANS_FLOOR);
+      const background = svg(BEANS_BACKGROUND());
+      // The ST icon sits on Building_1's bottom edge at x ≈ 105; unit 101 (x 70) would otherwise drop straight down to x 70.
+      const result = detectHallways(floor, BEANS_STOPS, { background });
+      expect(result.ok).toBe(true);
+      expect(result.entranceLinks).toBe(4);
+      const joinedAt = (groupId: string) => result.nodes.find((n) => n.id === result.connections.find((c) => c.groupId === groupId)!.connectedNodeId)!;
+      expect(Math.abs(joinedAt('unit:101').x - 105)).toBeLessThan(2.5);
+      expect(Math.abs(joinedAt('unit:102').x - 105)).toBeLessThan(2.5);
+      // The connection keeps the stop's own anchor (where its marker is), only the joining point moves to the door.
+      expect(result.connections.find((c) => c.groupId === 'unit:101')!.anchor).toEqual({ x: 70, y: 75 });
+      // Without entrance icons the nearest point rule stands.
+      const aimed = aimAtEntrances(BEANS_STOPS, [[{ x: 40, y: 60 }, { x: 160, y: 60 }, { x: 160, y: 150 }, { x: 40, y: 150 }, { x: 40, y: 60 }]], [], 447);
+      expect(aimed.viaEntrance).toEqual([false, false, false, false]);
+      const bare = detectHallways(floor, BEANS_STOPS, { background: svg(BEANS_BACKGROUND().replace('id="ST"', 'id="Decoration"')) });
+      expect(bare.entranceLinks).toBe(0);
+    });
+
     test('a background drawn in another viewBox is mapped into the floor’s frame', () => {
       const floor = svg(BEANS_FLOOR);
       const background = svg(BEANS_BACKGROUND('0 0 800 400', 2), '0 0 800 400');
@@ -628,6 +684,8 @@ test.describe('Hallway engine', () => {
         expect(result.nodes.filter((n) => n.source === 'inferred' && !result.connections.some((c) => c.connectedNodeId === n.id)).length).toBe(0);
         expect(result.components).toBe(1);
         expect(connected(result)).toBe(1);
+        // Every unit sits in a building with two stair icons: all join through an entrance.
+        expect(result.entranceLinks).toBe(113);
         // Repeatable: the same file gives the same network.
         const again = detectHallways(floor, stops, { background });
         expect(again.nodes.map((n) => [n.id, Math.round(n.x * 10), Math.round(n.y * 10)])).toEqual(result.nodes.map((n) => [n.id, Math.round(n.x * 10), Math.round(n.y * 10)]));
