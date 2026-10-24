@@ -38,6 +38,8 @@ class Api::TourApp::V1::PropertiesTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal true, body['tour_enabled']
     assert_equal TourApi::Engine.version(@community), body['graph_version']
+    assert_equal TourApi::ConfigVersion.for(@community), body['config_version']
+    assert_nil body['published_at']
     assert_equal %w[A B], body['buildings']
     assert_equal @start, body['tour']['start_node']
     assert_equal 1, body['tour']['starting_floor']
@@ -46,7 +48,7 @@ class Api::TourApp::V1::PropertiesTest < ActionDispatch::IntegrationTest
     assert_equal 3, body['floorplates_count']
     assert_equal Unit.where(community_id: @community.id, visible: true).count, body['units_count']
     assert_equal 2, body['amenities_count']
-    assert_equal %w[id name address city state zip company tour_enabled is_sitemap success auto_wayfinding floorplates_count units_count amenities_count buildings tour graph_version phone email capabilities], body.keys
+    assert_equal %w[id name address city state zip company tour_enabled is_sitemap success auto_wayfinding floorplates_count units_count amenities_count buildings tour graph_version config_version published_at phone email capabilities], body.keys
     assert_equal({ 'visits' => true, 'visitor_auth' => true }, body['capabilities'], 'the app reads what the server offers (October 23, 2026)')
   end
 

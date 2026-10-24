@@ -253,7 +253,8 @@ module Scheduling
         end
       end
       tour_changes[:only_scheduled_tour] = truthy?(attrs[:only_scheduled_tour]) if attrs.key?(:only_scheduled_tour)
-      if attrs.key?(:grace_period)
+      # A blank grace period (the field cleared while scheduled-only is off) leaves the stored value alone (October 25, 2026).
+      if attrs.key?(:grace_period) && attrs[:grace_period].to_s.strip != ''
         value = integer(attrs[:grace_period])
         value && GRACE.cover?(value) ? tour_changes[:grace_period] = value : errors << { path: 'grace_period', code: 'invalid', message: 'the grace period is 10 to 60 minutes' }
       end

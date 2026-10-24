@@ -1079,6 +1079,8 @@ Rails.application.routes.draw do
     put    'locks/disconnect', to: 'locks#disconnect'
     get    'stops', to: 'stops#index'
     put    'stops/:id', to: 'stops#update'
+    get    'tour/publication', to: 'tour#publication'
+    post   'tour/publish', to: 'tour#publish'
     get    'visitors', to: 'visitors#index'
     get    'visitors/export', to: 'visitors#export'
     post   'visitors/bookings', to: 'visitors#create'

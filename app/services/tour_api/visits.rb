@@ -41,6 +41,10 @@ module TourApi
         tour_time: booking.tour_time&.strftime('%H:%M'),
         tour_time_label: booking.tour_time&.strftime('%-I:%M %p'),
         end_time: booking.end_time&.strftime('%H:%M'),
+        # The booked instant in the property's zone (October 25, 2026): `tour_date` + `tour_time` are its wall clock, which
+        # the app must never read in the phone's zone.
+        booked_at: Visitors::Status.booked_at(booking, ::Visits::Rules.zone(community))&.iso8601,
+        time_zone: ::Visits::Rules.zone(community).tzinfo.name,
         tour_type: booking.tour_type,
         property_tour_type: booking.property_tour_type,
         created_by: booking.created_by,

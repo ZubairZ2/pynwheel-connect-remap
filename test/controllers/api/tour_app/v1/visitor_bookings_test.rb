@@ -48,6 +48,12 @@ class Api::TourApp::V1::VisitorBookingsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal [booking.id], body['bookings'].map { |b| b['id'] }
     assert_equal 'upcoming', body['bookings'][0]['status']
+    # October 25, 2026: the booked instant in the property's zone, so the app never reads the wall clock in the phone's zone.
+    row = body['bookings'][0]
+    assert_equal 'America/Chicago', row['time_zone']
+    expected = "#{booking.tour_date} #{booking.tour_time.strftime('%H:%M')}".in_time_zone('America/Chicago')
+    assert_equal expected.iso8601, row['booked_at']
+    assert_equal booking.tour_time.strftime('%H:%M'), Time.iso8601(row['booked_at']).in_time_zone('America/Chicago').strftime('%H:%M')
     get "#{@base}/bookings", headers: auth(@bob_token)
     assert_equal [], body['bookings']
     get "#{@base}/bookings", headers: auth(@staff)

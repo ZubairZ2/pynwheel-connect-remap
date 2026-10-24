@@ -27,6 +27,17 @@ module Api
           def payload
             @payload ||= TourApi::Engine.payload(built, request.base_url)
           end
+
+          # A strong ETag on a versioned answer: 304 when the client's `If-None-Match` names it (October 25, 2026).
+          def not_modified?(version)
+            etag = %("#{version}")
+            response.headers['ETag'] = etag
+            response.headers['Cache-Control'] = 'private, max-age=0, must-revalidate'
+            return false unless etag_matches?(etag)
+
+            head :not_modified
+            true
+          end
       end
     end
   end

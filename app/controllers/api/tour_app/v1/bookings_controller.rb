@@ -32,6 +32,8 @@ module Api
         end
 
         def settings
+          return if not_modified?(TourApi::ConfigVersion.for(@property))
+
           render json: TourApi::Booking.settings(@property, base_url: request.base_url)
         end
 
