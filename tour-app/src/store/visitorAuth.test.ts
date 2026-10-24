@@ -75,9 +75,9 @@ describe('signing in with a phone', () => {
   });
 
   it('the CMS\'s booking becomes the Home card unless a live one is already there', () => {
-    const tour = tourFromBooking({ id: 501, propertyId: 1618, propertyName: 'Hazel', status: 'upcoming', date: '2026-10-24', time: '18:00', timeLabel: '6:00 PM', endTime: '18:45', tourType: 'self_tour', createdBy: 'tour_app' }, NOW);
+    const tour = tourFromBooking({ id: 501, propertyId: 1618, propertyName: 'Hazel', status: 'upcoming', date: '2026-10-24', time: '18:00', timeLabel: '6:00 PM', endTime: '18:45', bookedAt: null, timeZone: null, tourType: 'self_tour', createdBy: 'tour_app' }, NOW);
     expect(tour).toMatchObject({ id: '501', status: 'scheduled', date: '2026-10-24', time: '6:00 PM', source: 'app', bookingId: 501, tourType: 'self_tour' });
-    expect(tourFromBooking({ ...{ id: 1, propertyId: 1, propertyName: null, date: null, time: null, timeLabel: null, endTime: null, tourType: null, createdBy: 'widget' }, status: 'completed' }, NOW)).toMatchObject({ status: 'past', source: 'website' });
+    expect(tourFromBooking({ ...{ id: 1, propertyId: 1, propertyName: null, date: null, time: null, timeLabel: null, endTime: null, bookedAt: null, timeZone: null, tourType: null, createdBy: 'widget' }, status: 'completed' }, NOW)).toMatchObject({ status: 'past', source: 'website' });
     const adopted = reducer(initialAppState(), { type: 'adoptBooking', tour });
     expect(adopted.scheduledTour).toEqual(tour);
     const other = { ...tour, id: '9', bookingId: 9 };

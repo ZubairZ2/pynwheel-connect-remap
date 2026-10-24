@@ -335,7 +335,8 @@ const Shell = () => {
         actions.openSchedule();
         break;
       case 'book':
-        goTab('search');
+        // October 25, 2026: a finished or cancelled booking books again at this property; the property list looped back to the same card.
+        actions.openSchedule();
         break;
       default:
         actions.openCheckin();

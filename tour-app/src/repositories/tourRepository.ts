@@ -163,6 +163,9 @@ export interface BookingResult {
   /** "6:00 PM" */
   timeLabel: string;
   endTime: string | null;
+  /** The booked instant (ISO 8601 with the property's offset) and the property's IANA zone (October 25, 2026). */
+  bookedAt: string | null;
+  timeZone: string | null;
   tourType: string;
   /** True when the CMS moved the visitor's existing upcoming booking instead of adding one. */
   rescheduled: boolean;
@@ -184,6 +187,9 @@ export interface VisitorBooking {
   /** "6:00 PM" */
   timeLabel: string | null;
   endTime: string | null;
+  /** The booked instant (ISO 8601 with the property's offset) and the property's IANA zone (October 25, 2026). */
+  bookedAt: string | null;
+  timeZone: string | null;
   tourType: string | null;
   /** `tour_app` when booked in this app. */
   createdBy: string | null;
@@ -294,6 +300,8 @@ export interface TourRepository {
   verifyVisitorCode(request: VisitorVerifyRequest): Promise<{ session: Session; bookings: VisitorBooking[] }>;
   /** The visitor's bookings the last sign-in or restore answered (memory only). */
   visitorBookings(): VisitorBooking[];
+  /** Reads the visitor's bookings again (`GET /visitor/me`), for the resume check (October 25, 2026); a staff session answers the memory copy. */
+  refreshVisitorBookings(): Promise<VisitorBooking[]>;
   /** `PUT /visitor/me`: the visitor's own name, email and SMS preference (the phone cannot change here). */
   updateVisitorProfile(patch: VisitorProfilePatch): Promise<Session>;
 
@@ -304,6 +312,8 @@ export interface TourRepository {
 
   // --- the selected property
   getProperty(): Promise<PropertyBundle>;
+  /** The property's current versions (one small request), so the app can tell whether the bundle it holds is still the published one (October 25, 2026). */
+  getPropertyVersion(): Promise<{ graphVersion: string | null; configVersion: string | null; publishedAt: string | null }>;
   getContent(): Promise<AppContent>;
   /** Every place a route can start or end at, for the From / To picker. */
   getPlaces(): Promise<Place[]>;

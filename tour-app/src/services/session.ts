@@ -29,6 +29,9 @@ export interface SessionUser {
   role: string;
   /** The visitor's phone (E.164 as the server keeps it); staff have none here. */
   phone?: string | null;
+  /** The visitor's names as the CMS stores them (October 25, 2026): the Schedule form prefills from these, not from a split of `name`. */
+  firstName?: string;
+  lastName?: string;
 }
 
 export interface SessionVisitor {

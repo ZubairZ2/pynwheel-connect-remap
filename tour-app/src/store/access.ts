@@ -1,8 +1,7 @@
 import type { AccessMethod, LeaseTerm, StopLock, Unit } from '~/models';
 import type { AvailabilitySlot, BookingSettings } from '~/repositories/tourRepository';
 import type { BookingState } from './appState';
-import { dayKey } from './appState';
-import { slotTime } from './scenarios';
+import { dayKeyInZone, zonedSlotMs } from './zone';
 import type { TourStopView } from './selectors';
 
 /**
@@ -149,8 +148,8 @@ export const moveInEstimate = (unit: Unit, rent: number | null): MoveInEstimate 
 export const rentForTerm = (terms: LeaseTerm[] | undefined, months: number): number | null => terms?.find((t) => t.months === months)?.rent ?? null;
 
 /** The agent-guided slots of a day for Book a Live Tour: the type open and not full, and not already passed today. */
-export const guidedSlots = (booking: Pick<BookingState, 'days'>, date: string, now = Date.now()): AvailabilitySlot[] =>
-  (booking.days[date]?.slots ?? []).filter((s) => s.types.includes('guided_tour') && !s.full.includes('guided_tour') && (date !== dayKey(0, new Date(now)) || slotTime(date, s.label) > now));
+export const guidedSlots = (booking: Pick<BookingState, 'days'> & Partial<Pick<BookingState, 'settings'>>, date: string, now = Date.now()): AvailabilitySlot[] =>
+  (booking.days[date]?.slots ?? []).filter((s) => s.types.includes('guided_tour') && !s.full.includes('guided_tour') && (date !== dayKeyInZone(now, booking.settings?.timeZone) || zonedSlotMs(date, s.label, booking.settings?.timeZone) > now));
 
 /** Whether the property offers agent-guided tours at all (the CMS tour types). */
 export const guidedToursOffered = (settings: BookingSettings | null): boolean => !settings || settings.tourTypes.guidedTour;

@@ -13,7 +13,8 @@ const key = (offset: number) => {
 
 const settings = (patch: Partial<BookingSettings['app']> = {}, guided = true, length = 45): BookingSettings => ({
   propertyId: 1618,
-  timeZone: 'America/Vancouver',
+  // The slot fixtures are local wall clocks, so the property's zone is this machine's (the zone rules have their own tests in zone.test.ts).
+  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   bookable: true,
   schedulerEnabled: true,
   gateError: null,

@@ -95,4 +95,7 @@ export interface Property {
   /** The leasing office's phone and email as the CMS holds them; null when it holds none. */
   phone?: string | null;
   email?: string | null;
+  /** The configuration version the bundle was read under and when the tour was last published (October 25, 2026); null for demo data. */
+  configVersion?: string | null;
+  publishedAt?: string | null;
 }

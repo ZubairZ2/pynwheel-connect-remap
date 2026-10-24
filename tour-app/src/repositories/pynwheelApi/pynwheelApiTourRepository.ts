@@ -218,6 +218,15 @@ export class PynwheelApiTourRepository implements TourRepository {
     return this.bookings;
   }
 
+  async refreshVisitorBookings(): Promise<VisitorBooking[]> {
+    await this.ensureSession();
+    if (this.session?.kind !== 'visitor') return this.bookings;
+    const { data } = await this.client.get<ApiVisitorMeResponse>(`${API}/visitor/me`);
+    this.bookings = parseVisitorBookings(data.bookings);
+    this.capabilities = this.rememberCapabilities(data);
+    return this.bookings;
+  }
+
   async updateVisitorProfile(patch: VisitorProfilePatch): Promise<Session> {
     await this.ensureSession();
     if (!this.session || this.session.kind !== 'visitor') throw new ApiError('visitor_only', 'Sign in with your phone to edit this profile.', 403);
@@ -284,6 +293,13 @@ export class PynwheelApiTourRepository implements TourRepository {
   }
 
   // ----------------------------------------------------------- the property
+  async getPropertyVersion(): Promise<{ graphVersion: string | null; configVersion: string | null; publishedAt: string | null }> {
+    const id = await this.requireProperty();
+    const { data } = await this.client.get<ApiPropertyDetail>(`${API}/properties/${id}`);
+    const text = (value: unknown): string | null => (typeof value === 'string' && value ? value : null);
+    return { graphVersion: text(data.graph_version), configVersion: text(data.config_version), publishedAt: text(data.published_at) };
+  }
+
   async getProperty(): Promise<PropertyBundle> {
     const id = await this.requireProperty();
     if (this.bundleInflight?.propertyId === id) return this.bundleInflight.promise;
@@ -490,7 +506,7 @@ export class PynwheelApiTourRepository implements TourRepository {
 }
 
 /** The principal summary of a visitor session: the app's `user` for a prospect. */
-const visitorUser = (visitor: SessionVisitor) => ({ id: visitor.id, name: visitor.name, email: visitor.email, role: 'visitor', phone: visitor.phone });
+const visitorUser = (visitor: SessionVisitor) => ({ id: visitor.id, name: visitor.name, firstName: visitor.firstName, lastName: visitor.lastName, email: visitor.email, role: 'visitor', phone: visitor.phone });
 
 const deviceTimeZone = (): string => {
   try {

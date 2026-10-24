@@ -14,7 +14,8 @@ import { uuid, visitQueue, type VisitEventKind } from '~/services/visitQueue';
 import { useApp } from './appContext';
 import type { AppState, ScheduleDraft, ScheduledTour, TourPass, VerifyStep, VisitState } from './appState';
 import { dayKey } from './appState';
-import { fmtTime, slotTime } from './scenarios';
+import { fmtTime } from './scenarios';
+import { dayKeyInZone, zonedSlotMs } from './zone';
 import { bestMatchUnit, currentStop, markOf, selectedNodes, tourStopViews } from './selectors';
 import { profileOf, slotByLabel, slotsForDay } from './views';
 import { accessEndsAtMs, syncVisit, visitRecording } from './visitSync';
@@ -40,7 +41,9 @@ export const tourFromBooking = (b: VisitorBooking, now: number): ScheduledTour =
   tourType: b.tourType ?? undefined,
   endTime: b.endTime,
   bookingId: b.id,
-  visitorId: null
+  visitorId: null,
+  bookedAtMs: b.bookedAt ? Date.parse(b.bookedAt) || null : null,
+  timeZone: b.timeZone
 });
 
 /**
@@ -159,7 +162,10 @@ export const useAppActions = () => {
         state.checkedIn && !state.virtualTour
           ? { id: `p-${now}`, property: bundle.property.name, date: 'Today', window: `${fmtTime(state.passStart ?? now - 20 * 60000)} – ${fmtTime(now)}`, doors: `${doors} ${doors === 1 ? 'door' : 'doors'} unlocked` }
           : null;
-      dispatch({ type: 'finishTour', entry, pass });
+      // The booking is completed only when the CMS linked this visit to it (checked in inside its window): a virtual
+      // tour, a demo tour or a phone-only tour never completes a booking the CMS still holds as upcoming (October 25, 2026).
+      const bookingCompleted = !state.virtualTour && visitRecording(state.visit) && state.visit.bookingId != null && state.scheduledTour?.bookingId === state.visit.bookingId;
+      dispatch({ type: 'finishTour', entry, pass, bookingCompleted });
       void success();
       // The CMS's visit ends once the outbox is through; the sync retries later if the phone is offline now.
       if (visitRecording(state.visit)) {
@@ -182,7 +188,9 @@ export const useAppActions = () => {
       if (state.booking.status === 'loading' && state.booking.propertyId === propertyId && !force) return;
       dispatch({ type: 'bookingLoading', propertyId });
       try {
-        const [settings, window] = await Promise.all([repository.getBookingSettings(), repository.getAvailability(dayKey(0), 7)]);
+        // The rules first: the week of slots starts on the property's today, which is not always the phone's (October 25, 2026).
+        const settings = await repository.getBookingSettings();
+        const window = await repository.getAvailability(dayKeyInZone(Date.now(), settings.timeZone), 7);
         dispatch({ type: 'bookingLoaded', propertyId, settings, days: window.days, now: Date.now() });
       } catch (error) {
         dispatch({ type: 'bookingFailed', message: messageOf(error, 'The booking calendar could not be loaded.') });
@@ -190,11 +198,11 @@ export const useAppActions = () => {
     };
 
     const openSchedule = (patch: Partial<ScheduleDraft> = {}) => {
-      const booked = state.scheduledTour && state.scheduledTour.status !== 'past' && state.scheduledTour.status !== 'cancelled' ? state.scheduledTour : null;
+      const booked = state.scheduledTour && state.scheduledTour.status !== 'past' && state.scheduledTour.status !== 'cancelled' && state.scheduledTour.status !== 'missed' ? state.scheduledTour : null;
       const profile = profileOf(state, content);
       const base: ScheduleDraft = booked
         ? { ...state.schedule, date: booked.date, time: booked.time, length: booked.length, unit: booked.unit, party: booked.party }
-        : { ...state.schedule, date: state.schedule.date < dayKey(0) ? dayKey(0) : state.schedule.date };
+        : { ...state.schedule, date: state.schedule.date < dayKeyInZone(Date.now(), state.booking.settings?.timeZone) ? dayKeyInZone(Date.now(), state.booking.settings?.timeZone) : state.schedule.date };
       const draft = { ...base, ...patch };
       if (!draft.first) draft.first = profile.first;
       if (!draft.last) draft.last = profile.last;
@@ -331,7 +339,7 @@ export const useAppActions = () => {
         try {
           const { session: signedIn, bookings } = await repository.verifyVisitorCode({ phone: phone.trim(), code, countryCode: 'US', ...(withProfile ? { firstName: first, lastName: last, email } : {}), propertyId: state.propertyId });
           dispatch({ type: 'setCapabilities', capabilities: signedIn.capabilities });
-          dispatch({ type: 'loginSucceeded', user: { name: signedIn.user.name, email: signedIn.user.email, phone: signedIn.visitor?.phone ?? phone, kind: 'visitor' }, propertyId: signedIn.propertyId });
+          dispatch({ type: 'loginSucceeded', user: { name: signedIn.user.name, firstName: signedIn.user.firstName, lastName: signedIn.user.lastName, email: signedIn.user.email, phone: signedIn.visitor?.phone ?? phone, kind: 'visitor' }, propertyId: signedIn.propertyId });
           adoptBookings(bookings, signedIn.propertyId);
           void success();
         } catch (error) {
@@ -360,7 +368,7 @@ export const useAppActions = () => {
         }
         try {
           const updated = await repository.updateVisitorProfile({ firstName: profile.first, lastName: profile.last, email: profile.email });
-          dispatch({ type: 'setUser', user: { name: updated.user.name, email: updated.user.email, phone: updated.visitor?.phone ?? state.user?.phone, kind: 'visitor' } });
+          dispatch({ type: 'setUser', user: { name: updated.user.name, firstName: updated.user.firstName, lastName: updated.user.lastName, email: updated.user.email, phone: updated.visitor?.phone ?? state.user?.phone, kind: 'visitor' } });
           toast('Profile updated.');
         } catch (error) {
           toast(messageOf(error, 'Your profile could not be updated. Please try again.'));
@@ -430,7 +438,7 @@ export const useAppActions = () => {
           toast('Pick an available time');
           return;
         }
-        if (slotTime(d.date, d.time) < Date.now()) {
+        if (zonedSlotMs(d.date, d.time, state.booking.settings?.timeZone) < Date.now()) {
           toast('That time has passed. Pick a later slot.');
           return;
         }
@@ -464,7 +472,11 @@ export const useAppActions = () => {
           if (d.phone && d.phone !== profile.phone) dispatch({ type: 'setProfileField', field: 'phone', value: d.phone });
           dispatch({
             type: 'confirmSchedule',
-            tour: { id: result.id, status: 'scheduled', date: result.date || d.date, time: result.timeLabel || d.time, length: d.length, unit: d.unit, party: d.party, source: 'app', createdAt: Date.now(), tourType: result.tourType, endTime: result.endTime, bookingId: bookingIdOf(result.id), visitorId: result.visitorId }
+            tour: {
+              id: result.id, status: 'scheduled', date: result.date || d.date, time: result.timeLabel || d.time, length: d.length, unit: d.unit, party: d.party, source: 'app', createdAt: Date.now(),
+              tourType: result.tourType, endTime: result.endTime, bookingId: bookingIdOf(result.id), visitorId: result.visitorId,
+              bookedAtMs: result.bookedAt ? Date.parse(result.bookedAt) || null : null, timeZone: result.timeZone ?? state.booking.settings?.timeZone ?? null
+            }
           });
           toast(result.rescheduled ? 'Your earlier booking was moved to this time.' : 'Self-tour booked. The property has your details.');
           void success();

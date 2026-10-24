@@ -4,8 +4,7 @@ import { DEMO, LEASE_TERM_FACTORS } from '~/content/demoFixtures';
 import type { Unit } from '~/models';
 import type { AppContent, AvailabilitySlot, BookingSettings, PropertyBundle } from '~/repositories/tourRepository';
 import type { AppState, BookingState } from './appState';
-import { dayKey } from './appState';
-import { slotTime } from './scenarios';
+import { dayKeyInZone, zonedSlotMs } from './zone';
 import { availabilityText } from './access';
 import { markOf, unitLabel, unitPrice, type TourStopView } from './selectors';
 
@@ -22,8 +21,8 @@ import { markOf, unitLabel, unitPrice, type TourStopView } from './selectors';
  * passed today. "After hours" are the self-only times when the property also
  * offers agent-guided tours and the app option labels them so.
  */
-export const bookableSlots = (booking: Pick<BookingState, 'days'>, date: string, now = Date.now()): AvailabilitySlot[] =>
-  (booking.days[date]?.slots ?? []).filter((s) => s.types.includes('self_tour') && !s.full.includes('self_tour') && (date !== dayKey(0, new Date(now)) || slotTime(date, s.label) > now));
+export const bookableSlots = (booking: Pick<BookingState, 'days'> & Partial<Pick<BookingState, 'settings'>>, date: string, now = Date.now()): AvailabilitySlot[] =>
+  (booking.days[date]?.slots ?? []).filter((s) => s.types.includes('self_tour') && !s.full.includes('self_tour') && (date !== dayKeyInZone(now, booking.settings?.timeZone) || zonedSlotMs(date, s.label, booking.settings?.timeZone) > now));
 
 export const isAfterHours = (settings: BookingSettings | null, slot: AvailabilitySlot): boolean => !!settings && settings.app.afterHoursLabel && settings.tourTypes.guidedTour && !slot.types.includes('guided_tour');
 
@@ -104,8 +103,8 @@ export const profileOf = (state: Pick<AppState, 'user' | 'profileEdits' | 'guest
   const name = (state.user?.name ?? content?.visitor.name ?? '').replace(/ \*$/, '').trim();
   const [first = '', ...rest] = name.split(/\s+/);
   const p = {
-    first: state.profileEdits.first ?? first,
-    last: state.profileEdits.last ?? rest.join(' '),
+    first: state.profileEdits.first ?? (state.user?.firstName || first),
+    last: state.profileEdits.last ?? (state.user?.lastName || rest.join(' ')),
     email: state.profileEdits.email ?? state.user?.email ?? content?.visitor.email.replace(/ \*$/, '') ?? '',
     phone: state.profileEdits.phone ?? state.user?.phone ?? (content?.visitor.phone ?? '')
   };
