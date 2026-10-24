@@ -98,6 +98,8 @@ JSON branches on the elevator, gallery and bank actions with the CSRF strategy o
 
 The CMS has no publish action or state; the Touch and Tour apps read the live tables. The header therefore shows the real stop count and how many are hidden ("20 stops · 2 hidden from the tour") instead of "4 stops staged · not yet published", and Publish opens a dialog that says publishing from Connect is not available. See `gaps_map_plotting_feature.md` M2 and `gaps_properties_detail_feature.md` G16.
 
+**October 25, 2026 (closed as decided by the owner):** Save stays live for every reader; "Publish to Tour App" now records the current configuration version on the tour (`POST connect/tour/publish`, `tours.tour_published_*`, audit `tour_published`), is idempotent, is blocked while edits are unsaved, and the Tour App revalidates `config_version` on resume. There is still no draft/published split (option B was declined).
+
 ---
 
 ## Gap: T6. Route Preview as the CMS would route
@@ -167,7 +169,7 @@ M15; then Tour Setup reads the stops model.
 - **T2 The AI Concierge talking point** — unchanged (still a gap).
 - **T3 Distance and dwell time per stop** — resolved for dwell time (`tour_stops.duration_minutes`, saved with the tour and used by the Tour App's `tour_route.json`); distance in feet still needs `scale_ft_per_px` (M17).
 - **T4 Elevator banks** — partly: deleting a bank persists (`elevators.delete` in the tour save; the record's stops in every tour go with it), adding one is the map's Additional Stop (elevator / stairs / ramp); gating and photos stay on the legacy page.
-- **T5 Publish** — unchanged (= M2).
+- **T5 Publish** — closed October 25, 2026 (publication record + app revalidation; no draft split).
 - **T6 Route Preview as the CMS would route** — resolved on the backend: `shortest_path.json?from=&to=` is the CMS's own answer, from the same service the Tour App's `route.json` uses; the Tour Setup preview still runs `stopRoute.ts` locally until it is pointed at it.
 - **T7** — unchanged (resolved September 27).
 - **T8 Additional Stops on Tour Setup** — partly: the stops persist on the map (`wayfinding_stops`); Tour Setup lists them once they become tour stops (phase 2 of the report).
@@ -182,7 +184,7 @@ M15; then Tour Setup reads the stops model.
 - **T3 (distance per stop)**: still unavailable — no column; the dwell time is saved with the route.
 - **Locks, Visitors, Scheduling, Booking form and link**: real, through the Connect endpoints (PYN_CONNECT_PROGRESS.md §42).
 - **CRM & Sync**: read-only by decision (out of scope for this phase).
-- **Publishing from Connect**: still a dialog that says it is unavailable.
+- **Publishing from Connect**: records the published version and tells the app to refresh (October 25, 2026).
 
 ## October 18, 2026 update — final platform QA pass
 

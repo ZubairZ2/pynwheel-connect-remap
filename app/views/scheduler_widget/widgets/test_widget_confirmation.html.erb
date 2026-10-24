@@ -42,12 +42,12 @@
     <%= stylesheet_link_tag 'jquery.mCustomScrollbar.css' %>
     <%= stylesheet_link_tag 'slick.css' %>
     <%= stylesheet_link_tag 'bootstrap-datetimepicker' %>
-    <%= stylesheet_link_tag 'application', media: 'all' %>
+    <%= stylesheet_link_tag 'application', media: 'all' %><%= stylesheet_link_tag 'scheduler_widget_connect', media: 'all' if @connect_theme %>
     <%= favicon_link_tag 'logo-small.png' %>
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
   </head>
-  <body>
+  <body<%= " class=\"pw-connect\"".html_safe if @connect_theme %>>
     <div class="divLoading hidden"></div>
     <div id="scheduleMyTourSuccess" tabindex="-1" aria-hidden="true">
         <section>

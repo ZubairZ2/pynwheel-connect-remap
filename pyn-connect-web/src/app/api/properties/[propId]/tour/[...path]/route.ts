@@ -19,7 +19,7 @@ export const dynamic = 'force-dynamic';
  */
 type Verb = 'POST' | 'PUT' | 'DELETE';
 
-const READS: RegExp[] = [/^locks$/, /^locks\/auto_match$/, /^stops$/, /^visitors$/, /^visitors\/\d+$/, /^booking$/, /^booking\/availability$/];
+const READS: RegExp[] = [/^locks$/, /^locks\/auto_match$/, /^stops$/, /^visitors$/, /^visitors\/\d+$/, /^booking$/, /^booking\/availability$/, /^tour\/publication$/];
 const CSV: RegExp[] = [/^visitors\/export$/];
 const WRITES: [RegExp, Verb, (path: string) => string][] = [
   [/^locks\/(map|unmap|manual_code|enabled|account|instructions|instruction_image|disconnect)$/, 'PUT', (path) => path],
@@ -34,7 +34,8 @@ const WRITES: [RegExp, Verb, (path: string) => string][] = [
   [/^visitors\/\d+\/reset_stops$/, 'POST', (path) => path],
   [/^visitors\/\d+\/(id_review|reset_verification|remove_pii)$/, 'PUT', (path) => path],
   [/^visitors\/\d+\/delete$/, 'DELETE', (path) => path.replace(/\/delete$/, '')],
-  [/^booking\/(rules|hours|form|closures)$/, 'PUT', (path) => path]
+  [/^booking\/(rules|hours|form|closures)$/, 'PUT', (path) => path],
+  [/^tour\/publish$/, 'POST', (path) => path]
 ];
 
 const metaOf = (meta: Record<string, unknown> | undefined): TourModuleMeta => {

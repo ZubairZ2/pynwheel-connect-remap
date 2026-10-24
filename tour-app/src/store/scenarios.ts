@@ -1,5 +1,32 @@
 import { ACCESS_MINUTES, DEMO, DEMO_EXTRA_TOURS, type DemoExtraTour } from '~/content/demoFixtures';
-import type { AppState, DemoLocationScenario, DemoTourScenario, ScheduledTour } from './appState';
+import type { AppState, BookingState, DemoLocationScenario, DemoTourScenario, ScheduledTour } from './appState';
+import { dayKeyInZone, dayOffsetInZone, zonedSlotMs } from './zone';
+
+/** The CMS's default grace period (`tours.grace_period`), used until the property's booking rules are read. */
+export const DEFAULT_GRACE_MINUTES = 10;
+
+/** The property's grace period in minutes, from the booking rules when they are loaded. */
+export const graceMinutesOf = (state: { booking?: Pick<BookingState, 'settings'> | null }): number => {
+  const grace = state.booking?.settings?.gracePeriod;
+  return typeof grace === 'number' && grace > 0 ? grace : DEFAULT_GRACE_MINUTES;
+};
+
+/**
+ * When the tour starts, as an instant: the CMS's `booked_at` when the
+ * booking carries one, else the wall clock read in the property's zone, else
+ * (demo / local tours) the phone's zone (October 25, 2026).
+ */
+export const tourStartMs = (tour: Pick<ScheduledTour, 'date' | 'time' | 'bookedAtMs' | 'timeZone'>): number => tour.bookedAtMs ?? zonedSlotMs(tour.date, tour.time, tour.timeZone ?? null);
+
+/** "Today, Oct 25" / "Tomorrow, Oct 25" / "Sat, Oct 24", relative to now in the property's zone (the phone's when the tour has none). */
+export const tourDayLabel = (tour: Pick<ScheduledTour, 'date' | 'time' | 'bookedAtMs' | 'timeZone'>, now: number): string => {
+  const tz = tour.timeZone ?? null;
+  const key = tour.bookedAtMs != null && tz ? dayKeyInZone(tour.bookedAtMs, tz) : tour.date;
+  const off = tz ? dayOffsetInZone(key, tz, now) : dayOffset(key, new Date(now));
+  const d = parseDay(key);
+  const prefix = off === 0 ? 'Today' : off === 1 ? 'Tomorrow' : off === -1 ? 'Yesterday' : DOW[d.getDay()];
+  return `${prefix}, ${MON[d.getMonth()]} ${d.getDate()}`;
+};
 
 /**
  * The design's Tweaks, resolved against the app's own state. Each function
@@ -97,20 +124,29 @@ export const fmtCountdown = (ms: number): string => {
   return `Starts in ${h > 0 ? `${h}:${pad2(mm)}` : mm}:${pad2(ss)}`;
 };
 
-/** The scenario the app's own state is in (the `auto` case). */
-export const autoTourScenario = (tour: ScheduledTour | null, now: number): TourScenario => {
+/**
+ * The scenario the app's own state is in (the `auto` case). Since October 25,
+ * 2026 the window is the CMS's: a booking can be started from `grace`
+ * minutes before its time to `grace` minutes after (`Visits::Start` refuses
+ * a check-in outside it), it is *upcoming* before that window whatever the
+ * calendar says, and *missed* once the window has passed without a check-in
+ * (the CMS's own "missed"). The instant is the property's, never the phone's.
+ */
+export const autoTourScenario = (tour: ScheduledTour | null, now: number, graceMinutes = DEFAULT_GRACE_MINUTES): TourScenario => {
   if (!tour) return 'none';
   if (tour.status === 'cancelled') return 'cancelled';
   if (tour.status === 'past') return 'past';
   if (tour.status === 'pending') return 'pending';
   if (tour.status === 'checkedIn') return 'today';
-  const start = slotTime(tour.date, tour.time);
-  // A scheduled tour whose window (its length + the access window) has passed was missed.
-  if (now > start + (tour.length + ACCESS_MINUTES) * 60000) return 'missed';
-  return dayOffset(tour.date, new Date(now)) === 0 ? 'today' : 'upcoming';
+  const start = tourStartMs(tour);
+  const grace = graceMinutes * 60000;
+  if (now > start + grace) return 'missed';
+  return now >= start - grace ? 'today' : 'upcoming';
 };
 
-export const resolveTourScenario = (state: Pick<AppState, 'demo' | 'scheduledTour'>, now: number): TourScenario => (state.demo.tour === 'auto' ? autoTourScenario(state.scheduledTour, now) : state.demo.tour);
+type ScenarioState = Pick<AppState, 'demo' | 'scheduledTour'> & { booking?: Pick<BookingState, 'settings'> | null };
+
+export const resolveTourScenario = (state: ScenarioState, now: number): TourScenario => (state.demo.tour === 'auto' ? autoTourScenario(state.scheduledTour, now, graceMinutesOf(state)) : state.demo.tour);
 
 /** A tour to describe when the scenario is forced but nothing was booked (the design's `WEB_TOUR`: booked on the property website). */
 export const placeholderTour = (scenario: TourScenario, now: number, unit: string): ScheduledTour => {
@@ -134,21 +170,21 @@ export const placeholderTour = (scenario: TourScenario, now: number, unit: strin
   }
 };
 
-export const effectiveTour = (state: Pick<AppState, 'demo' | 'scheduledTour' | 'schedule'>, now: number): { scenario: TourScenario; tour: ScheduledTour | null } => {
+export const effectiveTour = (state: ScenarioState & Pick<AppState, 'schedule'>, now: number): { scenario: TourScenario; tour: ScheduledTour | null } => {
   const scenario = resolveTourScenario(state, now);
   if (scenario === 'none') return { scenario, tour: null };
   const own = state.scheduledTour;
-  const ownScenario = autoTourScenario(own, now);
+  const ownScenario = autoTourScenario(own, now, graceMinutesOf(state));
   const tour = own && (state.demo.tour === 'auto' || ownScenario === scenario) ? own : placeholderTour(scenario, now, own?.unit || state.schedule.unit || 'No preference');
   return { scenario, tour };
 };
 
-export const tourCard = (state: Pick<AppState, 'demo' | 'scheduledTour' | 'schedule' | 'checkedIn' | 'accessEndsAt'>, now: number, where: string): TourCardModel | null => {
+export const tourCard = (state: ScenarioState & Pick<AppState, 'schedule' | 'checkedIn' | 'accessEndsAt'>, now: number, where: string): TourCardModel | null => {
   const { scenario, tour } = effectiveTour(state, now);
   if (!tour || scenario === 'none') return null;
-  const start = slotTime(tour.date, tour.time);
+  const start = tourStartMs(tour);
   const len = ` · ${tour.length} min`;
-  const date = dayLabel(tour.date, new Date(now));
+  const date = tourDayLabel(tour, now);
   const time = `${tour.time}${len}`;
   const checkedIn = state.checkedIn && (scenario === 'today' || tour.status === 'checkedIn');
   switch (scenario) {
@@ -347,7 +383,7 @@ export interface CheckinModel {
 export const isVerified = (state: Pick<AppState, 'verified' | 'demo'>): boolean => state.verified || state.demo.idVerified;
 
 export const checkinModel = (
-  state: Pick<AppState, 'demo' | 'location' | 'checkedIn' | 'guestProperty' | 'verified' | 'accessEndsAt' | 'scheduledTour' | 'schedule' | 'checkinFor'>,
+  state: ScenarioState & Pick<AppState, 'location' | 'checkedIn' | 'guestProperty' | 'verified' | 'accessEndsAt' | 'schedule' | 'checkinFor'>,
   now: number,
   propertyName: string,
   address: string,
@@ -366,7 +402,8 @@ export const checkinModel = (
   else scenario = !verified ? 'verify' : 'ready';
   const time = extra?.time ?? tour?.time ?? '6:00 PM';
   const name = extra?.name ?? propertyName;
-  const dayText = extra?.dayLabel ?? (tour ? dayLabel(tour.date, new Date(now)) : '');
+  const dayText = extra?.dayLabel ?? (tour ? tourDayLabel(tour, now) : '');
+  const grace = graceMinutesOf(state);
   const opt = (title: string, sub: string, action: CheckinOption['action'], danger = false): CheckinOption => ({ title, sub, action, danger });
   switch (scenario) {
     case 'ready':
@@ -450,9 +487,9 @@ export const checkinModel = (
       };
     case 'early':
     default: {
-      const title = dayText && extra ? `Your tour is on ${dayText}` : tour && dayOffset(tour.date, new Date(now)) > 0 ? `Your tour is on ${dayText}` : "You're a little early";
+      const title = dayText && extra ? `Your tour is on ${dayText}` : tour && !dayText.startsWith('Today') ? `Your tour is on ${dayText}` : "You're a little early";
       const wait = loc.atProperty || !!extra;
-      const sub = `Check-in opens 15 minutes before your ${time} tour${wait ? '. You can explore virtually while you wait.' : ` at ${name}.`}`;
+      const sub = `Check-in opens ${grace} minutes before your ${time} tour${wait ? '. You can explore virtually while you wait.' : ` at ${name}.`}`;
       const cancel = opt('Cancel tour', 'Free up your time slot', 'cancel', true);
       return wait
         ? { scenario: 'early', tone: 'warn', title, sub, primary: 'Remind Me When Check-in Opens', primaryAction: 'calendar', steps: null, warn: null, options: [opt('Reschedule to an earlier time', extra ? 'See earlier open slots' : 'See open slots today', 'reschedule'), cancel] }

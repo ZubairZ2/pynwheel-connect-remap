@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_10_23_100002) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_25_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -2526,6 +2526,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_23_100002) do
     t.boolean "skip_tour_editing", default: false
     t.json "copy_sort_hash", default: "{}", null: false
     t.integer "tour_setup_version", default: 0, null: false
+    t.datetime "tour_published_at", precision: nil
+    t.integer "tour_published_by_id"
+    t.string "tour_published_version"
     t.index ["community_id"], name: "index_tours_on_community_id"
     t.index ["tour_user_id"], name: "index_tours_on_tour_user_id"
   end

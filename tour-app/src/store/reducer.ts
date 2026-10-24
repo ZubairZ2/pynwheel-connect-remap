@@ -1,11 +1,12 @@
 import type { AccessMethod, LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
 import type { AvailabilityDay, BookingSettings } from '~/repositories/tourRepository';
-import { slotsForDay } from './views';
+import { profileOf, slotsForDay } from './views';
 import { DEMO_SCENARIOS_ENABLED } from '~/config/env';
 import { backScreenOf, topOverlay, type Overlay, type Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
 import type { Capabilities } from '~/services/session';
 import {
+  dayKey,
   initialAppState,
   initialDemoScenarios,
   initialGuided,
@@ -85,7 +86,13 @@ export type Action =
   | { type: 'jumpToStop'; node: string }
   | { type: 'arrive'; now: number }
   | { type: 'nextStop' }
-  | { type: 'finishTour'; entry: TourHistoryEntry; pass: TourPass | null }
+  | { type: 'finishTour'; entry: TourHistoryEntry; pass: TourPass | null; bookingCompleted?: boolean }
+  /** The CMS's bookings at the chosen property, read again on resume (October 25, 2026): its status wins over the phone's copy. */
+  | { type: 'syncBookings'; propertyId: number; tours: ScheduledTour[] }
+  /** The property's stops as just loaded: a persisted tour that names stops no longer on the list is pruned. */
+  | { type: 'bundleLoaded'; nodes: string[] }
+  /** The booking rules the phone holds may be stale (the property's configuration moved): read them again next time. */
+  | { type: 'bookingStale' }
   | { type: 'exitStop' }
   | { type: 'unlockDrag'; pct: number }
   | { type: 'unlockRelease'; node: string }
@@ -277,6 +284,19 @@ const toStop = (state: AppState, index: number): AppState => ({
   guided: { ...state.guided, view: segmentView(state.guided.tour, index), sim: initialSimulationState(state.guided.sim.mode) }
 });
 
+
+/**
+ * The Schedule draft with the signed-in visitor's details in any empty field
+ * and a date no earlier than today, for the paths that open the screen from
+ * the reducer (a property switch, the sign-in gate) rather than through
+ * `useAppActions.openSchedule` (October 25, 2026).
+ */
+const prefilledSchedule = (state: AppState): ScheduleDraft => {
+  const p = profileOf(state, null);
+  const s = state.schedule;
+  return { ...s, date: s.date < dayKey(0) ? dayKey(0) : s.date, first: s.first || p.first, last: s.last || p.last, phone: s.phone || p.phone, unit: s.unit || 'No preference' };
+};
+
 export const reducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
     case 'hydrate': {
@@ -367,7 +387,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
       const overlays: Overlay[] = state.propertyId != null && pending === 'book' ? ['book'] : state.propertyId != null && pending === 'upcoming' ? ['upcoming'] : state.propertyId != null && pending === 'history' ? ['history'] : [];
       // Without a property the visitor picks one first; a pending Schedule survives so `selectProperty` can open it.
       const keep = state.propertyId == null && pending === 'schedule' ? pending : null;
-      return { ...state, screen, overlays, authStep: 'email', editingProfile: false, pendingAfterAuth: keep, guestGateWhy: null, scheduleDone: false };
+      return { ...state, screen, overlays, authStep: 'email', editingProfile: false, pendingAfterAuth: keep, guestGateWhy: null, scheduleDone: false, ...(screen === 'schedule' ? { schedule: prefilledSchedule(state) } : {}) };
     }
     case 'editProfile':
       return { ...state, editingProfile: action.on };
@@ -396,9 +416,11 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'selectProperty':
       {
       const then = action.then ?? state.pendingAfterAuth;
-      if (state.propertyId === action.propertyId) return { ...state, screen: then === 'schedule' ? 'schedule' : 'home', overlays: [], searchQuery: '', pendingAfterAuth: null };
+      // October 25, 2026: a Schedule opened straight after the switch is prefilled like `openSchedule` does.
+      const schedule = then === 'schedule' ? { schedule: prefilledSchedule(state), scheduleDone: false } : {};
+      if (state.propertyId === action.propertyId) return { ...state, ...schedule, screen: then === 'schedule' ? 'schedule' : 'home', overlays: [], searchQuery: '', pendingAfterAuth: null };
       // A new property: every tour, route and selection belonged to the old one.
-      return { ...state, ...propertyScoped(), propertyId: action.propertyId, screen: then === 'schedule' ? 'schedule' : 'home', overlays: [], searchQuery: '', pendingAfterAuth: null, exploreId: null };
+      return { ...state, ...propertyScoped(), ...schedule, propertyId: action.propertyId, screen: then === 'schedule' ? 'schedule' : 'home', overlays: [], searchQuery: '', pendingAfterAuth: null, exploreId: null };
       }
     case 'sessionExpired':
       return { ...initialAppState(), screen: 'getStarted', signedIn: false, email: state.email, capabilities: state.capabilities, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, demo: state.demo, toast: action.message };
@@ -466,7 +488,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
         journey: { ...state.journey, toured: true },
         tourHistory: [action.entry, ...state.tourHistory],
         tourPasses: action.pass ? [action.pass, ...state.tourPasses] : state.tourPasses,
-        scheduledTour: state.scheduledTour ? { ...state.scheduledTour, status: 'past' } : null,
+        scheduledTour: action.bookingCompleted && state.scheduledTour ? { ...state.scheduledTour, status: 'past' } : state.scheduledTour,
         // The summary still needs the order and what happened on the tour.
         tourOrder: state.tourOrder,
         unlocked: state.unlocked,
@@ -650,6 +672,43 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, schedule: { ...state.schedule, ...action.patch } };
     case 'confirmSchedule':
       return { ...state, scheduledTour: action.tour, scheduleDone: true, checkedIn: false, accessEndsAt: null, overlays: [], booking: { ...state.booking, saving: false, saveError: null, fetchedAt: 0 } };
+    case 'syncBookings': {
+      if (state.propertyId !== action.propertyId) return state;
+      const local = state.scheduledTour;
+      const live = !!local && local.status !== 'past' && local.status !== 'cancelled' && local.status !== 'missed';
+      if (local?.bookingId != null) {
+        const match = action.tours.find((t) => t.bookingId === local.bookingId);
+        if (match) {
+          // A tour checked in or finished on this phone keeps that state while the CMS still says upcoming (its end may not have been sent yet).
+          const status = (local.status === 'checkedIn' || local.status === 'past') && match.status === 'scheduled' ? local.status : match.status;
+          return { ...state, scheduledTour: { ...local, ...match, status, length: local.length, unit: local.unit, party: local.party, source: local.source, createdAt: local.createdAt } };
+        }
+        if (live) return { ...state, scheduledTour: { ...local, status: 'cancelled' } };
+      }
+      if (live) return state;
+      const next = action.tours.find((t) => t.status === 'scheduled') ?? null;
+      return next ? { ...state, scheduledTour: next } : state;
+    }
+    case 'bundleLoaded': {
+      const keep = new Set(action.nodes);
+      const tourOrder = state.tourOrder.filter((n) => keep.has(n));
+      const selected = Object.fromEntries(Object.entries(state.selected).filter(([n]) => keep.has(n)));
+      if (tourOrder.length === state.tourOrder.length && Object.keys(selected).length === Object.keys(state.selected).length) return state;
+      const orderChanged = tourOrder.length !== state.tourOrder.length;
+      const onTour = state.screen === 'guided' || state.screen === 'stop' || state.screen === 'tourReturn' || state.screen === 'arLive';
+      return {
+        ...state,
+        tourOrder,
+        selected,
+        stopIndex: Math.min(state.stopIndex, Math.max(0, tourOrder.length - 1)),
+        guided: orderChanged ? initialGuided() : state.guided,
+        screen: orderChanged && onTour ? 'home' : state.screen,
+        overlays: orderChanged && onTour ? [] : state.overlays,
+        toast: orderChanged ? 'The tour stops changed. Build your tour again.' : state.toast
+      };
+    }
+    case 'bookingStale':
+      return state.booking.fetchedAt === 0 ? state : { ...state, booking: { ...state.booking, fetchedAt: 0 } };
     case 'adoptBooking': {
       const live = state.scheduledTour && state.scheduledTour.status !== 'past' && state.scheduledTour.status !== 'cancelled' && state.scheduledTour.status !== 'missed';
       if (live && state.scheduledTour?.bookingId !== action.tour.bookingId) return state;

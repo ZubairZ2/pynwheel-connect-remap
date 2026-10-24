@@ -96,6 +96,14 @@ export class DummyTourRepository implements TourRepository {
     return [];
   }
 
+  async refreshVisitorBookings(): Promise<VisitorBooking[]> {
+    return [];
+  }
+
+  async getPropertyVersion(): Promise<{ graphVersion: string | null; configVersion: string | null; publishedAt: string | null }> {
+    return { graphVersion: null, configVersion: null, publishedAt: null };
+  }
+
   async updateVisitorProfile(_patch: VisitorProfilePatch): Promise<Session> {
     throw new FeatureUnavailableError('Editing a visitor profile');
   }
@@ -274,7 +282,7 @@ export class DummyTourRepository implements TourRepository {
     const m = /^(\d{2}):(\d{2})$/.exec(request.time);
     const hour = m ? Number(m[1]) : 0;
     const label = m ? `${hour % 12 === 0 ? 12 : hour % 12}:${m[2]} ${hour < 12 ? 'AM' : 'PM'}` : request.time;
-    return { id: `bk-${Date.now()}`, status: 'upcoming', date: request.date, time: request.time, timeLabel: label, endTime: null, tourType: request.tourType, rescheduled: false, visitorId: null };
+    return { id: `bk-${Date.now()}`, status: 'upcoming', date: request.date, time: request.time, timeLabel: label, endTime: null, bookedAt: null, timeZone: null, tourType: request.tourType, rescheduled: false, visitorId: null };
   }
 
   async cancelBooking(_bookingId: number): Promise<void> {

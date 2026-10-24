@@ -639,3 +639,19 @@ was read from the signed-in design session this time, tweak by tweak; the seven 
 - Tests: vitest 14 files / 103 (`store/access.test.ts`, `screens/guideAudio.test.ts`, parser cases); tsc, `vite build`, Android debug
   build clean. Headless Playwright runs (Chrome, the token injected, never a password) on Hazel, John Demo, Jennifer Demo FP, Cypress
   Terra, Oeuvre and the dummy property: see the report.
+
+## 23. The property's zone, the grace window, and revalidation on resume (October 25, 2026)
+
+- `src/store/zone.ts`: `zonedSlotMs(date, time, tz)`, `dayKeyInZone(ms, tz, offsetDays)`, `dayOffsetInZone`, `zoneOffsetMs`,
+  `parseClock` — the property's IANA zone through `Intl` (DST-safe); the phone's zone only when none is known.
+- `ScheduledTour.bookedAtMs / timeZone` from the API's `booked_at` / `time_zone`; `scenarios.tourStartMs`, `tourDayLabel`,
+  `graceMinutesOf`; `autoTourScenario(tour, now, grace)` = upcoming / today (± grace) / missed; the check-in sheet's "early" text
+  names the grace period.
+- `reducer`: `finishTour.bookingCompleted` (a virtual, demo or phone-only tour never completes a CMS booking), `syncBookings`,
+  `bundleLoaded` (prunes stale `tourOrder` / `selected`), `bookingStale`; `selectProperty(…, 'schedule')` and the sign-in gate
+  prefill the Schedule draft; `profileOf` prefers the CMS's `firstName` / `lastName`.
+- `AppProvider.revalidate` (resume, `online`, 60 s throttle): `getPropertyVersion` → reload when `config_version` moved;
+  `refreshVisitorBookings` → `syncBookings`.
+- `App.tsx`: "Book Another Tour" / "Book a New Time" open Schedule on the current property.
+- Tests: `zone.test.ts` (the owner's Vancouver/Karachi case, DST), `qaFixes.test.ts` (prefill, lifecycle, pruning),
+  `scenarios.test.ts` (the window); 145 vitest, tsc clean.

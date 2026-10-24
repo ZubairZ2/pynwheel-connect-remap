@@ -2029,7 +2029,17 @@ export const CORE_STRINGS = {
     publish: {
       title: 'tourSetup.publish.title',
       body: 'tourSetup.publish.body',
-      unavailable: 'tourSetup.publish.unavailable'
+      hint: 'tourSetup.publish.hint',
+      never: 'tourSetup.publish.never',
+      last: 'tourSetup.publish.last',
+      changed: 'tourSetup.publish.changed',
+      upToDate: 'tourSetup.publish.upToDate',
+      confirm: 'tourSetup.publish.confirm',
+      publishing: 'tourSetup.publish.publishing',
+      done: 'tourSetup.publish.done',
+      already: 'tourSetup.publish.already',
+      saveFirst: 'tourSetup.publish.saveFirst',
+      tourOff: 'tourSetup.publish.tourOff'
     },
     toast: {
       hidden: 'tourSetup.toast.hidden',
@@ -2248,6 +2258,8 @@ export const CORE_STRINGS = {
       locksTodo: 'tours.checklist.locksTodo',
       publish: 'tours.checklist.publish',
       publishTodo: 'tours.checklist.publishTodo',
+      publishDone: 'tours.checklist.publishDone',
+      publishStale: 'tours.checklist.publishStale',
       addStops: 'tours.checklist.addStops',
       openMap: 'tours.checklist.openMap',
       openElevators: 'tours.checklist.openElevators',

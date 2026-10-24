@@ -101,6 +101,23 @@ class Connect::BookingControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_equal %w[grace_period slot_interval_minutes], body['errors'].map { |e| e['path'] }.sort
     assert_equal 20, @tour.reload.grace_period
+
+    # October 25, 2026: the length of tour is 1..600 and the grace period 10..60 whatever the client sends.
+    [0, 1000, 'abc'].each do |bad|
+      put "#{base}/rules.json", as: :json, params: { length_stay_limit: bad }
+      assert_response :unprocessable_entity, "length #{bad.inspect}"
+      assert_equal ['length_stay_limit'], body['errors'].map { |e| e['path'] }
+    end
+    assert_equal 60, @setting.reload.length_stay_limit
+    put "#{base}/rules.json", as: :json, params: { grace_period: 999 }
+    assert_response :unprocessable_entity
+    assert_equal ['grace_period'], body['errors'].map { |e| e['path'] }
+    put "#{base}/rules.json", as: :json, params: { grace_period: '', length_stay_limit: 1 }
+    assert_response :success, response.body
+    assert_equal [20, 1], [@tour.reload.grace_period, @setting.reload.length_stay_limit], 'a blank grace period is left alone'
+    put "#{base}/rules.json", as: :json, params: { length_stay_limit: 600 }
+    assert_response :success, response.body
+    assert_equal 600, @setting.reload.length_stay_limit
   end
 
   test 'hours are validated and replaced per lane' do

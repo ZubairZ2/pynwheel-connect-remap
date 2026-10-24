@@ -289,7 +289,9 @@ export const parseBundle = (detail: ApiPropertyDetail, graph: ApiGraph, stops: A
     amenitiesCount: num(detail.amenities_count),
     tourEnabled: !!detail.tour_enabled,
     phone: strOrNull(detail.phone),
-    email: strOrNull(detail.email)
+    email: strOrNull(detail.email),
+    configVersion: strOrNull(detail.config_version),
+    publishedAt: strOrNull(detail.published_at)
   };
   return { property, buildings, levels, graph: wayfinding, units, amenities, stops: places, arPins: {}, floorLabels, demo: false };
 };
@@ -417,6 +419,8 @@ export const parseBookingResult = (r: ApiBookingCreateResponse): BookingResult =
     time: str(b.tour_time),
     timeLabel: str(b.tour_time_label),
     endTime: strOrNull(b.end_time),
+    bookedAt: strOrNull(b.booked_at),
+    timeZone: strOrNull(b.time_zone),
     tourType: str(b.tour_type, 'self_tour'),
     rescheduled: bool(b.rescheduled, false),
     visitorId: numOrNull(r.visitor?.id)
@@ -449,6 +453,8 @@ export const parseVisitorBooking = (b: ApiVisitorBooking): VisitorBooking => ({
   time: strOrNull(b.tour_time),
   timeLabel: strOrNull(b.tour_time_label),
   endTime: strOrNull(b.end_time),
+  bookedAt: strOrNull(b.booked_at),
+  timeZone: strOrNull(b.time_zone),
   tourType: strOrNull(b.tour_type),
   createdBy: strOrNull(b.created_by)
 });

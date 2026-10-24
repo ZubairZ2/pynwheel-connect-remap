@@ -30,6 +30,9 @@ import {
   type TourTab
 } from '~/core/utils/generator/tour/tourSetup.generator';
 import { computeStopRoute } from '~/core/utils/wayfinding/stopRoute';
+import { tourGet, tourPost } from '~/core/utils/tour/tourApi.client';
+import { writeErrorText } from '~/core/hooks/tour/useTourLocks';
+import type { TourPublication } from '~/core/models/data/tourModules.data';
 
 /**
  * All of the Tour Setup screen's state. The stored tour never changes here:
@@ -56,6 +59,21 @@ export const useTourSetup = (map: PropertyMap, initialTab: TourTab = 'overview')
   const patch = useCallback((update: (current: TourLocalState) => Partial<TourLocalState>) => {
     setState((current) => ({ ...current, ...update(current) }));
   }, []);
+
+  /* ── publish (October 25, 2026) ───────────────────────────────────── */
+
+  // When the tour was last published from Connect and whether the saved configuration moved since; read with the
+  // page and again after every save (the map changes then).
+  const propertyId = map.inventory.property.id;
+  const [publication, setPublication] = useState<TourPublication | null>(null);
+  const [publishing, setPublishing] = useState(false);
+  const loadPublication = useCallback(async () => {
+    const result = await tourGet<TourPublication>(propertyId, 'tour/publication');
+    if (result.ok) setPublication(result.data);
+  }, [propertyId]);
+  useEffect(() => {
+    void loadPublication();
+  }, [loadPublication, map]);
 
   const stops = useMemo(() => generateStopCards(map, levels, state), [map, levels, state]);
   const elevators = useMemo(() => generateElevatorCards(map, levels, state), [map, levels, state]);
@@ -455,6 +473,8 @@ export const useTourSetup = (map: PropertyMap, initialTab: TourTab = 'overview')
     unsaved,
     canSave,
     saving,
+    publication,
+    publishing,
     actions: {
       save,
       setTab: (tab: TourTab) => patch(() => ({ tab })),
@@ -483,9 +503,31 @@ export const useTourSetup = (map: PropertyMap, initialTab: TourTab = 'overview')
           toast(i18n.t(T.toast.publishNeedsStop));
           return;
         }
+        void loadPublication();
         patch(() => ({ publishOpen: true }));
       },
       closePublish: () => patch(() => ({ publishOpen: false })),
+      /** Records the saved configuration as the published one (`POST connect/tour/publish`); unsaved edits must be saved first. */
+      publish: async () => {
+        if (!canSave) {
+          toast(i18n.t(map.write.writesEnabled ? T.save.notAllowed : T.save.disabled));
+          return;
+        }
+        if (unsaved > 0) {
+          toast(i18n.t(T.publish.saveFirst));
+          return;
+        }
+        setPublishing(true);
+        const result = await tourPost<TourPublication>(propertyId, 'tour/publish');
+        if (result.ok) {
+          setPublication(result.data);
+          toast(i18n.t(result.data.alreadyPublished ? T.publish.already : T.publish.done));
+          patch(() => ({ publishOpen: false }));
+        } else {
+          toast(result.error === 'invalid' && result.message ? result.message : writeErrorText(result));
+        }
+        setPublishing(false);
+      },
       closeConfirm: () => patch(() => ({ confirm: null }))
     }
   };

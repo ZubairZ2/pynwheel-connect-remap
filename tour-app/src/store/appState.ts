@@ -164,6 +164,9 @@ export interface ScheduledTour {
   bookingId?: number | null;
   /** The CMS visitor the booking belongs to (`tour_users.id`), when the CMS answered one. */
   visitorId?: number | null;
+  /** The booked instant (ms since the epoch) and the property's zone, as the CMS answered them (October 25, 2026); null for a local / demo tour. */
+  bookedAtMs?: number | null;
+  timeZone?: string | null;
 }
 
 export interface ScheduleDraft {
@@ -256,7 +259,7 @@ export interface AppState {
   /** Whether the visitor has signed in (the session itself lives in the repository's session store). */
   signedIn: boolean;
   /** Who is signed in, for the Profile screen: a CMS Super Admin (`staff`) or a prospect who signed in with their phone (`visitor`). */
-  user: { name: string; email: string; phone?: string; kind?: 'staff' | 'visitor' } | null;
+  user: { name: string; email: string; phone?: string; kind?: 'staff' | 'visitor'; firstName?: string; lastName?: string } | null;
   /** What the server can do (visit recording, the visitor sign-in): `GET /health` on launch, refreshed by every sign-in answer. */
   capabilities: Capabilities;
   phoneAuth: PhoneAuthDraft;

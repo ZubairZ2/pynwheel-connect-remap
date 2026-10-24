@@ -2,6 +2,11 @@ class SchedulerWidget::WidgetsController < ApplicationController
 	skip_before_action :verify_authenticity_token
   skip_before_action :authenticate_user!
   after_action :allow_iframe
+  # Opt-in "Connect" look for the public scheduler pages (October 25, 2026):
+  # `?theme=connect` on the request, or SCHEDULER_WIDGET_THEME=connect in the
+  # environment. The views only add a stylesheet and a body class when it is
+  # on, so the default rendering stays byte-identical.
+  before_action :set_connect_theme, only: [:test_widget, :confirmation_instructions, :change_tour_time_widget]
   layout 'widget'
 
   def widget
@@ -180,6 +185,10 @@ class SchedulerWidget::WidgetsController < ApplicationController
   end
 
   private
+
+  def set_connect_theme
+    @connect_theme = params[:theme].to_s == 'connect' || ENV['SCHEDULER_WIDGET_THEME'].to_s == 'connect'
+  end
 
   def can_user_schedule_tour tour_type_count, community
     tour_type_count > 0 && community.self_tour && (community.scheduler_widget.nil? ? true : community.scheduler_widget) && !community.locked

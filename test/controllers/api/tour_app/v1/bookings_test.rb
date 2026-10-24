@@ -24,6 +24,19 @@ class Api::TourApp::V1::BookingsTest < ActionDispatch::IntegrationTest
     { tour_type: 'self_tour', tour_date: @monday.iso8601, tour_time: '09:30', first_name: 'Jane', last_name: 'Doe', email: 'jane@example.test', phone_number: '3035550123', country_code: 'US' }.merge(extra)
   end
 
+  test 'the settings answer 304 to their configuration version' do
+    get "#{@base}/booking/settings", headers: auth
+    assert_response :success
+    etag = response.headers['ETag']
+    assert_equal %("#{TourApi::ConfigVersion.for(@community)}"), etag
+    get "#{@base}/booking/settings", headers: auth.merge('If-None-Match' => etag)
+    assert_response :not_modified
+    @setting.update!(allow_guided_tour: true)
+    get "#{@base}/booking/settings", headers: auth.merge('If-None-Match' => etag)
+    assert_response :success
+    assert_equal true, body['tour_types']['guided_tour']
+  end
+
   test 'the settings carry the rules the Schedule screen needs and nothing CMS-only' do
     get "#{@base}/booking/settings", headers: auth
     assert_response :success
@@ -63,6 +76,8 @@ class Api::TourApp::V1::BookingsTest < ActionDispatch::IntegrationTest
     assert_equal ['Tour App', 'self_tour', 'scheduled_tour', @monday, '09:30'], [booking.created_by, booking.tour_type, booking.property_tour_type, booking.tour_date, booking.tour_time.strftime('%H:%M')]
     assert_equal '09:59', body['booking']['end_time'], 'the widget ends a slot at interval − 1 minutes'
     assert_equal 'upcoming', body['booking']['status']
+    assert_equal 'America/Chicago', body['booking']['time_zone']
+    assert_equal "#{@monday} 09:30".in_time_zone('America/Chicago').iso8601, body['booking']['booked_at']
     assert_equal '9:30 AM', body['booking']['tour_time_label']
     assert_equal false, body['booking']['rescheduled']
     assert_equal 'jane@example.test', body['visitor']['email']

@@ -4,6 +4,7 @@ import { Icon } from '~/components/Icon';
 import { Button, IconButton } from '~/components/ui';
 import { Callout, Chip, Eyebrow, Segmented } from '~/components/ui2';
 import { dayKey, type BookingState, type ScheduleDraft } from '~/store/appState';
+import { dayKeyInZone } from '~/store/zone';
 import { DOW, MON, dayLabel, parseDay } from '~/store/scenarios';
 import { afterSlots, dayNote, daySlots, slotsForDay, tourLengthOptions, type Profile } from '~/store/views';
 import { LightShell } from './shared';
@@ -41,7 +42,8 @@ interface Props {
  * the leasing phone stay demo copy until the CMS carries them.
  */
 export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, unitOptions, verified, booking, profile, demo, phone, onChange, onConfirm, onRetry, onBack, onVerify, onCalendar, onDirections, onHome }: Props) => {
-  const days = Array.from({ length: 7 }, (_, i) => dayKey(i));
+  // The week starts on the property's today, not the phone's (October 25, 2026).
+  const days = Array.from({ length: 7 }, (_, i) => dayKeyInZone(Date.now(), booking.settings?.timeZone, i));
   const day = daySlots(booking, draft.date);
   const after = afterSlots(booking, draft.date);
   const noSlots = !day.length && !after.length;

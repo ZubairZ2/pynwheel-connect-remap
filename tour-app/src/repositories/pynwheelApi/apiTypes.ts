@@ -37,6 +37,8 @@ export interface ApiPropertyDetail extends ApiPropertySummary {
   buildings: string[];
   tour: { id: number; start_node: string | null; starting_floor: number | null; building: string | null; building_order: string[]; stops_total: number } | null;
   graph_version: string | null;
+  config_version?: string | null;
+  published_at?: string | null;
   phone?: string | null;
   email?: string | null;
 }
@@ -318,7 +320,7 @@ export interface ApiAvailabilityResponse {
 }
 
 export interface ApiBookingCreateResponse {
-  booking: { id: number; status: string; tour_date: string | null; tour_time: string | null; tour_time_label: string | null; end_time: string | null; tour_type: string; property_tour_type: string; created_by: string; rescheduled: boolean };
+  booking: { id: number; status: string; tour_date: string | null; tour_time: string | null; tour_time_label: string | null; end_time: string | null; booked_at?: string | null; time_zone?: string | null; tour_type: string; property_tour_type: string; created_by: string; rescheduled: boolean };
   visitor: { id: number; first_name: string; last_name: string; email: string; phone_number: string };
   notifications: { email: boolean; sms: boolean; web: boolean };
 }
@@ -358,6 +360,8 @@ export interface ApiVisitorBooking {
   tour_time: string | null;
   tour_time_label: string | null;
   end_time: string | null;
+  booked_at?: string | null;
+  time_zone?: string | null;
   tour_type: string | null;
   property_tour_type: string | null;
   created_by: string | null;

@@ -35,11 +35,11 @@ interface OverviewProps {
 
 /** Overview: the setup checklist, six KPIs, the stops needing attention and who is touring right now. */
 export const OverviewTab = ({ controller, propId, mapHref, overview, onOpenStop }: OverviewProps) => {
-  const { stops, elevators, startPoints, summary, actions, state } = controller;
+  const { stops, elevators, startPoints, summary, actions, state, publication } = controller;
   const items = useMemo(() => generateStopItems(stops, state, overview.stops), [stops, state, overview.stops]);
   const checklist = useMemo(
-    () => generateTourChecklist({ propId, stops, elevators, startPointsMissing: startPoints.missing, locks: overview.locks, items }),
-    [propId, stops, elevators, startPoints.missing, overview.locks, items]
+    () => generateTourChecklist({ propId, stops, elevators, startPointsMissing: startPoints.missing, locks: overview.locks, items, publication }),
+    [propId, stops, elevators, startPoints.missing, overview.locks, items, publication]
   );
   const kpis = useMemo(() => generateTourKpis(summary, items, overview.visitors, overview.stops != null), [summary, items, overview.visitors, overview.stops]);
   const attention = useMemo(() => generateTourAttention(items), [items]);

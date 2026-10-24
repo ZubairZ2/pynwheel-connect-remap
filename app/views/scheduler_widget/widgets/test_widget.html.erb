@@ -191,7 +191,7 @@
     <%= stylesheet_link_tag 'jquery.mCustomScrollbar.css' %>
     <%= stylesheet_link_tag 'slick.css' %>
     <%= stylesheet_link_tag 'bootstrap-datetimepicker' %>
-    <%= stylesheet_link_tag    'application', media: 'all' %>
+    <%= stylesheet_link_tag    'application', media: 'all' %><%= stylesheet_link_tag 'scheduler_widget_connect', media: 'all' if @connect_theme %>
     <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
     <%= javascript_include_tag 'jquery.arrayUtilities' %>
     <%= javascript_include_tag 'slick' %>
@@ -202,7 +202,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
   </head>
   
-  <body>
+  <body<%= " class=\"pw-connect\"".html_safe if @connect_theme %>>
     <div class="divLoading hidden"></div>
     <%= content_tag(:div, "", id: 'widget-data', data: {scheduled_tour: @schedule_tour.to_json, community: @community.to_json, tour_settings: @tour_settings} )%>
     <%= content_tag(:div, "", id: 'occupied_slots', data: {occupied_slots: @occupied_slots.to_json, occupied_dates: @occupied_dates} )%>
@@ -549,7 +549,7 @@
           <section>
             <div class="confirmation-text">
               <% if flash[:success].present? && !@reschedule_tour %>
-                <%= flash[:success].html_safe if flash[:success].present? %>
+                <%= sanitize(flash[:success], tags: %w[div p b strong br img a span], attributes: %w[style class src width height align border alt data-title href target]) if flash[:success].present? %>
               <%else%>
                 <p id="reschedule-content" style="font-weight: normal; font-size: 20px;" ></p>
               <%end%>

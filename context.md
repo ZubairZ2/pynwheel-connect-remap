@@ -1456,3 +1456,42 @@ Branch `feature/legacy-visitor-auth-flow`; plan `VISITOR_MANAGEMENT_ARCHITECTURE
 - **Local servers.** `.claude/launch.json` `rails-visitor-clone` (:3102, audit clone, `PYN_TOUR_VISITS=on PYN_TOUR_VISITOR_AUTH=on`,
   PID in this session's scratchpad) with `connect-settings-verify` (:3007). The OTP code of a local run is read from the Sidekiq
   queue in Redis (`queue:message`), where it waits because no worker runs locally; it is deleted after use so nothing is ever sent.
+
+## 43. Publish to Tour App, the booking lifecycle in the property's zone, and the widget theme — implementation knowledge (October 25, 2026)
+
+Branch `improvement/publish-scheduling-timezone-qa-2026-10-25`. The investigation, the evidence and the owner's five decisions are
+in `PUBLISH_SCHEDULING_TZ_FINDINGS_2026-10-25.md`; the API contract in `tour-app-backend-api.md` §22.
+
+- **Why the app showed stale stops.** Connect's Publish was a dialog stub and Save was already live; the server's versions moved
+  correctly. The app loaded a property only on property change or launch, resume only synced the visit, and re-selecting the same
+  property returned early — so "switch property and back" was the only reload. Now `AppProvider.revalidate` (resume, `online`,
+  throttled 60 s) compares `config_version` and reloads; `bundleLoaded` prunes a persisted `tourOrder` / `selected` that names
+  stops no longer on the list (and leaves a tour screen with a toast); `bookingStale` drops the 5-minute booking memo.
+- **Why a tour "completed" before its time.** The check-in sheet's "Take a Virtual Tour" (and any phone-only tour) ran without a
+  server visit and `finishTour` set the booking `past` locally. Now `finishTour` carries `bookingCompleted`, true only when the
+  recorded visit was linked to that booking; `syncBookings` (from `/visitor/me` on resume) lets the CMS's status win, keeping a
+  phone-side `checkedIn` / `past` while the CMS still says upcoming; "Book Another Tour" opens Schedule on the same property.
+- **Why "today" vs "tomorrow".** Bookings are the property's wall clock; the CMS labels days in the property zone, the app read
+  them in the phone's. `src/store/zone.ts` (`zonedSlotMs`, `dayKeyInZone`, `dayOffsetInZone`, DST-safe through `Intl`) and
+  `ScheduledTour.bookedAtMs / timeZone` make `tourStartMs`, `tourDayLabel`, the countdown, the Schedule day strip, the past-slot
+  filters and the booking's own past-check all property-zone; the phone's zone is only the fallback for demo data.
+- **The window is the CMS's.** `autoTourScenario(tour, now, grace)`: *upcoming* until `start − grace`, *today* (Start Tour) inside
+  `[start − grace, start + grace]`, *missed* after — the exact `Visits::Start` / `Visitors::Status` rule, with the grace period
+  from the booking settings (default 10). The owner chose this window over an earlier check-in.
+- **Connect.** `useTourSetup` reads `connect/tour/publication` with the page and after every save, `actions.publish` posts
+  `connect/tour/publish` (dirty guard: unsaved edits block it), the dialog shows never / last published by whom and when / changed
+  since, the overview checklist's Publish step is done only while nothing changed since the last publish. Header button renamed
+  "Publish to Tour App". The readiness tiles wrap the long fail pill (`.bo-tx__gate .bo-pill { white-space: normal }`).
+- **Widget.** `?theme=connect` (or `SCHEDULER_WIDGET_THEME=connect`) layers `scheduler_widget_connect.scss` (Connect tokens,
+  Manrope self-hosted under `app/assets/fonts`) over the legacy page with a `pw-connect` body class; off, the HTML is
+  byte-identical. The reflected `?message=` is now rendered through `sanitize` with the tags the confirmation HTML uses.
+- **Facts worth keeping.** Hazel 1618 is `yardirentcafe` (so the marketing-source switch is rightly disabled), zone
+  America/Vancouver, grace 60, length 33; `communities.time_zone` is auto-derived from coordinates and editable nowhere; Rails
+  `config.time_zone` is unset (UTC); the legacy settings page limited the length of tour to 10–300 while Connect and the brief
+  say 1–600; the public widget shows the marketing-source field on `use_realpage_as_lead`, not on `data_provider` (left as is).
+- **Local verification.** Rails `rails-visitor-lan-qa` (:3020, prod copy, PID in the session scratchpad; the old entry's PID
+  path pointed at a dead scratchpad) + `connect-visitor-verify` (:3007) + `tour-app-qa-3020` (Vite :3021 → :3020, demo scenarios
+  on). A throwaway Super Admin `qa-publish-2026-10-25@pynwheel.local` (user 2444, password in the scratchpad only) drives Connect
+  headlessly through Playwright; the app's resume is triggered in the pane by switching tabs (`visibilitychange`). Residue on the
+  local prod copy: that user, OTP rows for +1111122222 / +11111122222, a visitor session for 16258, Hazel's tour published once
+  (`tour_published_*`), booking 25503 untouched.

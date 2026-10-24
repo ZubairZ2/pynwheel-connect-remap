@@ -30,7 +30,13 @@ describe('day helpers', () => {
 describe('tour scenario (the confirmTourScenario tweak)', () => {
   it('derives the scenario from the local booking when the demo switch is auto', () => {
     expect(autoTourScenario(null, NOW)).toBe('none');
-    expect(autoTourScenario(booked(), NOW)).toBe('today');
+    // October 25, 2026: a tour four hours ahead is upcoming until the grace window opens; inside it (± grace) it is today's.
+    expect(autoTourScenario(booked(), NOW)).toBe('upcoming');
+    expect(autoTourScenario(booked({ time: '2:05 PM' }), NOW)).toBe('today');
+    expect(autoTourScenario(booked({ time: '1:55 PM' }), NOW)).toBe('today');
+    expect(autoTourScenario(booked({ time: '1:45 PM' }), NOW)).toBe('missed');
+    expect(autoTourScenario(booked({ time: '1:45 PM' }), NOW, 30)).toBe('today');
+    expect(autoTourScenario(booked({ time: '2:45 PM' }), NOW, 60)).toBe('today');
     expect(autoTourScenario(booked({ date: key(2) }), NOW)).toBe('upcoming');
     expect(autoTourScenario(booked({ status: 'pending' }), NOW)).toBe('pending');
     expect(autoTourScenario(booked({ status: 'cancelled' }), NOW)).toBe('cancelled');
@@ -82,7 +88,7 @@ describe('location scenario (the locationScenario tweak)', () => {
 });
 
 describe('check-in sheet', () => {
-  const base = { ...initialAppState(), scheduledTour: booked() };
+  const base = { ...initialAppState(), scheduledTour: booked({ time: '2:05 PM' }) };
   it('is ready at the property when verified, asks for the ID otherwise', () => {
     const at = { ...base, demo: { ...base.demo, location: 'atProperty' as const } };
     expect(checkinModel(at, NOW, 'L', 'a', null).scenario).toBe('verify');

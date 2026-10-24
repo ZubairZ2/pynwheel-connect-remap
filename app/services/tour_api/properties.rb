@@ -125,8 +125,11 @@ module TourApi
         end
       end
       c = counts(community)
+      # October 25, 2026: `config_version` covers the graph, the stops and the booking rules; the app compares it on resume.
+      config_version = base[:tour_enabled] && built ? ConfigVersion.for(community) : nil
       base.merge(success: true, auto_wayfinding: community.auto_wayfinding.present?, floorplates_count: c[:floorplates], units_count: c[:units],
-                 amenities_count: c[:amenities], buildings: buildings, tour: tour, graph_version: version,
+                 amenities_count: c[:amenities], buildings: buildings, tour: tour, graph_version: version, config_version: config_version,
+                 published_at: Text.timestamp(community.community_tour&.tour_published_at),
                  # The leasing office's contact (October 21, 2026): the property's phone and email as the CMS holds them, null when it holds none.
                  phone: Text.presence(community.phone) || Text.presence(community.property_manager_phone),
                  email: Text.presence(community.email))

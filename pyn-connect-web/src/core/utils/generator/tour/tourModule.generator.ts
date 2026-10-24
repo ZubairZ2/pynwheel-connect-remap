@@ -1,7 +1,7 @@
 import { mapEditorRoute } from '~/config/app/connectRoutes';
 import { CORE_STRINGS } from '~/config/app/strings';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
-import type { LockInventory, VisitorsList } from '~/core/models/data/tourModules.data';
+import type { LockInventory, VisitorsList, TourPublication } from '~/core/models/data/tourModules.data';
 import { i18n } from '~/resources/i18n';
 import { t } from '../inventory/inventoryText';
 import type { PillVariant } from '../listing.types';
@@ -54,7 +54,7 @@ export interface TourChecklist {
   progress: string;
 }
 
-export const generateTourChecklist = (args: { propId: string; stops: StopCard[]; elevators: ElevatorCard[]; startPointsMissing: boolean; locks: LockInventory | null; items: StopListItem[] }): TourChecklist => {
+export const generateTourChecklist = (args: { propId: string; stops: StopCard[]; elevators: ElevatorCard[]; startPointsMissing: boolean; locks: LockInventory | null; items: StopListItem[]; publication?: TourPublication | null }): TourChecklist => {
   const { propId, stops, elevators, startPointsMissing, locks, items } = args;
   const unplotted = stops.filter((stop) => !stop.plotted).length;
   const gated = elevators.filter((elevator) => elevator.gated).length;
@@ -109,8 +109,9 @@ export const generateTourChecklist = (args: { propId: string; stops: StopCard[];
       id: 'publish',
       num: 6,
       title: i18n.t(K.publish),
-      done: false,
-      state: i18n.t(K.publishTodo),
+      // October 25, 2026: published from Connect and unchanged since.
+      done: !!args.publication?.everPublished && !args.publication.changedSincePublish,
+      state: i18n.t(!args.publication?.everPublished ? K.publishTodo : args.publication.changedSincePublish ? K.publishStale : K.publishDone),
       cta: { label: i18n.t(K.openPublish), action: 'publish' }
     }
   ];

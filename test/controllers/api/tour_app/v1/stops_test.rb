@@ -17,6 +17,21 @@ class Api::TourApp::V1::StopsTest < ActionDispatch::IntegrationTest
     body
   end
 
+  test 'the list carries the configuration version as its ETag and answers 304 to it' do
+    get "#{@base}/stops", headers: auth
+    assert_response :success
+    etag = response.headers['ETag']
+    assert_equal %("#{TourApi::ConfigVersion.for(@community)}"), etag
+    assert_equal %w[max-age=0 must-revalidate private], response.headers['Cache-Control'].split(', ').sort
+    get "#{@base}/stops", headers: auth.merge('If-None-Match' => etag)
+    assert_response :not_modified
+    assert_equal etag, response.headers['ETag']
+    @tour.update!(grace_period: 44)
+    get "#{@base}/stops", headers: auth.merge('If-None-Match' => etag)
+    assert_response :success, 'a changed rule is a new version'
+    assert_not_equal etag, response.headers['ETag']
+  end
+
   test 'groups and membership: Show in Stops List on and off, hidden stops, duplicates, tour order' do
     data = stops
     assert_equal @start, data['start_node']

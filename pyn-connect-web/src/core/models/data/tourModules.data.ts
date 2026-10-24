@@ -6,6 +6,23 @@
  * visitors, bookings and scheduling); nothing here is computed in the browser.
  */
 
+/**
+ * "Publish to Tour App" (October 25, 2026): when the tour was last published
+ * from Connect, by whom, the configuration version that was published and
+ * whether the saved configuration moved since (`Connect::TourController`).
+ */
+export interface TourPublication {
+  tourEnabled: boolean;
+  publishedAt: string | null;
+  publishedBy: { id: number; name?: string | null; email?: string | null } | null;
+  publishedVersion: string | null;
+  currentVersion: string | null;
+  everPublished: boolean;
+  changedSincePublish: boolean;
+  /** On a publish answer: nothing had changed since the last one. */
+  alreadyPublished?: boolean;
+}
+
 /** What every module read and write carries about the signed-in user and property. */
 export interface TourModuleMeta {
   writesEnabled: boolean;

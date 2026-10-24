@@ -78,9 +78,9 @@ describe('visitor and staff sessions', () => {
     const { session, bookings } = await repo.verifyVisitorCode({ phone: '(303) 555-0100', code: '123456' });
     expect(calls.at(-1)?.body).toEqual({ phone: '(303) 555-0100', code: '123456', country_code: 'US' });
     expect(session).toMatchObject({ kind: 'visitor', accessToken: 'vst_secret', propertyId: 1618, capabilities: { visits: true, visitorAuth: true } });
-    expect(session.user).toEqual({ id: 42, name: 'Ada Lovelace', email: 'ada@example.com', role: 'visitor', phone: '+13035550100' });
+    expect(session.user).toEqual({ id: 42, name: 'Ada Lovelace', firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.com', role: 'visitor', phone: '+13035550100' });
     expect(session.visitor?.phoneMasked).toBe('•••0100');
-    expect(bookings).toEqual([{ id: 501, propertyId: 1618, propertyName: 'Hazel', status: 'upcoming', date: '2026-10-24', time: '18:00', timeLabel: '6:00 PM', endTime: '18:45', tourType: 'self_tour', createdBy: 'tour_app' }]);
+    expect(bookings).toEqual([{ id: 501, propertyId: 1618, propertyName: 'Hazel', status: 'upcoming', date: '2026-10-24', time: '18:00', timeLabel: '6:00 PM', endTime: '18:45', bookedAt: null, timeZone: null, tourType: 'self_tour', createdBy: 'tour_app' }]);
     expect(repo.currentSession()?.kind).toBe('visitor');
     expect(JSON.parse(stored.get('pynwheel_tour_session_v1') ?? '{}')).toMatchObject({ kind: 'visitor', accessToken: 'vst_secret' });
   });

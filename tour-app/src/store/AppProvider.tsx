@@ -23,6 +23,8 @@ export type { AppContextValue, AppData, DataStatus } from './appContext';
  */
 
 const HEARTBEAT_MS = 2 * 60000;
+/** How often, at most, a resume re-checks the property's configuration version. */
+const REVALIDATE_MS = 60000;
 
 const pick = (state: AppState): PersistedState => {
   const out = {} as Record<string, unknown>;
@@ -52,7 +54,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const base: PersistedState = { ...(persisted ?? ({} as PersistedState)), screen: 'splash' };
         if (session) {
           base.signedIn = true;
-          base.user = { name: session.user.name, email: session.user.email, kind: session.kind, ...(session.visitor ? { phone: session.visitor.phone } : {}) };
+          base.user = { name: session.user.name, email: session.user.email, kind: session.kind, ...(session.visitor ? { phone: session.visitor.phone, firstName: session.visitor.firstName, lastName: session.visitor.lastName } : {}) };
           base.capabilities = session.capabilities;
           if (persisted && persisted.propertyId !== session.propertyId) {
             // The UI state was saved for another property (or the session store moved on): nothing of that
@@ -141,6 +143,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setData((d) => ({ ...d, status: 'ready', error: null, bundle, content, places, distances: {} }));
         dispatch({ type: 'setHistory', history: content.tourHistory });
         const nodes = [...bundle.amenities.filter((a) => a.showInStopsList).map((a) => a.node), ...bundle.units.filter((u) => u.showInStopsList).map((u) => u.node)];
+        dispatch({ type: 'bundleLoaded', nodes });
         if (!nodes.length) return;
         repository
           .getStopDistances(nodes)
@@ -170,22 +173,64 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const latest = useRef(state);
   latest.current = state;
+  const latestData = useRef(data);
+  latestData.current = data;
+  const lastCheck = useRef(0);
+
+  // October 25, 2026: back in the foreground (and back online) the app asks one small question - is the property's
+  // configuration it holds still the current one? - and reloads the property when it is not; a visitor's bookings are
+  // read again too, so a tour the CMS moved, cancelled or completed shows as such. Throttled; nothing else is touched
+  // (the session, the profile, the visit outbox, photos and notes stay as they are).
+  const revalidate = useCallback(async () => {
+    const s = latest.current;
+    if (!s.signedIn || s.propertyId == null) return;
+    const now = Date.now();
+    if (now - lastCheck.current < REVALIDATE_MS) return;
+    lastCheck.current = now;
+    try {
+      const version = await repository.getPropertyVersion();
+      const held = latestData.current.bundle?.property.configVersion ?? null;
+      if (version.configVersion && held && version.configVersion !== held) {
+        dispatch({ type: 'bookingStale' });
+        setReloadKey((k) => k + 1);
+      }
+    } catch {
+      // Offline or refused: the next resume asks again.
+    }
+    if (s.user?.kind !== 'visitor') return;
+    try {
+      const bookings = await repository.refreshVisitorBookings();
+      const propertyId = latest.current.propertyId;
+      if (propertyId == null) return;
+      const at = Date.now();
+      dispatch({ type: 'syncBookings', propertyId, tours: bookings.filter((b) => b.propertyId === propertyId).map((b) => tourFromBooking(b, at)) });
+    } catch {
+      // As above.
+    }
+  }, [repository]);
+
   useEffect(() => {
     if (!hydrated) return;
     return onAppStateChange((active) => {
       if (!active) void savePersisted(STATE_VERSION, pick(latest.current));
-      // Back in the foreground: whatever the outbox holds (and a check-in or end made offline) is sent.
-      else void syncVisit({ repository, dispatch }, syncableVisit(latest.current));
+      else {
+        // Back in the foreground: whatever the outbox holds (and a check-in or end made offline) is sent, and the property is revalidated.
+        void syncVisit({ repository, dispatch }, syncableVisit(latest.current));
+        void revalidate();
+      }
     });
-  }, [hydrated, repository]);
+  }, [hydrated, repository, revalidate]);
 
   // 6. The recorded visit: sent again when the phone is back online, and a heartbeat every two minutes while checked in and active.
   useEffect(() => {
     if (!hydrated) return;
-    const online = () => void syncVisit({ repository, dispatch }, syncableVisit(latest.current));
+    const online = () => {
+      void syncVisit({ repository, dispatch }, syncableVisit(latest.current));
+      void revalidate();
+    };
     window.addEventListener('online', online);
     return () => window.removeEventListener('online', online);
-  }, [hydrated, repository]);
+  }, [hydrated, repository, revalidate]);
 
   const visitId = state.visit?.id ?? null;
   const visitClientId = state.visit?.clientVisitId ?? null;
