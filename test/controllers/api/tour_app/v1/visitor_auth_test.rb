@@ -251,15 +251,30 @@ class Api::TourApp::V1::VisitorAuthTest < ActionDispatch::IntegrationTest
     ENV.delete('PYN_TOUR_OTP_DEBUG')
   end
 
-  test 'a store-review phone takes the configured code outside production and gets no SMS' do
+  test 'a test phone takes the configured code, gets no SMS and sees its code, in production too; other phones do not' do
     ENV['PYN_TOUR_OTP_TEST_PHONES'] = PHONE
     ENV['PYN_TOUR_OTP_TEST_CODE'] = '246810'
     request_code
     assert_equal 0, TwilioSmsWorker.jobs.size
+    assert_equal '246810', body['debug_code']
     verify(PHONE, '246810')
     assert_response :success, response.body
+    request_code('+13035550100')
+    assert_equal 1, TwilioSmsWorker.jobs.size, 'an unlisted phone gets its SMS'
+    refute body.key?('debug_code'), 'and no disclosure'
+    ENV['PYN_TOUR_VISITOR_AUTH'] = 'on' # production defaults the switch off; Heroku sets it
+    Rails.env.stub(:production?, true) do
+      VisitorOtp.delete_all
+      request_code
+      assert_response :accepted, response.body
+      assert_equal '246810', body['debug_code'], 'the allowlist works on a production-mode server'
+      assert_equal 1, TwilioSmsWorker.jobs.size
+      request_code('+13035550101')
+      refute body.key?('debug_code')
+    end
   ensure
     ENV.delete('PYN_TOUR_OTP_TEST_PHONES')
     ENV.delete('PYN_TOUR_OTP_TEST_CODE')
+    ENV.delete('PYN_TOUR_VISITOR_AUTH')
   end
 end

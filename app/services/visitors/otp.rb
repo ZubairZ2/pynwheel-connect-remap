@@ -58,13 +58,15 @@ module Visitors
       row.save!
       deliver(number, code, community_id) unless test_phone?(number)
       answer = { sent: true, resend_after: RESEND_AFTER }
-      answer[:debug_code] = code if debug_codes?
+      # A test phone got no SMS, so its code is shown on the code step.
+      answer[:debug_code] = code if debug_codes? || test_phone?(number)
       answer
     end
 
     # Testing on a machine that cannot send SMS: `PYN_TOUR_OTP_DEBUG=on` makes
-    # the "code sent" answer carry the code, and the app shows it on the code
-    # step. Never honoured in production, whatever the variable says.
+    # the "code sent" answer carry the code for EVERY phone, and the app shows
+    # it on the code step. Never honoured in production, whatever the variable
+    # says; on a production-mode server use the test phones instead.
     def debug_codes?
       !Rails.env.production? && ENV['PYN_TOUR_OTP_DEBUG'].to_s.strip.downcase == 'on'
     end
@@ -135,13 +137,15 @@ module Visitors
       Rails.logger.error("[tour-api] visitor otp not queued #{e.class}")
     end
 
-    # Store-review accounts outside production: `PYN_TOUR_OTP_TEST_PHONES`
-    # (comma list, E.164) accept `PYN_TOUR_OTP_TEST_CODE` and get no SMS.
-    # Never honoured in production.
+    # Test and store-review phones, in every environment (October 23, 2026):
+    # `PYN_TOUR_OTP_TEST_PHONES` (comma list, E.164) accept `PYN_TOUR_OTP_TEST_CODE`,
+    # get no SMS, and see their code on the code step. Only the listed numbers
+    # are affected: the legacy app's reviewer bypass, made explicit. List
+    # numbers nobody owns (or your own), never a visitor's.
     def test_phone?(number)
-      return false if Rails.env.production?
+      return false if test_code.blank?
 
-      ENV['PYN_TOUR_OTP_TEST_PHONES'].to_s.split(/[\s,]+/).include?(number) && test_code.present?
+      ENV['PYN_TOUR_OTP_TEST_PHONES'].to_s.split(/[\s,]+/).include?(number)
     end
 
     def test_code
