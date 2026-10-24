@@ -1,0 +1,616 @@
+// "Connect" look for the public scheduler widget pages
+// (scheduler_widget/test_widget, confirmation_instructions, change_tour_time_widget).
+//
+// Opt-in: the controller sets @connect_theme (?theme=connect or
+// SCHEDULER_WIDGET_THEME=connect), the view links this sheet and adds
+// `pw-connect` to <body>. Everything here is scoped under body.pw-connect and
+// only restyles; it never changes display of anything the widget JS toggles
+// (.hidden wrappers, .tour_type, .divLoading) and never touches ids, names or
+// the per-property #schedule_btn inline style.
+//
+// Tokens mirror pyn-connect-web/src/app/globals.css (October 25, 2026).
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: font-url('manrope-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: font-url('manrope-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+body.pw-connect {
+  --bo-primary: #0077ae;
+  --bo-primary-hover: #005c8a;
+  --bo-primary-deep: #005f8c;
+  --bo-primary-soft: #e8f4fb;
+  --bo-bg: #f5f6f8;
+  --bo-panel: #ffffff;
+  --bo-line: #e7e9ee;
+  --bo-line-2: #eef0f3;
+  --bo-stroke-strong: #d5d9e0;
+  --bo-ink: #171a21;
+  --bo-muted: #5b6270;
+  --bo-subtle: #8a92a3;
+  --dot-ok: #5c8e1c;
+  --dot-warn: #c9a200;
+  --dot-crit: #e03b45;
+  --bo-font: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --bo-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --bo-shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06), 0 12px 32px -16px rgba(16, 24, 40, 0.18);
+  --bo-radius-input: 8px;
+  --bo-radius-button: 7px;
+  --bo-radius-card: 12px;
+
+  background: var(--bo-bg);
+  color: var(--bo-ink);
+  font-family: var(--bo-font);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+// ---------------------------------------------------------------------------
+// Typography: the inline block forces Poppins with !important on these.
+// ---------------------------------------------------------------------------
+body.pw-connect .Pyn_Modal h2,
+body.pw-connect .Pyn_Modal label,
+body.pw-connect .Pyn_Modal input,
+body.pw-connect .Pyn_Modal select,
+body.pw-connect .Pyn_Modal p,
+body.pw-connect .Pyn_Modal button,
+body.pw-connect .reschedule-heading,
+body.pw-connect .property-tour-type,
+body.pw-connect #charge_text,
+body.pw-connect .how_it_works h2,
+body.pw-connect .how_it_works_p,
+body.pw-connect .text-style,
+body.pw-connect .title-style,
+body.pw-connect #scheduleMyTourSuccess .confirmation-text p,
+body.pw-connect #scheduleMyTourSuccess .confirmation-text b,
+body.pw-connect #scheduleMyTourSuccess .confirmation-text strong,
+body.pw-connect #scheduleMyTourSuccess .confirmation-text span,
+body.pw-connect #scheduleMyTourSuccess .confirmation-text div {
+  font-family: var(--bo-font) !important;
+}
+
+// ---------------------------------------------------------------------------
+// The modal card
+// ---------------------------------------------------------------------------
+body.pw-connect .modal-backdrop {
+  background-color: #171a21;
+}
+body.pw-connect .modal-backdrop.in {
+  opacity: 0.45;
+}
+body.pw-connect .modal-dialog {
+  margin: 32px auto;
+}
+body.pw-connect .modal-content {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+body.pw-connect .Pyn_Modal {
+  background: var(--bo-panel);
+  border: 1px solid var(--bo-line);
+  border-top: 4px solid var(--bo-primary);
+  border-radius: var(--bo-radius-card);
+  box-shadow: var(--bo-shadow-card);
+  padding: 22px 26px 24px;
+  color: var(--bo-ink);
+}
+body.pw-connect .Pyn_Modal h2 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--bo-ink);
+  margin: 4px 0 14px;
+  line-height: 1.25;
+}
+body.pw-connect .Pyn_Modal p,
+body.pw-connect .Pyn_Modal .reschedule-heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bo-ink);
+  margin-top: 0 !important;
+}
+body.pw-connect .Pyn_Modal label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bo-muted);
+  margin-bottom: 6px;
+  line-height: 1.35;
+}
+body.pw-connect .Pyn_Modal .inst_text_label {
+  font-size: 12px !important;
+  font-weight: 500;
+  color: var(--bo-muted);
+}
+body.pw-connect .Pyn_Modal .inst_text_label a,
+body.pw-connect .Pyn_Modal a {
+  color: var(--bo-primary);
+  text-decoration: none;
+}
+body.pw-connect .Pyn_Modal a:hover {
+  color: var(--bo-primary-hover);
+  text-decoration: underline;
+}
+body.pw-connect .asterisk_color {
+  color: var(--dot-crit);
+}
+body.pw-connect .form-group {
+  padding-bottom: 2px !important;
+  margin-bottom: 14px;
+}
+// Bare half-width wrappers (bedrooms, discovery source) have no .form-group
+body.pw-connect .Pyn_Modal div.w-left-50:not(.form-group),
+body.pw-connect .Pyn_Modal div.w-right-50:not(.form-group) {
+  margin-bottom: 14px;
+}
+
+// ---------------------------------------------------------------------------
+// Fields
+// ---------------------------------------------------------------------------
+body.pw-connect .Pyn_Modal .form-control,
+body.pw-connect .Pyn_Modal .form-group input,
+body.pw-connect .Pyn_Modal .form-group select {
+  height: 42px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--bo-ink);
+  background-color: var(--bo-panel);
+  border: 1px solid var(--bo-stroke-strong) !important;
+  border-radius: var(--bo-radius-input);
+  box-shadow: var(--bo-shadow);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+body.pw-connect .Pyn_Modal .form-control::placeholder {
+  color: var(--bo-subtle);
+  font-weight: 500;
+}
+body.pw-connect .Pyn_Modal .form-control:focus,
+body.pw-connect .Pyn_Modal .form-group input:focus,
+body.pw-connect .Pyn_Modal .form-group select:focus {
+  outline: none;
+  border-color: var(--bo-primary) !important;
+  box-shadow: 0 0 0 3px var(--bo-primary-soft);
+}
+body.pw-connect .Pyn_Modal select.form-control {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235b6270' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 8px;
+}
+body.pw-connect .Pyn_Modal select.form-control::-ms-expand {
+  display: none;
+}
+body.pw-connect .form-control[disabled],
+body.pw-connect .form-control[readonly],
+body.pw-connect fieldset[disabled] .form-control {
+  background-color: var(--bo-line-2) !important;
+  color: var(--bo-muted);
+  border-color: var(--bo-line) !important;
+  box-shadow: none;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+body.pw-connect .Pyn_Modal input[type="radio"],
+body.pw-connect .Pyn_Modal input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0 8px 0 0;
+  vertical-align: -2px;
+  accent-color: var(--bo-primary);
+}
+
+// Tour-type radio row (.w-35 / .w-37 wrappers, labels generated by `label`)
+body.pw-connect .w-35,
+body.pw-connect .w-37,
+body.pw-connect .w-20-for-check {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--bo-line);
+  border-radius: var(--bo-radius-input);
+  background: var(--bo-bg);
+}
+body.pw-connect .w-35 label,
+body.pw-connect .w-37 label,
+body.pw-connect .w-20-for-check label {
+  display: inline;
+  color: var(--bo-ink);
+  font-weight: 600;
+  margin: 0;
+  cursor: pointer;
+}
+body.pw-connect .w-35 .fa-question-circle,
+body.pw-connect .w-37 .fa-question-circle,
+body.pw-connect .w-20-for-check .fa-question-circle,
+body.pw-connect .tour_type_tip {
+  color: var(--bo-subtle);
+  margin-left: 4px;
+  cursor: help;
+}
+body.pw-connect .w-35 .fa-question-circle:hover,
+body.pw-connect .w-37 .fa-question-circle:hover,
+body.pw-connect .tour_type_tip:hover {
+  color: var(--bo-primary);
+}
+
+// ---------------------------------------------------------------------------
+// Notices
+// ---------------------------------------------------------------------------
+body.pw-connect .reshedule-notification {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: var(--bo-radius-input);
+  background: #fbf6dc;
+  border: 1px solid #ecd97a;
+  color: #6b5700;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  clear: both;
+}
+body.pw-connect .no-tour-time-error,
+body.pw-connect .color-red {
+  color: var(--dot-crit) !important;
+  font-size: 13px;
+  font-weight: 600;
+}
+body.pw-connect #charge_text {
+  clear: both;
+  margin: 4px 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--bo-radius-input);
+  background: var(--bo-primary-soft);
+  color: var(--bo-primary-deep);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+body.pw-connect .card-information {
+  clear: both;
+  display: flow-root; // contain the floated .w-left-50/.w-right-50 rows
+  padding: 14px 16px 2px;
+  margin-bottom: 14px;
+  border: 1px solid var(--bo-line);
+  border-radius: var(--bo-radius-card);
+  background: var(--bo-bg);
+}
+body.pw-connect .card-information .form-group {
+  margin-bottom: 12px;
+}
+
+// "Not allowed" copy (the _scheduler_error_suggessions partial) and the
+// restricted #warningModal: both carry inline `style="color: red"`.
+body.pw-connect .Pyn_Modal .header-center > div > span[style],
+body.pw-connect #warningModal .Pyn_Modal span[style] {
+  color: var(--dot-crit) !important;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+body.pw-connect .Pyn_Modal .header-center ul {
+  margin: 4px 0 0 18px;
+  padding: 0;
+}
+body.pw-connect #warningModal .modal-footer {
+  border-top: 0;
+  margin-top: 8px;
+}
+body.pw-connect #warningModal .btn-primary,
+body.pw-connect #closeModalBtn {
+  background: var(--bo-primary);
+  border: 1px solid var(--bo-primary);
+  border-radius: var(--bo-radius-button);
+  color: #fff;
+  font-family: var(--bo-font);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 24px !important;
+  box-shadow: var(--bo-shadow);
+}
+body.pw-connect #warningModal .btn-primary:hover,
+body.pw-connect #closeModalBtn:hover {
+  background: var(--bo-primary-hover);
+  border-color: var(--bo-primary-hover);
+}
+
+// ---------------------------------------------------------------------------
+// Buttons (the per-property #schedule_btn keeps its inline style untouched)
+// ---------------------------------------------------------------------------
+body.pw-connect .btn_popup {
+  background: var(--bo-primary);
+  color: #fff;
+  font-family: var(--bo-font);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: var(--bo-radius-button);
+  box-shadow: var(--bo-shadow);
+  cursor: pointer;
+  transition: background-color 120ms ease, opacity 120ms ease;
+}
+body.pw-connect .btn_popup:hover,
+body.pw-connect .btn_popup:focus {
+  background: var(--bo-primary-hover);
+  color: #fff;
+  outline: none;
+}
+body.pw-connect .btn_popup:focus-visible {
+  box-shadow: 0 0 0 3px var(--bo-primary-soft);
+}
+body.pw-connect .btn_popup[disabled] {
+  background: var(--bo-subtle);
+  cursor: not-allowed;
+}
+body.pw-connect #cancel-visit {
+  background: var(--bo-panel);
+  color: var(--bo-primary);
+  border: 1px solid var(--bo-stroke-strong) !important;
+  border-left-width: 1px !important;
+}
+body.pw-connect #cancel-visit:hover {
+  background: var(--bo-primary-soft);
+}
+body.pw-connect .continue_link {
+  color: var(--bo-primary);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+// ---------------------------------------------------------------------------
+// Tooltips (Bootstrap 3 .tooltip + the widget's .tooltip-pynwheel span)
+// ---------------------------------------------------------------------------
+body.pw-connect .tooltip-inner {
+  background: var(--bo-ink);
+  color: #fff;
+  font-family: var(--bo-font);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  padding: 8px 10px;
+  border-radius: var(--bo-radius-button);
+  max-width: 320px;
+  text-align: left;
+}
+body.pw-connect .tooltip.top .tooltip-arrow {
+  border-top-color: var(--bo-ink);
+}
+body.pw-connect .tooltip.bottom .tooltip-arrow {
+  border-bottom-color: var(--bo-ink);
+}
+body.pw-connect .tooltip-pynwheel {
+  font-family: var(--bo-font);
+  font-weight: 500;
+}
+
+// ---------------------------------------------------------------------------
+// bootstrap-datetimepicker 4.x widget
+// ---------------------------------------------------------------------------
+body.pw-connect .bootstrap-datetimepicker-widget.dropdown-menu {
+  background: var(--bo-panel);
+  border: 1px solid var(--bo-line);
+  border-radius: var(--bo-radius-card);
+  box-shadow: var(--bo-shadow-card);
+  padding: 8px;
+  font-family: var(--bo-font);
+  color: var(--bo-ink);
+}
+body.pw-connect .bootstrap-datetimepicker-widget.dropdown-menu:before,
+body.pw-connect .bootstrap-datetimepicker-widget.dropdown-menu:after {
+  display: none;
+}
+body.pw-connect .bootstrap-datetimepicker-widget table th {
+  color: var(--bo-muted);
+  font-size: 12px;
+  font-weight: 700;
+  height: 30px;
+  line-height: 30px;
+}
+body.pw-connect .bootstrap-datetimepicker-widget table th.picker-switch {
+  color: var(--bo-ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+body.pw-connect .bootstrap-datetimepicker-widget table th.dow {
+  color: var(--bo-subtle);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+body.pw-connect .bootstrap-datetimepicker-widget table th:hover,
+body.pw-connect .bootstrap-datetimepicker-widget table td.day:hover,
+body.pw-connect .bootstrap-datetimepicker-widget table td.hour:hover,
+body.pw-connect .bootstrap-datetimepicker-widget table td.minute:hover,
+body.pw-connect .bootstrap-datetimepicker-widget table td span:hover {
+  background: var(--bo-primary-soft);
+  color: var(--bo-primary-deep);
+}
+body.pw-connect .bootstrap-datetimepicker-widget table td {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bo-ink);
+}
+body.pw-connect .bootstrap-datetimepicker-widget table td.day {
+  height: 32px;
+  line-height: 32px;
+  width: 32px;
+  border-radius: var(--bo-radius-button);
+}
+body.pw-connect .bootstrap-datetimepicker-widget table td.old,
+body.pw-connect .bootstrap-datetimepicker-widget table td.new {
+  color: var(--bo-subtle);
+}
+body.pw-connect .bootstrap-datetimepicker-widget table td.today:before {
+  border-bottom-color: var(--bo-primary);
+}
+body.pw-connect .bootstrap-datetimepicker-widget table td.active,
+body.pw-connect .bootstrap-datetimepicker-widget table td.active:hover,
+body.pw-connect .bootstrap-datetimepicker-widget table td span.active {
+  background: var(--bo-primary);
+  color: #fff;
+  text-shadow: none;
+  box-shadow: none;
+}
+body.pw-connect .bootstrap-datetimepicker-widget table td.active.today:before {
+  border-bottom-color: #fff;
+}
+body.pw-connect .bootstrap-datetimepicker-widget table td.disabled,
+body.pw-connect .bootstrap-datetimepicker-widget table td.disabled:hover,
+body.pw-connect .bootstrap-datetimepicker-widget table td span.disabled,
+body.pw-connect .bootstrap-datetimepicker-widget table td span.disabled:hover {
+  background: none;
+  color: var(--bo-stroke-strong);
+  cursor: not-allowed;
+}
+body.pw-connect .bootstrap-datetimepicker-widget table td span {
+  border-radius: var(--bo-radius-button);
+}
+body.pw-connect .bootstrap-datetimepicker-widget .glyphicon {
+  color: var(--bo-muted);
+}
+
+// ---------------------------------------------------------------------------
+// Loading overlay (display stays owned by application.css + .hidden)
+// ---------------------------------------------------------------------------
+body.pw-connect .divLoading {
+  background-color: rgba(23, 26, 33, 0.35);
+}
+
+// ---------------------------------------------------------------------------
+// Success / confirmation page
+// ---------------------------------------------------------------------------
+body.pw-connect #scheduleMyTourSuccess {
+  color: var(--bo-ink);
+}
+body.pw-connect #scheduleMyTourSuccess .confirmation-text {
+  max-width: 920px;
+  margin: 24px auto 0;
+  padding: 18px 22px;
+  background: var(--bo-panel);
+  border: 1px solid var(--bo-line);
+  border-radius: var(--bo-radius-card);
+  box-shadow: var(--bo-shadow);
+  line-height: 1.55;
+}
+body.pw-connect #scheduleMyTourSuccess .confirmation-text #reschedule-content {
+  color: var(--bo-ink);
+}
+body.pw-connect .download_app {
+  padding: 18px 0 10px;
+}
+body.pw-connect .download_app .app_image {
+  width: auto;
+  height: 44px;
+  border-radius: var(--bo-radius-button);
+}
+body.pw-connect .how_it_works {
+  background: var(--bo-primary);
+  color: #fff;
+  border-radius: var(--bo-radius-card);
+  padding: 20px 20px 36px;
+}
+body.pw-connect .how_it_works h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+}
+body.pw-connect .how_it_works_p {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92);
+}
+body.pw-connect .align_items {
+  background: var(--bo-panel);
+  border: 1px solid var(--bo-line);
+  border-radius: var(--bo-radius-card);
+  box-shadow: var(--bo-shadow-card);
+  padding: 20px;
+  color: var(--bo-ink);
+}
+body.pw-connect .align_items:hover {
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 18px 40px -18px rgba(16, 24, 40, 0.28);
+}
+body.pw-connect .align_items p {
+  color: var(--bo-ink);
+}
+body.pw-connect .title-style {
+  color: var(--bo-ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+body.pw-connect .text-style {
+  color: var(--bo-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+// ---------------------------------------------------------------------------
+// Responsive: full-width card with 16px gutters, stacked fields, no x-scroll
+// ---------------------------------------------------------------------------
+@media (max-width: 640px) {
+  body.pw-connect {
+    overflow-x: hidden;
+  }
+  body.pw-connect .modal-dialog {
+    width: auto !important;
+    margin: 16px;
+  }
+  body.pw-connect .Pyn_Modal {
+    width: 100%;
+    padding: 18px 16px 20px;
+  }
+  body.pw-connect .Pyn_Modal h2 {
+    font-size: 18px;
+  }
+  body.pw-connect .w-left-50,
+  body.pw-connect .w-right-50,
+  body.pw-connect .w-20,
+  body.pw-connect .w-30,
+  body.pw-connect .w-35,
+  body.pw-connect .w-37,
+  body.pw-connect .w-20-for-check,
+  body.pw-connect .w-100 {
+    float: none;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  body.pw-connect .w-right-checkbox {
+    margin-top: 0;
+  }
+  body.pw-connect .tag-margin {
+    margin-right: 0;
+  }
+  body.pw-connect .tooltip-pynwheel {
+    width: auto !important;
+  }
+  body.pw-connect #scheduleMyTourSuccess .confirmation-text {
+    margin: 16px;
+    padding: 16px;
+  }
+  body.pw-connect .how_it_works {
+    border-radius: var(--bo-radius-input);
+    padding-bottom: 24px;
+  }
+}

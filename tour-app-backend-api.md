@@ -854,3 +854,33 @@ show a Tour App tour as a session. 404 `disabled` while `PYN_TOUR_VISITS` is off
 - Tests: `visitor_auth_test.rb` (11), `visits_test.rb` (9), `visitor_bookings_test.rb` (4), `throttle_test.rb` (3),
   `test/services/bookings/create_concurrency_test.rb` (1); the suite: 327 runs, 2048 assertions, 1 pre-existing failure
   (`PartnerConfigurationsControllerTest`).
+
+## 22. Configuration version, publication, and the booked instant (October 25, 2026)
+
+Additive; no field removed or renamed. Branch `improvement/publish-scheduling-timezone-qa-2026-10-25`; findings and the approved
+plan in `PUBLISH_SCHEDULING_TZ_FINDINGS_2026-10-25.md`.
+
+- **`config_version`** (`TourApi::ConfigVersion`): one string for everything the app shows of a property's configuration — the
+  graph version (stops, order, content, tour setup, paths) plus `tours.updated_at`, `tour_settings.updated_at`, both lanes of
+  visiting hours, the closures and the two widget gates. `GET /properties/{id}` carries it (`config_version`, null while the tour
+  is off) and `published_at` (ISO, null until Connect publishes). `GET …/stops` and `GET …/booking/settings` answer it as a strong
+  `ETag` with `Cache-Control: private, max-age=0, must-revalidate` and 304 on a matching `If-None-Match`. The app compares the
+  version it holds on resume and reloads the property only when it moved (one ~40 ms request per resume, throttled to 60 s).
+- **Publication** (`Connect::TourController`, `TourSetup::Publish`): `GET /communities/{id}/connect/tour/publication.json` →
+  `{tour_enabled, published_at, published_by, published_version, current_version, ever_published, changed_since_publish}`;
+  `POST /communities/{id}/connect/tour/publish.json` records the current `config_version` on the tour (`tours.tour_published_at`,
+  `tour_published_by_id`, `tour_published_version`, migration `20261025100000`), writes a `tour_published` audit version and
+  clears the API's property-list cache; idempotent (`already_published: true` when nothing changed since). Saving stays live for
+  every reader (legacy app, Touch app, Tour App): publishing records the version meant to be live and tells the app to refresh;
+  it does not bump `tour_setup_version` (a save already moved every version a client checks).
+- **`booked_at` and `time_zone`** on every booking the app reads (`POST …/bookings`, `GET …/bookings`, `/visitor/otp/verify`,
+  `/visitor/me`): the booked instant as ISO 8601 with the property's offset (`Visitors::Status.booked_at` in the property's
+  zone) and the property's IANA zone. `tour_date` / `tour_time` stay as the wall clock. The app reads days, countdowns and the
+  start window from these, never from the phone's zone.
+- **Rules unchanged, now mirrored by the app:** a booking can be checked in from `grace_period` minutes before its time to
+  `grace_period` minutes after; it is *upcoming* before that window and *missed* after it without a visit; it is *completed*
+  only by `Visits::End` of a visit linked to it.
+- `Scheduling::Settings#update_rules!`: a blank `grace_period` leaves the stored value alone; the length of tour is 1..600 and
+  the grace period 10..60 whatever the client sends (tests added).
+- Tests: `test/controllers/connect/tour_controller_test.rb` (3), `test/services/tour_api/config_version_test.rb` (1), ETag and
+  `booked_at` cases in `stops_test.rb`, `bookings_test.rb`, `visitor_bookings_test.rb`, `properties_test.rb`.

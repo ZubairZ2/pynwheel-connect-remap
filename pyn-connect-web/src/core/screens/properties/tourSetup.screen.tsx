@@ -13,6 +13,8 @@ import { Breadcrumb } from '~/core/components/molecules/Breadcrumb';
 import { Modal } from '~/core/components/molecules/Modal';
 import { SetupSwitcher } from '~/core/components/molecules/SetupSwitcher';
 import { useTourSetup, type TourSetupController } from '~/core/hooks/useTourSetup';
+import type { TourPublication } from '~/core/models/data/tourModules.data';
+import { formatWhen } from '~/core/utils/generator/tour/tourLocks.generator';
 import { useTourBooking } from '~/core/hooks/tour/useTourBooking';
 import type { BookingSection } from '~/core/utils/generator/tour/tourBooking.generator';
 import { useTourOverview } from '~/core/hooks/tour/useTourOverview';
@@ -471,9 +473,20 @@ const TourDialogs = ({ controller }: { controller: TourSetupController }) => {
         closeLabel={i18n.t(T.dialogs.close)}
         className="bo-map__dialog"
         footer={
-          <button type="button" className="bo-btn bo-btn--secondary" onClick={actions.closePublish}>
-            {i18n.t(T.dialogs.close)}
-          </button>
+          <>
+            <button type="button" className="bo-btn bo-btn--secondary" onClick={actions.closePublish}>
+              {i18n.t(T.dialogs.close)}
+            </button>
+            <button
+              type="button"
+              className="bo-btn bo-btn--primary"
+              onClick={() => void actions.publish()}
+              disabled={controller.publishing || controller.unsaved > 0 || !controller.canSave || controller.publication?.tourEnabled === false}
+              data-testid="tour-publish-confirm"
+            >
+              {i18n.t(controller.publishing ? T.publish.publishing : T.publish.confirm)}
+            </button>
+          </>
         }
       >
         <p className="bo-map__dialogtext">
@@ -483,10 +496,23 @@ const TourDialogs = ({ controller }: { controller: TourSetupController }) => {
             property: map.inventory.property.name
           })}
         </p>
-        <div className="bo-map__warnbox">{i18n.t(T.publish.unavailable)}</div>
+        <p className="bo-map__dialognote" data-testid="tour-publish-state">
+          {publicationText(controller.publication)}
+        </p>
+        <p className="bo-map__dialognote">{i18n.t(T.publish.hint)}</p>
+        {controller.unsaved > 0 ? <div className="bo-map__warnbox">{i18n.t(T.publish.saveFirst)}</div> : null}
+        {controller.publication?.tourEnabled === false ? <div className="bo-map__warnbox">{i18n.t(T.publish.tourOff)}</div> : null}
       </Modal>
     </>
   );
+};
+
+/** The publish dialog's status line (October 25, 2026): never / last published by whom and when / changed since. */
+const publicationText = (publication: TourPublication | null): string => {
+  if (!publication || !publication.everPublished) return i18n.t(T.publish.never);
+  const by = publication.publishedBy?.name || publication.publishedBy?.email || '—';
+  const last = t(T.publish.last, { when: formatWhen(publication.publishedAt), by });
+  return `${last} ${i18n.t(publication.changedSincePublish ? T.publish.changed : T.publish.upToDate)}`;
 };
 
 const TourUnavailable = ({ error }: { error: string | null }) => (

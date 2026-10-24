@@ -2844,3 +2844,30 @@ knowledge `context.md` §42; gaps doc updated.
   in the new app stays a server-side flag; geolocation needs a plugin; `bundle-audit` is not installed (not run); the in-app
   check-in → end journey was proven by unit tests and the API run, not by a browser click-through; `fog_public`, Doorkeeper
   token hashing and the retention jobs of the plan are untouched (owner decisions D7–D10).
+
+## 49. Publish to Tour App, booking lifecycle and time zones, scheduling tiles, widget theme (October 25, 2026)
+
+Branch `improvement/publish-scheduling-timezone-qa-2026-10-25`. Report `PUBLISH_SCHEDULING_TZ_FINDINGS_2026-10-25.md` (findings,
+the owner's decisions, the PASS/FAIL matrix); contract `tour-app-backend-api.md` §22; knowledge `context.md` §43.
+
+- **Decided by the owner.** The property's IANA zone is authoritative for the app (no new setting); Publish is an audited version
+  record with revalidation on resume (Save stays live; option C1); Start Tour only inside the grace window, Upcoming before,
+  Missed after; Schedule-form edits stay booking-local; the widget's reflected `?message=` is fixed in the same branch.
+- **Rails.** `TourApi::ConfigVersion`; `config_version` + `published_at` on the property detail; ETag/304 on `/stops` and
+  `/booking/settings`; `booked_at` + `time_zone` on every booking payload; `TourSetup::Publish` + `Connect::TourController`
+  (`GET tour/publication`, `POST tour/publish`), migration `20261025100000` (three nullable `tours` columns); blank grace period
+  ignored; widget `sanitize`; `scheduler_widget_connect.scss` behind `?theme=connect` / `SCHEDULER_WIDGET_THEME`.
+- **Tour App.** `store/zone.ts`; `ScheduledTour.bookedAtMs / timeZone`; `autoTourScenario` on the grace window; `tourDayLabel`;
+  zone-aware Schedule day strip and slot filters; `finishTour.bookingCompleted`; `syncBookings`, `bundleLoaded`, `bookingStale`;
+  `AppProvider.revalidate` on resume / online; Book Another Tour → Schedule; prefill on every Schedule path with the CMS's first
+  and last names; repository `getPropertyVersion`, `refreshVisitorBookings`.
+- **Connect.** Publish dialog wired (dirty guard, status line, idempotent), checklist step, header renamed; readiness pill wraps.
+- **Verified.** Rails 204 runs / 1,639 assertions on the touched suites (one transient `visitors_controller_test` failure on a
+  parallel run, green alone), Tour App 145 vitest + tsc, Connect 28 vitest + tsc. In the pane against the local prod copy: the
+  owner's booking shows "Upcoming tour · Tomorrow, Oct 25 · 10:00 AM · Starts in 19:42" (was "Today · Starts in 8:43"); a full
+  virtual tour leaves it Upcoming; a stop-order change in the CMS reached Build Your Tour after a resume without switching
+  property (network: `GET /properties/1618` → graph, stops, map); Connect published Hazel (version recorded, second click
+  "already published"); the long readiness pill sits inside its tile at 1400 and 1000 px; the themed widget renders with Manrope
+  and the primary button, the plain widget is byte-identical.
+- **Blocked.** No phone was attached on October 25; the on-device scenarios (1–12 of the brief) remain NOT RUN until the tenda
+  APK is rebuilt from this branch and installed.

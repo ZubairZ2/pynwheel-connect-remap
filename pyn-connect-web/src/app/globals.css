@@ -7004,6 +7004,9 @@ select {
 .bo-tx__headersub { font: 500 12px/1.5 var(--bo-font); color: var(--bo-subtle); margin-top: 2px; }
 .bo-tx__gates { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .bo-tx__gate { border: 1px solid var(--bo-line-2); border-radius: 9px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; background: #fbfbfc; align-items: flex-start; }
+/* October 25, 2026: the longest fail label (Prospect sees “No Tour Type is Active”) wraps inside its tile instead of spilling past it */
+.bo-tx__gate .bo-pill { white-space: normal; max-width: 100%; line-height: 1.3; text-align: left; }
+.bo-tx__gate .bo-pill__dot { flex-shrink: 0; }
 .bo-tx__gatelabel { font: 700 12px var(--bo-font); color: var(--bo-ink); }
 .bo-tx__linkbtn { border: none; background: none; padding: 0; font: 700 11.5px var(--bo-font); color: var(--bo-accent); cursor: pointer; text-decoration: none; }
 .bo-tx__linkbtn:disabled { opacity: 0.5; cursor: not-allowed; }
