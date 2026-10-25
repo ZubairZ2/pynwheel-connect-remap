@@ -332,3 +332,9 @@ With the iOS SDK token issued from the portal (`~/.igloohome_ios_sdk_token`; Git
 - SPM credential for the URL dependency: a GitLab account in Xcode › Settings › Accounts, or `~/.netrc`
   (`machine gitlab.com` / `login oauth2` / `password <token>`); the auto-mode classifier refused to write the file
   from the session, so the owner adds it.
+- **TestFlight:** App Store Connect already held a build 2 of `com.pynwheel.SelfTourDev` (uploaded from the Organizer
+  before the port), so the SDK build went up as **build 3** (`CURRENT_PROJECT_VERSION = 3`, archive "App 25-10-2026
+  build 3" in the Organizer; `xcodebuild -exportArchive` with `method app-store-connect`, `destination upload`,
+  `uploadSymbols false` because the prebuilt `IglooSDKCore` ships no dSYM). "Upload succeeded" at 06:44 on October 25,
+  2026; adding it to the tester group is done in App Store Connect › TestFlight. Build 2 on TestFlight answers
+  "Bluetooth unlock is not available in this build"; build 3 is the one to test doors with.
