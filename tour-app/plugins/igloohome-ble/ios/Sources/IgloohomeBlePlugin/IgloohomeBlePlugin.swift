@@ -1,29 +1,30 @@
 import Foundation
 import Capacitor
 import CoreBluetooth
-#if canImport(IgloohomeSDK)
-import IgloohomeSDK
-import RxSwift
-#endif
 
 /**
- * The igloohome Bluetooth SDK (IgloohomeSDK.xcframework) behind the Pynwheel
- * Tour app's igloohome v1 flow, as the legacy module
- * (pyn-tour-old/ios/IglooModule.swift) drove it: BleManager.scan → the
- * lock by name → connectByStringKey(guest key) → unlock(timestamp) → dispose.
- * Same method set, events and error codes as the Android plugin.
+ * The iOS half of the Pynwheel Tour app's igloohome v1 (Bluetooth) flow:
+ * the same method set, events and error codes as the Android plugin
+ * (IgloohomeBlePlugin.kt over igloohome's SDK 3.x).
  *
- * Compiled against the SDK only when its module and the libraries its
- * interface imports (RxSwift, igloohome's RxBluetoothKit, iOSDFULibrary) are
- * resolved by Package.swift; otherwise `initialize` and every operation
- * reject with `unavailable` so the app can say the Bluetooth unlock is not
- * in this build.
+ * This build carries no igloohome SDK (Package.swift explains why), so
+ * `initialize` and every Bluetooth operation reject with `unavailable` and
+ * the app says the Bluetooth unlock is not in this build. What works
+ * already is the part the SDK does not own: the system Bluetooth permission
+ * prompt (`requestPermissions`, answered through the Core Bluetooth
+ * delegate, never before the visitor has replied) and the radio state.
+ *
+ * Porting to igloohome's SDK 3.x for iOS (gitlab.com/igloohome/iglooaccess-ios-sdk,
+ * products IgloohomeSDK + IglooSDKCore) means replacing the `unavailable`
+ * bodies below with the Android plugin's shape: the SDK's scan feeds
+ * `lockFound` events by Bluetooth name; `connect` only settles the lock and
+ * the guest key after the scan saw the lock; `unlock` runs the SDK's
+ * unlock(deviceId, key, now) under the app's timeout (the SDK connects, sets
+ * the clock and opens); `disconnect` drops what the unlock left open.
  *
  * Plugin methods run on Capacitor's dispatch queue, which has no run loop:
  * every timeout is a cancellable `DispatchWorkItem` on the main queue, never
- * a `Timer`. A connect or unlock call still waiting for the SDK is kept in a
- * field and settled exactly once: by the SDK, by its timeout, or with
- * `cancelled` when `reset` / `disconnect` drop the connection.
+ * a `Timer`.
  */
 @objc(IgloohomeBlePlugin)
 public class IgloohomeBlePlugin: CAPPlugin, CAPBridgedPlugin {
@@ -98,242 +99,10 @@ public class IgloohomeBlePlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
-#if canImport(IgloohomeSDK)
-    private var bleManager: BleManager?
-    private var scanDisposable: Disposable?
-    private var connectDisposable: Disposable?
-    private var unlockDisposable: Disposable?
-    private var foundLocks: [IglooLock] = []
-    private var selectedLock: IglooLock?
-    private var scanning = false
-    private var connecting = false
-    private var unlocking = false
-    private var scanTimeout: DispatchWorkItem?
-    private var connectTimeout: DispatchWorkItem?
-    /// The connect / unlock call still waiting for the SDK: settled exactly once, by the SDK or by a cancel.
-    private var connectCall: CAPPluginCall?
-    private var unlockCall: CAPPluginCall?
-    private let callLock = NSLock()
-
-    private func manager() -> BleManager {
-        if let existing = bleManager { return existing }
-        BleManager.initialize()
-        let created = BleManager()
-        bleManager = created
-        return created
-    }
-
-    private func poweredOn() -> Bool {
-        return manager().getCentralManager().state == .poweredOn
-    }
-
-    /// The waiting connect call, once: a second caller (the SDK after a cancel, a cancel after the SDK) gets nil.
-    private func takeConnectCall() -> CAPPluginCall? {
-        callLock.lock()
-        defer { callLock.unlock() }
-        let pending = connectCall
-        connectCall = nil
-        return pending
-    }
-
-    private func takeUnlockCall() -> CAPPluginCall? {
-        callLock.lock()
-        defer { callLock.unlock() }
-        let pending = unlockCall
-        unlockCall = nil
-        return pending
-    }
-
-    private func keep(connect call: CAPPluginCall) {
-        callLock.lock()
-        connectCall = call
-        callLock.unlock()
-    }
-
-    private func keep(unlock call: CAPPluginCall) {
-        callLock.lock()
-        unlockCall = call
-        callLock.unlock()
-    }
-
-    @objc func initialize(_ call: CAPPluginCall) {
-        let state = manager().getCentralManager().state
-        call.resolve(["platform": "ios", "supported": state != .unsupported, "enabled": state == .poweredOn])
-    }
-
-    /// iOS offers no API to switch Bluetooth on from an app (the system shows its own alert when a Core Bluetooth
-    /// manager starts while the radio is off); the answer is the current state and the app points to Control Centre.
-    @objc func enableBluetooth(_ call: CAPPluginCall) {
-        call.resolve(["enabled": manager().getCentralManager().state == .poweredOn])
-    }
-
-    @objc public override func checkPermissions(_ call: CAPPluginCall) {
-        call.resolve(["bluetooth": permissionValue()])
-    }
-
-    @objc public override func requestPermissions(_ call: CAPPluginCall) {
-        requestBluetoothPermission(call)
-    }
-
-    @objc func startScan(_ call: CAPPluginCall) {
-        guard manager().getCentralManager().state != .unsupported else { return reject(call, "unsupported", "This device has no Bluetooth LE.") }
-        guard poweredOn() else { return reject(call, "bluetooth_off", "Bluetooth is switched off.") }
-        guard CBCentralManager.authorization == .allowedAlways else { return reject(call, "permission_denied", "Bluetooth permission was not granted.") }
-        guard !scanning && !connecting && !unlocking else { return reject(call, "busy", "Another scan or connection is in progress.") }
-        let timeoutMs = call.getDouble("timeoutMs") ?? 60_000
-        foundLocks = []
-        scanning = true
-        scanDisposable = manager().scan(options: [CBCentralManagerScanOptionAllowDuplicatesKey: true as AnyObject])
-            .subscribe(onNext: { [weak self] lock in
-                guard let self = self else { return }
-                if !self.foundLocks.contains(where: { $0.name == lock.name }) { self.foundLocks.append(lock) }
-                self.notifyListeners("lockFound", data: ["name": lock.name, "rssi": NSNull()])
-            }, onError: { [weak self] error in
-                self?.finishScan(reason: "error", message: error.localizedDescription)
-            })
-        // Capacitor's plugin queue has no run loop, so a Timer scheduled here would never fire.
-        let timeout = DispatchWorkItem { [weak self] in self?.finishScan(reason: "timeout", message: nil) }
-        scanTimeout = timeout
-        DispatchQueue.main.asyncAfter(deadline: .now() + timeoutMs / 1000, execute: timeout)
-        call.resolve()
-    }
-
-    @objc func stopScan(_ call: CAPPluginCall) {
-        finishScan(reason: "stopped", message: nil)
-        call.resolve()
-    }
-
-    private func finishScan(reason: String, message: String?) {
-        let wasScanning = scanning
-        scanTimeout?.cancel()
-        scanTimeout = nil
-        scanDisposable?.dispose()
-        scanDisposable = nil
-        scanning = false
-        if wasScanning {
-            var data: [String: Any] = ["reason": reason]
-            if let message = message { data["message"] = message }
-            notifyListeners("scanStopped", data: data)
-        }
-    }
-
-    @objc func connect(_ call: CAPPluginCall) {
-        guard let name = call.getString("name"), !name.isEmpty, let key = call.getString("key"), !key.isEmpty else {
-            return reject(call, "sdk_error", "A lock name and a guest key are required.")
-        }
-        guard let lock = foundLocks.first(where: { $0.name == name }) else { return reject(call, "not_found", "The lock \(name) was not seen by the scan.") }
-        guard !connecting && !unlocking && selectedLock == nil else { return reject(call, "busy", "A connection is already in progress.") }
-        finishScan(reason: "stopped", message: nil)
-        let timeoutMs = call.getDouble("timeoutMs") ?? 30_000
-        connecting = true
-        connectDisposable?.dispose()
-        keep(connect: call)
-        // The Observable stays open for the connection's life (disposing it disconnects), so the timeout covers only
-        // the connection itself, not the connection's life: an established connection is never torn down by it.
-        let timeout = DispatchWorkItem { [weak self] in
-            guard let self = self, let pending = self.takeConnectCall() else { return }
-            self.connecting = false
-            self.connectDisposable?.dispose()
-            self.connectDisposable = nil
-            self.reject(pending, "timeout", "The lock did not answer in time.")
-        }
-        connectTimeout?.cancel()
-        connectTimeout = timeout
-        DispatchQueue.main.asyncAfter(deadline: .now() + timeoutMs / 1000, execute: timeout)
-        connectDisposable = lock.connectByStringKey(key)
-            .subscribe(onNext: { [weak self] connected in
-                guard let self = self, let pending = self.takeConnectCall() else { return } // cancelled meanwhile
-                self.connectTimeout?.cancel()
-                self.connectTimeout = nil
-                self.connecting = false
-                self.selectedLock = connected
-                pending.resolve(["name": connected.name])
-            }, onError: { [weak self] error in
-                guard let self = self else { return }
-                self.connectTimeout?.cancel()
-                self.connectTimeout = nil
-                if let pending = self.takeConnectCall() {
-                    self.connecting = false
-                    self.connectDisposable?.dispose()
-                    self.connectDisposable = nil
-                    self.reject(pending, IgloohomeBlePlugin.code(of: error), error.localizedDescription)
-                    return
-                }
-                // The connection dropped after it was established: an unlock in flight cannot finish.
-                let unlocking = self.takeUnlockCall()
-                self.connectDisposable?.dispose()
-                self.connectDisposable = nil
-                self.selectedLock = nil
-                self.connecting = false
-                self.unlocking = false
-                if let pending = unlocking { self.reject(pending, "not_connected", error.localizedDescription) }
-            })
-    }
-
-    @objc func unlock(_ call: CAPPluginCall) {
-        guard let lock = selectedLock, !connecting else { return reject(call, "not_connected", "No lock is connected.") }
-        guard !unlocking else { return reject(call, "busy", "An unlock is already in progress.") }
-        let timeoutMs = call.getDouble("timeoutMs") ?? 30_000
-        unlocking = true
-        keep(unlock: call)
-        unlockDisposable = lock.unlock(timestamp: Int(Date().timeIntervalSince1970))
-            .timeout(.milliseconds(Int(timeoutMs)), scheduler: MainScheduler.instance)
-            .subscribe(onCompleted: { [weak self] in
-                guard let self = self else { return }
-                self.unlocking = false
-                guard let pending = self.takeUnlockCall() else { return } // cancelled meanwhile
-                pending.resolve(["unlocked": true])
-            }, onError: { [weak self] error in
-                guard let self = self else { return }
-                self.unlocking = false
-                guard let pending = self.takeUnlockCall() else { return }
-                let code = IgloohomeBlePlugin.code(of: error)
-                self.reject(pending, code == "sdk_error" || code == "connect_failed" ? "unlock_failed" : code, error.localizedDescription)
-            })
-    }
-
-    @objc func disconnect(_ call: CAPPluginCall) {
-        disconnectNow()
-        call.resolve()
-    }
-
-    @objc func reset(_ call: CAPPluginCall) {
-        finishScan(reason: "stopped", message: nil)
-        disconnectNow()
-        foundLocks = []
-        call.resolve()
-    }
-
-    /// Drops the connection; a connect or unlock still waiting is answered `cancelled` so its promise settles.
-    private func disconnectNow() {
-        let unlockPending = takeUnlockCall()
-        let connectPending = takeConnectCall()
-        connectTimeout?.cancel()
-        connectTimeout = nil
-        unlockDisposable?.dispose()
-        unlockDisposable = nil
-        connectDisposable?.dispose()
-        connectDisposable = nil
-        selectedLock = nil
-        connecting = false
-        unlocking = false
-        if let pending = unlockPending { reject(pending, "cancelled", "The unlock was cancelled.") }
-        if let pending = connectPending { reject(pending, "cancelled", "The connection was cancelled.") }
-    }
-
-    private static func code(of error: Error) -> String {
-        if error is RxError { return "timeout" }
-        let text = "\(error)".lowercased()
-        if text.contains("invalidkey") || text.contains("invalidrights") { return "invalid_key" }
-        if text.contains("timeout") { return "timeout" }
-        if text.contains("permission") { return "permission_denied" }
-        if text.contains("connect") || text.contains("bluetooth") { return "connect_failed" }
-        return "sdk_error"
-    }
-#else
     // The SDK is not in this build: `initialize` rejects with `unavailable` (the app then says the Bluetooth unlock is
     // not in this build) rather than answering `supported: false`, which would read as "this phone has no Bluetooth LE".
     @objc func initialize(_ call: CAPPluginCall) { reject(call, "unavailable", IgloohomeBlePlugin.unavailableMessage) }
+    /// iOS offers no API to switch Bluetooth on from an app; without the SDK there is no central manager to read either.
     @objc func enableBluetooth(_ call: CAPPluginCall) { call.resolve(["enabled": false]) }
     @objc public override func checkPermissions(_ call: CAPPluginCall) { call.resolve(["bluetooth": permissionValue()]) }
     @objc public override func requestPermissions(_ call: CAPPluginCall) { requestBluetoothPermission(call) }
@@ -343,7 +112,6 @@ public class IgloohomeBlePlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func unlock(_ call: CAPPluginCall) { reject(call, "unavailable", IgloohomeBlePlugin.unavailableMessage) }
     @objc func disconnect(_ call: CAPPluginCall) { call.resolve() }
     @objc func reset(_ call: CAPPluginCall) { call.resolve() }
-#endif
 }
 
 extension IgloohomeBlePlugin: CBCentralManagerDelegate {
