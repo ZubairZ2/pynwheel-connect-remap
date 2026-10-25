@@ -4,7 +4,8 @@ import { buildWayfindingGraph, computeSnapTolerance, DEFAULT_SIMPLIFY_EPSILON } 
 import type { HallwayNode } from './editing';
 import { pairKey, polylineLength } from './geometry';
 import { inferCorridors } from './inferCorridors';
-import { buildObstacleIndex, NO_OBSTACLES } from './obstacles';
+import { inferStreets, type StreetsMode, type StreetsResult } from './inferStreets';
+import { buildObstacleIndex, NO_OBSTACLES, type ObstacleIndex } from './obstacles';
 import { computeMaxSnapDistance, snapStopsToGraph } from './snapStops';
 import { detectSvgStructure } from './svg/detectLayers';
 import { DEFAULT_FLATTEN_STEP } from './svg/pathData';
@@ -13,15 +14,21 @@ import type { SvgEl } from './svg/svgTree';
 import type { AutoConnectSummary, BBox, HallwayWarning, Point, RootShape, StopCandidate, StopConnection, SvgStructureReport, WayfindingEdge, WayfindingGraph } from './types';
 
 /**
- * - `no-layers`         — nothing in the file is named: a flattened export, with nothing that says what is a walkway, a footprint or a room;
- * - `no-hallway-layer`  — named layers, but no walkway layer and no footprints (or building outlines) to infer corridors from;
- * - `no-corridor`       — footprints and rooms, but no corridor between the rooms;
- * - `no-edges`          — a walkway layer that gave no usable segment.
+ * - `no-layers`         — nothing in the file is named and nothing is pavement-coloured: a flattened export with nothing to read;
+ * - `no-hallway-layer`  — named layers, but no road, parking, walkway or deck among them, no pavement-coloured shape, and no footprints (or building outlines) to infer corridors in;
+ * - `no-corridor`       — footprints and rooms, but no corridor between the rooms and no street outside;
+ * - `no-edges`          — walkable geometry that gave no usable segment.
  */
 export type DetectFailure = 'no-layers' | 'no-hallway-layer' | 'no-corridor' | 'no-edges';
 
-/** Traced from walkway art, inferred from footprints and rooms, or both joined. */
-export type DetectSource = 'vector' | 'inferred' | 'both';
+/**
+ * - `streets`           — the centrelines of the walkable area (roads, parking, sidewalks, decks);
+ * - `streets+inferred`  — streets outside, with corridors inferred inside the building outlines;
+ * - `vector`            — a drawn walkway layer traced as it is (no walkable area could be rasterised);
+ * - `inferred`          — corridors inferred inside the footprints only;
+ * - `both`              — a traced walkway layer joined with inferred corridors.
+ */
+export type DetectSource = 'streets' | 'streets+inferred' | 'vector' | 'inferred' | 'both';
 
 export interface DetectedHallways {
   ok: boolean;
@@ -37,6 +44,8 @@ export interface DetectedHallways {
   bboxDiagonal: number;
   viewBox: BBox;
   bridgeCount: number;
+  /** Bridges that pass through a building to reach an enclosed piece (a courtyard through its lobby): proposals to review. */
+  doorBridgeCount: number;
   autoConnect: AutoConnectSummary | null;
   warnings: HallwayWarning[];
   /** Layer ids the result came from, for the review card. */
@@ -45,6 +54,12 @@ export interface DetectedHallways {
   fromBackground: boolean;
   /** How many named layers the file (and background) had: what the `no-layers` diagnosis saw. */
   namedLayers: number;
+  /** How the walkable area was recognised: named layers, fill colours (a flattened export), or both; null when no street pass ran. */
+  streetsMode: StreetsMode | null;
+  /** Connected pieces of the network. */
+  components: number;
+  /** How many stops joined the network through an entrance icon of their building rather than by the nearest point. */
+  entranceLinks: number;
 }
 
 export interface DetectOptions {
@@ -54,14 +69,16 @@ export interface DetectOptions {
   /** The property's shared background map, whose walkways and outlines fill in what the floor file lacks (a Beans property). */
   background?: SvgEl | null;
   /**
-   * When to infer corridors inside the footprints *beside* walkway art.
-   * `'weak'` (the default): only when the art is generically named (`Path`)
-   * — a labelled `Walkways` / `Sidewalks` / `Corridor` layer is the
-   * designer's word on where people walk and is traced alone, as the POC
-   * does (its real exports are held to its numbers). `true` always, `false`
-   * never.
+   * The narrowest corridor half-width (root units) the indoor pass keeps. A
+   * garden-style building's drawn margin between its units and its outline is
+   * 2–4 units wide and is not a corridor; real corridors in these exports are
+   * 10 units and wider. Default: 0.3% of the viewBox diagonal, at least 5.
    */
-  inferBesideWalkways?: boolean | 'weak';
+  indoorMinHalfWidth?: number;
+  /** Skip the street pass (the engine as it was before October 25, 2026). */
+  streets?: boolean;
+  /** Cell size of the street raster, in root units. */
+  streetCell?: number;
 }
 
 const diagonalOf = (points: Iterable<Point>, fallback: BBox): number => {
@@ -82,6 +99,24 @@ const diagonalOf = (points: Iterable<Point>, fallback: BBox): number => {
 function* allPoints(lines: Point[][]): Generator<Point> {
   for (const line of lines) yield* line;
 }
+
+/** Union-find roots of the nodes that touch an edge: how many pieces the network is in. */
+export const countComponents = (graph: WayfindingGraph): number => {
+  const parent = new Map<string, string>(graph.nodes.map((n) => [n.id, n.id]));
+  const find = (id: string): string => {
+    let root = id;
+    while (parent.get(root) !== root) root = parent.get(root)!;
+    parent.set(id, root);
+    return root;
+  };
+  const touched = new Set<string>();
+  graph.edges.forEach((edge) => {
+    parent.set(find(edge.fromNodeId), find(edge.toNodeId));
+    touched.add(edge.fromNodeId);
+    touched.add(edge.toNodeId);
+  });
+  return new Set([...touched].map(find)).size;
+};
 
 /** Removes connected pieces whose paths add up to less than `minLength`. */
 export const dropShortComponents = (graph: WayfindingGraph, minLength: number): WayfindingGraph => {
@@ -153,7 +188,7 @@ export const obstaclesOf = (root: SvgEl, background: SvgEl | null = null, flatte
   return [...outlines, ...rootShapes(structure.roomShapes, flattenStep), ...rootShapes(structure.footprintShapes, flattenStep)].flatMap((shape) => ('rings' in shape ? shape.rings : [shape]));
 };
 
-/** A traced (confirmed) graph from the walkway shapes, bridged across the drawn gaps. */
+/** A traced (confirmed) graph from the walkway shapes, bridged across the drawn gaps — the engine's reading of a drawn centreline, kept as the fallback. */
 const traceWalkways = (structure: SvgStructureReport, stops: StopCandidate[], flattenStep: number) => {
   const subpaths = flattenShapes(structure.walkwayShapes, flattenStep);
   const diagonal = diagonalOf([...allPoints(subpaths), ...stops.map((stop) => stop.anchor)], structure.viewBox);
@@ -163,9 +198,26 @@ const traceWalkways = (structure: SvgStructureReport, stops: StopCandidate[], fl
   return { graph: bridged.graph, bridgeCount: bridged.bridgeCount, diagonal, snapTolerance };
 };
 
+/** The street centrelines as a graph: the runs joined, small breaks bridged (never through a building), crumbs dropped. */
+const streetGraph = (streets: StreetsResult, diagonal: number, obstacles: ObstacleIndex) => {
+  const cell = streets.grid.cell;
+  const snapTolerance = Math.max(computeSnapTolerance(diagonal), cell * 0.75);
+  const built = buildWayfindingGraph(streets.runs, { snapTolerance, simplifyEpsilon: Math.max(DEFAULT_SIMPLIFY_EPSILON, cell * 1.5), detectCrossings: false, kind: 'traced', idPrefix: 's' });
+  const bridged = bridgeComponentGaps(built.graph, { maxGapDistance: Math.max(cell * 8, diagonal * 0.012), snapTolerance });
+  let rejected = 0;
+  const edges = bridged.graph.edges.filter((edge) => {
+    if (edge.kind !== 'bridge') return true;
+    const blocked = obstacles.blocks(edge.pathPoints[0], edge.pathPoints[edge.pathPoints.length - 1]);
+    if (blocked) rejected += 1;
+    return !blocked;
+  });
+  const graph = dropShortComponents({ nodes: bridged.graph.nodes, edges }, Math.max(cell * 20, diagonal * 0.025));
+  return { graph, bridgeCount: bridged.bridgeCount - rejected, snapTolerance };
+};
+
 /** Corridors inferred inside the footprints, as pending proposals with a confidence per run. */
-const inferInside = (footprints: RootShape[], rooms: RootShape[], structure: SvgStructureReport, stops: StopCandidate[]) => {
-  const inferred = inferCorridors(footprints, rooms);
+const inferInside = (footprints: RootShape[], rooms: RootShape[], structure: SvgStructureReport, stops: StopCandidate[], minHalfWidth: number) => {
+  const inferred = inferCorridors(footprints, rooms, { minHalfWidth });
   if (inferred.reason === 'no-footprint' || !inferred.runs.length) return { inferred, graph: null, bridgeCount: 0, diagonal: 0, snapTolerance: 0, confidenceOf: (() => null) as (nodeId: string) => number | null };
   const subpaths = inferred.runs.map((run) => run.points);
   const diagonal = diagonalOf([...allPoints(footprints.flatMap((shape) => shape.rings)), ...stops.map((stop) => stop.anchor)], structure.viewBox);
@@ -192,27 +244,30 @@ const inferInside = (footprints: RootShape[], rooms: RootShape[], structure: Svg
   return { inferred, graph: graph.edges.length ? graph : null, bridgeCount: bridged.bridgeCount, diagonal, snapTolerance, confidenceOf };
 };
 
+/** The confidence a colour-inferred street point carries: the pavement was recognised by its fill, not by a layer's name. */
+const COLOUR_STREET_CONFIDENCE = 0.6;
+
 /**
- * Detect Hallways for one floor SVG — the POC's `extractWayfinding` (Phases
- * 1–4) with corridor inference where the POC would report "no walkable
- * layer", and both joined where a file has walkway art *and* buildings with
- * rooms inside (a Beans export: sidewalks between the buildings in the
- * shared background, units inside each building's outline):
+ * Detect Hallways for one floor SVG. Two passes, joined:
  *
- *   SVG tree (+ background) ─► detectSvgStructure ─┬─ walkway layer ─► flatten ─► buildWayfindingGraph ─► bridgeComponentGaps ─┐
- *                                                  ├─ footprints − rooms ─► inferCorridors ─► buildWayfindingGraph ─► short bridges ─┤─► union ─► bridge the doorways
- *                                                  └─ neither ─► no-layers / no-hallway-layer                                       ┘
+ *   SVG tree (+ background) ─┬─ inferStreets: walkable area (roads, parking, sidewalks, decks) ─► medial axis ─► runs ─► graph ─┐
+ *                            ├─ detectSvgStructure ─► footprints − rooms ─► inferCorridors (corridors wider than a wall) ─► graph ─┤─► union ─► bridge the doorways
+ *                            └─ (no walkable area rasterised) walkway layer traced as drawn, as before                              ┘
  *            ─► snapStopsToGraph (the floor's plotted units, amenities and stops; may split edges)
  *            ─► autoConnectNodes (k-NN, obstacle + redundancy filters)
  *
- * Coordinates are the SVG's root user units. Traced nodes are confirmed;
- * inferred ones are proposals (`pending`, with a confidence) until touched.
+ * Coordinates are the SVG's root user units. Street points found from named
+ * layers are confirmed; those found from fill colours alone, inferred
+ * corridors and bridges through a building are proposals (`pending`, with a
+ * confidence) until touched. The same file gives the same result every run.
  */
 export const detectHallways = (root: SvgEl, stops: StopCandidate[], options: DetectOptions = {}): DetectedHallways => {
   const flattenStep = options.flattenStep ?? DEFAULT_FLATTEN_STEP;
   const structure = detectSvgStructure(root, options.background ?? null);
-  const warnings = [...structure.warnings];
-  const fromBackground = structure.fromBackground.walkways || structure.fromBackground.footprints;
+  const warnings = [...structure.warnings.filter((warning) => warning.code !== 'no-walkable-layer')];
+  const viewDiagonal = diagonalOf([], structure.viewBox);
+  const streets = options.streets === false ? null : inferStreets(root, options.background ?? null, { cell: options.streetCell, flattenStep: Math.min(flattenStep, 4) });
+  const fromBackground = structure.fromBackground.walkways || structure.fromBackground.footprints || (!!options.background && !!streets && streets.walkLayers.length > 0);
   const empty = (failure: DetectFailure, layers: string[] = []): DetectedHallways => ({
     ok: false,
     failure,
@@ -222,70 +277,84 @@ export const detectHallways = (root: SvgEl, stops: StopCandidate[], options: Det
     connections: [],
     joined: 0,
     obstacles: [],
-    bboxDiagonal: diagonalOf([], structure.viewBox),
+    bboxDiagonal: viewDiagonal,
     viewBox: structure.viewBox,
     bridgeCount: 0,
+    doorBridgeCount: 0,
     autoConnect: null,
     warnings,
     layers,
     fromBackground,
-    namedLayers: structure.namedLayers
+    namedLayers: structure.namedLayers,
+    streetsMode: streets?.mode ?? null,
+    components: 0,
+    entranceLinks: 0
   });
 
   const footprints = rootShapes(structure.footprintShapes, flattenStep);
   const rooms = rootShapes(structure.roomShapes, flattenStep);
-  const vector = structure.found ? traceWalkways(structure, stops, flattenStep) : null;
-  const beside = options.inferBesideWalkways ?? 'weak';
-  const inferBeside = beside === true || (beside === 'weak' && structure.walkwayMatch === 'weak');
-  // Corridors inside the buildings: always when there is no walkway art; beside walkway art only when allowed and the file has rooms to infer between.
-  const inside = footprints.length && (!vector || (inferBeside && rooms.length)) ? inferInside(footprints, rooms, structure, stops) : null;
+  const buildingRings = streets?.buildingRings ?? [];
+  const buildingIndex = buildingRings.length ? buildObstacleIndex(buildingRings) : NO_OBSTACLES;
+
+  // Outside: the street network; failing that, the drawn walkway layer as before.
+  const outdoor = streets?.runs.length ? streetGraph(streets, viewDiagonal, buildingIndex) : null;
+  const vector = !outdoor && structure.found ? traceWalkways(structure, stops, flattenStep) : null;
+  if (streets && !streets.runs.length) {
+    if (streets.reason === 'no-walkable') warnings.push({ code: 'no-walkable-area', message: streets.mode === 'colour' ? 'No road, parking, walkway or deck layer, and no pavement-coloured shape.' : 'No walkable area could be read from the named layers.' });
+  } else if (streets?.mode === 'colour') {
+    warnings.push({ code: 'streets-from-colour', message: 'The walkable areas were recognised by their fill colours: the file has no named road, parking or walkway layer.' });
+  }
+  // Inside: corridors between the rooms of each footprint, where they are wider than a drawn wall margin.
+  const indoorMinHalfWidth = options.indoorMinHalfWidth ?? Math.max(5, viewDiagonal * 0.003);
+  const inside = footprints.length ? inferInside(footprints, rooms, structure, stops, indoorMinHalfWidth) : null;
   const footprintLayer = structure.footprintSource === 'outlines' ? 'Building outlines' : 'Footprints';
 
-  if (!vector && !inside?.graph) {
-    if (structure.namedLayers === 0) return empty('no-layers');
+  if (!outdoor && !vector && !inside?.graph) {
+    if (structure.namedLayers === 0 && !(streets && streets.colourWalk > 0)) return empty('no-layers');
     if (!inside || inside.inferred.reason === 'no-footprint') return empty('no-hallway-layer');
     return empty('no-corridor', [footprintLayer, 'Units']);
   }
 
+  const diagonal = Math.max(viewDiagonal, outdoor ? viewDiagonal : vector?.diagonal ?? 0, inside?.diagonal ?? 0);
+  const snapTolerance = outdoor?.snapTolerance ?? vector?.snapTolerance ?? inside?.snapTolerance ?? computeSnapTolerance(diagonal);
+  const pieces: { graph: WayfindingGraph; prefix: string }[] = [];
+  if (outdoor) pieces.push({ graph: outdoor.graph, prefix: '' });
+  if (vector) pieces.push({ graph: vector.graph, prefix: '' });
+  if (inside?.graph) pieces.push({ graph: inside.graph, prefix: 'i_' });
   const inferredIds = new Set((inside?.graph?.nodes ?? []).map((node) => node.id));
-  let graph: WayfindingGraph;
-  let source: DetectSource;
-  let layers: string[];
-  let diagonal: number;
-  let snapTolerance: number;
-  let bridgeCount = (vector?.bridgeCount ?? 0) + (inside?.bridgeCount ?? 0);
-  if (vector && inside?.graph) {
-    source = 'both';
-    layers = [...structure.walkwayLayerIds, footprintLayer, 'Units'];
-    diagonal = Math.max(vector.diagonal, inside.diagonal);
-    snapTolerance = vector.snapTolerance;
-    const union: WayfindingGraph = { nodes: [...vector.graph.nodes, ...inside.graph.nodes], edges: [...vector.graph.edges, ...inside.graph.edges.map((edge) => ({ ...edge, id: `i_${edge.id}` }))] };
-    // Where a corridor ends at a doorway, join it to the walkway outside (a loose end to the nearest other piece, within the drawn-gap cap).
-    const joined = bridgeComponentGaps(union, { maxGapDistance: computeGapBridgeDistance(diagonal), snapTolerance });
-    graph = joined.graph;
-    bridgeCount += joined.bridgeCount;
-  } else if (vector) {
-    source = 'vector';
-    layers = structure.walkwayLayerIds;
-    graph = vector.graph;
-    diagonal = vector.diagonal;
-    snapTolerance = vector.snapTolerance;
-  } else {
-    source = 'inferred';
-    layers = [footprintLayer, 'Units'];
-    graph = inside!.graph!;
-    diagonal = inside!.diagonal;
-    snapTolerance = inside!.snapTolerance;
+  const colourStreetIds = new Set(streets?.mode === 'colour' && outdoor ? outdoor.graph.nodes.map((node) => node.id) : []);
+  let graph: WayfindingGraph = { nodes: pieces.flatMap((piece) => piece.graph.nodes), edges: pieces.flatMap((piece) => piece.graph.edges.map((edge) => (piece.prefix ? { ...edge, id: `${piece.prefix}${edge.id}` } : edge))) };
+  let bridgeCount = (outdoor?.bridgeCount ?? 0) + (vector?.bridgeCount ?? 0) + (inside?.bridgeCount ?? 0);
+  // Where a corridor ends at a doorway, or a courtyard is enclosed by its building, join the piece to the nearest
+  // other one: a join that passes through a building is kept as a proposal (`door_…`), the reviewer decides where.
+  let doorBridgeCount = 0;
+  if (pieces.length > 1 || countComponents(graph) > 1) {
+    const before = new Set(graph.edges.map((edge) => edge.id));
+    const joined = bridgeComponentGaps(graph, { maxGapDistance: Math.max(computeGapBridgeDistance(diagonal), diagonal * 0.06), snapTolerance });
+    graph = {
+      nodes: joined.graph.nodes,
+      edges: joined.graph.edges.map((edge) => {
+        if (edge.kind !== 'bridge' || before.has(edge.id)) return edge;
+        bridgeCount += 1;
+        if (!buildingIndex.blocks(edge.pathPoints[0], edge.pathPoints[edge.pathPoints.length - 1])) return edge;
+        doorBridgeCount += 1;
+        return { ...edge, id: `door_${edge.id}` };
+      })
+    };
   }
+  const source: DetectSource = outdoor ? (inside?.graph ? 'streets+inferred' : 'streets') : vector ? (inside?.graph ? 'both' : 'vector') : 'inferred';
+  const layers = [...(streets && outdoor ? streets.walkLayers : vector ? structure.walkwayLayerIds : []), ...(inside?.graph ? [footprintLayer, 'Units'] : [])];
   if (!graph.edges.length) return empty('no-edges', layers);
 
-  const obstacles = [
-    ...flattenShapes(structure.obstacleShapes, flattenStep),
-    ...(inside ? [...rooms, ...footprints].flatMap((shape) => shape.rings) : [])
-  ];
+  const obstacles = [...flattenShapes(structure.obstacleShapes, flattenStep), ...(inside ? [...rooms, ...footprints].flatMap((shape) => shape.rings) : []), ...buildingRings];
   const confidenceOf = inside?.confidenceOf ?? (() => null);
 
-  const snapped = snapStopsToGraph(stops, graph, { maxSnapDistance: computeMaxSnapDistance(diagonal), snapTolerance });
+  // A stop inside a building joins the street where its building is entered — the nearest entrance icon on that
+  // building's outline — not at the nearest point of the network through a wall. Stops with no entrance keep the
+  // nearest-edge rule.
+  const { candidates, viaEntrance } = aimAtEntrances(stops, buildingRings, streets?.entrances ?? [], diagonal);
+  const snappedRaw = snapStopsToGraph(candidates, graph, { maxSnapDistance: computeMaxSnapDistance(diagonal), snapTolerance });
+  const snapped = { graph: snappedRaw.graph, connections: snappedRaw.connections.map((connection, i) => ({ ...connection, anchor: stops[i].anchor })) };
   graph = snapped.graph;
 
   const obstacleIndex = obstacles.length ? buildObstacleIndex(obstacles) : NO_OBSTACLES;
@@ -302,24 +371,23 @@ export const detectHallways = (root: SvgEl, stops: StopCandidate[], options: Det
   }
   graph = splitParallelEdges(graph);
 
-  // A node is inferred when it came from the corridor inference, or was made on an inferred edge (a stop split, a bridge end).
-  const inferredEdgeEnds = new Set(graph.edges.filter((edge) => edge.kind === 'inferred').flatMap((edge) => [edge.fromNodeId, edge.toNodeId]));
-  const isInferred = (id: string) => inferredIds.has(id) || (!vector?.graph.nodes.some((node) => node.id === id) && inferredEdgeEnds.has(id));
+  // A node is a proposal when it came from the corridor inference, from a colour-recognised street, from a bridge
+  // through a building, or was made on an inferred edge (a stop split, a bridge end).
+  const inferredEdgeEnds = new Set(graph.edges.filter((edge) => edge.kind === 'inferred' || edge.id.startsWith('door_')).flatMap((edge) => [edge.fromNodeId, edge.toNodeId]));
+  const confirmedIds = new Set([...(outdoor && streets?.mode !== 'colour' ? outdoor.graph.nodes : []), ...(vector?.graph.nodes ?? [])].map((node) => node.id));
+  // In colour mode nothing is confirmed: a junction or bridge end made on a colour-recognised street is as much a proposal as the street.
+  const isInferred = (id: string) => inferredIds.has(id) || colourStreetIds.has(id) || (!confirmedIds.has(id) && (inferredEdgeEnds.has(id) || (outdoor != null && streets?.mode === 'colour')));
   const stopNodes = new Set(snapped.connections.map((c) => c.connectedNodeId).filter(Boolean));
   const nodes: HallwayNode[] = graph.nodes.map((node) => {
     const inferred = isInferred(node.id);
-    return {
-      ...node,
-      source: inferred ? 'inferred' : 'vector',
-      review: inferred ? 'pending' : 'confirmed',
-      confidence: inferred ? (stopNodes.has(node.id) ? null : confidenceOf(node.id)) : null
-    };
+    const confidence = inferred ? (stopNodes.has(node.id) ? null : colourStreetIds.has(node.id) ? COLOUR_STREET_CONFIDENCE : confidenceOf(node.id)) : null;
+    return { ...node, source: inferred ? 'inferred' : 'vector', review: inferred ? 'pending' : 'confirmed', confidence };
   });
   // A stop's own joining point is where its polygon meets the corridor: not a guess about the corridor.
   nodes.forEach((node) => {
     if (node.source === 'inferred' && stopNodes.has(node.id)) {
       const neighbours = graph.edges.filter((e) => e.fromNodeId === node.id || e.toNodeId === node.id).map((e) => (e.fromNodeId === node.id ? e.toNodeId : e.fromNodeId));
-      const values = neighbours.map((id) => confidenceOf(id)).filter((v): v is number => v != null);
+      const values = neighbours.map((id) => (colourStreetIds.has(id) ? COLOUR_STREET_CONFIDENCE : confidenceOf(id))).filter((v): v is number => v != null);
       node.confidence = values.length ? Math.min(...values) : null;
     }
   });
@@ -336,10 +404,85 @@ export const detectHallways = (root: SvgEl, stops: StopCandidate[], options: Det
     bboxDiagonal: diagonal,
     viewBox: structure.viewBox,
     bridgeCount,
+    doorBridgeCount,
     autoConnect,
     warnings,
     layers,
     fromBackground,
-    namedLayers: structure.namedLayers
+    namedLayers: structure.namedLayers,
+    streetsMode: streets?.mode ?? null,
+    components: countComponents(graph),
+    entranceLinks: snapped.connections.filter((connection, i) => viaEntrance[i] && connection.connectedNodeId).length
   };
+};
+
+const insideRing = (p: Point, ring: Point[]): boolean => {
+  let hit = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const a = ring[i];
+    const b = ring[j];
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) hit = !hit;
+  }
+  return hit;
+};
+
+const distanceToRing = (p: Point, ring: Point[]): number => {
+  let best = Infinity;
+  for (let i = 0; i + 1 < ring.length; i += 1) {
+    const a = ring[i];
+    const b = ring[i + 1];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len2 = dx * dx + dy * dy || 1e-9;
+    const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2));
+    best = Math.min(best, Math.hypot(a.x + t * dx - p.x, a.y + t * dy - p.y));
+  }
+  return best;
+};
+
+/**
+ * For each stop: the point to snap to the network. A stop inside a building whose outline carries entrance icons
+ * (within `reach` of the outline) is aimed at the entrance nearest to it; any other stop keeps its own anchor.
+ */
+export const aimAtEntrances = (stops: StopCandidate[], buildingRings: Point[][], entrances: Point[], diagonal: number): { candidates: StopCandidate[]; viaEntrance: boolean[] } => {
+  if (!entrances.length || !buildingRings.length) return { candidates: stops, viaEntrance: stops.map(() => false) };
+  const reach = Math.max(8, diagonal * 0.008);
+  // the entrances of each building: icons inside its outline or within reach of it
+  const byBuilding = buildingRings.map((ring) => entrances.filter((e) => insideRing(e, ring) || distanceToRing(e, ring) <= reach));
+  const viaEntrance: boolean[] = [];
+  const areaOf = (ring: Point[]) => {
+    let a = 0;
+    for (let i = 0; i < ring.length - 1; i += 1) a += ring[i].x * ring[i + 1].y - ring[i + 1].x * ring[i].y;
+    return Math.abs(a) / 2;
+  };
+  const candidates = stops.map((stop) => {
+    // the stop's building is the largest outline around it (a unit polygon inside the outline is a room, not the building)
+    let building = -1;
+    let largest = 0;
+    buildingRings.forEach((ring, i) => {
+      if (!insideRing(stop.anchor, ring)) return;
+      const area = areaOf(ring);
+      if (area > largest) {
+        largest = area;
+        building = i;
+      }
+    });
+    const doors = building >= 0 ? byBuilding[building] : [];
+    if (!doors.length) {
+      viaEntrance.push(false);
+      return stop;
+    }
+    let door = doors[0];
+    let best = Infinity;
+    for (const e of doors) {
+      const d = Math.hypot(e.x - stop.anchor.x, e.y - stop.anchor.y);
+      if (d < best) {
+        best = d;
+        door = e;
+      }
+    }
+    viaEntrance.push(true);
+    return { ...stop, anchor: door };
+  });
+  return { candidates, viaEntrance };
 };

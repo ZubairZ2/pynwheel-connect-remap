@@ -882,6 +882,9 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
       const notes = [
         ...(result.fromBackground ? [i18n.t(W.detect.noteFromBackground)] : []),
         stops.length ? t(W.detect.noteJoined, { joined: result.joined, total: stops.length }) : i18n.t(W.detect.noteNoStops),
+        ...(result.streetsMode === 'colour' ? [i18n.t(W.detect.noteColourMode)] : []),
+        ...(result.doorBridgeCount ? [t(W.detect.noteDoorBridges, { count: result.doorBridgeCount })] : []),
+        ...(result.components > 1 ? [t(W.detect.notePieces, { count: result.components })] : []),
         ...(background.failed ? [i18n.t(W.detect.noteBackground)] : [])
       ];
       return { status: 'detected', points: result.nodes.length, paths: result.edges.length, source: result.source, note: notes.join(' · ') };

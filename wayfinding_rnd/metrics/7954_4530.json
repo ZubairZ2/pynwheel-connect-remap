@@ -1,0 +1,164 @@
+{
+  "case": {
+    "name": "7954_4530",
+    "floor": "7954_4530.svg",
+    "background": "7954_bg.svg",
+    "stops": {
+      "kind": "units-layer"
+    }
+  },
+  "stops": 18,
+  "baseline": {
+    "ok": true,
+    "failure": null,
+    "source": "vector",
+    "layers": [
+      "Path"
+    ],
+    "warnings": [
+      {
+        "code": "weak-walkway-match",
+        "message": "No Walkway / Corridor / Hallway layer; using the generically named \"Path\" layer. (shared background map)"
+      },
+      {
+        "code": "walkway-from-background",
+        "message": "The walkways were read from the shared background map (Path)."
+      }
+    ],
+    "ms": 30,
+    "metrics": {
+      "nodes": 380,
+      "edges": 523,
+      "lengthUnits": 14551,
+      "components": 1,
+      "edgeSamplesInWalk": 78,
+      "edgeSamplesInBuilding": 20,
+      "edgeSamplesOffWalk": 22,
+      "centring": 0.33,
+      "coverage12": 49,
+      "coverageClearance": 53,
+      "joined": 18,
+      "stops": 18,
+      "linksThroughOtherBuilding": 0,
+      "doorBridges": 0,
+      "routes": [
+        {
+          "from": "35",
+          "to": "32_17",
+          "ok": true,
+          "length": 385,
+          "points": 26,
+          "inWalk": 94,
+          "inBuilding": 6
+        },
+        {
+          "from": "32_11",
+          "to": "32_13",
+          "ok": true,
+          "length": 123,
+          "points": 8,
+          "inWalk": 62,
+          "inBuilding": 29
+        },
+        {
+          "from": "32",
+          "to": "32_11",
+          "ok": true,
+          "length": 409,
+          "points": 21,
+          "inWalk": 74,
+          "inBuilding": 24
+        }
+      ]
+    }
+  },
+  "proposed": {
+    "ok": true,
+    "failure": null,
+    "source": "streets",
+    "streetsMode": "layers",
+    "layers": [
+      "Road",
+      "Path",
+      "Pool_base"
+    ],
+    "doorBridges": 4,
+    "components": 1,
+    "warnings": [
+      {
+        "code": "weak-walkway-match",
+        "message": "No Walkway / Corridor / Hallway layer; using the generically named \"Path\" layer. (shared background map)"
+      },
+      {
+        "code": "walkway-from-background",
+        "message": "The walkways were read from the shared background map (Path)."
+      }
+    ],
+    "stats": {
+      "walkCells": 190890,
+      "skeletonCells": 14178,
+      "thinPasses": 31,
+      "spursPruned": 103,
+      "piecesDropped": 1,
+      "bridges": 4,
+      "bridgesRejected": 1,
+      "throughBuilding": 4,
+      "indoorRuns": 0,
+      "ms": {
+        "classify": 10,
+        "paint": 7,
+        "open": 221,
+        "thin": 258,
+        "prune": 19,
+        "graph": 65,
+        "stops": 0
+      }
+    },
+    "ms": 581,
+    "metrics": {
+      "nodes": 703,
+      "edges": 844,
+      "lengthUnits": 15832,
+      "components": 1,
+      "edgeSamplesInWalk": 95,
+      "edgeSamplesInBuilding": 0,
+      "edgeSamplesOffWalk": 5,
+      "centring": 0.67,
+      "coverage12": 89,
+      "coverageClearance": 71,
+      "joined": 18,
+      "stops": 18,
+      "linksThroughOtherBuilding": 0,
+      "doorBridges": 6,
+      "routes": [
+        {
+          "from": "35",
+          "to": "32_17",
+          "ok": true,
+          "length": 395,
+          "points": 41,
+          "inWalk": 100,
+          "inBuilding": 0
+        },
+        {
+          "from": "32_11",
+          "to": "32_13",
+          "ok": true,
+          "length": 202,
+          "points": 18,
+          "inWalk": 93,
+          "inBuilding": 0
+        },
+        {
+          "from": "32",
+          "to": "32_11",
+          "ok": true,
+          "length": 536,
+          "points": 48,
+          "inWalk": 94,
+          "inBuilding": 2
+        }
+      ]
+    }
+  }
+}

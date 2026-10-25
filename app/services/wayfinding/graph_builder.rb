@@ -85,15 +85,20 @@ module Wayfinding
       end
 
       def load_rows
-        hallway_scope = Hallway.where(community_id: community.id, space: 'raster')
+        # A level drawn by its floor image routes on raster-space rows; a level with no image — a Beans SVG-only
+        # floorplate — routes on the rows drawn in its SVG's own units (`space: 'svg'`), whose frame is the viewBox.
+        hallway_scope = Hallway.where(community_id: community.id)
         hallway_scope = hallway_scope.confirmed unless @include_pending
-        @hallways = hallway_scope.to_a.group_by { |h| [h.parent_type, h.parent_id] }
-        edge_scope = HallwayEdge.where(community_id: community.id, space: 'raster')
+        @hallways = hallway_scope.to_a.group_by { |h| [h.parent_type, h.parent_id, h.space] }
+        edge_scope = HallwayEdge.where(community_id: community.id)
         edge_scope = edge_scope.confirmed unless @include_pending
-        @edge_rows = edge_scope.to_a.group_by { |e| [e.parent_type, e.parent_id] }
+        @edge_rows = edge_scope.to_a.group_by { |e| [e.parent_type, e.parent_id, e.space] }
         @attachments = HallwayAttachment.where(community_id: community.id).to_a.group_by { |a| [a.parent_type, a.parent_id] }
         @stops = WayfindingStop.where(community_id: community.id).active.to_a.group_by { |s| [s.map_type, s.map_id] }
         @units = community.units.visible_units.where('x_plot > 0 OR y_plot > 0').to_a
+        # Units placed on a floor SVG by pointer (`pointer_data`, stored x/y 0): they stand where their wayfinding link
+        # anchors them, on the SVG-framed level that covers their floor.
+        @svg_units = community.units.visible_units.where('x_plot <= 0 AND y_plot <= 0').where("pointer_data IS NOT NULL AND pointer_data::text <> '{}'").to_a
         @amenities = community.amenities.where(amenityable_type: %w[Floorplate Sitemap]).where('x_plot > 0 OR y_plot > 0').to_a
         @doors = community.doors.to_a
         @unit_doors = @doors.select { |d| d.attached_with_type == 'Unit' }.group_by(&:attached_with_id)
@@ -108,11 +113,17 @@ module Wayfinding
         records = records.sort_by { |r| [floors_of(r).min || 0, r.id] } unless community.is_sitemap
         @graph.levels = records.map do |record|
           floors = floors_of(record)
+          space = svg_framed?(record) ? 'svg' : 'raster'
           width = record.try(:width).to_f
           height = record.try(:height).to_f
+          if space == 'svg'
+            meta = record.try(:svg_metadata)
+            width = meta.is_a?(Hash) ? meta['width'].to_f : 0.0
+            height = meta.is_a?(Hash) ? meta['height'].to_f : 0.0
+          end
           LevelInfo.new(
             key: level_key(record), kind: record.class.base_class.name.underscore, record: record, floors: floors,
-            building: record.try(:building).presence, width: width, height: height, space: 'raster',
+            building: record.try(:building).presence, width: width, height: height, space: space,
             copies: floors.size > 1 ? floors : [nil],
             unit: width.positive? && height.positive? ? Math.hypot(width, height) / DESIGN_DIAGONAL : 1.0
           )
@@ -121,6 +132,19 @@ module Wayfinding
 
       def level_key(record)
         "#{record.class.base_class.name.underscore}:#{record.id}"
+      end
+
+      # A floorplate with a floor SVG and no floor image: its frame is the SVG's viewBox and its wayfinding rows are
+      # drawn in SVG units (there is no image to project them onto).
+      def svg_framed?(record)
+        record.respond_to?(:svg_image) && record.read_attribute(:svg_image).present? && record.read_attribute(:image).blank?
+      rescue StandardError
+        false
+      end
+
+      # Stored x/y → the node's centre: a raster row is an icon's top-left, an SVG row the point itself.
+      def centre_in(level, x, y)
+        level.space == 'svg' ? [x.to_f, y.to_f] : centre(x, y)
       end
 
       def floors_of(record)
@@ -150,7 +174,8 @@ module Wayfinding
 
       def level_rows(level)
         key = [level.record.class.base_class.name, level.record.id]
-        [(@hallways[key] || []), (@edge_rows[key] || []), (@attachments[key] || []), (@stops[key] || []), (@plate_doors[key] || [])]
+        spaced = [level.record.class.base_class.name, level.record.id, level.space]
+        [(@hallways[spaced] || []), (@edge_rows[spaced] || []), (@attachments[key] || []), (@stops[key] || []), (@plate_doors[key] || [])]
       end
 
       def build_level(level)
@@ -159,7 +184,7 @@ module Wayfinding
         by_id = hallways.index_by(&:id)
 
         hallway_nodes = hallways.map do |h|
-          cx, cy = centre(h.x_plot, h.y_plot)
+          cx, cy = centre_in(level, h.x_plot, h.y_plot)
           add_node(Node.new(key: "hallway:#{h.id}", kind: 'hallway', record: h, level_key: level.key, floor: nil, building: level.building,
                             x: cx, y: cy, name: nil, anchor: 'point', review: h.review_status))
         end
@@ -180,7 +205,7 @@ module Wayfinding
           a = @graph.nodes["hallway:#{a_id}"]
           b = @graph.nodes["hallway:#{b_id}"]
           row = rows_by_pair[[a_id, b_id]]
-          interior = row ? row.points_from(a_id).map { |px, py| centre(px, py) } : []
+          interior = row ? row.points_from(a_id).map { |px, py| centre_in(level, px, py) } : []
           line = [[a.x, a.y]] + interior + [[b.x, b.y]]
           { a: a.key, b: b.key, kind: row&.kind || 'manual', polyline: line, length: polyline_length(line), review: row&.review_status || 'confirmed' }
         end
@@ -200,6 +225,19 @@ module Wayfinding
           anchors << add_node(Node.new(key: "unit:#{unit.id}", kind: 'unit', record: unit, level_key: level.key, floor: level.copies.size > 1 ? unit.floor : nil,
                                        building: unit.building.presence || level.building, x: pos[0], y: pos[1], name: unit.name, anchor: door ? 'door' : 'pin',
                                        lock_provider: lock_provider_of(unit, door), note: unit.stop_description.presence))
+        end
+        # units placed on the floor SVG (no pixel): on an SVG-framed level covering their floor, at their link's anchor
+        if level.space == 'svg'
+          @svg_units.each do |unit|
+            next unless unit.floorplate_id == level.record.id || (unit.floorplate_id.nil? && level.floors.include?(unit.floor.to_i))
+
+            att = attachment_of[['Unit', unit.id]]
+            next unless att&.anchor
+
+            anchors << add_node(Node.new(key: "unit:#{unit.id}", kind: 'unit', record: unit, level_key: level.key, floor: level.copies.size > 1 ? unit.floor : nil,
+                                         building: unit.building.presence || level.building, x: att.anchor[0].to_f, y: att.anchor[1].to_f, name: unit.name, anchor: 'pin',
+                                         lock_provider: lock_provider_of(unit, nil), note: unit.stop_description.presence))
+          end
         end
         # amenities
         @amenities.each do |amenity|

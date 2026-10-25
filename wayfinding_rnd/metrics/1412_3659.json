@@ -1,0 +1,150 @@
+{
+  "case": {
+    "name": "1412_3659",
+    "floor": "1412_3659.svg",
+    "background": null,
+    "stops": {
+      "kind": "units-layer"
+    }
+  },
+  "stops": 56,
+  "baseline": {
+    "ok": true,
+    "failure": null,
+    "source": "both",
+    "layers": [
+      "walkway",
+      "Building outlines",
+      "Units"
+    ],
+    "warnings": [],
+    "ms": 230,
+    "metrics": {
+      "nodes": 106,
+      "edges": 111,
+      "lengthUnits": 4890,
+      "components": 2,
+      "edgeSamplesInWalk": 83,
+      "edgeSamplesInBuilding": 12,
+      "edgeSamplesOffWalk": 17,
+      "centring": 0.86,
+      "coverage12": 10,
+      "coverageClearance": 12,
+      "joined": 54,
+      "stops": 56,
+      "linksThroughOtherBuilding": 2,
+      "doorBridges": 0,
+      "routes": [
+        {
+          "from": "1055",
+          "to": "1018",
+          "ok": false,
+          "length": 0,
+          "points": 0,
+          "inWalk": 0,
+          "inBuilding": 0
+        },
+        {
+          "from": "1006",
+          "to": "1013",
+          "ok": true,
+          "length": 266,
+          "points": 7,
+          "inWalk": 100,
+          "inBuilding": 0
+        },
+        {
+          "from": "1028",
+          "to": "1007",
+          "ok": false,
+          "length": 0,
+          "points": 0,
+          "inWalk": 0,
+          "inBuilding": 0
+        }
+      ]
+    }
+  },
+  "proposed": {
+    "ok": true,
+    "failure": null,
+    "source": "streets+inferred",
+    "streetsMode": "layers",
+    "layers": [
+      "Road",
+      "Pathway",
+      "Walkway",
+      "Building outlines",
+      "Units"
+    ],
+    "doorBridges": 10,
+    "components": 1,
+    "warnings": [],
+    "stats": {
+      "walkCells": 342042,
+      "skeletonCells": 9384,
+      "thinPasses": 44,
+      "spursPruned": 8,
+      "piecesDropped": 0,
+      "bridges": 0,
+      "bridgesRejected": 0,
+      "throughBuilding": 0,
+      "indoorRuns": 0,
+      "ms": {
+        "classify": 4,
+        "paint": 7,
+        "open": 176,
+        "thin": 444,
+        "prune": 29,
+        "graph": 53,
+        "stops": 0
+      }
+    },
+    "ms": 1002,
+    "metrics": {
+      "nodes": 290,
+      "edges": 319,
+      "lengthUnits": 11304,
+      "components": 1,
+      "edgeSamplesInWalk": 92,
+      "edgeSamplesInBuilding": 5,
+      "edgeSamplesOffWalk": 8,
+      "centring": 0.87,
+      "coverage12": 48,
+      "coverageClearance": 63,
+      "joined": 54,
+      "stops": 56,
+      "linksThroughOtherBuilding": 2,
+      "doorBridges": 12,
+      "routes": [
+        {
+          "from": "1055",
+          "to": "1018",
+          "ok": true,
+          "length": 1264,
+          "points": 56,
+          "inWalk": 90,
+          "inBuilding": 3
+        },
+        {
+          "from": "1006",
+          "to": "1013",
+          "ok": true,
+          "length": 263,
+          "points": 7,
+          "inWalk": 100,
+          "inBuilding": 0
+        },
+        {
+          "from": "1028",
+          "to": "1007",
+          "ok": true,
+          "length": 1051,
+          "points": 52,
+          "inWalk": 95,
+          "inBuilding": 4
+        }
+      ]
+    }
+  }
+}

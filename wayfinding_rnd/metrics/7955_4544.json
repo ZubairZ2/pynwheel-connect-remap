@@ -1,0 +1,164 @@
+{
+  "case": {
+    "name": "7955_4544",
+    "floor": "7955_4544.svg",
+    "background": "7955_bg.svg",
+    "stops": {
+      "kind": "units-layer"
+    }
+  },
+  "stops": 300,
+  "baseline": {
+    "ok": true,
+    "failure": null,
+    "source": "vector",
+    "layers": [
+      "Walkways"
+    ],
+    "warnings": [
+      {
+        "code": "walkway-from-background",
+        "message": "The walkways were read from the shared background map (Walkways)."
+      },
+      {
+        "code": "footprints-from-background",
+        "message": "The building footprints were read from the shared background map."
+      }
+    ],
+    "ms": 100,
+    "metrics": {
+      "nodes": 371,
+      "edges": 421,
+      "lengthUnits": 14337,
+      "components": 1,
+      "edgeSamplesInWalk": 93,
+      "edgeSamplesInBuilding": 1,
+      "edgeSamplesOffWalk": 7,
+      "centring": 0.52,
+      "coverage12": 38,
+      "coverageClearance": 51,
+      "joined": 300,
+      "stops": 300,
+      "linksThroughOtherBuilding": 56,
+      "doorBridges": 0,
+      "routes": [
+        {
+          "from": "24_31",
+          "to": "24_49",
+          "ok": true,
+          "length": 1491,
+          "points": 45,
+          "inWalk": 97,
+          "inBuilding": 0
+        },
+        {
+          "from": "20_37",
+          "to": "8_10",
+          "ok": true,
+          "length": 1585,
+          "points": 57,
+          "inWalk": 94,
+          "inBuilding": 2
+        },
+        {
+          "from": "14_7",
+          "to": "14_40",
+          "ok": true,
+          "length": 2356,
+          "points": 80,
+          "inWalk": 93,
+          "inBuilding": 2
+        }
+      ]
+    }
+  },
+  "proposed": {
+    "ok": true,
+    "failure": null,
+    "source": "streets",
+    "streetsMode": "layers",
+    "layers": [
+      "Walkways",
+      "Road",
+      "POOL_BASE_2"
+    ],
+    "doorBridges": 0,
+    "components": 1,
+    "warnings": [
+      {
+        "code": "walkway-from-background",
+        "message": "The walkways were read from the shared background map (Walkways)."
+      },
+      {
+        "code": "footprints-from-background",
+        "message": "The building footprints were read from the shared background map."
+      }
+    ],
+    "stats": {
+      "walkCells": 251306,
+      "skeletonCells": 18498,
+      "thinPasses": 31,
+      "spursPruned": 89,
+      "piecesDropped": 0,
+      "bridges": 0,
+      "bridgesRejected": 0,
+      "throughBuilding": 0,
+      "indoorRuns": 0,
+      "ms": {
+        "classify": 12,
+        "paint": 10,
+        "open": 236,
+        "thin": 300,
+        "prune": 32,
+        "graph": 70,
+        "stops": 0
+      }
+    },
+    "ms": 745,
+    "metrics": {
+      "nodes": 730,
+      "edges": 882,
+      "lengthUnits": 21961,
+      "components": 1,
+      "edgeSamplesInWalk": 91,
+      "edgeSamplesInBuilding": 0,
+      "edgeSamplesOffWalk": 9,
+      "centring": 0.76,
+      "coverage12": 86,
+      "coverageClearance": 72,
+      "joined": 300,
+      "stops": 300,
+      "linksThroughOtherBuilding": 22,
+      "doorBridges": 0,
+      "routes": [
+        {
+          "from": "24_31",
+          "to": "24_49",
+          "ok": true,
+          "length": 1441,
+          "points": 21,
+          "inWalk": 97,
+          "inBuilding": 0
+        },
+        {
+          "from": "20_37",
+          "to": "8_10",
+          "ok": true,
+          "length": 896,
+          "points": 61,
+          "inWalk": 96,
+          "inBuilding": 0
+        },
+        {
+          "from": "14_7",
+          "to": "14_40",
+          "ok": true,
+          "length": 1281,
+          "points": 80,
+          "inWalk": 94,
+          "inBuilding": 0
+        }
+      ]
+    }
+  }
+}

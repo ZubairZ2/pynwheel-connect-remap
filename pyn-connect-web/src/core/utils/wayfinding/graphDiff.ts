@@ -30,6 +30,9 @@ export interface GraphSavePayload {
   base_version: number;
   space: PlanSpace;
   origin: 'edit' | 'detect';
+  /** A detect run: what the page detected over (`plate` / `building` / `all`) and from what (`vector` / `inferred`). */
+  scope?: 'plate' | 'building' | 'all';
+  detector_source?: 'vector' | 'inferred' | 'autoconnect';
   nodes: { add: { temp_key: string; x: number; y: number; source?: string; review?: string; confidence?: number | null }[]; move: { id: number; x: number; y: number }[]; confirm: number[]; delete: number[] };
   edges: { add: { a: GraphRef; b: GraphRef; kind: string; points: [number, number][] }[]; reshape: never[]; delete: { a: number; b: number }[] };
   links: { set: { attachable_type: string; attachable_id: GraphRef; hallway: GraphRef; anchor?: { x: number; y: number } }[]; detach: { attachable_type: string; attachable_id: GraphRef }[]; clear: never[] };
@@ -150,11 +153,12 @@ export const unsavedCount = (map: PropertyMap, levels: MapLevel[], level: MapLev
 const buildFor = (map: PropertyMap, levels: MapLevel[], level: MapLevel, state: LocalMapState, space: PlanSpace, baseVersion: number, requestId: string): GraphSavePayload | null => {
   const offset = space === 'raster' ? NODE_ANCHOR_OFFSET : 0;
   const parentType = level.kind === 'floorplate' ? 'Floorplate' : 'Sitemap';
-  const storedIds = new Set(map.graph.hallways.filter((row) => row.parentType === parentType && row.parentId === level.recordId).map((row) => row.id));
+  // The stored rows of this level in this space: a row drawn in SVG units belongs to the SVG payload, the rest to the raster one.
+  const storedIds = new Set(map.graph.hallways.filter((row) => row.parentType === parentType && row.parentId === level.recordId && (row.space ?? 'raster') === space).map((row) => row.id));
   const onLevelStored = (key: string) => key.startsWith('h:') && storedIds.has(Number(key.slice(2)));
   const tempOnLevel = state.tempNodes.filter((node) => node.levelId === level.id && node.space === space);
   const tempKeys = new Set(tempOnLevel.map((node) => node.key));
-  const onLevel = (key: string) => tempKeys.has(key) || (space === 'raster' && onLevelStored(key));
+  const onLevel = (key: string) => tempKeys.has(key) || onLevelStored(key);
 
   const payload: GraphSavePayload = {
     request_id: requestId,
@@ -173,14 +177,12 @@ const buildFor = (map: PropertyMap, levels: MapLevel[], level: MapLevel, state: 
   tempOnLevel.forEach((node) =>
     payload.nodes.add.push({ temp_key: node.key, x: round(node.x - offset), y: round(node.y - offset), source: node.source ?? 'manual', review: node.review ?? 'confirmed', confidence: node.confidence ?? null })
   );
-  if (space === 'raster') {
-    Object.entries(state.nodeOverrides).forEach(([key, at]) => {
-      if (onLevelStored(key) && !state.hiddenNodes.includes(key)) payload.nodes.move.push({ id: Number(key.slice(2)), x: round(at.x - offset), y: round(at.y - offset) });
-    });
-    state.hiddenNodes.forEach((key) => {
-      if (onLevelStored(key)) payload.nodes.delete.push(Number(key.slice(2)));
-    });
-  }
+  Object.entries(state.nodeOverrides).forEach(([key, at]) => {
+    if (onLevelStored(key) && !state.hiddenNodes.includes(key)) payload.nodes.move.push({ id: Number(key.slice(2)), x: round(at.x - offset), y: round(at.y - offset) });
+  });
+  state.hiddenNodes.forEach((key) => {
+    if (onLevelStored(key)) payload.nodes.delete.push(Number(key.slice(2)));
+  });
 
   // Paths.
   state.tempEdges.forEach((edge) => {
@@ -191,12 +193,10 @@ const buildFor = (map: PropertyMap, levels: MapLevel[], level: MapLevel, state: 
     if (a == null || b == null) return;
     payload.edges.add.push({ a, b, kind: edge.kind ?? 'manual', points: (edge.points ?? []).map((point) => [round(point.x - offset), round(point.y - offset)]) });
   });
-  if (space === 'raster') {
-    state.hiddenEdges.forEach((key) => {
-      const [a, b] = key.split('|');
-      if (onLevelStored(a) && onLevelStored(b)) payload.edges.delete.push({ a: Number(a.slice(2)), b: Number(b.slice(2)) });
-    });
-  }
+  state.hiddenEdges.forEach((key) => {
+    const [a, b] = key.split('|');
+    if (onLevelStored(a) && onLevelStored(b)) payload.edges.delete.push({ a: Number(a.slice(2)), b: Number(b.slice(2)) });
+  });
 
   // Bridges (links) and the page-only places of items plotted on the other layer.
   Object.entries(state.wfLinks).forEach(([compound, point]) => {
@@ -213,11 +213,14 @@ const buildFor = (map: PropertyMap, levels: MapLevel[], level: MapLevel, state: 
     const hallway = hallwayRef(point);
     if (hallway == null) return;
     const placed = state.wfPlaces[compound];
+    // In SVG space the CMS has no pixel for a pointer-placed unit: the link carries where the stop sits on the SVG, so the
+    // Tour App's router can stand the unit there (its stored x/y are 0).
+    const svgAnchor = space === 'svg' && !placed ? svgPlaceOf(anchorKey, map) : null;
     payload.links.set.push({
       attachable_type: attachable.type,
       attachable_id: attachable.id,
       hallway,
-      ...(placed && placed.space === space ? { anchor: { x: round(placed.x - offset), y: round(placed.y - offset) } } : {})
+      ...(placed && placed.space === space ? { anchor: { x: round(placed.x - offset), y: round(placed.y - offset) } } : svgAnchor ? { anchor: svgAnchor } : {})
     });
   });
 
@@ -290,7 +293,25 @@ const buildFor = (map: PropertyMap, levels: MapLevel[], level: MapLevel, state: 
     .filter((stop) => stop.levelId === level.id && (stop.space ?? 'raster') === space)
     .forEach((stop) => payload.stops.create.push(stopCreate(stop, offset)));
 
+  // A level the page only detected on (nothing moved, deleted or confirmed since) is saved as a detect run: the CMS
+  // records it (idempotent on `request_id`, undoable), merges proposals onto existing points and honours tombstones.
+  const onlyAdds = !payload.nodes.move.length && !payload.nodes.confirm.length && !payload.nodes.delete.length && !payload.edges.delete.length && !payload.links.detach.length && !payload.stops.update.length && !payload.stops.delete.length;
+  if (state.wfEdited[level.id] === 'detected' && onlyAdds && payload.nodes.add.length) {
+    payload.origin = 'detect';
+    payload.scope = state.wfDetect?.scope ?? 'plate';
+    payload.detector_source = payload.nodes.add.every((node) => node.source === 'inferred') ? 'inferred' : 'vector';
+  }
+
   return payload;
+};
+
+/** Where a unit or amenity placed on the floor SVG sits, in SVG units: its stored pointer (the click on its polygon). */
+const svgPlaceOf = (key: string, map: PropertyMap): { x: number; y: number } | null => {
+  const [kind, raw] = key.split(':');
+  const id = Number(raw);
+  const record = kind === 'unit' ? map.inventory.units.find((row) => row.id === id) : kind === 'amenity' ? map.inventory.amenities.find((row) => row.id === id) : null;
+  const pointer = record?.svgPointer;
+  return pointer && pointer.xPlot != null && pointer.yPlot != null ? { x: round(pointer.xPlot), y: round(pointer.yPlot) } : null;
 };
 
 const stopCreate = (stop: TempStop, offset: number): StopCreate => {
