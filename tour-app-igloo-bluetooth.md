@@ -302,3 +302,33 @@ the two dependency lines from the README in `Package.swift`, and the port of `Ig
 Kotlin plugin's shape (scan → `lockFound` by Bluetooth name; `connect` settles lock + key; `unlock(deviceId, key,
 now)` under the app's timeout; `disconnect`). Hardware: an iPhone 11 is known to this Mac but was unavailable;
 TestFlight (build 3 onwards) is the test route.
+
+## 13. iOS, October 25, 2026 (later): the SDK 3.x port
+
+With the iOS SDK token issued from the portal (`~/.igloohome_ios_sdk_token`; GitLab project 64441741, scopes
+`read_api` + `read_repository`), the plugin's iOS half was ported to igloohome's `IgloohomeSDK` 3.5.0 on branch
+`feature/igloohome-ios-plugin-prep`:
+
+- `Package.swift`: `https://gitlab.com/igloohome/iglooaccess-ios-sdk.git` from 3.5.0, product `IgloohomeSDK` (the
+  package's only dependency is Alamofire; the Bluetooth protocol is the prebuilt `IglooSDKCore` binary it carries;
+  swift-tools 6.3, so Xcode 26.3+ / Swift 6.3+ is needed to resolve it; this Mac's Xcode 27 has Swift 6.4).
+- `IgloohomeBlePlugin.swift`: the Kotlin plugin's shape over the SDK's `IglooPlugin` (a main-actor type):
+  `scansLock()` → `lockFound` by `bluetoothDeviceName` (no RSSI in this SDK); `connect` settles lock + key after the
+  scan saw the lock; `unlock(name, key:, timeInSeconds: now)` under the app's timeout (on timeout the plugin
+  rejects and disconnects behind the SDK); `disconnect(name)`. The radio is read through one Core Bluetooth central
+  manager created only when the permission may be asked (its creation is the system prompt, and with the radio off
+  the system's "Turn On Bluetooth" alert, which `enableBluetooth` re-shows by recreating it). `initialize` before the
+  permission answers `supported: true, enabled: true` (the state cannot be read without prompting) and the real
+  state once authorized. All state lives on the main queue; SDK calls run in main-actor tasks. Errors map from
+  `IgloohomeError` (`bluetoothIsTurnedOff` → `bluetooth_off`, `lockNotFound` / `maxScanAttempts` → `not_found`,
+  `timeout`, `connection` / `bluetooth` / `pairingFailed` → `connect_failed`, "Invalid rights" / "Guest key not
+  found" → `invalid_key`, "in progress" → `busy`), then from the SDK's words.
+- Verified: Release archive in a fresh DerivedData with the SDK resolved from a local clone of tag 3.5.0 (the
+  committed manifest uses the URL; the build Mac had no SPM credential for gitlab.com yet, see the README): the
+  `IgloohomeBlePlugin` target compiled with no warnings, `IglooSDKCore.framework` embedded, build 2 of
+  `com.pynwheel.SelfTourDev`, app bundle 14 MB. vitest 145/145 (the JavaScript side is unchanged).
+- Not verified: a door. No iPhone was available to this Mac; the TestFlight build is the hardware route. The eKey
+  must carry `LOCK` + `UNLOCK` (the lock disconnects at once without them; the backend's developer-API eKey does).
+- SPM credential for the URL dependency: a GitLab account in Xcode › Settings › Accounts, or `~/.netrc`
+  (`machine gitlab.com` / `login oauth2` / `password <token>`); the auto-mode classifier refused to write the file
+  from the session, so the owner adds it.
