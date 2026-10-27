@@ -2875,3 +2875,11 @@ the owner's decisions, the PASS/FAIL matrix); contract `tour-app-backend-api.md`
   list, the prefill). The WebView was driven through its DevTools socket (`adb forward tcp:9333 localabstract:webview_devtools_remote_<pid>`
   + Playwright `connectOverCDP`). One fix came out of it: the booking rules now load as soon as a live booking exists, so the
   check-in window uses the property's grace period from the first screen.
+
+## 50. Property clone script: an isolated, property-centred clone with its own company (October 28, 2026)
+
+**Brief:** the October 28 clone-script brief (property first; its company as a supporting dependency; new ids; strict isolation; test administrator; dry run by default; production confirmations; audit manifest; integrity verification; rehearsal before production). **Branch** `feature/property-clone-script`, worktree `/Users/zubairzulifqar/pynwheel-property-clone`.
+
+**Delivered:** `rake property_clone:dry_run|execute|verify|baseline|compare_baseline|test_admin` (`lib/tasks/property_clone.rake`), `app/services/property_clone/` (Policy, Plan, Runner, IdMap, Baseline, Verifier, FileCopier, TestAdmin, EnvironmentGuard, Manifest, Report), `script/property_clone/{dependency_map,isolation_rehearsal}.rb`, tests under `test/services/property_clone/` and `test/integration/property_clone_access_test.rb`, documents under `docs/property_clone/` (dependency map, runbook, test-admin procedure, report, dry-run and manifest samples). context.md §44 holds the implementation knowledge.
+
+**Rehearsal (not production):** Hazel 1618 / QuadReal 596 on `pynwheel_audit_clone` → property 8044 / company 1048, 915 rows across 34 populated tables plus 90 statuses, 13/13 integrity checks PASS, the source fingerprint (89 digests) identical before and after the clone and after the isolation rehearsal driven as the test administrator; see `docs/property_clone/REPORT_2026-10-28.md` for every PASS / FAIL / BLOCKED / NOT RUN item, the open risks and the production prerequisites. Production has NOT been run.

@@ -1,0 +1,3931 @@
+{
+  "manifest_version": 1,
+  "policy_version": "2026-10-28.1",
+  "mode": "execute",
+  "status": "committed_verified",
+  "error": null,
+  "started_at": "2026-10-27T21:39:32Z",
+  "finished_at": "2026-10-27T21:39:34Z",
+  "generated_at": "2026-10-27T21:39:34Z",
+  "environment": {
+    "rails_env": "development",
+    "adapter": "postgresql",
+    "database": "pynwheel_audit_clone",
+    "host": "localhost",
+    "username": "postgres",
+    "server_version": "16.15 (Homebrew)",
+    "database_url_set": true,
+    "production_like": false
+  },
+  "suffix": " [SCRIPT TESTING]",
+  "options": {
+    "skip_files": true
+  },
+  "source": {
+    "property_id": 1618,
+    "property_name": "Hazel",
+    "company_id": 596,
+    "company_name": "QuadReal",
+    "region_id": null,
+    "community_group_id": null,
+    "data_provider": "yardirentcafe",
+    "sibling_property_ids": [
+      1601,
+      1602,
+      1603,
+      1604,
+      1605
+    ]
+  },
+  "clone": {
+    "property_id": 8044,
+    "property_name": "Hazel [SCRIPT TESTING]",
+    "company_id": 1048,
+    "company_name": "QuadReal [SCRIPT TESTING]"
+  },
+  "steps": [
+    {
+      "step": "companies",
+      "table": "companies",
+      "category": "sanitize",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "email",
+        "phone"
+      ],
+      "note": "Owning company: new id, name suffixed, contact email/phone cleared (notification targets). Its users, sibling properties, regions and groups the property does not use are not copied.",
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "company_settings",
+      "table": "company_settings",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "credentials (company level)",
+      "table": "credentials",
+      "category": "sanitize",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "password",
+        "username",
+        "licence_key",
+        "api_token",
+        "resman_apikey",
+        "zaremba_username",
+        "zaremba_password",
+        "crm_username",
+        "crm_password",
+        "crm_client_id",
+        "crm_client_secret",
+        "rentcafe_v2_auth_token",
+        "rentcafe_v2_token_expires_at",
+        "yardi_username",
+        "yardi_password",
+        "rentmanager_username",
+        "rentmanager_password",
+        "rentmanager_auth_token",
+        "property_id",
+        "pmc_id",
+        "site_id",
+        "c_code",
+        "p_code",
+        "url",
+        "server_name",
+        "database",
+        "platform",
+        "interface_entity",
+        "resman_partner_id",
+        "resman_account_id",
+        "resman_property_id",
+        "zaremba_filename",
+        "zaremba_property_id",
+        "entrata_url",
+        "xml_filename",
+        "xml_domain",
+        "perq_property_id",
+        "rentmanager_property_id",
+        "rentmanager_base_url",
+        "app_folio_property_id",
+        "app_folio_database_id",
+        "app_folio_property_group_id",
+        "apartmentlist_url",
+        "yardi_rent_cafe_api_url",
+        "crm_provider",
+        "data_error_message",
+        "data_error_exp"
+      ],
+      "note": "Company-level PMS credential: secrets and provider identifiers cleared, display settings kept.",
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "regions",
+      "table": "regions",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "email",
+        "phone",
+        "contact"
+      ],
+      "note": "Only the region the property belongs to (Region#name is unique application-wide, so it is suffixed).",
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "community_groups",
+      "table": "community_groups",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "code"
+      ],
+      "note": "Only the portfolio group the property belongs to (name unique application-wide, code unique with properties).",
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "group_designs",
+      "table": "group_designs",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "group_homepage_images",
+      "table": "group_homepage_images",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "group_homepage_videos",
+      "table": "group_homepage_videos",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "communities",
+      "table": "communities",
+      "category": "sanitize",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "email",
+        "phone",
+        "property_manager_email",
+        "property_manager_phone",
+        "code",
+        "data_provider",
+        "data_provider_updated_on",
+        "chat_control",
+        "is_chat_available",
+        "locks_provider",
+        "multiple_locks_provider",
+        "realpage_pricing_data",
+        "entrata_exception_logs"
+      ],
+      "note": "The property. deleted_ids (tour stop ids) is remapped after the stops are cloned.",
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "credentials (property level)",
+      "table": "credentials",
+      "category": "sanitize",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "password",
+        "username",
+        "licence_key",
+        "api_token",
+        "resman_apikey",
+        "zaremba_username",
+        "zaremba_password",
+        "crm_username",
+        "crm_password",
+        "crm_client_id",
+        "crm_client_secret",
+        "rentcafe_v2_auth_token",
+        "rentcafe_v2_token_expires_at",
+        "yardi_username",
+        "yardi_password",
+        "rentmanager_username",
+        "rentmanager_password",
+        "rentmanager_auth_token",
+        "property_id",
+        "pmc_id",
+        "site_id",
+        "c_code",
+        "p_code",
+        "url",
+        "server_name",
+        "database",
+        "platform",
+        "interface_entity",
+        "resman_partner_id",
+        "resman_account_id",
+        "resman_property_id",
+        "zaremba_filename",
+        "zaremba_property_id",
+        "entrata_url",
+        "xml_filename",
+        "xml_domain",
+        "perq_property_id",
+        "rentmanager_property_id",
+        "rentmanager_base_url",
+        "app_folio_property_id",
+        "app_folio_database_id",
+        "app_folio_property_group_id",
+        "apartmentlist_url",
+        "yardi_rent_cafe_api_url",
+        "crm_provider",
+        "data_error_message",
+        "data_error_exp"
+      ],
+      "note": "Property PMS credential: secrets and provider identifiers cleared, display settings kept.",
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "crm_credentials",
+      "table": "crm_credentials",
+      "category": "sanitize",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "crm_provider",
+        "entrata_domain",
+        "entrata_username",
+        "entrata_password",
+        "entrata_property_id",
+        "realpage_site_id",
+        "realpage_pmc_id",
+        "rentcafe_c_code",
+        "rentcafe_p_code",
+        "rentcafe_domain",
+        "salesforce_username",
+        "salesforce_password",
+        "salesforce_client_id",
+        "salesforce_secret_id",
+        "salesforce_property_id",
+        "yardirentcafe_marketing_api_key",
+        "yardirentcafe_property_id",
+        "yardirentcafe_property_code",
+        "knock_community_id",
+        "knock_company_id",
+        "funnel_api_key",
+        "funnel_community_id"
+      ],
+      "note": "CRM credential: provider and every secret/identifier cleared.",
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "font_settings",
+      "table": "font_settings",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "map_filters",
+      "table": "map_filters",
+      "category": "clone_remap",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "favorite_stops",
+      "table": "favorite_stops",
+      "category": "sanitize",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "user_favorites_unit",
+        "user_favorites_amenity"
+      ],
+      "note": "Property favourites: unit/amenity id arrays remapped; the per-visitor-email favourites (PII) are emptied.",
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "favorite_settings",
+      "table": "favorite_settings",
+      "category": "sanitize",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "email_from",
+        "email_bcc"
+      ],
+      "note": "eBrochure settings: sender/BCC addresses cleared.",
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "favorite_images",
+      "table": "favorite_images",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "ebrochure_menu_buttons",
+      "table": "ebrochure_menu_buttons",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "designs",
+      "table": "designs",
+      "category": "clone_remap",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "menus",
+      "table": "menus",
+      "category": "clone_remap",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "gables",
+      "table": "gables",
+      "category": "clone_remap",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "filter_panels",
+      "table": "filter_panels",
+      "category": "clone_remap",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "expressionists",
+      "table": "expressionists",
+      "category": "clone_remap",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "home_screens",
+      "table": "home_screens",
+      "category": "clone_remap",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "main_screens",
+      "table": "main_screens",
+      "category": "clone_remap",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "home_page_images",
+      "table": "home_page_images",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "homepage_icons",
+      "table": "homepage_icons",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "home_page_videos",
+      "table": "home_page_videos",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "neighborhoods",
+      "table": "neighborhoods",
+      "category": "clone_remap",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "locations",
+      "table": "locations",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "three_d_maps_configurations",
+      "table": "three_d_maps_configurations",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "design_directions",
+      "table": "design_directions",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "calculator_configs",
+      "table": "calculator_configs",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "design_system_configs",
+      "table": "design_system_configs",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "hardware_specs",
+      "table": "hardware_specs",
+      "category": "sanitize",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "phone"
+      ],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "launch_remotes",
+      "table": "launch_remotes",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "crm_time_slots",
+      "table": "crm_time_slots",
+      "category": "clone_remap",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "crm_discovery_sources",
+      "table": "crm_discovery_sources",
+      "category": "clone_remap",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "touch_settings",
+      "table": "touch_settings",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "bedroom_marker_colors",
+      "table": "bedroom_marker_colors",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "sub_communities",
+      "table": "sub_communities",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "other_locks",
+      "table": "other_locks",
+      "category": "clone_remap",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": "\"Other\" lock descriptions: text only, no credentials.",
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "galleries",
+      "table": "galleries",
+      "category": "clone_remap",
+      "source_count": 2,
+      "expected": 2,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 2,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "gallery_images",
+      "table": "gallery_images",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "webpages",
+      "table": "webpages",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "imagepages",
+      "table": "imagepages",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "additional_images",
+      "table": "additional_images",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "additional_files",
+      "table": "additional_files",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "tutorials",
+      "table": "tutorials",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "opening_hours",
+      "table": "opening_hours",
+      "category": "clone_remap",
+      "source_count": 7,
+      "expected": 7,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 7,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "guided_opening_hours",
+      "table": "guided_opening_hours",
+      "category": "clone_remap",
+      "source_count": 6,
+      "expected": 6,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 6,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "tour_closures",
+      "table": "tour_closures",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "floorplans",
+      "table": "floorplans",
+      "category": "clone_remap",
+      "source_count": 21,
+      "expected": 21,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 21,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "floorplates",
+      "table": "floorplates",
+      "category": "clone_remap",
+      "source_count": 31,
+      "expected": 31,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 31,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "sitemaps",
+      "table": "sitemaps",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "units",
+      "table": "units",
+      "category": "sanitize",
+      "source_count": 244,
+      "expected": 244,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "access_code"
+      ],
+      "note": "Units with their plots; access codes cleared, lock_provider kept (no lock account or device is copied). units.floorplan_id is the PMS floor plan code (a string resolved through floorplans.provider_floorplan_id within the property), so it is copied as is.",
+      "cloned": 244,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "unit_space_details",
+      "table": "unit_space_details",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "amenities",
+      "table": "amenities",
+      "category": "sanitize",
+      "source_count": 6,
+      "expected": 6,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "access_code"
+      ],
+      "note": null,
+      "cloned": 6,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "amenity_galleries",
+      "table": "amenity_galleries",
+      "category": "clone_remap",
+      "source_count": 6,
+      "expected": 6,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 6,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "elevators",
+      "table": "elevators",
+      "category": "sanitize",
+      "source_count": 5,
+      "expected": 5,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "access_code"
+      ],
+      "note": null,
+      "cloned": 5,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "elevator_galleries",
+      "table": "elevator_galleries",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "building_starting_points",
+      "table": "building_starting_points",
+      "category": "sanitize",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "access_code"
+      ],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "doors",
+      "table": "doors",
+      "category": "sanitize",
+      "source_count": 233,
+      "expected": 233,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "access_code"
+      ],
+      "note": "Unit/amenity doors and map access points; a door whose record no longer exists is skipped.",
+      "cloned": 233,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "hallway_detection_runs",
+      "table": "hallway_detection_runs",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": "Detect Hallways runs: client_request_id is unique, so each clone gets a fresh one.",
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "hallways",
+      "table": "hallways",
+      "category": "clone_remap",
+      "source_count": 232,
+      "expected": 232,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": "Wayfinding nodes; next_points (hallway ids) is remapped after the pass. A legacy row with NULL community_id stays NULL, as on the source.",
+      "cloned": 232,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "hallway_edges",
+      "table": "hallway_edges",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "hallway_suppressions",
+      "table": "hallway_suppressions",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "wayfinding_stops",
+      "table": "wayfinding_stops",
+      "category": "sanitize",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "access_code"
+      ],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "hallway_attachments",
+      "table": "hallway_attachments",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "tours",
+      "table": "tours",
+      "category": "sanitize",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "access_code",
+        "credit_card_required"
+      ],
+      "note": "The property tour(s) (tour_user_id IS NULL); per-visitor tours are excluded. sort_hash / copy_sort_hash (stop ids) are remapped after the stops. Card requirement (Stripe) turned off.",
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "tour_settings",
+      "table": "tour_settings",
+      "category": "sanitize",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [
+        "charge_user_for_id_verfication"
+      ],
+      "note": "Scheduling and booking rules; the ID-verification charge (Stripe) is turned off.",
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "scheduler_widget_settings",
+      "table": "scheduler_widget_settings",
+      "category": "clone_remap",
+      "source_count": 1,
+      "expected": 1,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 1,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "tour_stops",
+      "table": "tour_stops",
+      "category": "clone_remap",
+      "source_count": 11,
+      "expected": 11,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": "Stops of the property tour; a stop whose unit/amenity/elevator no longer exists is skipped.",
+      "cloned": 11,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "stop_details",
+      "table": "stop_details",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "stop_galleries",
+      "table": "stop_galleries",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "paths",
+      "table": "paths",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": "Legacy routing paths owned by a cloned stop; the to/from endpoints are remapped, an endpoint outside the clone is cleared.",
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "path_points",
+      "table": "path_points",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "neighbour_units",
+      "table": "neighbour_units",
+      "category": "clone_remap",
+      "source_count": 0,
+      "expected": 0,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": null,
+      "cloned": 0,
+      "skipped": [],
+      "cleared_references": []
+    },
+    {
+      "step": "statuses",
+      "table": "statuses",
+      "category": "clone_remap",
+      "source_count": 90,
+      "expected": 90,
+      "predicted_skips": 0,
+      "predicted_cleared_references": 0,
+      "sanitized_columns": [],
+      "note": "Launch form statuses of every cloned record (polymorphic statusable, remapped).",
+      "cloned": 90,
+      "skipped": [],
+      "cleared_references": []
+    }
+  ],
+  "serialized_columns": [
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7335,
+      "remapped": 2,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7336,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7337,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7338,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7340,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7342,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7343,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7344,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7345,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7346,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7347,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7349,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7350,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7351,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7352,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7353,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7354,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7356,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7357,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7358,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7359,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7360,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7361,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7363,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7364,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7365,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7366,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7367,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7368,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7370,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7371,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7372,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7373,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7374,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7375,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7377,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7378,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7379,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7380,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7381,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7382,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7384,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7385,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7386,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7387,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7388,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7389,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7391,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7392,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7393,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7394,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7395,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7396,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7398,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7399,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7400,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7401,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7402,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7403,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7405,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7406,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7407,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7408,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7409,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7410,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7412,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7413,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7414,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7415,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7416,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7417,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7419,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7420,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7421,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7422,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7423,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7424,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7426,
+      "remapped": 2,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7427,
+      "remapped": 2,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7428,
+      "remapped": 3,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7429,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7430,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7431,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7432,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7433,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7434,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7435,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7437,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7438,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7439,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7440,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7441,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7442,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7444,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7445,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7446,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7447,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7448,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7449,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7451,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7452,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7453,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7454,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7455,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7456,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7458,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7459,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7460,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7461,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7462,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7463,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7465,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7466,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7467,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7468,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7469,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7470,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7472,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7473,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7474,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7475,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7476,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7477,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7479,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7480,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7481,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7482,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7483,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7484,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7486,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7487,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7488,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7489,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7490,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7491,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7493,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7494,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7495,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7496,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7497,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7498,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7500,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7501,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7502,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7503,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7504,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7505,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7507,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7508,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7509,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7510,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7511,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7512,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7514,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7515,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7516,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7517,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7518,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7519,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7521,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7522,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7523,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7524,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7525,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7526,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7528,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7529,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7530,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7531,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7532,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7533,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7535,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7536,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7537,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7538,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7539,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7540,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7543,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7544,
+      "remapped": 3,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7545,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7546,
+      "remapped": 3,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7547,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7548,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7550,
+      "remapped": 2,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7552,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7553,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7554,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7556,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7557,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7558,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7559,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7560,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "hallways",
+      "column": "next_points",
+      "clone_id": 7561,
+      "remapped": 1,
+      "dropped": []
+    },
+    {
+      "table": "favorite_stops",
+      "column": "favorite_unit",
+      "clone_id": 1447,
+      "remapped": 7,
+      "dropped": []
+    },
+    {
+      "table": "tours",
+      "column": "sort_hash",
+      "clone_id": 5970,
+      "remapped": 19,
+      "dropped": [
+        "7059",
+        "7061",
+        "7062",
+        "7063",
+        "25011",
+        "25017",
+        "25015",
+        "24961",
+        "25012",
+        "24890"
+      ]
+    },
+    {
+      "table": "tours",
+      "column": "copy_sort_hash",
+      "clone_id": 5970,
+      "remapped": 0,
+      "dropped": []
+    }
+  ],
+  "self_references": [],
+  "excluded": [
+    {
+      "table": "communities (siblings)",
+      "category": "exclude",
+      "source_count": 5,
+      "reason": "Sibling properties of the company are not the selected property."
+    },
+    {
+      "table": "users",
+      "category": "exclude",
+      "source_count": 4,
+      "reason": "Staff identities are not property data; a test administrator is bootstrapped separately."
+    },
+    {
+      "table": "community_users",
+      "category": "exclude",
+      "source_count": 6,
+      "reason": "Staff assignments of the source would grant the source staff access to the clone."
+    },
+    {
+      "table": "tours (visitor tours)",
+      "category": "approval",
+      "source_count": 2,
+      "reason": "Per-visitor tour rows are booking/visit data (PII)."
+    },
+    {
+      "table": "schedual_tours",
+      "category": "approval",
+      "source_count": 534,
+      "reason": "Bookings hold visitor PII, CRM appointment ids and Stripe charge ids."
+    },
+    {
+      "table": "tour_histories",
+      "category": "approval",
+      "source_count": 408,
+      "reason": "Visit history (PII, lock access times)."
+    },
+    {
+      "table": "visited_stops",
+      "category": "approval",
+      "source_count": 2123,
+      "reason": "Per-visit stop events with photos and lock pins."
+    },
+    {
+      "table": "tour_users",
+      "category": "approval",
+      "source_count": 282,
+      "reason": "Visitors (PII, ID cards, Stripe customer ids); they are global records, not owned by the property."
+    },
+    {
+      "table": "visitor_sessions",
+      "category": "exclude",
+      "source_count": 0,
+      "reason": "Live visitor sessions."
+    },
+    {
+      "table": "prospects",
+      "category": "approval",
+      "source_count": 0,
+      "reason": "CRM prospect payloads (PII)."
+    },
+    {
+      "table": "as_guests / igloo_guests / igloohome_guests / latch_guests / zerv_guests",
+      "category": "exclude",
+      "source_count": null,
+      "reason": "Issued lock guest credentials and pins."
+    },
+    {
+      "table": "pynwheel_access_users",
+      "category": "approval",
+      "source_count": 0,
+      "reason": "Residents and staff of Pynwheel Access (PII, pin codes)."
+    },
+    {
+      "table": "favorites / shared_favorites / shared_tours",
+      "category": "exclude",
+      "source_count": null,
+      "reason": "Visitor favourites and share links (session data, tokens)."
+    },
+    {
+      "table": "chatrooms / chats / feedbacks",
+      "category": "exclude",
+      "source_count": null,
+      "reason": "Visitor chat (Pusher) and feedback."
+    },
+    {
+      "table": "lock_histories / user_stripes / latch_auth_tokens",
+      "category": "exclude",
+      "source_count": null,
+      "reason": "Lock events, Stripe charges and vendor tokens of visitors."
+    },
+    {
+      "table": "track_sessions / sdk_sessions / sdk_events / access_logs / web_hook_logs / impressions",
+      "category": "exclude",
+      "source_count": null,
+      "reason": "Analytics and request logs."
+    },
+    {
+      "table": "svg_optimization_runs",
+      "category": "exclude",
+      "source_count": 0,
+      "reason": "Optimizer history with S3 backup URLs of the source."
+    },
+    {
+      "table": "versions (PaperTrail)",
+      "category": "exclude",
+      "source_count": 60,
+      "reason": "Audit history of the source."
+    },
+    {
+      "table": "comments",
+      "category": "exclude",
+      "source_count": 4,
+      "reason": "Launch review comments of the source."
+    },
+    {
+      "table": "temporary_images",
+      "category": "exclude",
+      "source_count": 0,
+      "reason": "Upload scratch rows."
+    },
+    {
+      "table": "allowed_emails",
+      "category": "approval",
+      "source_count": 0,
+      "reason": "Visitor e-mail allowlist (PII); restrict_access stays as on the source."
+    },
+    {
+      "table": "map_partners",
+      "category": "sanitize",
+      "source_count": 0,
+      "reason": "Partner map API keys are reusable secrets."
+    },
+    {
+      "table": "igloohomes / igloohome_locks",
+      "category": "sanitize",
+      "source_count": null,
+      "reason": "Lock vendor account (tokens, client secrets) and the devices bound to real locks."
+    },
+    {
+      "table": "latches / latch_locks",
+      "category": "sanitize",
+      "source_count": null,
+      "reason": "Lock vendor account and devices."
+    },
+    {
+      "table": "zervs / zerv_locks",
+      "category": "sanitize",
+      "source_count": null,
+      "reason": "Lock vendor account and devices (universal access codes)."
+    },
+    {
+      "table": "dwelos / edge_states / remote_locks",
+      "category": "sanitize",
+      "source_count": null,
+      "reason": "Lock vendor accounts and devices."
+    },
+    {
+      "table": "schlages / yales",
+      "category": "sanitize",
+      "source_count": null,
+      "reason": "Lock vendor accounts."
+    },
+    {
+      "table": "elevator_banks",
+      "category": "sanitize",
+      "source_count": null,
+      "reason": "Elevator-to-lock bindings (lock ids)."
+    },
+    {
+      "table": "unit_elevators / maps_positions / portal_tours / portal_tour_stops / portal_tour_stop_galleries",
+      "category": "exclude",
+      "source_count": null,
+      "reason": "Legacy tables without a model or code path."
+    }
+  ],
+  "conflicts": [],
+  "notes": [
+    "5 sibling properties stay with the source company (ids 1601, 1602, 1603, 1604, 1605)"
+  ],
+  "warnings": [],
+  "files": {
+    "mode": "skipped (SKIP_FILES=1)",
+    "entries": 61,
+    "details": [
+      {
+        "table": "communities",
+        "model": "Community",
+        "mount": "logo",
+        "source_id": 1618,
+        "clone_id": 8044,
+        "filename": "1618-1744732424-4956ed83-logo.png",
+        "source_prefix": "uploads/community/logo/1618/",
+        "clone_prefix": "uploads/community/logo/8044/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "communities",
+        "model": "Community",
+        "mount": "email_logo",
+        "source_id": 1618,
+        "clone_id": 8044,
+        "filename": "1618-1744642400-508a95a2-file.png",
+        "source_prefix": "uploads/community/email_logo/1618/",
+        "clone_prefix": "uploads/community/email_logo/8044/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "communities",
+        "model": "Community",
+        "mount": "self_tour_logo",
+        "source_id": 1618,
+        "clone_id": 8044,
+        "filename": "1618-1744666722-b2484b3d-file.png",
+        "source_prefix": "uploads/community/self_tour_logo/1618/",
+        "clone_prefix": "uploads/community/self_tour_logo/8044/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplans",
+        "model": "Floorplan",
+        "mount": "image",
+        "source_id": 32759,
+        "clone_id": 109599,
+        "filename": "32759-1662495554-21017e2d-08.png",
+        "source_prefix": "uploads/floorplan/image/32759/",
+        "clone_prefix": "uploads/floorplan/image/109599/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplans",
+        "model": "Floorplan",
+        "mount": "image",
+        "source_id": 32760,
+        "clone_id": 109600,
+        "filename": "-1662494883-a0290ba7-HazelFloorplan_800x800_01.png",
+        "source_prefix": "uploads/floorplan/image/32760/",
+        "clone_prefix": "uploads/floorplan/image/109600/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplans",
+        "model": "Floorplan",
+        "mount": "image",
+        "source_id": 32761,
+        "clone_id": 109601,
+        "filename": "32761-1662495437-f67415df-HazelFloorplan_800x800_02.png",
+        "source_prefix": "uploads/floorplan/image/32761/",
+        "clone_prefix": "uploads/floorplan/image/109601/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplans",
+        "model": "Floorplan",
+        "mount": "image",
+        "source_id": 32762,
+        "clone_id": 109602,
+        "filename": "-1662494990-033c8230-HazelFloorplan_800x800_03.png",
+        "source_prefix": "uploads/floorplan/image/32762/",
+        "clone_prefix": "uploads/floorplan/image/109602/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplans",
+        "model": "Floorplan",
+        "mount": "image",
+        "source_id": 32763,
+        "clone_id": 109603,
+        "filename": "-1662495089-bf86371d-HazelFloorplan_800x800_07B.png",
+        "source_prefix": "uploads/floorplan/image/32763/",
+        "clone_prefix": "uploads/floorplan/image/109603/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplans",
+        "model": "Floorplan",
+        "mount": "image",
+        "source_id": 32764,
+        "clone_id": 109604,
+        "filename": "-1662495149-b1d817ba-HazelFloorplan_800x800_06B.png",
+        "source_prefix": "uploads/floorplan/image/32764/",
+        "clone_prefix": "uploads/floorplan/image/109604/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplans",
+        "model": "Floorplan",
+        "mount": "image",
+        "source_id": 32765,
+        "clone_id": 109605,
+        "filename": "-1662495243-f74862b5-HazelFloorplan_800x800_06.png",
+        "source_prefix": "uploads/floorplan/image/32765/",
+        "clone_prefix": "uploads/floorplan/image/109605/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplans",
+        "model": "Floorplan",
+        "mount": "image",
+        "source_id": 32766,
+        "clone_id": 109606,
+        "filename": "-1662495284-70f90a7f-HazelFloorplan_800x800_05.png",
+        "source_prefix": "uploads/floorplan/image/32766/",
+        "clone_prefix": "uploads/floorplan/image/109606/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplans",
+        "model": "Floorplan",
+        "mount": "image",
+        "source_id": 32767,
+        "clone_id": 109607,
+        "filename": "-1662495326-a5904946-04.png",
+        "source_prefix": "uploads/floorplan/image/32767/",
+        "clone_prefix": "uploads/floorplan/image/109607/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplans",
+        "model": "Floorplan",
+        "mount": "image",
+        "source_id": 32768,
+        "clone_id": 109608,
+        "filename": "-1662495364-2c1aded4-HazelFloorplan_800x800_03B.png",
+        "source_prefix": "uploads/floorplan/image/32768/",
+        "clone_prefix": "uploads/floorplan/image/109608/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplans",
+        "model": "Floorplan",
+        "mount": "image",
+        "source_id": 32769,
+        "clone_id": 109609,
+        "filename": "-1662495413-a6b3b3af-HazelFloorplan_800x800_02B.png",
+        "source_prefix": "uploads/floorplan/image/32769/",
+        "clone_prefix": "uploads/floorplan/image/109609/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplans",
+        "model": "Floorplan",
+        "mount": "image",
+        "source_id": 32770,
+        "clone_id": 109610,
+        "filename": "-1662495516-45b9848b-HazelFloorplan_800x800_07.png",
+        "source_prefix": "uploads/floorplan/image/32770/",
+        "clone_prefix": "uploads/floorplan/image/109610/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2241,
+        "clone_id": 4609,
+        "filename": "1680545866-Hazel.png",
+        "source_prefix": "uploads/floorplate/image/2241/",
+        "clone_prefix": "uploads/floorplate/image/4609/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2242,
+        "clone_id": 4610,
+        "filename": "1660785588-Hazel_2.png",
+        "source_prefix": "uploads/floorplate/image/2242/",
+        "clone_prefix": "uploads/floorplate/image/4610/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2243,
+        "clone_id": 4611,
+        "filename": "1660785589-Hazel_3.png",
+        "source_prefix": "uploads/floorplate/image/2243/",
+        "clone_prefix": "uploads/floorplate/image/4611/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2244,
+        "clone_id": 4612,
+        "filename": "1660785590-Hazel_4.png",
+        "source_prefix": "uploads/floorplate/image/2244/",
+        "clone_prefix": "uploads/floorplate/image/4612/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2245,
+        "clone_id": 4613,
+        "filename": "1660785591-Hazel_5.png",
+        "source_prefix": "uploads/floorplate/image/2245/",
+        "clone_prefix": "uploads/floorplate/image/4613/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2246,
+        "clone_id": 4614,
+        "filename": "1660785592-Hazel_6.png",
+        "source_prefix": "uploads/floorplate/image/2246/",
+        "clone_prefix": "uploads/floorplate/image/4614/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2247,
+        "clone_id": 4615,
+        "filename": "1660785593-Hazel_7.png",
+        "source_prefix": "uploads/floorplate/image/2247/",
+        "clone_prefix": "uploads/floorplate/image/4615/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2248,
+        "clone_id": 4616,
+        "filename": "1660785594-Hazel_8.png",
+        "source_prefix": "uploads/floorplate/image/2248/",
+        "clone_prefix": "uploads/floorplate/image/4616/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2249,
+        "clone_id": 4617,
+        "filename": "1660785595-Hazel_9.png",
+        "source_prefix": "uploads/floorplate/image/2249/",
+        "clone_prefix": "uploads/floorplate/image/4617/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2250,
+        "clone_id": 4618,
+        "filename": "1660785596-Hazel_10.png",
+        "source_prefix": "uploads/floorplate/image/2250/",
+        "clone_prefix": "uploads/floorplate/image/4618/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2251,
+        "clone_id": 4619,
+        "filename": "1660785597-Hazel_11.png",
+        "source_prefix": "uploads/floorplate/image/2251/",
+        "clone_prefix": "uploads/floorplate/image/4619/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2252,
+        "clone_id": 4620,
+        "filename": "1660785598-Hazel_12.png",
+        "source_prefix": "uploads/floorplate/image/2252/",
+        "clone_prefix": "uploads/floorplate/image/4620/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2253,
+        "clone_id": 4621,
+        "filename": "1660785599-Hazel_13.png",
+        "source_prefix": "uploads/floorplate/image/2253/",
+        "clone_prefix": "uploads/floorplate/image/4621/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2254,
+        "clone_id": 4622,
+        "filename": "1660785600-Hazel_14.png",
+        "source_prefix": "uploads/floorplate/image/2254/",
+        "clone_prefix": "uploads/floorplate/image/4622/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2255,
+        "clone_id": 4623,
+        "filename": "1660785601-Hazel_15.png",
+        "source_prefix": "uploads/floorplate/image/2255/",
+        "clone_prefix": "uploads/floorplate/image/4623/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2256,
+        "clone_id": 4624,
+        "filename": "1660785602-Hazel_16.png",
+        "source_prefix": "uploads/floorplate/image/2256/",
+        "clone_prefix": "uploads/floorplate/image/4624/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2257,
+        "clone_id": 4625,
+        "filename": "1660785603-Hazel_17.png",
+        "source_prefix": "uploads/floorplate/image/2257/",
+        "clone_prefix": "uploads/floorplate/image/4625/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2258,
+        "clone_id": 4626,
+        "filename": "1660785604-Hazel_18.png",
+        "source_prefix": "uploads/floorplate/image/2258/",
+        "clone_prefix": "uploads/floorplate/image/4626/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2259,
+        "clone_id": 4627,
+        "filename": "1660785605-Hazel_19.png",
+        "source_prefix": "uploads/floorplate/image/2259/",
+        "clone_prefix": "uploads/floorplate/image/4627/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2260,
+        "clone_id": 4628,
+        "filename": "1660785606-Hazel_20.png",
+        "source_prefix": "uploads/floorplate/image/2260/",
+        "clone_prefix": "uploads/floorplate/image/4628/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2261,
+        "clone_id": 4629,
+        "filename": "1660785607-Hazel_21.png",
+        "source_prefix": "uploads/floorplate/image/2261/",
+        "clone_prefix": "uploads/floorplate/image/4629/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2262,
+        "clone_id": 4630,
+        "filename": "1660785608-Hazel_22.png",
+        "source_prefix": "uploads/floorplate/image/2262/",
+        "clone_prefix": "uploads/floorplate/image/4630/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2263,
+        "clone_id": 4631,
+        "filename": "1660785609-Hazel_23.png",
+        "source_prefix": "uploads/floorplate/image/2263/",
+        "clone_prefix": "uploads/floorplate/image/4631/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2264,
+        "clone_id": 4632,
+        "filename": "1660785610-Hazel_24.png",
+        "source_prefix": "uploads/floorplate/image/2264/",
+        "clone_prefix": "uploads/floorplate/image/4632/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2265,
+        "clone_id": 4633,
+        "filename": "1660785611-Hazel_25.png",
+        "source_prefix": "uploads/floorplate/image/2265/",
+        "clone_prefix": "uploads/floorplate/image/4633/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2266,
+        "clone_id": 4634,
+        "filename": "1660785612-Hazel_26.png",
+        "source_prefix": "uploads/floorplate/image/2266/",
+        "clone_prefix": "uploads/floorplate/image/4634/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2267,
+        "clone_id": 4635,
+        "filename": "1660785613-Hazel_27.png",
+        "source_prefix": "uploads/floorplate/image/2267/",
+        "clone_prefix": "uploads/floorplate/image/4635/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2268,
+        "clone_id": 4636,
+        "filename": "1660785614-Hazel_28.png",
+        "source_prefix": "uploads/floorplate/image/2268/",
+        "clone_prefix": "uploads/floorplate/image/4636/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2269,
+        "clone_id": 4637,
+        "filename": "1660785615-Hazel_29.png",
+        "source_prefix": "uploads/floorplate/image/2269/",
+        "clone_prefix": "uploads/floorplate/image/4637/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2270,
+        "clone_id": 4638,
+        "filename": "1660785616-Hazel_30.png",
+        "source_prefix": "uploads/floorplate/image/2270/",
+        "clone_prefix": "uploads/floorplate/image/4638/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "floorplates",
+        "model": "Floorplate",
+        "mount": "image",
+        "source_id": 2271,
+        "clone_id": 4639,
+        "filename": "1673375888-Hazel.png",
+        "source_prefix": "uploads/floorplate/image/2271/",
+        "clone_prefix": "uploads/floorplate/image/4639/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "amenities",
+        "model": "Amenity",
+        "mount": "image",
+        "source_id": 18694,
+        "clone_id": 71817,
+        "filename": "-1662653837-d71f3341-file.jpeg",
+        "source_prefix": "uploads/amenity/image/18694/",
+        "clone_prefix": "uploads/amenity/image/71817/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "amenities",
+        "model": "Amenity",
+        "mount": "image",
+        "source_id": 18695,
+        "clone_id": 71818,
+        "filename": "-1662654018-4c0afcc1-file.jpeg",
+        "source_prefix": "uploads/amenity/image/18695/",
+        "clone_prefix": "uploads/amenity/image/71818/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "amenities",
+        "model": "Amenity",
+        "mount": "image",
+        "source_id": 18696,
+        "clone_id": 71819,
+        "filename": "-1662654333-5ec913d8-file.jpeg",
+        "source_prefix": "uploads/amenity/image/18696/",
+        "clone_prefix": "uploads/amenity/image/71819/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "amenities",
+        "model": "Amenity",
+        "mount": "image",
+        "source_id": 18705,
+        "clone_id": 71820,
+        "filename": "-1662746567-03715aea-file.jpeg",
+        "source_prefix": "uploads/amenity/image/18705/",
+        "clone_prefix": "uploads/amenity/image/71820/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "amenities",
+        "model": "Amenity",
+        "mount": "image",
+        "source_id": 18706,
+        "clone_id": 71821,
+        "filename": "-1662746795-30996ad2-file.jpeg",
+        "source_prefix": "uploads/amenity/image/18706/",
+        "clone_prefix": "uploads/amenity/image/71821/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "amenities",
+        "model": "Amenity",
+        "mount": "image",
+        "source_id": 18707,
+        "clone_id": 71822,
+        "filename": "-1662746896-8dc2367a-file.jpeg",
+        "source_prefix": "uploads/amenity/image/18707/",
+        "clone_prefix": "uploads/amenity/image/71822/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "amenity_galleries",
+        "model": "AmenityGallery",
+        "mount": "image",
+        "source_id": 968,
+        "clone_id": 2748,
+        "filename": "-1662654069-a6ae59bf-file.jpeg",
+        "source_prefix": "uploads/amenity_gallery/image/968/",
+        "clone_prefix": "uploads/amenity_gallery/image/2748/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "amenity_galleries",
+        "model": "AmenityGallery",
+        "mount": "image",
+        "source_id": 969,
+        "clone_id": 2749,
+        "filename": "-1662654126-7ebbe208-file.jpeg",
+        "source_prefix": "uploads/amenity_gallery/image/969/",
+        "clone_prefix": "uploads/amenity_gallery/image/2749/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "amenity_galleries",
+        "model": "AmenityGallery",
+        "mount": "image",
+        "source_id": 970,
+        "clone_id": 2750,
+        "filename": "-1662746640-c539e663-file.jpeg",
+        "source_prefix": "uploads/amenity_gallery/image/970/",
+        "clone_prefix": "uploads/amenity_gallery/image/2750/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "amenity_galleries",
+        "model": "AmenityGallery",
+        "mount": "image",
+        "source_id": 1048,
+        "clone_id": 2751,
+        "filename": "-1670451375-65e826a9-file.jpeg",
+        "source_prefix": "uploads/amenity_gallery/image/1048/",
+        "clone_prefix": "uploads/amenity_gallery/image/2751/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "amenity_galleries",
+        "model": "AmenityGallery",
+        "mount": "image",
+        "source_id": 1101,
+        "clone_id": 2752,
+        "filename": "-1673378936-27919d4b-file.jpeg",
+        "source_prefix": "uploads/amenity_gallery/image/1101/",
+        "clone_prefix": "uploads/amenity_gallery/image/2752/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "amenity_galleries",
+        "model": "AmenityGallery",
+        "mount": "image",
+        "source_id": 1102,
+        "clone_id": 2753,
+        "filename": "-1673378936-b9a2c832-file.jpeg",
+        "source_prefix": "uploads/amenity_gallery/image/1102/",
+        "clone_prefix": "uploads/amenity_gallery/image/2753/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "elevators",
+        "model": "Elevator",
+        "mount": "image",
+        "source_id": 595,
+        "clone_id": 960,
+        "filename": "595-1678129561-2e690899-file.png",
+        "source_prefix": "uploads/elevator/image/595/",
+        "clone_prefix": "uploads/elevator/image/960/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "elevators",
+        "model": "Elevator",
+        "mount": "image",
+        "source_id": 596,
+        "clone_id": 961,
+        "filename": "596-1678129568-5584aa77-file.png",
+        "source_prefix": "uploads/elevator/image/596/",
+        "clone_prefix": "uploads/elevator/image/961/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      },
+      {
+        "table": "elevators",
+        "model": "Elevator",
+        "mount": "image",
+        "source_id": 597,
+        "clone_id": 962,
+        "filename": "597-1678129577-0e03e82a-file.png",
+        "source_prefix": "uploads/elevator/image/597/",
+        "clone_prefix": "uploads/elevator/image/962/",
+        "status": "PLANNED",
+        "objects": [],
+        "detail": null
+      }
+    ]
+  },
+  "verification": [
+    {
+      "name": "1 distinct ids",
+      "status": "PASS",
+      "detail": "property 1618 -> 8044, company 596 -> 1048"
+    },
+    {
+      "name": "2 clone belongs to clone company",
+      "status": "PASS",
+      "detail": "communities.company_id = 1048"
+    },
+    {
+      "name": "3 only the selected property under the clone company",
+      "status": "PASS",
+      "detail": "the clone company owns exactly the cloned property"
+    },
+    {
+      "name": "4 sibling properties untouched",
+      "status": "PASS",
+      "detail": "5 siblings still belong to company 596, none duplicated"
+    },
+    {
+      "name": "5 record counts match the plan",
+      "status": "PASS",
+      "detail": "77 steps, 915 rows mapped"
+    },
+    {
+      "name": "5b configuration values match the source",
+      "status": "PASS",
+      "detail": "every non-remapped, non-sanitized column is identical on source and clone"
+    },
+    {
+      "name": "6 foreign keys point at cloned records",
+      "status": "PASS",
+      "detail": "every non-NULL remapped foreign key and polymorphic pair resolves to a cloned row"
+    },
+    {
+      "name": "7 maps, stops, units, amenities, paths connected",
+      "status": "PASS",
+      "detail": "11 stops, 244 units, 232 hallways, 0 paths all attached to property 8044"
+    },
+    {
+      "name": "8 no reference to a source record",
+      "status": "PASS",
+      "detail": "no cloned row references a source record through a remapped column"
+    },
+    {
+      "name": "8b serialized id columns remapped",
+      "status": "PASS",
+      "detail": "deleted_ids, next_points, favourites and sort_hash only name cloned rows"
+    },
+    {
+      "name": "9 clone has no row the source could share",
+      "status": "PASS",
+      "detail": "every cloned row has a primary key the source footprint does not use"
+    },
+    {
+      "name": "10 sensitive columns and integrations policy",
+      "status": "PASS",
+      "detail": "sanitized columns are cleared; no booking, visitor, lock-account, partner-key or user rows hang off the clone"
+    },
+    {
+      "name": "11 source company and property unchanged",
+      "status": "PASS",
+      "detail": "89 digests identical before and after"
+    }
+  ],
+  "test_admin": null,
+  "baseline": {
+    "captured_at": "2026-10-27T21:39:32Z",
+    "digests": {
+      "companies": {
+        "count": 1,
+        "md5": "2e5955eb0887174c55062e92f0aa07df"
+      },
+      "company_settings": {
+        "count": 0,
+        "md5": null
+      },
+      "credentials (company level)": {
+        "count": 0,
+        "md5": null
+      }
+    }
+  },
+  "id_map": {
+    "companies": {
+      "596": 1048
+    },
+    "communities": {
+      "1618": 8044
+    },
+    "credentials": {
+      "4209": 11897
+    },
+    "crm_credentials": {
+      "636": 2131
+    },
+    "map_filters": {
+      "561": 5077
+    },
+    "favorite_stops": {
+      "569": 1447
+    },
+    "favorite_settings": {
+      "980": 1466
+    },
+    "designs": {
+      "1594": 6954
+    },
+    "menus": {
+      "1500": 3054
+    },
+    "gables": {
+      "1417": 2971
+    },
+    "filter_panels": {
+      "1417": 2971
+    },
+    "expressionists": {
+      "1417": 2971
+    },
+    "home_screens": {
+      "1494": 3048
+    },
+    "main_screens": {
+      "1494": 3048
+    },
+    "neighborhoods": {
+      "1412": 2787
+    },
+    "crm_time_slots": {
+      "13": 19
+    },
+    "crm_discovery_sources": {
+      "6": 9
+    },
+    "other_locks": {
+      "18": 112
+    },
+    "galleries": {
+      "2721": 8066,
+      "2722": 8067
+    },
+    "opening_hours": {
+      "17003": 30281,
+      "17004": 30282,
+      "17005": 30283
+    },
+    "guided_opening_hours": {
+      "3049": 17704,
+      "3050": 17705,
+      "3051": 17706
+    },
+    "floorplans": {
+      "32759": 109599,
+      "32760": 109600,
+      "32761": 109601
+    },
+    "floorplates": {
+      "2241": 4609,
+      "2242": 4610,
+      "2243": 4611
+    },
+    "units": {
+      "483861": 1122852,
+      "483862": 1122853,
+      "483863": 1122854
+    },
+    "amenities": {
+      "18694": 71817,
+      "18695": 71818,
+      "18696": 71819
+    },
+    "amenity_galleries": {
+      "968": 2748,
+      "969": 2749,
+      "970": 2750
+    },
+    "elevators": {
+      "595": 960,
+      "596": 961,
+      "597": 962
+    },
+    "doors": {
+      "1278": 2730,
+      "1279": 2731,
+      "1280": 2732
+    },
+    "hallways": {
+      "2377": 7335,
+      "2378": 7336,
+      "2379": 7337
+    },
+    "tours": {
+      "1089": 5970
+    },
+    "tour_settings": {
+      "639": 3280
+    },
+    "scheduler_widget_settings": {
+      "787": 2570
+    },
+    "tour_stops": {
+      "7056": 25039,
+      "7057": 25040,
+      "7058": 25041
+    },
+    "statuses": {
+      "3351": 186792,
+      "21296": 186793,
+      "21302": 186794
+    },
+    "company_settings": {},
+    "regions": {},
+    "community_groups": {},
+    "group_designs": {},
+    "group_homepage_images": {},
+    "group_homepage_videos": {},
+    "font_settings": {},
+    "favorite_images": {},
+    "ebrochure_menu_buttons": {},
+    "home_page_images": {},
+    "homepage_icons": {},
+    "home_page_videos": {},
+    "locations": {},
+    "three_d_maps_configurations": {},
+    "design_directions": {},
+    "calculator_configs": {},
+    "design_system_configs": {},
+    "hardware_specs": {},
+    "launch_remotes": {},
+    "touch_settings": {},
+    "bedroom_marker_colors": {},
+    "sub_communities": {},
+    "gallery_images": {},
+    "webpages": {},
+    "imagepages": {},
+    "additional_images": {},
+    "additional_files": {},
+    "tutorials": {},
+    "tour_closures": {},
+    "sitemaps": {},
+    "unit_space_details": {},
+    "elevator_galleries": {},
+    "building_starting_points": {},
+    "hallway_detection_runs": {},
+    "hallway_edges": {},
+    "hallway_suppressions": {},
+    "wayfinding_stops": {},
+    "hallway_attachments": {},
+    "stop_details": {},
+    "stop_galleries": {},
+    "paths": {},
+    "path_points": {},
+    "neighbour_units": {}
+  },
+  "_sample_note": "Trimmed copy of the October 28, 2026 rehearsal manifest (Hazel 1618 on pynwheel_audit_clone): id_map and baseline shortened to three entries per table; the verification shown is the one re-run after the value-fidelity check was corrected (13/13 PASS)."
+}
