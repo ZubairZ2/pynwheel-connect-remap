@@ -21,7 +21,7 @@ module Api
         def otp
           phone = string_param(params[:phone], loc: %w[body phone], min: 7, max: 32)
           country = string_param(params[:country_code], loc: %w[body country_code], max: 3, required: false)
-          result = Visitors::Otp.request!(phone: phone, country_code: country, ip: request.remote_ip, community_id: property_id_param)
+          result = Visitors::Otp.request!(phone: phone, country_code: country, ip: request.remote_ip)
           render json: { success: true }.merge(result), status: :accepted
         end
 

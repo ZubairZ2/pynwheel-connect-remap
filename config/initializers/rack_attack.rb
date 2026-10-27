@@ -27,8 +27,10 @@ class Rack::Attack
     {}
   end
 
+  # The built-in reviewer phone (Visitors::Otp::TEST_PHONE) has no per-phone limit.
   def self.phone_key(req)
-    tour_body(req)['phone'].to_s.gsub(/[^0-9+]/, '').presence
+    key = tour_body(req)['phone'].to_s.gsub(/[^0-9+]/, '').presence
+    key unless key&.delete('+') == '123456789'
   end
 
   throttle('notify-email/ip', limit: 10, period: 60) do |req|
