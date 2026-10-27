@@ -91,9 +91,21 @@ const mapStatus = (status: { location: string; coarseLocation?: string }, askedB
   return 'prompt';
 };
 
+/** The browser's own answer (the Permissions API), when it has one; 'prompt' otherwise. */
+const webPermission = async (): Promise<LocationAccess> => {
+  try {
+    const status = await navigator.permissions?.query({ name: 'geolocation' });
+    if (status?.state === 'granted') return 'granted';
+    if (status?.state === 'denied') return 'denied';
+  } catch {
+    /* no Permissions API */
+  }
+  return 'prompt';
+};
+
 /** What the phone currently allows, without asking. */
 export const checkPermission = async (): Promise<LocationAccess> => {
-  if (!native()) return webProvider() ? 'prompt' : 'unavailable';
+  if (!native()) return webProvider() ? webPermission() : 'unavailable';
   try {
     return mapStatus(await Geolocation.checkPermissions(), await asked());
   } catch {
