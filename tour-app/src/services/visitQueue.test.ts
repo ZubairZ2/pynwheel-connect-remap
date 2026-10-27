@@ -81,6 +81,19 @@ describe('the visit outbox', () => {
     expect(await queue.size()).toBe(0);
   });
 
+  it('prunes a kind to its newest few for one visit, leaving the rest alone', async () => {
+    const queue = new VisitQueue(memoryStore());
+    for (let i = 0; i < 5; i += 1) await queue.append({ clientVisitId: 'v1', propertyId: 1, kind: 'location', stopId: null, occurredAt: `2026-10-28T10:0${i}:00Z`, payload: { lat: 49, lng: -122, accuracy_m: 20 } });
+    await queue.append({ clientVisitId: 'v1', propertyId: 1, kind: 'heartbeat', stopId: null });
+    await queue.append({ clientVisitId: 'v2', propertyId: 1, kind: 'location', stopId: null, payload: { lat: 49, lng: -122 } });
+    expect(await queue.prune('v1', 'location', 2)).toBe(3);
+    const v1 = await queue.pending('v1');
+    expect(v1.map((e) => e.kind)).toEqual(['location', 'location', 'heartbeat']);
+    expect(v1.map((e) => e.occurredAt).slice(0, 2)).toEqual(['2026-10-28T10:03:00Z', '2026-10-28T10:04:00Z']);
+    expect((await queue.pending('v2')).length).toBe(1);
+    expect(await queue.prune('v1', 'location', 2)).toBe(0);
+  });
+
   it('only sends the visit asked for and leaves another visit\'s events alone', async () => {
     const queue = new VisitQueue(memoryStore());
     await queue.append({ clientVisitId: VISIT, propertyId: 1, kind: 'arrived', stopId: 'unit:1' });
