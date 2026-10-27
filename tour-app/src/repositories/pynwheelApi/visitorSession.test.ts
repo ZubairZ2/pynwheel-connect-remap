@@ -167,6 +167,7 @@ describe('visitor and staff sessions', () => {
     const ok = answer;
     answer = (call) => {
       if (call.url.endsWith('/visits') && call.method === 'POST') return json(201, { success: true, visit: visitJson, booking });
+      if (call.url.includes('/properties?near=')) return json(200, { success: true, properties: [{ id: 1618, name: 'Hazel', address: '4733 Hazel St', city: 'Burnaby', state: 'BC', zip: 'V5H 0J7', company: null, tour_enabled: true, is_sitemap: true, distance_m: 320 }], total: 1 });
       if (call.url.endsWith('/visits/77/events')) return json(207, { success: true, visit_id: 77, accepted: [{ index: 0, client_event_id: 'e1', kind: 'arrived', id: 1, duplicate: false }], rejected: [{ index: 1, client_event_id: 'e2', code: 'invalid_stop', message: 'This stop is not on the tour.' }] });
       if (call.url.endsWith('/visits/77/end')) return json(200, { success: true, visit: { ...visitJson, status: 'completed', active: false, ended_at: '2026-10-24T18:40:00Z' } });
       if (call.url.endsWith('/locks/pin')) return json(200, { success: true, stop_id: 'unit:1', provider: 'Igloohome', mode: 'igloohome', device_id: 'd', access_name: '101', pin: '221673337', valid_from: null, valid_until: null });
@@ -187,6 +188,10 @@ describe('visitor and staff sessions', () => {
     expect(calls.at(-1)?.body).toEqual({ events: [{ client_event_id: 'e1', kind: 'arrived', stop_id: 'unit:1', occurred_at: '2026-10-24T18:05:00Z', payload: { code: '221673337' } }, { client_event_id: 'e2', kind: 'skipped', stop_id: 'unit:999', occurred_at: '2026-10-24T18:06:00Z', payload: { reason: 'lock' } }] });
     expect(result.accepted).toEqual([{ index: 0, clientEventId: 'e1', kind: 'arrived', id: 1, duplicate: false }]);
     expect(result.rejected).toEqual([{ index: 1, clientEventId: 'e2', code: 'invalid_stop', message: 'This stop is not on the tour.' }]);
+
+    const near = await repo.getProperties({ near: { lat: 49.229, lng: -122.997 }, limit: 5 });
+    expect(calls.at(-1)?.url).toContain('/properties?near=49.229%2C-122.997&limit=5');
+    expect(near).toEqual([{ id: 1618, name: 'Hazel', address: '4733 Hazel St, Burnaby, BC', current: true, tourable: true, distanceM: 320 }]);
 
     await repo.getStopLockPin('unit:1', 77);
     expect(calls.at(-1)?.body).toEqual({ stop_id: 'unit:1', visit_id: 77 });

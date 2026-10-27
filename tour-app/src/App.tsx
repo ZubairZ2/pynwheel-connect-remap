@@ -501,6 +501,9 @@ const Shell = () => {
           onLocationAsk={() => actions.locAsk('ask')}
           onLocationManage={() => actions.locAsk('manage')}
           onNearby={(n) => dispatch({ type: 'openExplore', id: n.id })}
+          nearby={data.nearby}
+          nearbyDemo={repository.source !== 'pynwheel-api'}
+          onNearbyProperty={(n) => void actions.selectProperty(n.id, n.tourable, n.name)}
           onSeeAll={() => goTab('search')}
           onGuestSignIn={actions.guestSignIn}
           onFind={onFind}
@@ -598,6 +601,9 @@ const Shell = () => {
             onLocationAsk={() => actions.locAsk('ask')}
             onLocationManage={() => actions.locAsk('manage')}
             onNearby={(n) => dispatch({ type: 'openExplore', id: n.id })}
+          nearby={data.nearby}
+          nearbyDemo={repository.source !== 'pynwheel-api'}
+          onNearbyProperty={(n) => void actions.selectProperty(n.id, n.tourable, n.name)}
             onSeeAll={() => goTab('search')}
             onGuestSignIn={actions.guestSignIn}
             onFind={onFind}

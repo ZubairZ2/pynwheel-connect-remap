@@ -221,6 +221,13 @@ export interface VisitorProfilePatch {
   smsEnabled?: boolean;
 }
 
+/** `GET /properties?near=lat,lng`: the properties near the phone (October 28, 2026). Nearness names candidates; the check-in decides presence. */
+export interface NearbyQuery {
+  near: { lat: number; lng: number };
+  radiusKm?: number;
+  limit?: number;
+}
+
 /** The server's verdict on where the phone was at check-in (October 28, 2026): only `verified` proves the visitor at the property. */
 export type Proximity = 'verified' | 'outside' | 'unverified_no_fix' | 'unverified_poor_accuracy' | 'unverified_no_property_coords';
 export const PROXIMITIES: Proximity[] = ['verified', 'outside', 'unverified_no_fix', 'unverified_poor_accuracy', 'unverified_no_property_coords'];
@@ -321,7 +328,8 @@ export interface TourRepository {
   updateVisitorProfile(patch: VisitorProfilePatch): Promise<Session>;
 
   // --- property selection
-  getProperties(): Promise<PropertyListing[]>;
+  /** The properties the user may tour; with `near`, only those within reach of the phone, nearest first, with `distanceM`. */
+  getProperties(options?: NearbyQuery): Promise<PropertyListing[]>;
   selectProperty(propertyId: number): Promise<void>;
   currentPropertyId(): number | null;
 

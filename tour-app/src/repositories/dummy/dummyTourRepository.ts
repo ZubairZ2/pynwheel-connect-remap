@@ -1,4 +1,5 @@
 import type { LockBluetoothKey, LockPin, MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
+import type { NearbyQuery } from '~/repositories/tourRepository';
 import { AFTER_HOURS_SLOTS, DAY_SLOTS, PARTY_MAX, TOUR_LENGTHS } from '~/content/demoFixtures';
 import { NO_CAPABILITIES, type Capabilities, type Session } from '~/services/session';
 import { placesFromBundle } from '../places';
@@ -108,9 +109,10 @@ export class DummyTourRepository implements TourRepository {
     throw new FeatureUnavailableError('Editing a visitor profile');
   }
 
-  async getProperties(): Promise<PropertyListing[]> {
+  async getProperties(options?: NearbyQuery): Promise<PropertyListing[]> {
     await this.delay('read');
-    return NEARBY_PROPERTIES.map((p) => ({ ...p, current: p.id === this.propertyId }));
+    // Demo data has no coordinates: "near you" is the same list with made-up distances, in order.
+    return NEARBY_PROPERTIES.map((p, i) => ({ ...p, current: p.id === this.propertyId, ...(options?.near ? { distanceM: 300 + i * 450 } : {}) })).slice(0, options?.limit ?? NEARBY_PROPERTIES.length);
   }
 
   async selectProperty(propertyId: number): Promise<void> {

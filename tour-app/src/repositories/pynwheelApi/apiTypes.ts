@@ -27,6 +27,7 @@ export interface ApiPropertySummary {
   company: string | null;
   tour_enabled: boolean;
   is_sitemap: boolean;
+  distance_m?: number | null;
 }
 
 export interface ApiPropertyDetail extends ApiPropertySummary {

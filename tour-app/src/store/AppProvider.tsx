@@ -40,7 +40,9 @@ const pick = (state: AppState): PersistedState => {
   return out as PersistedState;
 };
 
-const EMPTY: AppData = { status: 'idle', error: null, bundle: null, content: null, places: [], distances: {}, properties: [], propertiesStatus: 'idle' };
+const EMPTY: AppData = { status: 'idle', error: null, bundle: null, content: null, places: [], distances: {}, properties: [], propertiesStatus: 'idle', nearby: [], nearbyStatus: 'idle' };
+/** How many properties the Home row shows near the phone. */
+const NEARBY_LIMIT = 5;
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const repository = useRepository();
@@ -214,6 +216,29 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       // As above.
     }
   }, [repository]);
+
+  // 3b. The properties near the phone's reading (October 28, 2026), for the Home row; asked again when the reading moves.
+  const fixLat = state.location.fix?.lat ?? null;
+  const fixLng = state.location.fix?.lng ?? null;
+  useEffect(() => {
+    if (!hydrated || !state.signedIn || fixLat == null || fixLng == null) {
+      setData((d) => (d.nearby.length || d.nearbyStatus !== 'idle' ? { ...d, nearby: [], nearbyStatus: 'idle' } : d));
+      return;
+    }
+    let cancelled = false;
+    setData((d) => ({ ...d, nearbyStatus: 'loading' }));
+    repository
+      .getProperties({ near: { lat: fixLat, lng: fixLng }, limit: NEARBY_LIMIT })
+      .then((nearby) => {
+        if (!cancelled) setData((d) => ({ ...d, nearby, nearbyStatus: 'ready' }));
+      })
+      .catch(() => {
+        if (!cancelled) setData((d) => ({ ...d, nearbyStatus: 'error' }));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [repository, hydrated, state.signedIn, fixLat, fixLng]);
 
   // 5b. What the phone allows, read without asking once the state is up; a phone that already allows it gives a first reading
   // quietly, so Home and the check-in have one ready (October 28, 2026).

@@ -302,7 +302,8 @@ export const parseListing = (p: ApiPropertySummary, currentId: number | null): P
   name: p.name,
   address: [p.address, p.city, p.state].filter(Boolean).join(', ') || (p.company ?? ''),
   current: p.id === currentId,
-  tourable: !!p.tour_enabled
+  tourable: !!p.tour_enabled,
+  ...(typeof p.distance_m === 'number' ? { distanceM: p.distance_m } : {})
 });
 
 const parseLeg = (l: ApiLeg): RouteLeg =>

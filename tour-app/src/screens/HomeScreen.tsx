@@ -1,4 +1,6 @@
 import communityPhoto from '~/assets/images/community-pool.jpg';
+import { distanceLabel } from '~/store/scenarios';
+import type { PropertyListing } from '~/models';
 import { DEMO, DEMO_LISTINGS, HOW_SELF_TOURING_WORKS, type DemoListing } from '~/content/demoFixtures';
 import { TabBar } from '~/components/chrome';
 import { Icon } from '~/components/Icon';
@@ -31,6 +33,10 @@ interface Props {
   onLocationAsk: () => void;
   onLocationManage: () => void;
   onNearby: (listing: DemoListing) => void;
+  /** The real properties near the phone (empty without a reading), and whether the row shows demo listings instead. */
+  nearby: PropertyListing[];
+  nearbyDemo: boolean;
+  onNearbyProperty: (listing: PropertyListing) => void;
   onSeeAll: () => void;
   onGuestSignIn: () => void;
   onFind: (option: 'here' | 'qr' | 'book' | 'booked' | 'link') => void;
@@ -103,7 +109,7 @@ export const HomeScreen = (p: Props) => {
           <div className="pw-home__nearby">
             <div className="pw-home__nearbyhead">
               <div>
-                <div className="pw-home__nearbytitle">{loc.nearTitle}{DEMO}</div>
+                <div className="pw-home__nearbytitle">{loc.nearTitle}{p.nearbyDemo ? DEMO : ''}</div>
                 {loc.nearNeedsLocation ? <div className="pw-home__nearbysub">Turn on location above to sort by distance</div> : null}
               </div>
               <button type="button" className="pw-textlink pw-textlink--sm" onClick={p.onSeeAll}>
@@ -111,16 +117,28 @@ export const HomeScreen = (p: Props) => {
               </button>
             </div>
             <div className="pw-home__nearbyscroll">
-              {DEMO_LISTINGS.slice(0, 5).map((n) => (
-                <button key={n.id} type="button" className="pw-home__nearbycard" onClick={() => p.onNearby(n)}>
-                  <img src={n.img} alt="" />
-                  <span>
-                    <span className="pw-home__nearbyname">{n.name}</span>
-                    <span className="pw-home__nearbymeta">{loc.perm === 'on' ? `${n.beds} · ${n.dist}` : `${n.beds} · ${n.address.split(',')[1]?.trim() ?? ''}`}</span>
-                    <span className="pw-home__nearbyprice">From ${n.from.toLocaleString('en-US')}/mo</span>
-                  </span>
-                </button>
-              ))}
+              {p.nearbyDemo
+                ? DEMO_LISTINGS.slice(0, 5).map((n) => (
+                    <button key={n.id} type="button" className="pw-home__nearbycard" onClick={() => p.onNearby(n)}>
+                      <img src={n.img} alt="" />
+                      <span>
+                        <span className="pw-home__nearbyname">{n.name}</span>
+                        <span className="pw-home__nearbymeta">{loc.perm === 'on' ? `${n.beds} · ${n.dist}` : `${n.beds} · ${n.address.split(',')[1]?.trim() ?? ''}`}</span>
+                        <span className="pw-home__nearbyprice">From ${n.from.toLocaleString('en-US')}/mo</span>
+                      </span>
+                    </button>
+                  ))
+                : p.nearby.map((n) => (
+                    <button key={n.id} type="button" className="pw-home__nearbycard" onClick={() => p.onNearbyProperty(n)}>
+                      <img src={communityPhoto} alt="" />
+                      <span>
+                        <span className="pw-home__nearbyname">{n.name}</span>
+                        <span className="pw-home__nearbymeta">{n.distanceM != null ? `${distanceLabel(n.distanceM)} away` : n.address}</span>
+                        <span className="pw-home__nearbyprice">{n.tourable ? 'Self-guided tours' : 'Tours by appointment'}</span>
+                      </span>
+                    </button>
+                  ))}
+              {!p.nearbyDemo && !p.nearby.length && loc.perm === 'on' ? <div className="pw-home__nearbysub">No properties within reach of your location yet.</div> : null}
             </div>
           </div>
         ) : null}
