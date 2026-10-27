@@ -5,15 +5,17 @@ import type { LockInventory, VisitorsList, TourPublication } from '~/core/models
 import { i18n } from '~/resources/i18n';
 import { t } from '../inventory/inventoryText';
 import type { PillVariant } from '../listing.types';
+import { bookingSectionOf, type BookingSection } from './tourBooking.generator';
 import type { StopListItem } from './tourStops.generator';
-import { T, type ElevatorCard, type StopCard, type TourSummary, type TourTab } from './tourSetup.generator';
+import { T, type StopCard, type TourSummary, type TourTab } from './tourSetup.generator';
 
 /**
- * The Tours page's Overview and Settings (Back Office design, Oct 13, 2026 —
+ * The Tours page's Overview and Settings (Back Office design, Oct 27, 2026 —
  * Tour Module): the overview's checklist, KPIs and attention list come from
- * the real tour (stops with their CMS rows, elevators, start points, the lock
- * inventory, today's visitors); the Settings rail lists the booking sections
- * (real, in BookingPanels) next to the route group and the groups Connect has
+ * the real tour (stops with their CMS rows, gated elevators, start points,
+ * the lock inventory, today's visitors); the Settings rail is the design's
+ * `SET_GROUPS`: the two booking groups (real, in BookingPanels) and the three
+ * groups whose sections Connect shows as stored (Route & navigation) or has
  * no page for yet.
  */
 
@@ -26,8 +28,8 @@ export interface TourHeadPill {
   variant: PillVariant;
 }
 
-export const generateTourHeadPills = (summary: TourSummary, stops: StopCard[], elevators: ElevatorCard[], unsaved: number): TourHeadPill[] => {
-  const locks = stops.filter((stop) => stop.lockLabel).length + elevators.filter((elevator) => elevator.gated).length;
+export const generateTourHeadPills = (summary: TourSummary, stops: StopCard[], unsaved: number): TourHeadPill[] => {
+  const locks = stops.filter((stop) => stop.lockLabel).length + summary.gatedElevators;
   const pills: TourHeadPill[] = [
     { id: 'stops', label: t(summary.stops === 1 ? T.header.stopOne : T.header.stopMany, { count: summary.stops }), variant: summary.stops ? 'ok' : 'neutral' },
     { id: 'locks', label: i18n.t(locks ? C.locksOn : C.locksOff), variant: locks ? 'info' : 'neutral' }
@@ -54,11 +56,11 @@ export interface TourChecklist {
   progress: string;
 }
 
-export const generateTourChecklist = (args: { propId: string; stops: StopCard[]; elevators: ElevatorCard[]; startPointsMissing: boolean; locks: LockInventory | null; items: StopListItem[]; publication?: TourPublication | null }): TourChecklist => {
-  const { propId, stops, elevators, startPointsMissing, locks, items } = args;
+/** The design's checklist: route, pins, start points, locks, publish (the former "Gate the elevators" step went with the Elevators tab). */
+export const generateTourChecklist = (args: { propId: string; stops: StopCard[]; gatedElevators: number; startPointsMissing: boolean; locks: LockInventory | null; items: StopListItem[]; publication?: TourPublication | null }): TourChecklist => {
+  const { propId, stops, gatedElevators, startPointsMissing, locks, items } = args;
   const unplotted = stops.filter((stop) => !stop.plotted).length;
-  const gated = elevators.filter((elevator) => elevator.gated).length;
-  const lockCount = locks ? locks.counts.mapped + locks.counts.manual : stops.filter((stop) => stop.lockLabel).length + gated;
+  const lockCount = locks ? locks.counts.mapped + locks.counts.manual : stops.filter((stop) => stop.lockLabel).length + gatedElevators;
   // Locked stops on this tour without a device or code (the rows' `no_lock` issue), not the property-wide holders.
   const noLock = items.filter((item) => item.issues.some((issue) => issue.key === 'no_lock')).length;
   const K = C.checklist;
@@ -90,16 +92,8 @@ export const generateTourChecklist = (args: { propId: string; stops: StopCard[];
       cta: { label: i18n.t(K.openMap), href: mapHref }
     },
     {
-      id: 'elevators',
-      num: 4,
-      title: i18n.t(K.elevators),
-      done: gated > 0,
-      state: gated ? t(K.elevatorsDone, { count: gated }) : i18n.t(K.elevatorsTodo),
-      cta: { label: i18n.t(K.openElevators), tab: 'elevators' }
-    },
-    {
       id: 'locks',
-      num: 5,
+      num: 4,
       title: i18n.t(K.locks),
       done: lockCount > 0 && noLock === 0,
       state: lockCount ? t(K.locksDone, { count: lockCount }) : i18n.t(K.locksTodo),
@@ -107,7 +101,7 @@ export const generateTourChecklist = (args: { propId: string; stops: StopCard[];
     },
     {
       id: 'publish',
-      num: 6,
+      num: 5,
       title: i18n.t(K.publish),
       // October 25, 2026: published from Connect and unchanged since.
       done: !!args.publication?.everPublished && !args.publication.changedSincePublish,
@@ -147,32 +141,73 @@ export const generateTourAttention = (items: StopListItem[]): StopListItem[] => 
 
 export type TourSettingRow = { label: string; kind: 'toggle'; on: boolean } | { label: string; kind: 'value'; value: string };
 
-export interface TourSettingsGroup {
-  id: 'navigation' | 'access' | 'experience' | 'messages';
+export type TourSettingsGroupId = 'access' | 'experience' | 'messages';
+export type TourSettingsSectionId = 'checks' | 'tour_access' | 'welcome' | 'navigation' | 'stop_options' | 'after' | 'concierge' | 'messages';
+
+export interface TourSettingsSection {
+  id: TourSettingsSectionId;
   title: string;
-  sub: string;
-  /** Real rows come from the CMS; unavailable groups have no page in Connect yet. */
+  intro: string;
+  /** Real rows come from the CMS (shown as stored); unavailable sections have no page in Connect yet. */
   source: 'real' | 'unavailable';
   rows: TourSettingRow[];
 }
+
+export interface TourSettingsGroup {
+  id: TourSettingsGroupId;
+  title: string;
+  sub: string;
+  sections: TourSettingsSection[];
+}
+
+/** The design's `SET_GROUPS` after the two booking groups: Route & navigation is a section of Tour experience. */
+export const TOUR_SETTINGS_GROUPS: { id: TourSettingsGroupId; sections: TourSettingsSectionId[] }[] = [
+  { id: 'access', sections: ['checks', 'tour_access'] },
+  { id: 'experience', sections: ['welcome', 'navigation', 'stop_options', 'after', 'concierge'] },
+  { id: 'messages', sections: ['messages'] }
+];
+
+export const isTourSettingsSection = (value: string | undefined | null): value is TourSettingsSectionId => !!value && TOUR_SETTINGS_GROUPS.some((group) => (group.sections as string[]).includes(value));
+export const tourSettingsGroupOf = (section: TourSettingsSectionId): TourSettingsGroupId => TOUR_SETTINGS_GROUPS.find((group) => group.sections.includes(section))?.id ?? 'experience';
+
+/** A section of the Settings tab: a booking section (BookingPanels) or one of the design's other sections. */
+export type SettingsSection = BookingSection | TourSettingsSectionId;
+/** `?section=` of the Settings tab, or undefined (pure: the server page reads it too). */
+export const settingsSectionOf = (value: string | undefined | null): SettingsSection | undefined => bookingSectionOf(value) ?? (isTourSettingsSection(value) ? value : undefined);
 
 export const generateTourSettingsGroups = (map: PropertyMap): TourSettingsGroup[] => {
   const S = C.settings;
   const settings = map.graph.settings;
   const tour = map.graph.tour;
   const notSet = i18n.t(S.notSet);
-  const group = (id: TourSettingsGroup['id'], title: string, sub: string, source: TourSettingsGroup['source'], rows: TourSettingRow[] = []): TourSettingsGroup => ({ id, title, sub, source, rows });
-  return [
-    group('navigation', i18n.t(S.navigation), i18n.t(S.navigationSub), 'real', [
-      { label: i18n.t(S.autoWayfinding), kind: 'toggle', on: settings.autoWayfinding },
-      { label: i18n.t(S.selfTour), kind: 'toggle', on: settings.selfTour },
-      { label: i18n.t(S.svgMode), kind: 'toggle', on: settings.enableSvgMode },
-      { label: i18n.t(S.autoZoom), kind: 'toggle', on: tour?.enableAutoZoom ?? false },
-      { label: i18n.t(S.defaultFloor), kind: 'value', value: settings.defaultMapFloor == null ? notSet : String(settings.defaultMapFloor) },
-      { label: i18n.t(S.routeColor), kind: 'value', value: tour?.dottedLineColor ?? notSet }
-    ]),
-    group('access', i18n.t(S.access), i18n.t(S.accessSub), 'unavailable'),
-    group('experience', i18n.t(S.experience), i18n.t(S.experienceSub), 'unavailable'),
-    group('messages', i18n.t(S.messages), i18n.t(S.messagesSub), 'unavailable')
+  const sectionText: Record<TourSettingsSectionId, { title: string; intro: string }> = {
+    checks: { title: i18n.t(S.sections.checks), intro: i18n.t(S.sections.checksSub) },
+    tour_access: { title: i18n.t(S.sections.tourAccess), intro: i18n.t(S.sections.tourAccessSub) },
+    welcome: { title: i18n.t(S.sections.welcome), intro: i18n.t(S.sections.welcomeSub) },
+    navigation: { title: i18n.t(S.navigation), intro: i18n.t(S.sections.navigationSub) },
+    stop_options: { title: i18n.t(S.sections.stopOptions), intro: i18n.t(S.sections.stopOptionsSub) },
+    after: { title: i18n.t(S.sections.after), intro: i18n.t(S.sections.afterSub) },
+    concierge: { title: i18n.t(S.sections.concierge), intro: i18n.t(S.sections.conciergeSub) },
+    messages: { title: i18n.t(S.messages), intro: i18n.t(S.sections.messagesSub) }
+  };
+  const navigationRows: TourSettingRow[] = [
+    { label: i18n.t(S.autoWayfinding), kind: 'toggle', on: settings.autoWayfinding },
+    { label: i18n.t(S.selfTour), kind: 'toggle', on: settings.selfTour },
+    { label: i18n.t(S.svgMode), kind: 'toggle', on: settings.enableSvgMode },
+    { label: i18n.t(S.autoZoom), kind: 'toggle', on: tour?.enableAutoZoom ?? false },
+    { label: i18n.t(S.defaultFloor), kind: 'value', value: settings.defaultMapFloor == null ? notSet : String(settings.defaultMapFloor) },
+    { label: i18n.t(S.routeColor), kind: 'value', value: tour?.dottedLineColor ?? notSet }
   ];
+  const section = (id: TourSettingsSectionId): TourSettingsSection => ({
+    id,
+    ...sectionText[id],
+    source: id === 'navigation' ? 'real' : 'unavailable',
+    rows: id === 'navigation' ? navigationRows : []
+  });
+  const groupText: Record<TourSettingsGroupId, { title: string; sub: string }> = {
+    access: { title: i18n.t(S.access), sub: i18n.t(S.accessSub) },
+    experience: { title: i18n.t(S.experience), sub: i18n.t(S.experienceSub) },
+    messages: { title: i18n.t(S.messages), sub: i18n.t(S.messagesSub) }
+  };
+  return TOUR_SETTINGS_GROUPS.map((group) => ({ id: group.id, ...groupText[group.id], sections: group.sections.map(section) }));
 };

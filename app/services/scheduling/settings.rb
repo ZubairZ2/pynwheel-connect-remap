@@ -87,11 +87,16 @@ module Scheduling
       }
     end
 
-    # The widget's own preconditions (SchedulerWidget::WidgetsController#can_user_schedule_tour).
+    # The widget's own preconditions, rule for rule
+    # (SchedulerWidget::WidgetsController#can_user_schedule_tour): the "tour
+    # on" gate reads `communities.self_tour` exactly as the widget does, not
+    # `Connect::ProductState.tour?` (which also accepts the Launch order
+    # form's product option) - otherwise Connect reported "Live" for a property
+    # whose prospects saw "Pynwheel Tour is Disabled" (October 27, 2026).
     def gates
       [
         { key: 'property_active', label: 'The property is active', ok: community.locked != true, error: 'Property is Inactive' },
-        { key: 'tour_on', label: 'Pynwheel Tour is on', ok: Connect::ProductState.tour?(community), error: 'Pynwheel Tour is Disabled' },
+        { key: 'tour_on', label: 'Pynwheel Tour is on', ok: community.self_tour == true, error: 'Pynwheel Tour is Disabled' },
         { key: 'scheduler_on', label: 'The scheduler is on', ok: community.scheduler_widget != false, error: 'Scheduler is Disabled' },
         { key: 'tour_type_on', label: 'At least one tour type is on', ok: setting.present? && (setting.allow_self_tour || setting.allow_guided_tour) == true, error: 'No Tour Type is Active' }
       ]

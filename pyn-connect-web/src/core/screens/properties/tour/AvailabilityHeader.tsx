@@ -74,6 +74,11 @@ export const AvailabilityHeader = ({ c, propId, onNavigate }: { c: TourBookingCo
           </>
         )}
       </div>
+      {!s.salesforce && c.readOnlyReason && (
+        <div className="bo-tx__meta" role="note" data-testid="scheduler-readonly">
+          {i18n.t(c.readOnlyReason === 'writesOff' ? B.widget.schedulerWritesOff : B.widget.schedulerRole)}
+        </div>
+      )}
       {!s.salesforce && (
         <div className="bo-tx__gates">
           {c.gates.map((gate) => (

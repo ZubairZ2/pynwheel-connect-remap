@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
+import { t } from '~/core/utils/generator/inventory/inventoryText';
 import type { Availability, BookingSettings, HoursLane, TourModuleMeta } from '~/core/models/data/tourModules.data';
 import { demoActions } from '~/core/store/demo/demo.slice';
 import { useAppDispatch } from '~/core/store/hooks';
@@ -130,6 +131,10 @@ export const useTourBooking = (propertyId: number, enabled = true) => {
   }, [enabled, error, load, loading, settings]);
 
   const canEdit = !!meta?.canEdit && !!meta?.writesEnabled;
+  /** Why the settings are read-only, once the meta is known: the Connect writes switch (`PYN_CONNECT_WRITES`) or the signed-in user's role. */
+  const readOnlyReason: 'writesOff' | 'role' | null = !meta ? null : !meta.writesEnabled ? 'writesOff' : !meta.canEdit ? 'role' : null;
+  /** The hours and closures are the CRM's when it manages the calendar (Yardi, Knock, Funnel): shown as stored, edited in the CRM (design, Oct 27 2026). */
+  const hoursEditable = canEdit && !settings?.crm.managedHours;
   const refuse = useCallback(() => toast(i18n.t(meta?.writesEnabled ? X.readOnly : X.writesOff)), [meta?.writesEnabled, toast]);
 
   const write = useCallback(
@@ -249,12 +254,13 @@ export const useTourBooking = (propertyId: number, enabled = true) => {
   const saveHours = useCallback(async () => {
     if (!hours || !settings) return;
     if (!canEdit) return refuse();
+    if (!hoursEditable) return toast(t(B.hours.managedReadOnly, { crm: settings.crm.managedHours ?? '' }));
     const problem = Object.values(hourErrors)[0];
     if (problem) return toast(problem);
     if (!hoursDirty) return toast(i18n.t(X.nothingToSave));
     const ok = await write('hours', 'booking/hours', hoursPayload(hours, settings), i18n.t(B.hours.saved));
     if (ok) setHoursEditor(null);
-  }, [canEdit, hourErrors, hours, hoursDirty, refuse, settings, toast, write]);
+  }, [canEdit, hourErrors, hours, hoursDirty, hoursEditable, refuse, settings, toast, write]);
 
   /* ── closures ─────────────────────────────────────────────────────── */
 
@@ -267,11 +273,12 @@ export const useTourBooking = (propertyId: number, enabled = true) => {
   const saveClosures = useCallback(async () => {
     if (!closures || !settings) return;
     if (!canEdit) return refuse();
+    if (!hoursEditable) return toast(t(B.hours.managedReadOnly, { crm: settings.crm.managedHours ?? '' }));
     const problem = Object.values(closureErrors)[0];
     if (problem) return toast(problem);
     if (!closuresDirty) return toast(i18n.t(X.nothingToSave));
     await write('closures', 'booking/closures', closuresPayload(closures), i18n.t(B.closures.saved));
-  }, [canEdit, closureErrors, closures, closuresDirty, refuse, settings, toast, write]);
+  }, [canEdit, closureErrors, closures, closuresDirty, hoursEditable, refuse, settings, toast, write]);
 
   /* ── form ─────────────────────────────────────────────────────────── */
 
@@ -348,6 +355,8 @@ export const useTourBooking = (propertyId: number, enabled = true) => {
     error,
     reload: load,
     canEdit,
+    readOnlyReason,
+    hoursEditable,
     widget,
     gates,
     setSchedulerEnabled,

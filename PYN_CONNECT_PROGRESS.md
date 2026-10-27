@@ -2875,3 +2875,22 @@ the owner's decisions, the PASS/FAIL matrix); contract `tour-app-backend-api.md`
   list, the prefill). The WebView was driven through its DevTools socket (`adb forward tcp:9333 localabstract:webview_devtools_remote_<pid>`
   + Playwright `connectOverCDP`). One fix came out of it: the booking rules now load as soon as a live booking exists, so the
   check-in window uses the property's grace period from the first screen.
+
+## 50. Tour Setup on the Oct 27 design: Elevators tab removed, five-group settings rail, read-only causes, managed hours, widget hardening (October 27, 2026)
+
+Branch `feature/tour-setup-scheduler-fixes`. Report `TOUR_SETUP_SCHEDULER_FIXES_QA_2026-10-27.md`; knowledge `context.md` §44;
+PR text `PR_DESCRIPTION_tour_setup_scheduler_fixes.md`.
+
+- **Decided by the owner.** The design's five rail groups; visiting hours read-only when a CRM manages the calendar; the
+  widget-status gate follows the widget's `self_tour` rule; the Heroku `HOST_URL` fix and the Connect writes allowlist are
+  config, applied by the owner in manual mode (writes are now on for 1411 and nine other properties; 1618 stays read-only there).
+- **Connect.** Tabs Overview · Stops · Locks · Visitors · Live Chat · Settings; the Elevators tab, its local-only edits, dialog,
+  strings and CSS are gone; five-step checklist; `?tab=elevators` → Stops. Settings rail Scheduling · Booking & CRM · Access &
+  security · Tour experience · Messages with pills and `?section=` per section; Route & navigation under Tour experience.
+  `readOnlyReason` notes (role vs `PYN_CONNECT_WRITES`); `hoursEditable`; the link panel prints the configured host.
+- **Rails.** `Scheduling::Settings#gates` tour gate = `communities.self_tour`; `verify_community_code!` on the public widget
+  (404 before any write); seven widget controller tests, one gate test.
+- **Verified.** tsc, vitest (28), next build, Rails (21 runs) pass; headless Playwright on the local pair (Rails :3100 on
+  `pynwheel_development`, Connect :3005): 31/31 on 1411, 1618 and 229 as admin and as a visitor-detail user — save → reload →
+  persisted → restored for the slot length and the button text, direct link 200 and bad codes 404, managed hours read-only,
+  the two read-only notes. Production untouched.
