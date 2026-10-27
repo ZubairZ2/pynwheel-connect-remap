@@ -1,4 +1,6 @@
 import { useMemo, useRef } from 'react';
+import { acquireFix, requestPermission, type Fix, type LocationAccess } from '~/services/location';
+import { PROXIMITIES } from '~/repositories/tourRepository';
 import { CONCIERGE_GREETING_GUEST } from '~/content/appCopy';
 import { ACCESS_MINUTES, DEMO, EXTEND_MINUTES, HOLD_HOURS, LEASING_EMAIL } from '~/content/demoFixtures';
 import type { AccessMethod } from '~/models';
@@ -13,7 +15,7 @@ import { success, tap } from '~/services/native';
 import { uuid, visitQueue, type VisitEventKind } from '~/services/visitQueue';
 import { useApp } from './appContext';
 import type { AppState, ScheduleDraft, ScheduledTour, TourPass, VerifyStep, VisitState } from './appState';
-import { dayKey } from './appState';
+import { type CheckinRefusal, dayKey } from './appState';
 import { fmtTime } from './scenarios';
 import { dayKeyInZone, zonedSlotMs } from './zone';
 import { bestMatchUnit, currentStop, markOf, selectedNodes, tourStopViews } from './selectors';
@@ -214,6 +216,46 @@ export const useAppActions = () => {
     };
 
     /** The phone-only check-in of the design: a simulated window, marked as such. */
+    /** The reading sent with a recorded check-in: asks the phone when it was never asked, waits for a fix when it may. */
+    const fixForCheckIn = async (): Promise<Fix | null> => {
+      let access = state.location.access;
+      if (access === 'prompt') {
+        dispatch({ type: 'locLocating' });
+        access = await requestPermission();
+        dispatch({ type: 'locAccess', access });
+      }
+      if (access !== 'granted' && access !== 'coarse') {
+        dispatch({ type: 'locFailed', reason: access === 'prompt' || access === 'unavailable' ? 'unavailable' : access });
+        return null;
+      }
+      dispatch({ type: 'locLocating' });
+      const result = await acquireFix();
+      if (result.ok) {
+        dispatch({ type: 'locFix', fix: result.fix });
+        return result.fix;
+      }
+      dispatch({ type: 'locFailed', reason: result.failure.reason });
+      return result.failure.bestEffort ?? null;
+    };
+
+    const refusalOf = (error: ApiError): CheckinRefusal => {
+      const details = (error.details ?? {}) as { proximity?: unknown; distance_m?: unknown };
+      return {
+        code: error.code === 'outside_property' ? 'outside_property' : 'location_unverified',
+        message: error.message,
+        proximity: PROXIMITIES.find((p) => p === details.proximity) ?? null,
+        distanceM: typeof details.distance_m === 'number' ? details.distance_m : null
+      };
+    };
+
+    /** A phone clock more than five minutes off the server's is worth a word: the server clamps what the app reports. */
+    const warnClockSkew = (serverTime: string | null) => {
+      const server = serverTime ? Date.parse(serverTime) : NaN;
+      if (!Number.isFinite(server)) return;
+      const minutes = Math.round(Math.abs(server - Date.now()) / 60000);
+      if (minutes > 5) toast(`Your phone's clock is about ${minutes} min off. Tour times follow the property's clock.`);
+    };
+
     const checkInLocally = (now: number, visit: VisitState | null = null) => {
       dispatch({ type: 'checkIn', now, accessMs: ACCESS_MINUTES * 60000, visit });
       dispatch({ type: 'goTourStart', startPointId: state.startPointId, virtual: false });
@@ -251,16 +293,27 @@ export const useAppActions = () => {
         tourUserId,
         end: null
       };
+      // The phone's reading goes with the check-in; the server judges it. A reading too coarse to be sure is still sent
+      // with its accuracy (the server may still place it inside, or say what it needs); a refusal keeps the visitor here.
+      const fix = await fixForCheckIn();
       try {
-        const record = await repository.startVisit({ clientVisitId: visit.clientVisitId, bookingId: visit.bookingId, tourType: visit.tourType, startedAt: visit.startedAt, tourUserId });
+        const record = await repository.startVisit({
+          clientVisitId: visit.clientVisitId, bookingId: visit.bookingId, tourType: visit.tourType, startedAt: visit.startedAt, tourUserId,
+          ...(fix ? { latitude: fix.lat, longitude: fix.lng, accuracyM: fix.accuracyM, fixAt: fix.fixAt } : {})
+        });
         const endsAt = accessEndsAtMs(record.accessEndsAt);
         const accessMs = endsAt != null && endsAt > now ? endsAt - now : ACCESS_MINUTES * 60000;
-        dispatch({ type: 'checkIn', now, accessMs, visit: { ...visit, id: record.id } });
+        dispatch({ type: 'checkIn', now, accessMs, visit: { ...visit, id: record.id, proximity: record.proximity } });
         dispatch({ type: 'goTourStart', startPointId: state.startPointId, virtual: false });
         const minutes = Math.max(1, Math.round(accessMs / 60000));
         toast(record.verificationRequired ? `Checked in. Door access is active for ${minutes} min once your ID is verified.` : `Checked in. Door access is active for ${minutes} min.`);
+        warnClockSkew(record.serverTime);
         void success();
       } catch (error) {
+        if (error instanceof ApiError && (error.code === 'outside_property' || error.code === 'location_unverified')) {
+          dispatch({ type: 'checkinRefused', refusal: refusalOf(error) });
+          return;
+        }
         if (error instanceof ApiError && error.status === 404 && error.code === 'disabled') {
           // The server switched visit recording off: back to the phone-only check-in, and the UI stops asking.
           dispatch({ type: 'setCapabilities', capabilities: { ...state.capabilities, visits: false } });
@@ -576,28 +629,41 @@ export const useAppActions = () => {
         } else dispatch({ type: 'verifyFinish' });
       },
 
-      // ── location (simulated: the app has no geolocation plugin in this phase) ──
+      // ── location (October 28, 2026: the phone's own reading through services/location.ts; the server judges it) ──
       locAsk: (sheet: 'ask' | 'pick' | 'manage' = 'ask') => dispatch({ type: 'locAsk', sheet }),
       locAllow: () => {
         const then = state.location.sheet;
         dispatch({ type: 'locLocating' });
-        later('loc', 1500, () => {
-          dispatch({ type: 'locLocated' });
+        void (async () => {
+          const access: LocationAccess = await requestPermission();
+          dispatch({ type: 'locAccess', access });
+          if (access !== 'granted' && access !== 'coarse') {
+            dispatch({ type: 'locFailed', reason: access === 'prompt' || access === 'unavailable' ? 'unavailable' : access });
+            return;
+          }
+          const result = await acquireFix();
+          if (!result.ok) {
+            dispatch({ type: 'locFailed', reason: result.failure.reason });
+            return;
+          }
+          dispatch({ type: 'locFix', fix: result.fix });
           if (then === 'pick') {
             dispatch({ type: 'guestFound', via: 'near' });
-            toast(`${propertyName} found${DEMO}`);
+            toast(`${propertyName} found`);
           }
-        });
+        })();
       },
       locRefresh: () => {
         dispatch({ type: 'locLocating' });
-        later('loc', 1500, () => {
-          dispatch({ type: 'locLocated' });
-          toast(`Location updated${DEMO}`);
+        void acquireFix().then((result) => {
+          if (result.ok) {
+            dispatch({ type: 'locFix', fix: result.fix });
+            toast('Location updated');
+          } else dispatch({ type: 'locFailed', reason: result.failure.reason });
         });
       },
       locDeny: () => dispatch({ type: 'locDeny' }),
-      locOpenSettings: () => toast(`Opening Settings · Pynwheel · Location${DEMO}`),
+      locOpenSettings: () => toast('Open Settings · Pynwheel · Location · While Using the App'),
       atProperty: () => {
         if (state.location.perm === 'on') {
           dispatch({ type: 'guestFound', via: 'near' });
@@ -605,14 +671,11 @@ export const useAppActions = () => {
         } else dispatch({ type: 'locAsk', sheet: 'pick' });
       },
       openQr: (mode: 'property' | 'checkin' = 'property') => dispatch({ type: 'qrOpen', mode }),
+      // A code found on site names the property; it never stands in for the location the server checks at check-in.
       qrFound: () => {
-        const mode = state.qrMode;
         dispatch({ type: 'closeOverlay', overlay: 'qr' });
-        if (mode === 'checkin') void checkIn();
-        else {
-          dispatch({ type: 'guestFound', via: 'qr' });
-          toast(`${propertyName} found${DEMO}`);
-        }
+        dispatch({ type: 'guestFound', via: 'qr' });
+        toast(`${propertyName} found${DEMO}`);
       },
       openLink: () => dispatch({ type: 'linkStep', step: 'enter' }),
       linkFound: () => {
@@ -707,6 +770,12 @@ export const useAppActions = () => {
        */
       requestLockPin: async (node: string) => {
         if (!bundle || lockRequests.current.has(node)) return;
+        if (recordingAllowed && state.visit?.status === 'active' && state.visit.id == null && state.visit.propertyId === state.propertyId) {
+          // Checked in on the phone while offline: the property has not confirmed the visit yet, and no door opens before it does.
+          toast('Confirming your check-in with the property… try the door again in a moment.');
+          void sync(state.visit);
+          return;
+        }
         const propertyId = state.propertyId;
         lockRequests.current.add(node);
         dispatch({ type: 'lockPinStart', node });

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react';
+import { acquireFix, checkPermission } from '~/services/location';
 import { useRepository } from '~/repositories/repositoryContext';
 import { onAppStateChange } from '~/services/native';
 import { loadPersisted, savePersisted } from '~/services/persistence';
@@ -208,6 +209,25 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       // As above.
     }
   }, [repository]);
+
+  // 5b. What the phone allows, read without asking once the state is up; a phone that already allows it gives a first reading
+  // quietly, so Home and the check-in have one ready (October 28, 2026).
+  useEffect(() => {
+    if (!hydrated) return;
+    let live = true;
+    void checkPermission().then(async (access) => {
+      if (!live) return;
+      dispatch({ type: 'locAccess', access });
+      if (access !== 'granted' && access !== 'coarse') return;
+      const result = await acquireFix();
+      if (!live) return;
+      if (result.ok) dispatch({ type: 'locFix', fix: result.fix });
+      else dispatch({ type: 'locFailed', reason: result.failure.reason });
+    });
+    return () => {
+      live = false;
+    };
+  }, [hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;

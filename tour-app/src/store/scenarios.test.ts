@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { initialAppState, type ScheduledTour } from './appState';
-import { autoTourScenario, checkinModel, dayLabel, dayOffset, fmtCountdown, locationModel, resolveTourScenario, slotTime, tourCard } from './scenarios';
+import { autoTourScenario, checkinModel, dayLabel, dayOffset, fmtCountdown, locationModel, resolveLocationScenario, resolveTourScenario, slotTime, tourCard } from './scenarios';
 
 const NOW = new Date(2026, 9, 17, 14, 0, 0).getTime(); // Sat Oct 17 2026, 2:00 PM local
 
@@ -76,6 +76,26 @@ describe('location scenario (the locationScenario tweak)', () => {
     expect(on.line).toBe('0.3 mi from Luxe *');
     expect(locationModel({ ...s, location: { ...s.location, perm: 'on' }, checkedIn: true }, 'Luxe', 'a').atProperty).toBe(true);
   });
+  it('reads the phone: precise off, a weak reading and being offline each get their own words', () => {
+    const s = initialAppState();
+    const on = { ...s, location: { ...s.location, perm: 'on' as const, access: 'granted' as const } };
+    expect(locationModel(on, 'L', 'a').scenario).toBe('on');
+    expect(locationModel({ ...on, location: { ...on.location, access: 'coarse' } }, 'L', 'a').primaryAction).toBe('settings');
+    expect(locationModel({ ...on, location: { ...on.location, failure: 'poor_accuracy' } }, 'L', '3401 Blake St, Denver').lineSub).toBe('· Approximate');
+    expect(locationModel({ ...on, location: { ...on.location, failure: 'timeout' } }, 'L', 'a').warn).toBe(true);
+    expect(resolveLocationScenario(on, false)).toBe('offline');
+    const off = locationModel({ ...s, location: { ...s.location, perm: 'off', access: 'services_off' } }, 'L', 'a');
+    expect(off.deniedTitle).toBe('Location Services are off');
+    expect(locationModel({ ...s, location: { ...s.location, perm: 'off', access: 'denied_forever' } }, 'L', 'a').deniedBody).toMatch(/no longer has permission/);
+    expect(locationModel({ ...s, location: { ...s.location, perm: 'off', access: 'denied' } }, 'L', 'a').deniedTitle).toBe('Location is turned off');
+  });
+  it('never turns a forced demo scenario into a reading', () => {
+    const s = initialAppState();
+    const forced = { ...s, demo: { ...s.demo, location: 'atProperty' as const } };
+    expect(forced.location.fix).toBeNull();
+    expect(locationModel(forced, 'L', 'a').atProperty).toBe(true);
+    expect(forced.location.perm).toBe('ask');
+  });
   it('forces every variant from the demo switch', () => {
     const s = initialAppState();
     expect(locationModel({ ...s, demo: { ...s.demo, location: 'denied' } }, 'L', 'a').perm).toBe('off');
@@ -94,6 +114,31 @@ describe('check-in sheet', () => {
     expect(checkinModel(at, NOW, 'L', 'a', null).scenario).toBe('verify');
     expect(checkinModel({ ...at, verified: true }, NOW, 'L', 'a', null).scenario).toBe('ready');
     expect(checkinModel({ ...at, demo: { ...at.demo, idVerified: true } }, NOW, 'L', 'a', null).scenario).toBe('ready');
+  });
+  it("shows the server's refusal, asks for location only when the server needs it, and never lets the phone decide", () => {
+    const on = { ...base, verified: true, location: { ...base.location, perm: 'on' as const, access: 'granted' as const } };
+    expect(checkinModel(on, NOW, 'L', 'a', null).scenario).toBe('ready');
+    expect(checkinModel({ ...on, guestProperty: 'qr' }, NOW, 'L', 'a', null).scenario).toBe('ready');
+    expect(locationModel({ ...on, guestProperty: 'near' }, 'L', 'a').atProperty).toBe(false);
+    expect(locationModel({ ...on, visit: { clientVisitId: 'c', propertyId: 1, id: 9, status: 'active', tourType: 'self_tour', startedAt: 'x', bookingId: null, tourUserId: null, end: null, proximity: 'verified' } }, 'L', 'a').atProperty).toBe(true);
+    const outside = checkinModel({ ...on, checkinRefusal: { code: 'outside_property', message: 'm', proximity: 'outside', distanceM: 1480 } }, NOW, 'L', 'a', null);
+    expect(outside.scenario).toBe('outside');
+    expect(outside.sub).toContain('0.9 mi from L');
+    expect(outside.options.map((o) => o.action)).toEqual(['retry', 'call', 'reschedule', 'cancel']);
+    const unverified = checkinModel({ ...on, checkinRefusal: { code: 'location_unverified', message: 'Turn on location services and try again.', proximity: 'unverified_no_fix', distanceM: null } }, NOW, 'L', 'a', null);
+    expect(unverified.scenario).toBe('unverified');
+    expect(unverified.sub).toBe('Turn on location services and try again.');
+    expect(unverified.primaryAction).toBe('start');
+    const noCoords = checkinModel({ ...on, checkinRefusal: { code: 'location_unverified', message: 'm', proximity: 'unverified_no_property_coords', distanceM: null } }, NOW, 'L', 'a', null);
+    expect(noCoords.primaryAction).toBe('close');
+    expect(noCoords.options.map((o) => o.action)).toEqual(['call', 'reschedule']);
+    const required = { ...base, verified: true, capabilities: { ...base.capabilities, locationRequired: true } };
+    expect(checkinModel(required, NOW, 'L', 'a', null).scenario).toBe('permission');
+    expect(checkinModel({ ...required, location: { ...required.location, perm: 'on', access: 'granted' } }, NOW, 'L', 'a', null).scenario).toBe('ready');
+    expect(checkinModel({ ...required, verified: false }, NOW, 'L', 'a', null).scenario).toBe('verify');
+    expect(checkinModel({ ...on, location: { ...on.location, locating: true } }, NOW, 'L', 'a', null).primary).toBe('Finding your location…');
+    expect(checkinModel(on, NOW, 'L', 'a', null).options.map((o) => o.action)).not.toContain('qr');
+    expect(checkinModel({ ...on, demo: { ...on.demo, location: 'approximate' } }, NOW, 'L', 'a', null).warn?.action).toBe('retry');
   });
   it('explains when the visitor is away, offline or checked in', () => {
     expect(checkinModel({ ...base, demo: { ...base.demo, location: 'nearby' } }, NOW, 'L', 'a', null).scenario).toBe('away');

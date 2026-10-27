@@ -16,7 +16,7 @@ const NOW = 1_780_000_000_000;
 
 describe('signing in with a phone', () => {
   it('walks phone → code → signed in, with the resend timer and the confirmation', () => {
-    let state = reducer(initialAppState(), { type: 'setCapabilities', capabilities: { visits: true, visitorAuth: true } });
+    let state = reducer(initialAppState(), { type: 'setCapabilities', capabilities: { visits: true, visitorAuth: true, locationRequired: false, presence: false } });
     state = reducer(state, { type: 'authStep', step: 'phone' });
     expect(state.authStep).toBe('phone');
     state = reducer(state, { type: 'setPhone', value: '(303) 555-0100' });
@@ -64,9 +64,9 @@ describe('signing in with a phone', () => {
     state = reducer(state, { type: 'setUser', user: { name: 'Ada King', email: 'ada@example.com', phone: '+1', kind: 'visitor' } });
     expect(state.profileEdits).toEqual({});
     expect(profileOf(state, null)).toMatchObject({ first: 'Ada', last: 'King' });
-    const caps = reducer(state, { type: 'setCapabilities', capabilities: { visits: true, visitorAuth: true } });
-    expect(reducer(caps, { type: 'signOut' }).capabilities).toEqual({ visits: true, visitorAuth: true });
-    expect(reducer(caps, { type: 'sessionExpired', message: 'Please sign in again.' })).toMatchObject({ capabilities: { visits: true, visitorAuth: true }, toast: 'Please sign in again.', signedIn: false });
+    const caps = reducer(state, { type: 'setCapabilities', capabilities: { visits: true, visitorAuth: true, locationRequired: false, presence: false } });
+    expect(reducer(caps, { type: 'signOut' }).capabilities).toEqual({ visits: true, visitorAuth: true, locationRequired: false, presence: false });
+    expect(reducer(caps, { type: 'sessionExpired', message: 'Please sign in again.' })).toMatchObject({ capabilities: { visits: true, visitorAuth: true, locationRequired: false, presence: false }, toast: 'Please sign in again.', signedIn: false });
     expect(PERSISTED_KEYS).toContain('capabilities');
     expect(PERSISTED_KEYS).not.toContain('phoneAuth');
     const hydrated = reducer({ ...initialAppState(), phoneAuth: { ...caps.phoneAuth, code: '123456' } }, { type: 'hydrate', state: caps });
@@ -117,6 +117,27 @@ describe('the recorded visit', () => {
     expect(visitRecording(local.visit)).toBe(false);
     expect(syncableVisit(local)).toBeNull();
     expect(syncableVisit({ ...local, signedIn: false, visit })).toBeNull();
+  });
+
+  it('a refusal at check-in keeps the visitor where they are with the reason; a late refusal ends the phone-side session', () => {
+    const refusal = { code: 'outside_property' as const, message: 'It looks like you are not at the property yet.', proximity: 'outside' as const, distanceM: 1480 };
+    let state = reducer(signedIn(), { type: 'checkinRefused', refusal });
+    expect(state.checkinRefusal).toEqual(refusal);
+    expect(state.checkedIn).toBe(false);
+    expect(state.overlays).toContain('checkin');
+    expect(reducer(state, { type: 'closeOverlay', overlay: 'checkin' }).checkinRefusal).toBeNull();
+    expect(reducer(state, { type: 'locLocating' }).checkinRefusal).toBeNull();
+
+    state = reducer(signedIn(), { type: 'checkIn', now: NOW, accessMs: 1, visit });
+    expect(state.visit?.id).toBeNull();
+    state = reducer(state, { type: 'visitRefused', clientVisitId: visit.clientVisitId, refusal: { ...refusal, code: 'location_unverified', proximity: 'unverified_no_fix' } });
+    expect(state.visit).toBeNull();
+    expect(state.checkedIn).toBe(false);
+    expect(state.accessEndsAt).toBeNull();
+    expect(state.screen).toBe('home');
+    expect(state.checkinRefusal?.code).toBe('location_unverified');
+    expect(reducer(state, { type: 'visitRefused', clientVisitId: 'other', refusal })).toBe(state);
+    expect(reducer(reducer(signedIn(), { type: 'checkinRefused', refusal }), { type: 'checkIn', now: NOW, accessMs: 1, visit }).checkinRefusal).toBeNull();
   });
 
   it('a check-in without a visit (demo data, a forced scenario) records nothing', () => {

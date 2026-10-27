@@ -482,7 +482,9 @@ export class PynwheelApiTourRepository implements TourRepository {
       ...(input.bookingId != null ? { booking_id: input.bookingId } : {}),
       tour_type: input.tourType,
       started_at: input.startedAt,
-      ...(input.latitude != null && input.longitude != null ? { latitude: input.latitude, longitude: input.longitude } : {}),
+      ...(input.latitude != null && input.longitude != null
+        ? { latitude: input.latitude, longitude: input.longitude, ...(input.accuracyM != null ? { accuracy_m: input.accuracyM } : {}), ...(input.fixAt ? { fix_at: input.fixAt } : {}) }
+        : {}),
       device_time_zone: deviceTimeZone(),
       app_version: APP_VERSION,
       ...(input.tourUserId != null ? { tour_user_id: input.tourUserId } : {})

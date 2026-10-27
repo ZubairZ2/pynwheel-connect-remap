@@ -162,11 +162,13 @@ export const LocationSheet = ({ open, sheet, model, onAllow, onDeny, onOpenSetti
       </span>
       {denied ? (
         <>
-          <div className="pw-ci__title">Location is turned off</div>
-          <div className="pw-locsheet__body">To turn it on, open your phone&rsquo;s Settings, go to Pynwheel, then Location, and choose &ldquo;While Using the App&rdquo;. You can still find a property without it.</div>
-          <Button height={48} onClick={onOpenSettings}>
-            Open Settings
-          </Button>
+          <div className="pw-ci__title">{model.deniedTitle}</div>
+          <div className="pw-locsheet__body">{model.deniedBody}</div>
+          {model.access === 'unavailable' ? null : (
+            <Button height={48} onClick={onOpenSettings}>
+              Open Settings
+            </Button>
+          )}
         </>
       ) : manage ? (
         <>
@@ -179,7 +181,7 @@ export const LocationSheet = ({ open, sheet, model, onAllow, onDeny, onOpenSetti
       ) : (
         <>
           <div className="pw-ci__title">Turn on location</div>
-          <div className="pw-locsheet__body">We use your location to find the property you&rsquo;re at and show nearby properties. It&rsquo;s only used while the app is open.{DEMO}</div>
+          <div className="pw-locsheet__body">We use your location to confirm you&rsquo;re at the property when you start a tour and to show properties near you. It&rsquo;s only used while the app is open.</div>
           <Button height={48} onClick={onAllow}>
             Allow Location
           </Button>

@@ -297,6 +297,9 @@ const Shell = () => {
       case 'calendar':
         actions.addToCalendar();
         break;
+      case 'retry':
+        actions.locRefresh();
+        break;
       default:
         close('checkin');
     }
@@ -306,6 +309,9 @@ const Shell = () => {
     switch (ci.primaryAction) {
       case 'start':
         void actions.checkIn();
+        break;
+      case 'location':
+        actions.locAsk('ask');
         break;
       case 'verify':
         actions.openVerify('start');
@@ -966,7 +972,7 @@ const Shell = () => {
               }} onClose={() => close('skip')} />
               <SosSheet open={has('sos')} onCall911={actions.call911} onCallLeasing={actions.callLeasing} onShareLocation={actions.shareLocation} onClose={() => close('sos')} />
               <ReportSheet open={has('report')} propertyName={bundle.property.name} onReport={actions.reportIssue} onClose={() => close('report')} />
-              <CheckinSheet open={has('checkin')} model={ci} onPrimary={onCheckinPrimary} onOption={onCheckinOption} onWarn={(a) => (a === 'qr' ? actions.openQr('checkin') : a === 'retry' ? (close('checkin'), actions.locRefresh()) : (close('checkin'), actions.locOpenSettings()))} onVirtual={actions.startVirtualTour} onClose={() => close('checkin')} />
+              <CheckinSheet open={has('checkin')} model={ci} onPrimary={onCheckinPrimary} onOption={onCheckinOption} onWarn={(a) => (a === 'qr' ? actions.openQr('property') : a === 'retry' ? actions.locRefresh() : (close('checkin'), actions.locOpenSettings()))} onVirtual={actions.startVirtualTour} onClose={() => close('checkin')} />
               <UpcomingSheet
                 open={has('upcoming')}
                 items={upcoming}
