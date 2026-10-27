@@ -790,7 +790,7 @@ Additive, for the Start Tour experience (`SELF_TOUR_START_EXPERIENCE_QA.md`); no
 Two kinds of bearer token now open the API: the staff Doorkeeper token of a CMS Super Admin (as before) and a visitor session
 token (`vst_…`) of a prospect who proved a phone number. `@auth.staff?` / `@auth.visitor?` say which; a visitor is never a CMS
 user and reaches only their own rows. Both kinds are switched on per server: `GET /health`, `POST /auth/login`, `GET /auth/me`,
-`POST /visitor/otp/verify`, `GET /visitor/me` and `GET /properties/{id}` carry `capabilities: {visits, visitor_auth}`
+`POST /visitor/otp/verify`, `GET /visitor/me` and `GET /properties/{id}` carry `capabilities: {visits, visitor_auth, location_required, presence}`
 (`PYN_TOUR_VISITS`, `PYN_TOUR_VISITOR_AUTH`; off by default in production, on elsewhere). Throttled by Rack::Attack
 (`config/initializers/rack_attack.rb`): 429 `rate_limit_exceeded` with `Retry-After`.
 
@@ -822,24 +822,46 @@ user and reaches only their own rows. Both kinds are switched on per server: `GE
 What the legacy app wrote through `/api/v1/save_tour_history`, on the same tables, so Connect › Visitors and the legacy pages
 show a Tour App tour as a session. 404 `disabled` while `PYN_TOUR_VISITS` is off.
 - `POST /properties/{id}/visits` `{client_visit_id (uuid), booking_id?, tour_type?, started_at?, latitude?, longitude?,
-  device_time_zone?, app_version?, tour_user_id? (staff only)}` → 201 (200 when reused) `{visit, booking}`. `visit`:
-  `{id, status, tour_key, tour_type, tour_site, booking_id, source: "tour_app", started_at, ended_at, active, access_window
-  {starts_at, ends_at, minutes (tour_settings.length_stay_limit, 45)}, within_radius, in_hours, location_received,
-  verification_required, events, created}`. Rules: outside visiting hours the visit is a `virtual_tour` (`offsite`); a named
-  booking must be the visitor's, at this property, not completed and inside booked time ± `grace_period` (422 `outside_window`
-  with `details.booked_at`, `grace_minutes`); without `booking_id` the booking whose window covers now is linked; coordinates
-  are optional and only refuse (422 `outside_property`) a visitor outside 1 km on a property with `only_scheduled_tour`;
+  accuracy_m?, fix_at?, device_time_zone?, app_version?, tour_user_id? (staff only)}` → 201 (200 when reused) `{visit, booking}`.
+  `visit`: `{id, status, tour_key, tour_type, tour_site, booking_id, source: "tour_app", started_at, ended_at, active,
+  access_window {starts_at, ends_at, minutes (tour_settings.length_stay_limit, 45)}, within_radius?, in_hours,
+  location_received, proximity, distance_m?, accuracy_m?, fix_at?, presence?, verification_required, events, created,
+  server_time}`. Rules: outside visiting hours the visit is a `virtual_tour` (`offsite`); a named booking must be the
+  visitor's, at this property, not completed and inside booked time ± `grace_period` (422 `outside_window` with
+  `details.booked_at`, `grace_minutes`); without `booking_id` the booking whose window covers now is linked;
   `verification_required` is true on a `visual_id_verification` property whose visitor has no verification within 30 days.
   Idempotent on `client_visit_id`, and a visit still open (no end, started within 120 minutes) is answered instead of a second one.
   Writes `tour_histories` (`arrived`, `active_app`, `tour_key`, `source`, `schedual_tour_id`, `client_visit_id`, …) and the
-  visitor's `tour_type` / `tour_key` / coordinates / `lock_access_time` as `initialize_tour` did; the model's arrival mail fires.
+  visitor's `tour_type` / `tour_key` / coordinates / `lock_access_time` as `initialize_tour` did.
+- Proximity (October 28, 2026, `Visits::Rules.proximity`): the server judges the phone's fix against the property's
+  coordinates and answers `proximity` as one of `verified` (the centre within 1 km, or the whole error circle inside it),
+  `outside` (the centre beyond 1 km with a fine fix, or the whole circle outside), `unverified_poor_accuracy` (`accuracy_m` over
+  150 m and the circle straddles the radius), `unverified_no_fix` (no coordinates sent) or `unverified_no_property_coords`
+  (the property has none); `within_radius` is `true` / `false` for the first two and absent otherwise; `distance_m` is the
+  centre's distance. An in-person (`self_tour` / `guided_tour`) check-in by a visitor is refused 422 `outside_property`
+  (`details {proximity, distance_m, accuracy_m, radius_km}`) when `outside`, on every property (the legacy app's rule, no longer
+  only `only_scheduled_tour`), and 422 `location_unverified` (`details` plus `accuracy_gate_m`) for any `unverified_*` state while
+  `PYN_TOUR_LOCATION_REQUIRED` is on (`capabilities.location_required`); while it is off the visit is created and the state
+  recorded. Staff check-ins and virtual visits are never refused. A reused visit answers the new fix's verdict but keeps the
+  check-in's on the row (filling a row that had none). The model's arrival mail ("A tour has begun") fires for a `verified`
+  in-person check-in and for a virtual one, not for an unverified in-person one. `server_time` (also on `GET /health`) lets the
+  app notice a phone clock that is off. The fix columns are `tour_histories.accuracy_m`, `fix_at`, `proximity`.
+- Presence (October 28, 2026, `Visits::Presence`, `PYN_TOUR_PRESENCE` / `capabilities.presence`): `location` events
+  (`payload {lat, lng, accuracy_m?}`) update `presence` `{state: on_site|away, fix_at, distance_m, departed_at?, returned_at?}`
+  on the visit and store no sample. A departure is confirmed after 3 readings beyond 1 km + 250 m spread over at least 5
+  minutes (the legacy `alerts_during_tour` emailed on a single reading); the property is emailed "Visitor has departed" once per
+  visit (audited `visit_departed`); a reading inside resets the count and marks a return after a departure (no email). Each
+  accepted `location` item answers `presence` as `on_site`, `leaving`, `departed`, `away`, `returned`, `unverified` (too coarse
+  or no property coordinates), `ignored` (stale, older than the last reading that counted, or over 15 minutes old),
+  `duplicate`, `disabled` (switch off) or `offsite` (virtual visit). Columns: `presence_state`, `last_fix_*`,
+  `last_location_event_id`, `outside_since`, `outside_fix_count`, `departed_notified_at`, `returned_at`.
 - `GET /properties/{id}/visits/{visit_id}` → `{visit, booking}`.
 - `POST /properties/{id}/visits/{visit_id}/events` `{device_id?, events: [{client_event_id?, kind, stop_id, occurred_at?, payload?}]}`
   (1..100) → 200, or 207 when some were rejected: `{accepted: [{index, client_event_id, kind, id, duplicate}], rejected:
   [{index, client_event_id, code, message}]}`. Kinds: `arrived` (`payload.code` = the door code shown → `visited_stops.stop_pin`),
   `skipped` (`payload.reason`), `note` (`payload.text`), `photo` (`payload.image` data URL ≤ 5 MB, `payload.caption`), `issue`
   (`payload.category`, `payload.text`; also audited), `unlocked` / `unlock_failed` (`payload.provider`, `payload.method`,
-  `payload.error_code` → `lock_histories`), `heartbeat`. `stop_id` is `unit:N` / `amenity:N` / `elevator:N` and must be a tour
+  `payload.error_code` → `lock_histories`), `heartbeat`, `location` (see Presence above; no `stop_id`). `stop_id` is `unit:N` / `amenity:N` / `elevator:N` and must be a tour
   stop of the visit's tour (422 `invalid_stop` per item). Each item is its own savepoint; a repeated `client_event_id` is
   acknowledged as `duplicate` and never written twice (unique indexes guard the race). 422 `visit_ended` once the visit ended.
 - `POST /properties/{id}/visits/{visit_id}/end` `{ended_at?, reason: completed|abandoned, abandoned_at_stop?}` → `{visit}`; sets

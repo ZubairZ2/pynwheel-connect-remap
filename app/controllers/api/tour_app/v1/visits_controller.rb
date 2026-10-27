@@ -19,9 +19,10 @@ module Api
 
         def create
           visitor = @auth.visitor? ? @auth.visitor : staff_visitor!
-          attrs = params.permit(:client_visit_id, :booking_id, :tour_type, :started_at, :latitude, :longitude, :device_time_zone, :app_version).to_h
+          attrs = params.permit(:client_visit_id, :booking_id, :tour_type, :started_at, :latitude, :longitude, :accuracy_m, :fix_at, :device_time_zone, :app_version).to_h
           result = ::Visits::Start.call!(@property, visitor, attrs, staff: @auth.user)
-          render json: { success: true, visit: TourApi::Visits.visit_json(@property, result.visit, created: result.created, within_radius: result.within_radius, in_hours: result.in_hours, verification_required: result.verification_required),
+          render json: { success: true, visit: TourApi::Visits.visit_json(@property, result.visit, created: result.created, within_radius: result.within_radius, in_hours: result.in_hours, verification_required: result.verification_required,
+                                                                            proximity: result.proximity, distance_m: result.distance_m, accuracy_m: result.accuracy_m),
                          booking: result.booking && TourApi::Visits.booking_json(@property, result.booking) }, status: result.created ? :created : :ok
         end
 

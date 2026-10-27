@@ -13,6 +13,8 @@ class TourHistory < ApplicationRecord
   private
 
   def send_arrival_notifications
+    return if unverified_tour_app_arrival?
+
     community = (Tour.find_by_id self.tour_id).community if self.tour_id.present?
     tour_type = self.tour_user.tour_type
   	verification_text = self.verified_by.present? ? "<br>They have successfully passed the ID verification process." : ""
@@ -20,6 +22,14 @@ class TourHistory < ApplicationRecord
     if community.present?
       send_email_sms_or_both(["A tour has begun", "#{self.tour_user.name.titleize} has begun a tour of #{fetch_property_name(community.name)}." + verification_text] , community)
     end
+  end
+
+  # The Tour App's in-person check-in announces the arrival only when the
+  # server verified the phone at the property (October 28, 2026), as the
+  # legacy app's arrival email went out only within the radius; a virtual
+  # (offsite) visit announces as before.
+  def unverified_tour_app_arrival?
+    source == 'tour_app' && tour_site == 'onsite' && proximity != 'verified'
   end
 
   def send_update_notifications
