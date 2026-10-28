@@ -333,6 +333,13 @@ export interface AppState {
   booking: BookingState;
   scheduledTour: ScheduledTour | null;
   verified: boolean;
+  /**
+   * Whether the server asks for ID verification before this property's
+   * check-in (October 28, 2026): read from the property detail and from every
+   * visit answer; null until the server has said (demo data never does, and
+   * then the check-in sheet asks as the design shows).
+   */
+  verificationRequired: boolean | null;
   requireCard: boolean;
   verify: VerifyFlow;
   checkedIn: boolean;
@@ -456,6 +463,7 @@ export const initialAppState = (): AppState => ({
   scheduleDone: false,
   scheduledTour: null,
   verified: false,
+  verificationRequired: null,
   requireCard: true,
   verify: initialVerify(),
   checkedIn: false,
@@ -510,6 +518,7 @@ export const PERSISTED_KEYS = [
   'demo',
   'scheduledTour',
   'verified',
+  'verificationRequired',
   'requireCard',
   'checkedIn',
   'accessEndsAt',

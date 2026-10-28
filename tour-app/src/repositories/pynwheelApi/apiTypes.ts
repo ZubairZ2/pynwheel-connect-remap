@@ -41,6 +41,8 @@ export interface ApiPropertyDetail extends ApiPropertySummary {
   published_at?: string | null;
   phone?: string | null;
   email?: string | null;
+  /** The app must ask for the visitor's ID before check-in (October 28, 2026): the server's rule, not the property's flag alone. */
+  verification_required?: boolean;
 }
 
 export interface ApiLevel {

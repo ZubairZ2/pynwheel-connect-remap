@@ -144,6 +144,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         dispatch({ type: 'setHistory', history: content.tourHistory });
         const nodes = [...bundle.amenities.filter((a) => a.showInStopsList).map((a) => a.node), ...bundle.units.filter((u) => u.showInStopsList).map((u) => u.node)];
         dispatch({ type: 'bundleLoaded', nodes });
+        dispatch({ type: 'verificationRequired', propertyId: bundle.property.id, required: bundle.property.verificationRequired ?? null });
         if (!nodes.length) return;
         repository
           .getStopDistances(nodes)

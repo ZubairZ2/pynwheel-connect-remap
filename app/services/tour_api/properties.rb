@@ -110,7 +110,12 @@ module TourApi
     end
 
     # `built` and `stops` are given when the tour is on (the graph and the stops list).
-    def detail(community, built: nil, stops: nil)
+    # `verification_required` (October 28, 2026): whether the app must ask for
+    # the visitor's ID before check-in — for a visitor session the same answer
+    # the visits and lock endpoints give (`Visits::Rules.verification_required?`:
+    # a `visual_id_verification` property whose visitor has no verification
+    # within 30 days); for a staff session whether the property asks at all.
+    def detail(community, built: nil, stops: nil, auth: nil)
       base = summary(community)
       tour = nil
       buildings = []
@@ -132,7 +137,14 @@ module TourApi
                  published_at: Text.timestamp(community.community_tour&.tour_published_at),
                  # The leasing office's contact (October 21, 2026): the property's phone and email as the CMS holds them, null when it holds none.
                  phone: Text.presence(community.phone) || Text.presence(community.property_manager_phone),
-                 email: Text.presence(community.email))
+                 email: Text.presence(community.email),
+                 verification_required: verification_required?(community, auth))
+    end
+
+    def verification_required?(community, auth)
+      return ::Visits::Rules.verification_required?(community, auth.visitor, ::Visits::Rules.now(community)) if auth&.visitor?
+
+      community.community_tour&.visual_id_verification == true
     end
   end
 end
