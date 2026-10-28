@@ -65,6 +65,7 @@ const pass = async (deps: VisitSyncDeps, initial: VisitState): Promise<void> => 
       const record = await repository.startVisit({ clientVisitId: visit.clientVisitId, bookingId: visit.bookingId, tourType: visit.tourType, startedAt: visit.startedAt, tourUserId: visit.tourUserId });
       visit = { ...visit, id: record.id };
       dispatch({ type: 'visitStarted', clientVisitId: visit.clientVisitId, id: record.id, accessEndsAt: visit.end ? null : accessEndsAtMs(record.accessEndsAt) });
+      dispatch({ type: 'verificationRequired', propertyId: visit.propertyId, required: record.verificationRequired });
     } catch (error) {
       if (isRetryable(error) || !(error instanceof ApiError)) return;
       if (error.code === 'outside_property' || error.code === 'location_unverified') {

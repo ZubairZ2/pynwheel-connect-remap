@@ -23,6 +23,16 @@ export const tourStartMs = (tour: Pick<ScheduledTour, 'date' | 'time' | 'bookedA
 export const tourDayLabel = (tour: Pick<ScheduledTour, 'date' | 'time' | 'bookedAtMs' | 'timeZone'>, now: number): string => {
   const tz = tour.timeZone ?? null;
   const key = tour.bookedAtMs != null && tz ? dayKeyInZone(tour.bookedAtMs, tz) : tour.date;
+  return dayLabelInZone(key, tz, now);
+};
+
+/**
+ * "Today, Oct 27" / "Tomorrow, Oct 28" / "Fri, Oct 30" for a calendar day of
+ * the property, relative to the property's today (October 28, 2026: a phone
+ * a day ahead of the property called its "Today" the next day); the phone's
+ * calendar when no zone is known.
+ */
+export const dayLabelInZone = (key: string, tz: string | null | undefined, now: number): string => {
   const off = tz ? dayOffsetInZone(key, tz, now) : dayOffset(key, new Date(now));
   const d = parseDay(key);
   const prefix = off === 0 ? 'Today' : off === 1 ? 'Tomorrow' : off === -1 ? 'Yesterday' : DOW[d.getDay()];
@@ -411,17 +421,26 @@ export interface CheckinModel {
   warn: { title: string; body: string; cta: string; action: 'qr' | 'retry' | 'settings' } | null;
 }
 
+/** The visitor's ID is verified as far as the app knows: the simulated Verify Identity flow, or the demo switch. */
 export const isVerified = (state: Pick<AppState, 'verified' | 'demo'>): boolean => state.verified || state.demo.idVerified;
 
+/**
+ * Whether the check-in must ask for the ID first (October 28, 2026). The
+ * server decides: a property it answered `verification_required: false` for
+ * goes straight to check-in. Until it has said (demo data), the sheet asks as
+ * the design shows. The simulated flow and the demo switch clear the ask.
+ */
+export const needsIdVerification = (state: Pick<AppState, 'verified' | 'demo' | 'verificationRequired'>): boolean => state.verificationRequired !== false && !isVerified(state);
+
 export const checkinModel = (
-  state: ScenarioState & Pick<AppState, 'location' | 'checkedIn' | 'guestProperty' | 'verified' | 'accessEndsAt' | 'schedule' | 'checkinFor' | 'checkinRefusal' | 'capabilities' | 'visit'>,
+  state: ScenarioState & Pick<AppState, 'location' | 'checkedIn' | 'guestProperty' | 'verified' | 'verificationRequired' | 'accessEndsAt' | 'schedule' | 'checkinFor' | 'checkinRefusal' | 'capabilities' | 'visit'>,
   now: number,
   propertyName: string,
   address: string,
   extra: DemoExtraTour | null
 ): CheckinModel => {
   const loc = locationModel(state, propertyName, address);
-  const verified = isVerified(state);
+  const verified = !needsIdVerification(state);
   const { scenario: tourScenario, tour } = effectiveTour(state, now);
   const refusal = state.checkinRefusal;
   // The server, not the phone, decides whether the visitor is at the property: the sheet only asks for what the server will need.
@@ -554,7 +573,9 @@ export const checkinModel = (
         primaryAction: !verified ? 'verify' : 'chat',
         steps: [
           { n: '✓', text: 'Request sent', state: 'Done', tone: 'ok' },
-          { n: '2', text: !verified ? 'Verify your ID' : 'ID verified', state: !verified ? 'Speeds up approval' : 'Done', tone: !verified ? 'now' : 'ok' },
+          !verified
+            ? { n: '2', text: 'Verify your ID', state: 'Speeds up approval', tone: 'now' }
+            : { n: '2', text: isVerified(state) ? 'ID verified' : 'ID check', state: isVerified(state) ? 'Done' : 'Not needed here', tone: 'ok' },
           { n: '3', text: 'Leasing team approves', state: 'In review', tone: !verified ? 'next' : 'now' },
           { n: '4', text: 'You get a confirmation text', state: 'Next', tone: 'next' }
         ],

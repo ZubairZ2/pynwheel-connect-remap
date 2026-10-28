@@ -182,6 +182,7 @@ export interface ScheduledTour {
 }
 
 export interface ScheduleDraft {
+  /** `YYYY-MM-DD` in the property's calendar; '' until the property's today is known (October 28, 2026). */
   date: string;
   /** The slot's label ("6:00 PM"); the booking sends the slot's `HH:MM`. */
   time: string;
@@ -359,6 +360,13 @@ export interface AppState {
   booking: BookingState;
   scheduledTour: ScheduledTour | null;
   verified: boolean;
+  /**
+   * Whether the server asks for ID verification before this property's
+   * check-in (October 28, 2026): read from the property detail and from every
+   * visit answer; null until the server has said (demo data never does, and
+   * then the check-in sheet asks as the design shows).
+   */
+  verificationRequired: boolean | null;
   requireCard: boolean;
   verify: VerifyFlow;
   checkedIn: boolean;
@@ -417,7 +425,7 @@ export const dayKey = (offset = 0, from: Date = new Date()): string => {
   return `${d.getFullYear()}-${m}-${day}`;
 };
 
-export const initialSchedule = (): ScheduleDraft => ({ date: dayKey(0), time: '', length: 45, unit: '', party: 1, first: '', last: '', phone: '', bedroom: '', moveIn: '' });
+export const initialSchedule = (): ScheduleDraft => ({ date: '', time: '', length: 45, unit: '', party: 1, first: '', last: '', phone: '', bedroom: '', moveIn: '' });
 
 export const initialBooking = (): BookingState => ({ propertyId: null, fetchedAt: 0, status: 'idle', error: null, settings: null, days: {}, saving: false, saveError: null });
 
@@ -483,6 +491,7 @@ export const initialAppState = (): AppState => ({
   scheduleDone: false,
   scheduledTour: null,
   verified: false,
+  verificationRequired: null,
   requireCard: true,
   verify: initialVerify(),
   checkedIn: false,
@@ -537,6 +546,7 @@ export const PERSISTED_KEYS = [
   'demo',
   'scheduledTour',
   'verified',
+  'verificationRequired',
   'requireCard',
   'checkedIn',
   'accessEndsAt',

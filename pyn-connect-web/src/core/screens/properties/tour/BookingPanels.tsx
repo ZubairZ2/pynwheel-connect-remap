@@ -84,6 +84,14 @@ export const BookingSectionView = ({ section, ...props }: BookingPanelProps & { 
 
 /* ── shared pieces ──────────────────────────────────────────────────── */
 
+/** Why this panel is read-only, in the user's terms: the Connect writes switch or their role (never the role when the switch is off). */
+const ReadOnlyNote = ({ c }: { c: TourBookingController }) =>
+  c.readOnlyReason ? (
+    <div className="bo-tx__info" role="note" data-testid={`booking-readonly-${c.readOnlyReason}`}>
+      {i18n.t(c.readOnlyReason === 'writesOff' ? B.readOnlyWritesOff : B.readOnlyRole)}
+    </div>
+  ) : null;
+
 const Card = ({ title, sub, right, children, testId, tag }: { title: string; sub?: string; right?: ReactNode; children: ReactNode; testId?: string; tag?: string }) => (
   <div className="bo-tx__card" data-testid={testId}>
     <div className="bo-tx__cardhead">
@@ -184,7 +192,7 @@ const RulesPanel = ({ c, propertyId, onNavigate }: BookingPanelProps) => {
   return (
     <div className="bo-tx" data-testid="booking-rules">
       <AvailabilityHeader c={c} propId={String(propertyId)} onNavigate={onNavigate} />
-      {ro && <div className="bo-tx__info">{i18n.t(B.readOnlyNote)}</div>}
+      <ReadOnlyNote c={c} />
 
       <Card title={i18n.t(B.types.title)} sub={i18n.t(B.types.sub)} testId="rules-types" right={head('types')}>
         <Row label={i18n.t(B.types.self)} sub={i18n.t(B.types.selfSub)}>
@@ -273,14 +281,20 @@ const TICK_LABELS = [B.hours.ticks.t6, B.hours.ticks.t9, B.hours.ticks.t12, B.ho
 
 const HoursPanel = ({ c, propertyId, onNavigate }: BookingPanelProps) => {
   const s = c.settings!;
+  // The design (Oct 27 2026): a CRM-managed calendar is shown as stored and edited in the CRM.
+  const editable = c.hoursEditable;
   const h = c.hours!;
   const errors = Object.keys(c.hourErrors).length;
   const status = errors ? { label: i18n.t(B.hours.status.errors), variant: 'crit' as const } : c.hoursDirty ? { label: i18n.t(B.hours.status.dirty), variant: 'warn' as const } : { label: i18n.t(B.hours.status.saved), variant: 'ok' as const };
   return (
     <div className="bo-tx" data-testid="booking-hours">
       <AvailabilityHeader c={c} propId={String(propertyId)} onNavigate={onNavigate} />
-      {!c.canEdit && <div className="bo-tx__info">{i18n.t(B.readOnlyNote)}</div>}
-      {s.crm.managedHours && <div className="bo-tx__note">{t(B.hours.managed, { crm: s.crm.managedHours })}</div>}
+      <ReadOnlyNote c={c} />
+      {s.crm.managedHours && (
+        <div className="bo-tx__note" role="note" data-testid="hours-managed">
+          {t(c.canEdit ? B.hours.managedReadOnly : B.hours.managed, { crm: s.crm.managedHours })}
+        </div>
+      )}
       <Card
         title={i18n.t(B.hours.title)}
         sub={i18n.t(B.hours.sub)}
@@ -296,12 +310,12 @@ const HoursPanel = ({ c, propertyId, onNavigate }: BookingPanelProps) => {
               </span>
             </div>
             <StatusPill variant={status.variant} label={status.label} />
-            {c.canEdit && c.hoursDirty && (
+            {editable && c.hoursDirty && (
               <button type="button" className="bo-tx__btn bo-tx__btn--md" disabled={c.saving === 'hours'} onClick={() => c.settings && c.setHoursAll(hoursDraftOf(c.settings))}>
                 {i18n.t(B.hours.discard)}
               </button>
             )}
-            {c.canEdit && (
+            {editable && (
               <button type="button" className="bo-tx__btn bo-tx__btn--primary bo-tx__btn--md" disabled={!c.hoursDirty || errors > 0 || c.saving === 'hours'} onClick={() => void c.saveHours()} data-testid="hours-save">
                 {c.saving === 'hours' ? i18n.t(X.saving) : i18n.t(B.hours.save)}
               </button>
@@ -326,7 +340,7 @@ const HoursPanel = ({ c, propertyId, onNavigate }: BookingPanelProps) => {
           const error = c.hourErrors[`self.${day}`] ?? c.hourErrors[`guided.${day}`];
           return (
             <div key={day} className={open ? 'bo-tx__dayrow--open' : undefined} style={{ borderBottom: '1px solid var(--bo-line-2)' }} data-testid={`hours-day-${day}`}>
-              <div className="bo-tx__dayrow" role={c.canEdit ? 'button' : undefined} tabIndex={c.canEdit ? 0 : undefined} aria-expanded={c.canEdit ? open : undefined} onClick={c.canEdit ? () => c.setHoursEditor(open ? null : day) : undefined} onKeyDown={c.canEdit ? (event) => (event.key === 'Enter' || event.key === ' ') && c.setHoursEditor(open ? null : day) : undefined}>
+              <div className="bo-tx__dayrow" role={editable ? 'button' : undefined} tabIndex={editable ? 0 : undefined} aria-expanded={editable ? open : undefined} onClick={editable ? () => c.setHoursEditor(open ? null : day) : undefined} onKeyDown={editable ? (event) => (event.key === 'Enter' || event.key === ' ') && c.setHoursEditor(open ? null : day) : undefined}>
                 <span style={{ font: '800 12.5px var(--bo-font)', color: 'var(--bo-ink)' }}>{day.slice(0, 3)}</span>
                 <div className="bo-tx__bars">
                   {LANES.map((lane) => (
@@ -340,9 +354,9 @@ const HoursPanel = ({ c, propertyId, onNavigate }: BookingPanelProps) => {
                 <div className={`bo-tx__daylabels${error ? ' bo-tx__warn' : ''}`}>
                   {error ? <span>{error}</span> : LANES.map((lane) => <span key={lane}>{hoursLabel(h[lane][day] ?? [])}</span>)}
                 </div>
-                {c.canEdit && <span className="bo-tx__caret">{i18n.t(open ? B.hours.closeEditor : B.hours.edit)}</span>}
+                {editable && <span className="bo-tx__caret">{i18n.t(open ? B.hours.closeEditor : B.hours.edit)}</span>}
               </div>
-              {open && c.canEdit && (
+              {open && editable && (
                 <div className="bo-tx__lanes" data-testid="hours-editor">
                   {LANES.map((lane) => (
                     <LaneEditor key={lane} c={c} lane={lane} day={day} />
@@ -408,6 +422,7 @@ const ClosuresCard = ({ c }: { c: TourBookingController }) => {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState({ date: today(), label: '', closedAllDay: true, startTime: '09:00', endTime: '12:00' });
   const errors = c.closureErrors;
+  const editable = c.hoursEditable;
   const add = () => {
     c.addClosure(draft);
     setOpen(false);
@@ -420,7 +435,7 @@ const ClosuresCard = ({ c }: { c: TourBookingController }) => {
       tag={NEW()}
       testId="closures-card"
       right={
-        c.canEdit ? (
+        editable ? (
           <>
             {c.closuresDirty && <span className="bo-tx__meta">{i18n.t(X.unsavedChanges)}</span>}
             <button type="button" className="bo-tx__btn bo-tx__btn--md bo-tx__btn--accent" onClick={() => setOpen(true)} data-testid="closure-add">
@@ -441,7 +456,7 @@ const ClosuresCard = ({ c }: { c: TourBookingController }) => {
               <div className="bo-tx__closuredate">{closureLabel({ date: row.date, closedAllDay: row.closedAllDay, startTime: row.startTime, endTime: row.endTime })}</div>
               <div className="bo-tx__closurelabel">{errors[row.key] ?? row.label}</div>
             </div>
-            {c.canEdit && (
+            {editable && (
               <button type="button" className="bo-tx__btn bo-tx__btn--danger" onClick={() => c.removeClosure(row.key)}>
                 {i18n.t(C.remove)}
               </button>
@@ -512,7 +527,7 @@ const FormPanel = ({ c, propertyName, onNavigate }: BookingPanelProps) => {
   return (
     <div className="bo-tx__grid2 bo-tx__grid2--wide" data-testid="booking-form">
       <div className="bo-tx">
-        {ro && <div className="bo-tx__info">{i18n.t(B.readOnlyNote)}</div>}
+        <ReadOnlyNote c={c} />
         <Card title={i18n.t(F.title)} sub={i18n.t(F.sub)} testId="form-fields" right={head('fields')}>
           <Row label={i18n.t(F.contact)} sub={i18n.t(F.contactSub)}>
             <StatusPill variant="neutral" label={i18n.t(F.always)} />
@@ -722,10 +737,15 @@ const LinkPanel = ({ c, propertyId, onNavigate }: BookingPanelProps) => {
       <AvailabilityHeader c={c} propId={String(propertyId)} onNavigate={onNavigate} />
       {!link.url && <div className="bo-tx__bad">{i18n.t(L.noHost)}</div>}
       {link.url && link.hostSource === 'request' && <div className="bo-tx__info">{t(L.hostDefault, { host: link.host ?? '' })}</div>}
+      {link.url && link.hostSource === 'env' && (
+        <div className="bo-tx__meta" data-testid="booking-link-host">
+          {t(L.hostConfigured, { host: link.host ?? '' })}
+        </div>
+      )}
       {link.url && !link.live && <div className="bo-tx__note">{t(L.notLive, { error: link.reasons[0] ?? '' })}</div>}
       <div className="bo-tx__grid2 bo-tx__grid2--link">
         <div className="bo-tx">
-          {ro && <div className="bo-tx__info">{i18n.t(B.readOnlyNote)}</div>}
+          <ReadOnlyNote c={c} />
           <Card title={i18n.t(K.title)} sub={i18n.t(K.sub)} testId="button-card" right={ro ? undefined : <CardSave dirty={c.formDirtyFor('button')} saving={c.saving === 'form'} problems={Object.values(c.formProblemsFor('button'))} onSave={() => void c.saveForm('button')} onDiscard={() => c.discardForm('button')} testId="button-save" />}>
             <Row label={i18n.t(K.text)}>
               <span className="bo-tx__textrow">

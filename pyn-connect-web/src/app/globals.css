@@ -4794,7 +4794,7 @@ select {
   .bo-map__toolbaractions { flex-basis: 100%; margin-left: 0; }
 }
 
-/* ── Tour Setup (plotting design): stops, elevators & locks, routing ── */
+/* ── Tour Setup (plotting design): stops, locks, routing ── */
 .bo-tour__publish { display: inline-flex; align-items: center; gap: 7px; }
 .bo-tour__tabs { display: flex; gap: 8px; flex-wrap: wrap; }
 .bo-tour__tab { height: 36px; padding: 0 14px; border: 1px solid var(--bo-line); background: #fff; color: var(--bo-muted); border-radius: 8px; font: 700 12.5px var(--bo-font); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
@@ -4810,7 +4810,7 @@ select {
 .bo-tour__stop--hidden { opacity: 0.72; }
 .bo-tour__stopimage { position: relative; width: 150px; height: 120px; flex-shrink: 0; border-radius: 10px; overflow: hidden; background: #eef0f4; display: flex; align-items: center; justify-content: center; }
 .bo-tour__stopimg { width: 100%; height: 100%; object-fit: cover; display: block; }
-.bo-tour__stopimage .bo-safeimg__missing, .bo-tour__photoimg .bo-safeimg__missing { font: 600 11px var(--bo-font); color: var(--bo-subtle); text-align: center; padding: 8px; }
+.bo-tour__stopimage .bo-safeimg__missing { font: 600 11px var(--bo-font); color: var(--bo-subtle); text-align: center; padding: 8px; }
 .bo-tour__stopbody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 .bo-tour__stophead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .bo-tour__stopname { font: 800 15px var(--bo-font); color: var(--bo-ink); flex: 1; min-width: 120px; }
@@ -4831,23 +4831,6 @@ select {
 .bo-tour__talk { width: 100%; height: 52px; border: 1px solid var(--bo-line); border-radius: 8px; padding: 9px 11px; font: 500 12.5px/1.5 var(--bo-font); color: var(--bo-ink); resize: none; outline: none; background: #fbfbfc; box-sizing: border-box; }
 .bo-tour__emptycard { background: var(--bo-panel); border: 1px dashed var(--bo-line); border-radius: 12px; padding: 36px; text-align: center; font: 600 13px var(--bo-font); color: var(--bo-subtle); }
 .bo-tour__emptycard b { color: var(--bo-accent); }
-.bo-tour__elevator { background: var(--bo-panel); border: 1px solid var(--bo-line); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
-.bo-tour__elevatorhead { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.bo-tour__elevatoricon { width: 36px; height: 36px; border-radius: 9px; background: #eef0f4; color: var(--bo-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.bo-tour__elevatortext { flex: 1; min-width: 200px; }
-.bo-tour__elevatorname { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font: 800 14.5px var(--bo-font); color: var(--bo-ink); }
-.bo-tour__elevatorsub { font: 600 11.5px var(--bo-font); color: var(--bo-subtle); }
-.bo-tour__gatedlabel { font: 700 11.5px var(--bo-font); color: var(--bo-muted); }
-.bo-tour__elevatormeta { display: flex; flex-direction: column; gap: 4px; font: 500 12px/1.5 var(--bo-font); color: var(--bo-muted); }
-.bo-tour__elevatormeta b { font-weight: 800; color: var(--bo-ink); }
-.bo-tour__photos { display: flex; gap: 10px; flex-wrap: wrap; }
-.bo-tour__photo { width: 150px; border: 1px solid var(--bo-line); border-radius: 9px; overflow: hidden; }
-.bo-tour__photoimg { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 96px; background: #eef0f4; overflow: hidden; }
-.bo-tour__photofile { width: 100%; height: 100%; object-fit: cover; display: block; }
-.bo-tour__photoimg--missing { display: flex; align-items: center; justify-content: center; font: 600 11px var(--bo-font); color: var(--bo-subtle); }
-.bo-tour__photobar { display: flex; align-items: center; gap: 4px; padding: 6px 8px; }
-.bo-tour__photopos { flex: 1; font: 700 11px var(--bo-font); color: var(--bo-subtle); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bo-tour__nophotos { font: 600 12px var(--bo-font); color: var(--bo-subtle); }
 .bo-tour__routing { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
 .bo-tour__card { background: var(--bo-panel); border: 1px solid var(--bo-line); border-radius: 12px; padding: 20px 22px; }
 .bo-tour__cardhead { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 4px; }

@@ -15,11 +15,11 @@ import { success, tap } from '~/services/native';
 import { uuid, visitQueue, type VisitEventKind } from '~/services/visitQueue';
 import { useApp } from './appContext';
 import type { AppState, ScheduleDraft, ScheduledTour, TourPass, VerifyStep, VisitState } from './appState';
-import { type CheckinRefusal, dayKey } from './appState';
+import type { CheckinRefusal } from './appState';
 import { fmtTime } from './scenarios';
 import { dayKeyInZone, zonedSlotMs } from './zone';
 import { bestMatchUnit, currentStop, markOf, selectedNodes, tourStopViews } from './selectors';
-import { profileOf, slotByLabel, slotsForDay } from './views';
+import { bookingRequestFor, profileOf, propertyZone, scheduleDay, slotByLabel, slotsForDay } from './views';
 import { accessEndsAtMs, syncVisit, visitRecording } from './visitSync';
 
 /** A photo larger than this (as a data URL) is not uploaded; a note with the caption goes instead. */
@@ -33,7 +33,7 @@ const bookingIdOf = (id: string): number | null => (/^\d+$/.test(id) ? Number(id
 export const tourFromBooking = (b: VisitorBooking, now: number): ScheduledTour => ({
   id: String(b.id),
   status: b.status === 'cancelled' ? 'cancelled' : b.status === 'completed' ? 'past' : b.status === 'missed' ? 'missed' : 'scheduled',
-  date: b.date ?? dayKey(0, new Date(now)),
+  date: b.date ?? dayKeyInZone(now, b.timeZone),
   time: b.timeLabel ?? '',
   length: 45,
   unit: 'No preference',
@@ -202,9 +202,11 @@ export const useAppActions = () => {
     const openSchedule = (patch: Partial<ScheduleDraft> = {}) => {
       const booked = state.scheduledTour && state.scheduledTour.status !== 'past' && state.scheduledTour.status !== 'cancelled' && state.scheduledTour.status !== 'missed' ? state.scheduledTour : null;
       const profile = profileOf(state, content);
+      // The day is the property's calendar day (October 28, 2026): its today until the visitor picks one, and
+      // unknown ('') until the property's rules are loaded, when `bookingLoaded` anchors it.
       const base: ScheduleDraft = booked
         ? { ...state.schedule, date: booked.date, time: booked.time, length: booked.length, unit: booked.unit, party: booked.party }
-        : { ...state.schedule, date: state.schedule.date < dayKeyInZone(Date.now(), state.booking.settings?.timeZone) ? dayKeyInZone(Date.now(), state.booking.settings?.timeZone) : state.schedule.date };
+        : { ...state.schedule, date: scheduleDay(state.schedule.date, propertyZone(state)) };
       const draft = { ...base, ...patch };
       if (!draft.first) draft.first = profile.first;
       if (!draft.last) draft.last = profile.last;
@@ -304,6 +306,7 @@ export const useAppActions = () => {
         const endsAt = accessEndsAtMs(record.accessEndsAt);
         const accessMs = endsAt != null && endsAt > now ? endsAt - now : ACCESS_MINUTES * 60000;
         dispatch({ type: 'checkIn', now, accessMs, visit: { ...visit, id: record.id, proximity: record.proximity } });
+        dispatch({ type: 'verificationRequired', propertyId: visit.propertyId, required: record.verificationRequired });
         dispatch({ type: 'goTourStart', startPointId: state.startPointId, virtual: false });
         const minutes = Math.max(1, Math.round(accessMs / 60000));
         toast(record.verificationRequired ? `Checked in. Door access is active for ${minutes} min once your ID is verified.` : `Checked in. Door access is active for ${minutes} min.`);
@@ -479,7 +482,7 @@ export const useAppActions = () => {
       /** Start Self-Tour: a guest is asked to sign in; a member schedules the self-tour (the booking is local demo data). */
       startSelfTour: guarded('schedule a self-tour', 'schedule', () => openSchedule()),
       openSchedule,
-      scheduleSecondVisit: () => openSchedule({ date: dayKey(1) }),
+      scheduleSecondVisit: () => openSchedule({ date: dayKeyInZone(Date.now(), propertyZone(state), 1) }),
       setSchedule: (patch: Partial<ScheduleDraft>) => dispatch({ type: 'setSchedule', patch }),
       loadBooking,
       /** Books the self-tour through the repository: the CMS checks the slot, the visitor and the rules, and keeps the booking. */
@@ -496,30 +499,15 @@ export const useAppActions = () => {
           return;
         }
         const profile = profileOf(state, content);
-        const first = (d.first || profile.first).trim();
-        const last = (d.last || profile.last).trim();
-        const phone = (d.phone || profile.phone).trim();
-        const email = profile.email.trim();
-        if (!first || !last || !phone || !email) {
+        // The property's calendar day and the slot's clock: the CMS reads both in the property's zone.
+        const request = bookingRequestFor(d, slot, profile, state.booking.settings);
+        if (!request.firstName || !request.lastName || !request.phone || !request.email) {
           toast('Add your name, phone and email to book.');
           return;
         }
         dispatch({ type: 'bookingSaving' });
         try {
-          const result = await repository.requestBooking({
-            date: d.date,
-            time: slot.time,
-            tourType: 'self_tour',
-            firstName: first,
-            lastName: last,
-            email,
-            phone,
-            desiredUnit: d.unit && d.unit !== 'No preference' ? d.unit : undefined,
-            lengthMinutes: d.length,
-            partySize: d.party,
-            desiredBedroom: state.booking.settings?.form.showDesiredBedroom && d.bedroom ? d.bedroom : undefined,
-            desiredMoveInDate: state.booking.settings?.form.showDesiredMoveInDate && d.moveIn ? d.moveIn : undefined
-          });
+          const result = await repository.requestBooking(request);
           if (d.first && d.first !== profile.first) dispatch({ type: 'setProfileField', field: 'first', value: d.first });
           if (d.last && d.last !== profile.last) dispatch({ type: 'setProfileField', field: 'last', value: d.last });
           if (d.phone && d.phone !== profile.phone) dispatch({ type: 'setProfileField', field: 'phone', value: d.phone });
@@ -980,7 +968,7 @@ export const useAppActions = () => {
         const unit = bundle.units.find((u) => u.showInStopsList && u.available)?.name ?? 'No preference';
         // The first day with an agent-guided time still open, from the calendar already loaded (the sheet reloads it).
         const days = Object.keys(state.booking.days).sort();
-        const day = days.find((key) => guidedSlots(state.booking, key).length > 0) ?? days[0] ?? dayKey(0);
+        const day = days.find((key) => guidedSlots(state.booking, key).length > 0) ?? days[0] ?? dayKeyInZone(Date.now(), propertyZone(state));
         const time = guidedSlots(state.booking, day)[0]?.label ?? '';
         dispatch({ type: 'openBook', day, time, unit });
         void loadBooking();

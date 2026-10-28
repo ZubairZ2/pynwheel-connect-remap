@@ -9,7 +9,7 @@ import { readRailsCookie } from '~/core/session/session.server';
 import { ConnectScreenTemplate } from '~/core/templates/ConnectScreenTemplate';
 import { TourSetupScreen as DemoTourSetupScreen } from '~/core/screens/connect/properties/tourSetup.screen';
 import { TourSetupScreen } from '~/core/screens/properties/tourSetup.screen';
-import { bookingSectionOf } from '~/core/utils/generator/tour/tourBooking.generator';
+import { settingsSectionOf } from '~/core/utils/generator/tour/tourModule.generator';
 import { tourTabOf } from '~/core/utils/generator/tour/tourSetup.generator';
 
 export const dynamic = 'force-dynamic';
@@ -39,7 +39,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
     <ConnectScreenTemplate title={title}>
       <TourSetupScreen
         initialTab={tourTabOf(tab)}
-        initialSection={bookingSectionOf(section)}
+        initialSection={settingsSectionOf(section)}
         map={load.status === 'found' ? load.map : null}
         error={load.status === 'failed' ? i18n.t(CORE_STRINGS.tourSetup.loadFailed) : null}
       />

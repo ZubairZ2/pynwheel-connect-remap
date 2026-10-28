@@ -7,6 +7,12 @@ class SchedulerWidget::WidgetsController < ApplicationController
   # environment. The views only add a stylesheet and a body class when it is
   # on, so the default rendering stays byte-identical.
   before_action :set_connect_theme, only: [:test_widget, :confirmation_instructions, :change_tour_time_widget]
+  # The public booking page answers 404 - before any row is written - for an
+  # unknown property and, on a direct (signed) link, for a missing, invalid or
+  # mismatched `community_code` (October 27, 2026). Before, a bad code raised
+  # inside the action and the prospect was redirected to the staff
+  # scheduled-tours page with a flash.
+  before_action :verify_community_code!, only: :test_widget
   layout 'widget'
 
   def widget
@@ -50,10 +56,6 @@ class SchedulerWidget::WidgetsController < ApplicationController
     if params[:direct].present?
       @direct =  true
       params[:message].present? ? @show_first = false : @show_first = true
-      decoded = JWT.decode params[:community_code], Community.widget_signing_key, true, { algorithm: 'HS256' } rescue nil
-      unless decoded[0]["community_id"].to_i == params[:community_id].to_i
-        raise ActionController::RoutingError.new('Not Found')
-      end
     else
       @direct =  false
     end
@@ -185,6 +187,26 @@ class SchedulerWidget::WidgetsController < ApplicationController
   end
 
   private
+
+  # The signed property code of a direct link (`Community#community_code`, an
+  # HS256 JWT of the property id under `Community.widget_signing_key`) must
+  # decode and name the property of the request.
+  def verify_community_code!
+    community = Community.find_by(id: params[:community_id])
+    return render_widget_not_found if community.nil?
+    return unless params[:direct].present?
+
+    decoded = begin
+      JWT.decode(params[:community_code].to_s, Community.widget_signing_key, true, { algorithm: 'HS256' })
+    rescue JWT::DecodeError
+      nil
+    end
+    render_widget_not_found unless decoded && decoded[0]['community_id'].to_i == community.id
+  end
+
+  def render_widget_not_found
+    render plain: 'Not Found', status: :not_found, layout: false
+  end
 
   def set_connect_theme
     @connect_theme = params[:theme].to_s == 'connect' || ENV['SCHEDULER_WIDGET_THEME'].to_s == 'connect'

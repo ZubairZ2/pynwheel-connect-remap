@@ -86,8 +86,30 @@ class Api::TourApp::V1::PropertiesTest < ActionDispatch::IntegrationTest
     assert_equal 3, body['floorplates_count']
     assert_equal Unit.where(community_id: @community.id, visible: true).count, body['units_count']
     assert_equal 2, body['amenities_count']
-    assert_equal %w[id name address city state zip company tour_enabled is_sitemap success auto_wayfinding floorplates_count units_count amenities_count buildings tour graph_version config_version published_at phone email capabilities], body.keys
+    assert_equal %w[id name address city state zip company tour_enabled is_sitemap success auto_wayfinding floorplates_count units_count amenities_count buildings tour graph_version config_version published_at phone email verification_required capabilities], body.keys
     assert_equal({ 'visits' => true, 'visitor_auth' => true, 'location_required' => true, 'presence' => true }, body['capabilities'], 'the app reads what the server offers (October 23 and 28, 2026)')
+    assert_equal true, body['verification_required'], 'the fixture tour has visual_id_verification on, so a staff session sees that the property asks'
+  end
+
+  test 'the detail tells the app whether to ask for the ID (October 28, 2026)' do
+    @tour.update_columns(visual_id_verification: false)
+    ann = TourUser.create!(first_name: 'Ann', last_name: 'Lee', name: 'Ann Lee', email: 'ann@example.test', phone_number: '+13035550101')
+    visitor_token, = Visitors::Session.issue!(ann)
+    get @base, headers: auth(visitor_token)
+    assert_response :success
+    assert_equal false, body['verification_required'], 'a property without visual_id_verification never asks'
+
+    @tour.update_columns(visual_id_verification: true)
+    reset_tour_api_caches!
+    get @base, headers: auth(visitor_token)
+    assert_response :success
+    assert_equal true, body['verification_required'], 'a verified-ID property asks a visitor with no verification on file'
+    get @base, headers: auth
+    assert_equal true, body['verification_required'], 'a staff session sees that the property asks'
+
+    ann.update_columns(is_checkpoint_verified: true, checkpoint_verified_at: Time.current)
+    get @base, headers: auth(visitor_token)
+    assert_equal false, body['verification_required'], 'a visitor verified within 30 days is not asked again'
   end
 
   test 'the detail of a property without the tour' do

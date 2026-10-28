@@ -295,7 +295,7 @@ const Drawer = ({ c, controller, propId, mapHref, onOpenLocks }: { c: TourStopsC
             </div>
             {item.card.image && (
               <div style={{ width: 96, height: 64, borderRadius: 6, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
-                <SafeImage className="bo-tour__stopimg" src={item.card.image} alt="" fallback={i18n.t(T.elevators.photoUnavailable)} />
+                <SafeImage className="bo-tour__stopimg" src={item.card.image} alt="" fallback={i18n.t(T.stops.photoUnavailable)} />
               </div>
             )}
           </div>
@@ -474,7 +474,7 @@ const PreviewPane = ({ c }: { c: TourStopsController }) => {
         <div className="bo-tx__phonebody">
           {item.card.image ? (
             <div style={{ height: 120, borderRadius: 8, overflow: 'hidden', position: 'relative' }}>
-              <SafeImage className="bo-tour__stopimg" src={item.card.image} alt="" fallback={i18n.t(T.elevators.photoUnavailable)} />
+              <SafeImage className="bo-tour__stopimg" src={item.card.image} alt="" fallback={i18n.t(T.stops.photoUnavailable)} />
             </div>
           ) : (
             <div style={{ height: 120, borderRadius: 8, background: 'repeating-linear-gradient(45deg,#F4F5F7,#F4F5F7 8px,#ECEEF2 8px,#ECEEF2 16px)' }} />

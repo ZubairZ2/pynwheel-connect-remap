@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { initialAppState, type ScheduledTour } from './appState';
-import { autoTourScenario, checkinModel, dayLabel, dayOffset, fmtCountdown, locationModel, resolveLocationScenario, resolveTourScenario, slotTime, tourCard } from './scenarios';
+import { autoTourScenario, checkinModel, dayLabel, dayOffset, fmtCountdown, locationModel, needsIdVerification, resolveLocationScenario, resolveTourScenario, slotTime, tourCard } from './scenarios';
 
 const NOW = new Date(2026, 9, 17, 14, 0, 0).getTime(); // Sat Oct 17 2026, 2:00 PM local
 
@@ -139,6 +139,31 @@ describe('check-in sheet', () => {
     expect(checkinModel({ ...on, location: { ...on.location, locating: true } }, NOW, 'L', 'a', null).primary).toBe('Finding your location…');
     expect(checkinModel(on, NOW, 'L', 'a', null).options.map((o) => o.action)).not.toContain('qr');
     expect(checkinModel({ ...on, demo: { ...on.demo, location: 'approximate' } }, NOW, 'L', 'a', null).warn?.action).toBe('retry');
+  });
+  it('asks for the ID only where the server requires it (October 28, 2026)', () => {
+    const at = { ...base, demo: { ...base.demo, location: 'atProperty' as const } };
+    // The server said no (the property has no visual_id_verification, or the visitor is verified on file): straight to check-in.
+    const notRequired = { ...at, verificationRequired: false };
+    expect(needsIdVerification(notRequired)).toBe(false);
+    const ready = checkinModel(notRequired, NOW, 'L', 'a', null);
+    expect(ready.scenario).toBe('ready');
+    expect(ready.primary).toBe('Start In-Person Tour');
+    expect(checkinModel({ ...notRequired, demo: { ...notRequired.demo, location: 'approximate' } }, NOW, 'L', 'a', null).primaryAction).toBe('start');
+    expect(checkinModel({ ...notRequired, demo: { ...notRequired.demo, location: 'nearby' } }, NOW, 'L', 'a', null).options.map((o) => o.action)).not.toContain('verify');
+    // The server said yes: the sheet asks until the visitor has gone through the flow.
+    const required = { ...at, verificationRequired: true };
+    expect(needsIdVerification(required)).toBe(true);
+    expect(checkinModel(required, NOW, 'L', 'a', null).scenario).toBe('verify');
+    expect(checkinModel({ ...required, demo: { ...required.demo, location: 'nearby' } }, NOW, 'L', 'a', null).options[0].action).toBe('verify');
+    expect(checkinModel({ ...required, verified: true }, NOW, 'L', 'a', null).scenario).toBe('ready');
+    // The demo switch still forces the verified state, whatever the server said.
+    expect(checkinModel({ ...required, demo: { ...required.demo, idVerified: true } }, NOW, 'L', 'a', null).scenario).toBe('ready');
+    // Nothing said yet (demo data): the design's ask.
+    expect(checkinModel({ ...at, verificationRequired: null }, NOW, 'L', 'a', null).scenario).toBe('verify');
+    // The pending request: the ID step is "not needed here" rather than "verified" when the server does not ask.
+    const pending = { ...notRequired, demo: { ...notRequired.demo, tour: 'pending' as const } };
+    expect(checkinModel(pending, NOW, 'L', 'a', null).primaryAction).toBe('chat');
+    expect(checkinModel(pending, NOW, 'L', 'a', null).steps?.[1]).toMatchObject({ text: 'ID check', state: 'Not needed here' });
   });
   it('explains when the visitor is away, offline or checked in', () => {
     expect(checkinModel({ ...base, demo: { ...base.demo, location: 'nearby' } }, NOW, 'L', 'a', null).scenario).toBe('away');

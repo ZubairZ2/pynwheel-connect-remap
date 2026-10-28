@@ -15,7 +15,6 @@ import {
   T,
   buildTourSetupPayload,
   tourSetupUnsavedCount,
-  generateElevatorCards,
   generateStopCards,
   generateTourSummary,
   initialTourState,
@@ -36,9 +35,9 @@ import type { TourPublication } from '~/core/models/data/tourModules.data';
 
 /**
  * All of the Tour Setup screen's state. The stored tour never changes here:
- * reordering, hiding, adding or removing stops, talking points, elevator
- * gating, photos and banks, and the route preview live in `TourLocalState`
- * until the page reloads. No action sends a request.
+ * reordering, hiding, adding or removing stops, talking points and the route
+ * preview live in `TourLocalState` until Save (`TourSetup::Save`); the
+ * publish action is its own request.
  */
 export const useTourSetup = (map: PropertyMap, initialTab: TourTab = 'overview') => {
   const dispatch = useAppDispatch();
@@ -76,12 +75,12 @@ export const useTourSetup = (map: PropertyMap, initialTab: TourTab = 'overview')
   }, [loadPublication, map]);
 
   const stops = useMemo(() => generateStopCards(map, levels, state), [map, levels, state]);
-  const elevators = useMemo(() => generateElevatorCards(map, levels, state), [map, levels, state]);
   const summary = useMemo(() => generateTourSummary(map, state), [map, state]);
   const sources = useMemo(() => stopSourceOptions(map, state), [map, state]);
   const endpoints = useMemo(() => stopEndpoints(map, levels, graphs, state), [map, levels, graphs, state]);
   const startPoints = useMemo(() => tourStartPointRows(map, levels, graphs), [map, levels, graphs]);
 
+  /** The property's building names (the graph's and the levels'), for the stops' route scopes. */
   const buildings = useMemo(() => {
     const names = new Set<string>();
     map.graph.buildings.forEach((name) => names.add(name));
@@ -250,120 +249,12 @@ export const useTourSetup = (map: PropertyMap, initialTab: TourTab = 'overview')
       toast(t(T.toast.stopAdded, { name: label.replace(/^[^·]+· /, '') }));
       return;
     }
-    if (dialog.kind === 'editStop') {
-      patch((current) => ({
-        stops: current.stops.map((stop) => (stop.key === dialog.key ? { ...stop, talkingPoint: dialog.talkingPoint, duration: dialog.duration } : stop)),
-        dialog: null
-      }));
-      toast(i18n.t(T.toast.stopUpdated));
-      return;
-    }
-    if (!dialog.name.trim()) {
-      toast(i18n.t(T.toast.bankName));
-      return;
-    }
     patch((current) => ({
-      localElevators: [
-        ...current.localElevators,
-        { key: `local-elevator:${current.nextLocal}`, name: dialog.name.trim(), building: dialog.building, from: dialog.from, to: dialog.to, gated: dialog.gated }
-      ],
-      nextLocal: current.nextLocal + 1,
+      stops: current.stops.map((stop) => (stop.key === dialog.key ? { ...stop, talkingPoint: dialog.talkingPoint, duration: dialog.duration } : stop)),
       dialog: null
     }));
-    toast(t(T.toast.bankAdded, { name: dialog.name.trim() }));
+    toast(i18n.t(T.toast.stopUpdated));
   }, [patch, sources, state.dialog, toast]);
-
-  /* ── elevators ────────────────────────────────────────────────────── */
-
-  const toggleGated = useCallback(
-    (key: string) => {
-      const card = elevators.find((row) => row.key === key);
-      if (!card) return;
-      if (card.local) patch((current) => ({ localElevators: current.localElevators.map((row) => (row.key === key ? { ...row, gated: !row.gated } : row)) }));
-      else patch((current) => ({ gated: { ...current.gated, [Number(key)]: !card.gated } }));
-      toast(i18n.t(card.gated ? T.toast.ungated : T.toast.gated));
-    },
-    [elevators, patch, toast]
-  );
-
-  const addPhoto = useCallback(
-    (key: string, file: File) => {
-      const url = URL.createObjectURL(file);
-      patch((current) => ({ photos: { ...current.photos, [key]: [...(current.photos[key] ?? []), { name: file.name, url }] } }));
-      toast(t(T.toast.photoAdded, { file: file.name }));
-    },
-    [patch, toast]
-  );
-
-  const removePhoto = useCallback(
-    (key: string, photoKey: string) => {
-      patch(() => ({
-        confirm: {
-          title: i18n.t(T.confirm.removePhotoTitle),
-          message: i18n.t(T.confirm.removePhotoBody),
-          label: i18n.t(T.confirm.removePhoto),
-          onConfirm: () => {
-            patch((current) => {
-              if (photoKey.startsWith('local:')) {
-                const url = photoKey.slice(6);
-                return { photos: { ...current.photos, [key]: (current.photos[key] ?? []).filter((photo) => photo.url !== url) }, confirm: null };
-              }
-              const order = (current.photoOrder[key] ?? elevators.find((row) => row.key === key)?.photos.filter((photo) => !photo.local).map((photo) => photo.key) ?? []).filter(
-                (row) => row !== photoKey
-              );
-              return { photoOrder: { ...current.photoOrder, [key]: order }, confirm: null };
-            });
-            toast(i18n.t(T.toast.photoRemoved));
-          }
-        }
-      }));
-    },
-    [elevators, patch, toast]
-  );
-
-  const movePhoto = useCallback(
-    (key: string, photoKey: string, direction: -1 | 1) =>
-      patch((current) => {
-        const card = elevators.find((row) => row.key === key);
-        if (!card) return {};
-        const stored = card.photos.filter((photo) => !photo.local).map((photo) => photo.key);
-        const index = stored.indexOf(photoKey);
-        const other = index + direction;
-        if (index < 0 || other < 0 || other >= stored.length) return {};
-        const order = [...stored];
-        [order[index], order[other]] = [order[other], order[index]];
-        return { photoOrder: { ...current.photoOrder, [key]: order } };
-      }),
-    [elevators, patch]
-  );
-
-  const removeElevator = useCallback(
-    (key: string) => {
-      const card = elevators.find((row) => row.key === key);
-      if (!card) return;
-      patch(() => ({
-        confirm: {
-          title: t(T.confirm.removeElevatorTitle, { name: card.name }),
-          message: i18n.t(T.confirm.removeElevatorBody),
-          label: i18n.t(T.confirm.removeElevator),
-          onConfirm: () => {
-            patch((current) =>
-              card.local
-                ? { localElevators: current.localElevators.filter((row) => row.key !== key), confirm: null }
-                : { removedElevators: [...current.removedElevators, Number(key)], confirm: null }
-            );
-            toast(t(T.toast.elevatorRemoved, { name: card.name }));
-          }
-        }
-      }));
-    },
-    [elevators, patch, toast]
-  );
-
-  const openAddElevator = useCallback(
-    () => patch(() => ({ dialog: { kind: 'addElevator', name: '', building: buildings[0] ?? '', from: '', to: '', gated: true } })),
-    [buildings, patch]
-  );
 
   /* ── save ─────────────────────────────────────────────────────────── */
 
@@ -372,9 +263,8 @@ export const useTourSetup = (map: PropertyMap, initialTab: TourTab = 'overview')
 
   /**
    * Saves the tour setup: the stops added, removed, hidden or shown, their
-   * order and dwell times, and the elevators deleted, as `TourSetup::Save`
-   * applies them in one transaction. Talking points, gating and photos stay
-   * on the page (no column holds them yet, gaps T2 / T4).
+   * order and dwell times, as `TourSetup::Save` applies them in one
+   * transaction. Talking points stay on the page (no column holds them yet, gap T2).
    */
   const save = useCallback(async () => {
     if (saving) return;
@@ -463,7 +353,6 @@ export const useTourSetup = (map: PropertyMap, initialTab: TourTab = 'overview')
     state,
     summary,
     stops,
-    elevators,
     sources,
     endpoints,
     startPoints,
@@ -489,12 +378,6 @@ export const useTourSetup = (map: PropertyMap, initialTab: TourTab = 'overview')
       setDialog,
       closeDialog,
       saveDialog,
-      toggleGated,
-      addPhoto,
-      removePhoto,
-      movePhoto,
-      removeElevator,
-      openAddElevator,
       setRouteFrom: (key: string) => patch(() => ({ routeFrom: key })),
       setRouteTo: (key: string) => patch(() => ({ routeTo: key })),
       computeRoute,

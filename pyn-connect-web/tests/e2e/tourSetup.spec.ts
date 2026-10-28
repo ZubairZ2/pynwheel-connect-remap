@@ -4,8 +4,7 @@ import { expect, test, type Page } from '@playwright/test';
  * Tour Setup on real data, driven against a running CMS with a minted Devise
  * session (PYN_CONNECT_PROGRESS.md §7). Skips itself without the session env
  * (PYN_CONNECT_E2E_RAILS_COOKIE / PYN_CONNECT_E2E_USER). The default property,
- * 2934 (Dummy-High-Rise-0012), has 20 stops on its community tour, 4
- * elevators (one with a Latch bank, one with a gallery photo). The last
+ * 2934 (Dummy-High-Rise-0012), has 20 stops on its community tour. The last
  * assertion is the one that matters most: only GETs.
  */
 const railsCookie = process.env.PYN_CONNECT_E2E_RAILS_COOKIE;
@@ -42,10 +41,9 @@ test.describe('Tour Setup (real data)', () => {
     await page.goto(`/properties/${propertyId}/tour-setup`);
     await hydrated(page);
 
-    // Header and the tabs with real counts (Overview · Stops · Elevators · Locks · Visitors · Live Chat · Settings).
+    // Header and the tabs with real counts (Overview · Stops · Locks · Visitors · Live Chat · Settings).
     await expect(page.getByRole('heading', { level: 2, name: 'Tour Setup' })).toBeVisible();
     const stopsTab = page.getByRole('tab', { name: /^Stops/ });
-    const elevatorsTab = page.getByRole('tab', { name: /^Elevators/ });
     await expect(stopsTab).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Locks' })).toBeVisible();
     const stopCount = Number((await stopsTab.locator('.bo-tour__tabcount').innerText()).trim());
@@ -64,21 +62,8 @@ test.describe('Tour Setup (real data)', () => {
     await expect(page.getByTestId('stop-drawer')).toBeVisible();
     await page.getByTestId('stop-drawer').getByRole('button', { name: 'Close' }).click();
 
-    // Elevators: real cards, gating toggle, add bank, remove — all local.
-    await elevatorsTab.click();
-    const elevators = page.locator('.bo-tour__elevator');
-    expect(await elevators.count()).toBeGreaterThan(0);
-    const toggle = elevators.first().getByRole('switch');
-    const wasGated = (await toggle.getAttribute('aria-checked')) === 'true';
-    await toggle.click();
-    await expect(toggle).toHaveAttribute('aria-checked', String(!wasGated));
-    await page.getByRole('button', { name: 'Add Elevator Bank' }).click();
-    await page.getByRole('dialog').getByPlaceholder('e.g. Bank A').fill('Local Bank');
-    await page.getByRole('dialog').getByRole('button', { name: 'Add Bank' }).click();
-    await expect(page.locator('.bo-tour__elevator', { hasText: 'Local Bank' })).toHaveCount(1);
-    await page.locator('.bo-tour__elevator', { hasText: 'Local Bank' }).getByRole('button', { name: /^Delete/ }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Remove Bank' }).click();
-    await expect(page.locator('.bo-tour__elevator', { hasText: 'Local Bank' })).toHaveCount(0);
+    // Elevators (Oct 27 2026): no tab of their own; `?tab=elevators` opens the stops.
+    await expect(page.getByTestId('tour-tab-elevators')).toHaveCount(0);
 
     // Publish: dialog only.
     await page.getByRole('button', { name: 'Publish to Touch App' }).click();
