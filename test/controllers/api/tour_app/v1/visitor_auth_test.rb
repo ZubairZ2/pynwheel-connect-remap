@@ -277,4 +277,27 @@ class Api::TourApp::V1::VisitorAuthTest < ActionDispatch::IntegrationTest
     ENV.delete('PYN_TOUR_OTP_TEST_CODE')
     ENV.delete('PYN_TOUR_VISITOR_AUTH')
   end
+
+  test 'the built-in reviewer phone +123456789 skips every limit, gets no SMS, and 123456 signs it in' do
+    3.times { request_code('+123456789') }
+    assert_response :accepted, response.body
+    assert_equal 0, TwilioSmsWorker.jobs.size
+    assert_equal '123456', body['debug_code']
+    assert_equal 0, body['resend_after']
+    assert_equal 0, VisitorOtp.count, 'no code row is kept for it'
+    verify('+123456789', '000000')
+    assert_response :unauthorized
+    verify('+123456789', '123456')
+    assert_response :unprocessable_entity, 'a new phone still gives its profile'
+    verify('+123456789', '123456', first_name: 'App', last_name: 'Review', email: 'review@example.test')
+    assert_response :success, response.body
+    assert_equal '+123456789', TourUser.find_by(email: 'review@example.test').phone_number
+    verify(' 123 456 789', '123456')
+    assert_response :success, 'without the plus, with spaces, and again without a new request'
+  end
+
+  test 'the code SMS is queued without a community, so a test property never drops it' do
+    request_code(PHONE, property_id: @community.id)
+    assert_equal [PHONE], TwilioSmsWorker.jobs.last['args'][1..]
+  end
 end
