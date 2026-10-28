@@ -1,4 +1,6 @@
 import type { AccessMethod, LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
+import type { Fix, LocationAccess, LocationFailureReason } from '~/services/location';
+import type { Proximity } from '~/repositories/tourRepository';
 import type { AvailabilityDay, BookingSettings } from '~/repositories/tourRepository';
 import { NO_CAPABILITIES, type Capabilities } from '~/services/session';
 import type { Overlay, Screen } from '~/navigation/screens';
@@ -127,6 +129,16 @@ export interface VisitState {
   /** Staff sessions: the visitor the admin tours with. */
   tourUserId: number | null;
   end: { endedAt: string; reason: 'completed' | 'abandoned'; abandonedAtStop: string | null } | null;
+  /** The server's verdict on the check-in's fix (October 28, 2026); null until the server answered. */
+  proximity?: Proximity | null;
+}
+
+/** Why the server refused the in-person check-in (October 28, 2026): outside the radius, or nothing it could verify. */
+export interface CheckinRefusal {
+  code: 'outside_property' | 'location_unverified';
+  message: string;
+  proximity: Proximity | null;
+  distanceM: number | null;
 }
 
 /** How a guest found the property they are looking at (the design's `guestProperty`). */
@@ -229,11 +241,23 @@ export type Reaction = 'love' | 'like' | 'no';
 export type LocationPermission = 'ask' | 'on' | 'off';
 
 export interface LocationState {
+  /** The sheets' view of the permission: not asked, usable, or off (derived from `access`, or the visitor's "Not now"). */
   perm: LocationPermission;
+  /** What the phone allows, in detail (October 28, 2026; `services/location.ts`). */
+  access: LocationAccess;
   locating: boolean;
+  /** The last reading good enough to send to the server, or null. */
+  fix: Fix | null;
+  /** Why the last attempt gave no reading, or null. */
+  failure: LocationFailureReason | null;
   /** Which location sheet is open: the first ask, the ask that then picks the property, or "manage". */
   sheet: 'ask' | 'pick' | 'manage' | null;
 }
+
+/** The sheets' triad for what the phone allows. */
+export const permissionOf = (access: LocationAccess): LocationPermission => (access === 'granted' || access === 'coarse' ? 'on' : access === 'prompt' || access === 'unavailable' ? 'ask' : 'off');
+
+export const initialLocation = (): LocationState => ({ perm: 'ask', access: 'prompt', locating: false, fix: null, failure: null, sheet: null });
 
 /** The design's Tweaks, as runtime demo scenarios the owner can switch in Settings › Demo scenarios. `auto` = whatever the app's own state says. */
 export type DemoTourScenario = 'auto' | 'today' | 'upcoming' | 'pending' | 'past' | 'missed' | 'cancelled' | 'none';
@@ -329,6 +353,8 @@ export interface AppState {
   // ── the design refresh (UI-only) ──
   demo: DemoScenarios;
   location: LocationState;
+  /** The last refusal of an in-person check-in, shown by the check-in sheet until the next attempt. */
+  checkinRefusal: CheckinRefusal | null;
   schedule: ScheduleDraft;
   scheduleDone: boolean;
   booking: BookingState;
@@ -458,7 +484,8 @@ export const initialAppState = (): AppState => ({
   guided: initialGuided(),
   floorByLevel: {},
   demo: initialDemoScenarios(),
-  location: { perm: 'ask', locating: false, sheet: null },
+  location: initialLocation(),
+  checkinRefusal: null,
   schedule: initialSchedule(),
   booking: initialBooking(),
   scheduleDone: false,

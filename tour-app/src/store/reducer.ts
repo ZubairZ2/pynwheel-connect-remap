@@ -1,4 +1,5 @@
 import type { AccessMethod, LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
+import type { Fix, LocationAccess, LocationFailureReason } from '~/services/location';
 import type { AvailabilityDay, BookingSettings } from '~/repositories/tourRepository';
 import { profileOf, propertyZone, scheduleDay, slotsForDay } from './views';
 import { DEMO_SCENARIOS_ENABLED } from '~/config/env';
@@ -8,6 +9,7 @@ import type { Capabilities } from '~/services/session';
 import {
   initialAppState,
   initialDemoScenarios,
+  permissionOf,
   initialGuided,
   initialPhoneAuth,
   initialSchedule,
@@ -25,7 +27,7 @@ import {
   type ScheduledTour,
   type TourMode,
   type TourPass,
-  type VerifyStep, type BookingState, type VisitState } from './appState';
+  type VerifyStep, type BookingState, type VisitState, type CheckinRefusal } from './appState';
 
 /**
  * Every state change of the app, in one pure reducer. The async flows
@@ -158,7 +160,9 @@ export type Action =
   | { type: 'locAsk'; sheet: 'ask' | 'pick' | 'manage' }
   | { type: 'locClose' }
   | { type: 'locLocating' }
-  | { type: 'locLocated' }
+  | { type: 'locAccess'; access: LocationAccess }
+  | { type: 'locFix'; fix: Fix }
+  | { type: 'locFailed'; reason: LocationFailureReason }
   | { type: 'locDeny' }
   | { type: 'qrOpen'; mode: 'property' | 'checkin' }
   | { type: 'linkStep'; step: AppState['linkStep'] }
@@ -185,6 +189,8 @@ export type Action =
   | { type: 'checkIn'; now: number; accessMs: number; visit?: VisitState | null }
   | { type: 'visitStarted'; clientVisitId: string; id: number; accessEndsAt: number | null }
   | { type: 'visitLocal'; clientVisitId: string }
+  | { type: 'checkinRefused'; refusal: CheckinRefusal }
+  | { type: 'visitRefused'; clientVisitId: string; refusal: CheckinRefusal }
   | { type: 'visitEnding'; clientVisitId: string; end: NonNullable<VisitState['end']> }
   | { type: 'visitClosed'; clientVisitId: string }
   | { type: 'extendAccess'; ms: number }
@@ -343,7 +349,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'openOverlay':
       return state.overlays.includes(action.overlay) ? state : { ...state, overlays: [...state.overlays, action.overlay] };
     case 'closeOverlay':
-      return { ...state, overlays: without(state.overlays, action.overlay) };
+      return { ...state, overlays: without(state.overlays, action.overlay), checkinRefusal: action.overlay === 'checkin' ? null : state.checkinRefusal };
     case 'closeTopOverlay': {
       const top = topOverlay(state.overlays);
       return top ? { ...state, overlays: without(state.overlays, top) } : state;
@@ -660,11 +666,17 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'locClose':
       return { ...state, location: { ...state.location, sheet: null }, overlays: without(state.overlays, 'location') };
     case 'locLocating':
-      return { ...state, location: { perm: 'on', locating: true, sheet: null }, overlays: without(state.overlays, 'location') };
-    case 'locLocated':
-      return { ...state, location: { ...state.location, locating: false } };
+      return { ...state, checkinRefusal: null, location: { ...state.location, locating: true, failure: null, sheet: null }, overlays: without(state.overlays, 'location') };
+    case 'locAccess':
+      return { ...state, location: { ...state.location, access: action.access, perm: permissionOf(action.access) } };
+    case 'locFix':
+      return { ...state, location: { ...state.location, perm: 'on', locating: false, fix: action.fix, failure: null } };
+    case 'locFailed': {
+      const off = action.reason === 'denied' || action.reason === 'denied_forever' || action.reason === 'services_off';
+      return { ...state, location: { ...state.location, locating: false, failure: action.reason, perm: off ? 'off' : state.location.perm } };
+    }
     case 'locDeny':
-      return { ...state, location: { perm: 'off', locating: false, sheet: null }, overlays: without(state.overlays, 'location') };
+      return { ...state, location: { ...state.location, perm: 'off', locating: false, sheet: null }, overlays: without(state.overlays, 'location') };
     case 'qrOpen':
       return { ...state, qrMode: action.mode, overlays: withOnTop(without(without(state.overlays, 'checkin'), 'location'), 'qr') };
     case 'linkStep':
@@ -773,6 +785,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'checkIn':
       return {
         ...state,
+        checkinRefusal: null,
         checkedIn: true,
         virtualTour: false,
         accessEndsAt: action.now + action.accessMs,
@@ -787,6 +800,13 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'visitLocal':
       if (state.visit?.clientVisitId !== action.clientVisitId) return state;
       return { ...state, visit: { ...state.visit, status: 'local' } };
+    // The server refused the in-person check-in at once: the visitor stays where they are, with the reason on the sheet.
+    case 'checkinRefused':
+      return { ...state, checkinRefusal: action.refusal, location: { ...state.location, locating: false }, overlays: withOnTop(state.overlays, 'checkin') };
+    // A check-in kept on the phone while offline was refused when it reached the server: the phone-side session ends.
+    case 'visitRefused':
+      if (state.visit?.clientVisitId !== action.clientVisitId) return state;
+      return { ...state, ...tourScoped(), visit: null, checkedIn: false, accessEndsAt: null, virtualTour: false, checkinRefusal: action.refusal, screen: 'home', overlays: ['checkin'] };
     case 'visitEnding':
       if (state.visit?.clientVisitId !== action.clientVisitId) return state;
       return { ...state, visit: { ...state.visit, status: 'ended', end: state.visit.end ?? action.end } };

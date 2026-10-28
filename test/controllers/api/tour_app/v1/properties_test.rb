@@ -23,6 +23,44 @@ class Api::TourApp::V1::PropertiesTest < ActionDispatch::IntegrationTest
     assert_equal 'MyString', quiet['company']
   end
 
+  test 'the list near the phone: nearest first with the distance, within the radius, without coordinates in the answer' do
+    denver = [39.7392, -104.9903]
+    @community.update_columns(latitude: 39.7419, longitude: -104.9903)                       # ~300 m north
+    communities(:sitemap_property).update_columns(latitude: 39.7662, longitude: -104.9903)  # ~3 km north
+    @quiet.update_columns(latitude: nil, longitude: nil)
+    get "#{BASE}/properties", params: { near: denver.join(',') }, headers: auth
+    assert_response :success, response.body
+    ids = body['properties'].map { |p| p['id'] }
+    assert_equal [@community.id, communities(:sitemap_property).id], ids.first(2), 'nearest first'
+    refute_includes ids, @quiet.id, 'a property without coordinates is not near anyone'
+    first = body['properties'].first
+    assert_in_delta 300, first['distance_m'], 20
+    assert_in_delta 3000, body['properties'][1]['distance_m'], 50
+    assert_equal %w[id name address city state zip company tour_enabled is_sitemap distance_m], first.keys, 'no latitude or longitude leaves the server'
+    assert_equal body['properties'].size, body['total']
+
+    get "#{BASE}/properties", params: { near: denver.join(','), radius_km: 1, limit: 1 }, headers: auth
+    assert_equal [@community.id], body['properties'].map { |p| p['id'] }
+    get "#{BASE}/properties", params: { near: denver.join(','), radius_km: 1 }, headers: auth
+    assert_equal [@community.id], body['properties'].map { |p| p['id'] }, 'the radius cuts'
+    get "#{BASE}/properties", params: { near: denver.join(','), tour_enabled: 'true', q: 'no tour' }, headers: auth
+    assert_equal [], body['properties'], 'the other filters still apply'
+
+    get "#{BASE}/properties", headers: auth
+    refute body['properties'].first.key?('distance_m'), 'no distance without near'
+    assert_includes body['properties'].map { |p| p['id'] }, @quiet.id
+
+    get "#{BASE}/properties", params: { near: '39.7' }, headers: auth
+    assert_response :unprocessable_entity
+    assert_equal 'validation_error', body['error']['code']
+    get "#{BASE}/properties", params: { near: '95,-104' }, headers: auth
+    assert_response :unprocessable_entity
+    get "#{BASE}/properties", params: { near: denver.join(','), limit: 0 }, headers: auth
+    assert_response :unprocessable_entity
+    get "#{BASE}/properties", params: { near: denver.join(','), radius_km: 9999 }, headers: auth
+    assert_response :unprocessable_entity, 'the radius never exceeds the server cap'
+  end
+
   test 'the list filters by tour_enabled and q' do
     get "#{BASE}/properties", params: { tour_enabled: 'true' }, headers: auth
     assert_equal [communities(:sitemap_property).id, @community.id], body['properties'].map { |p| p['id'] }
@@ -49,7 +87,7 @@ class Api::TourApp::V1::PropertiesTest < ActionDispatch::IntegrationTest
     assert_equal Unit.where(community_id: @community.id, visible: true).count, body['units_count']
     assert_equal 2, body['amenities_count']
     assert_equal %w[id name address city state zip company tour_enabled is_sitemap success auto_wayfinding floorplates_count units_count amenities_count buildings tour graph_version config_version published_at phone email verification_required capabilities], body.keys
-    assert_equal({ 'visits' => true, 'visitor_auth' => true }, body['capabilities'], 'the app reads what the server offers (October 23, 2026)')
+    assert_equal({ 'visits' => true, 'visitor_auth' => true, 'location_required' => true, 'presence' => true }, body['capabilities'], 'the app reads what the server offers (October 23 and 28, 2026)')
     assert_equal true, body['verification_required'], 'the fixture tour has visual_id_verification on, so a staff session sees that the property asks'
   end
 

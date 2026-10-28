@@ -27,6 +27,7 @@ export interface ApiPropertySummary {
   company: string | null;
   tour_enabled: boolean;
   is_sitemap: boolean;
+  distance_m?: number | null;
 }
 
 export interface ApiPropertyDetail extends ApiPropertySummary {
@@ -331,6 +332,8 @@ export interface ApiBookingCreateResponse {
 export interface ApiCapabilities {
   visits: boolean;
   visitor_auth: boolean;
+  location_required?: boolean;
+  presence?: boolean;
 }
 
 export interface ApiHealthResponse {
@@ -405,8 +408,15 @@ export interface ApiVisit {
   access_window: { starts_at: string | null; ends_at: string | null; minutes: number | null } | null;
   within_radius?: boolean | null;
   in_hours?: boolean | null;
+  location_received?: boolean;
+  proximity?: string | null;
+  distance_m?: number | null;
+  accuracy_m?: number | null;
+  fix_at?: string | null;
+  presence?: { state: string; fix_at?: string | null; distance_m?: number | null; departed_at?: string | null; returned_at?: string | null } | null;
   verification_required?: boolean;
   created?: boolean;
+  server_time?: string | null;
   property_id?: number;
   property_name?: string;
 }

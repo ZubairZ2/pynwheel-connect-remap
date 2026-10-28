@@ -8,8 +8,15 @@ module Visits
   # plus or minus the tour's grace period, as Visitors::Status counts it).
   module Rules
     RADIUS_KM = 1
+    # A fix reported less accurate than this (metres) cannot verify a visitor
+    # by itself; the error circle has to settle the question (October 28, 2026).
+    ACCURACY_GATE_M = 150
     TOUR_TYPES = %w[self_tour guided_tour virtual_tour].freeze
     ONSITE_TYPES = %w[self_tour guided_tour].freeze
+    # The server's verdict on where the phone was at check-in: only `verified`
+    # proves the visitor at the property; `outside` proves them away; the
+    # `unverified_*` states prove nothing and never count as presence.
+    PROXIMITY_STATES = %w[verified outside unverified_no_fix unverified_poor_accuracy unverified_no_property_coords].freeze
 
     module_function
 
@@ -35,6 +42,32 @@ module Visits
       Geocoder::Calculations.distance_between([latitude, longitude], [community.latitude.to_f, community.longitude.to_f], units: :km) < RADIUS_KM
     rescue StandardError
       nil
+    end
+
+    # [verdict, distance in metres or nil] for a phone fix (`accuracy_m` nil
+    # when the client reported none). The error circle decides first: a fix
+    # whose whole circle lies inside RADIUS_KM is `verified` and one whose
+    # whole circle lies outside is `outside`, whatever the accuracy; otherwise
+    # a fix coarser than ACCURACY_GATE_M is `unverified_poor_accuracy` and a
+    # fine one is judged by its centre. Missing phone or property coordinates
+    # (or a distance that cannot be computed) are `unverified_*`, never
+    # presence: the legacy helper's "rescue true" is not repeated here.
+    def proximity(community, latitude, longitude, accuracy_m = nil)
+      return ['unverified_no_fix', nil] if latitude.nil? || longitude.nil?
+      return ['unverified_no_property_coords', nil] if community.latitude.blank? || community.longitude.blank?
+
+      distance_m = (Geocoder::Calculations.distance_between([latitude, longitude], [community.latitude.to_f, community.longitude.to_f], units: :km) * 1000).round
+      return ['unverified_no_property_coords', nil] unless distance_m.is_a?(Integer)
+
+      radius_m = RADIUS_KM * 1000
+      error_m = accuracy_m.to_f
+      return ['verified', distance_m] if distance_m + error_m < radius_m
+      return ['outside', distance_m] if distance_m - error_m >= radius_m
+      return ['unverified_poor_accuracy', distance_m] if error_m > ACCURACY_GATE_M
+
+      [distance_m < radius_m ? 'verified' : 'outside', distance_m]
+    rescue StandardError
+      ['unverified_no_property_coords', nil]
     end
 
     # [booked instant, on time?] for a dated booking; [nil, true] for an undated one.

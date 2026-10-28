@@ -66,5 +66,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Pynwheel uses your location only while the app is open, to confirm you are at the property and to find properties near you.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Pynwheel uses your location only while the app is open, to confirm you are at the property and to find properties near you.</string>
 </dict>
 </plist>

@@ -3,6 +3,7 @@ import { emptyMedia } from '~/models';
 import type { StopKind } from '~/models';
 import type { SessionVisitor } from '~/services/session';
 import type { AvailabilityDay, AvailabilityWindow, BookingResult, BookingSettings, PropertyBundle, StopDistance, VisitEventsResult, VisitRecord, VisitorBooking } from '../tourRepository';
+import { PROXIMITIES } from '../tourRepository';
 import { ApiError } from './apiClient';
 import type { ApiAvailabilityDay, ApiAvailabilityResponse, ApiBookingCreateResponse, ApiBookingSettings, ApiDistancesResponse, ApiGraph, ApiLeg, ApiLevel, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiMapResponse, ApiNode, ApiPropertyDetail, ApiPropertySummary, ApiRoute, ApiRouteStep, ApiStop, ApiStopLock, ApiStopsResponse, ApiTourRouteResponse, ApiVisit, ApiVisitEventsResponse, ApiVisitor, ApiVisitorBooking } from './apiTypes';
 
@@ -302,7 +303,8 @@ export const parseListing = (p: ApiPropertySummary, currentId: number | null): P
   name: p.name,
   address: [p.address, p.city, p.state].filter(Boolean).join(', ') || (p.company ?? ''),
   current: p.id === currentId,
-  tourable: !!p.tour_enabled
+  tourable: !!p.tour_enabled,
+  ...(typeof p.distance_m === 'number' ? { distanceM: p.distance_m } : {})
 });
 
 const parseLeg = (l: ApiLeg): RouteLeg =>
@@ -479,7 +481,13 @@ export const parseVisit = (v: ApiVisit | null | undefined): VisitRecord => {
     accessEndsAt: strOrNull(v.access_window?.ends_at),
     accessMinutes: numOrNull(v.access_window?.minutes),
     verificationRequired: bool(v.verification_required, false),
-    created: bool(v.created, true)
+    created: bool(v.created, true),
+    proximity: PROXIMITIES.find((p) => p === v.proximity) ?? null,
+    distanceM: numOrNull(v.distance_m),
+    withinRadius: typeof v.within_radius === 'boolean' ? v.within_radius : null,
+    inHours: typeof v.in_hours === 'boolean' ? v.in_hours : null,
+    locationReceived: bool(v.location_received, false),
+    serverTime: strOrNull(v.server_time)
   };
 };
 

@@ -28,7 +28,7 @@ const visitor = { id: 42, first_name: 'Ada', last_name: 'Lovelace', name: 'Ada L
 const booking = { id: 501, property_id: 1618, property_name: 'Hazel', status: 'upcoming', tour_date: '2026-10-24', tour_time: '18:00', tour_time_label: '6:00 PM', end_time: '18:45', tour_type: 'self_tour', property_tour_type: 'scheduled_tour', created_by: 'tour_app', is_tour_completed: false, desired_bedroom: null, desired_move_in_date: null };
 const caps = { visits: true, visitor_auth: true };
 const verified = { success: true, access_token: 'vst_secret', token_type: 'bearer', expires_at: '2099-01-01T00:00:00Z', visitor, bookings: [booking], capabilities: caps };
-const visitJson = { id: 77, status: 'in_progress', tour_key: 'k', tour_type: 'self_tour', tour_site: 'onsite', booking_id: 501, source: 'tour_app', started_at: '2026-10-24T18:00:00Z', active: true, access_window: { starts_at: '2026-10-24T18:00:00Z', ends_at: '2026-10-24T18:45:00Z', minutes: 45 }, verification_required: false, created: true };
+const visitJson = { id: 77, status: 'in_progress', tour_key: 'k', tour_type: 'self_tour', tour_site: 'onsite', booking_id: 501, source: 'tour_app', started_at: '2026-10-24T18:00:00Z', active: true, access_window: { starts_at: '2026-10-24T18:00:00Z', ends_at: '2026-10-24T18:45:00Z', minutes: 45 }, verification_required: false, created: true, proximity: 'verified', distance_m: 120, accuracy_m: 18, within_radius: true, in_hours: true, location_received: true, server_time: '2026-10-24T18:00:01Z' };
 
 describe('visitor and staff sessions', () => {
   const calls: Call[] = [];
@@ -63,7 +63,7 @@ describe('visitor and staff sessions', () => {
 
   it('reads the server capabilities from /health without a token, once', async () => {
     const repo = repository();
-    expect(await repo.getCapabilities()).toEqual({ visits: true, visitorAuth: true });
+    expect(await repo.getCapabilities()).toEqual({ visits: true, visitorAuth: true, locationRequired: false, presence: false });
     await repo.getCapabilities();
     const health = calls.filter((c) => c.url.endsWith('/health'));
     expect(health).toHaveLength(1);
@@ -77,7 +77,7 @@ describe('visitor and staff sessions', () => {
     expect(calls.at(-1)).toMatchObject({ url: 'http://cms.test/api/tour/v1/visitor/otp', method: 'POST', body: { phone: '(303) 555-0100', country_code: 'US' }, auth: undefined });
     const { session, bookings } = await repo.verifyVisitorCode({ phone: '(303) 555-0100', code: '123456' });
     expect(calls.at(-1)?.body).toEqual({ phone: '(303) 555-0100', code: '123456', country_code: 'US' });
-    expect(session).toMatchObject({ kind: 'visitor', accessToken: 'vst_secret', propertyId: 1618, capabilities: { visits: true, visitorAuth: true } });
+    expect(session).toMatchObject({ kind: 'visitor', accessToken: 'vst_secret', propertyId: 1618, capabilities: { visits: true, visitorAuth: true, locationRequired: false, presence: false } });
     expect(session.user).toEqual({ id: 42, name: 'Ada Lovelace', firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.com', role: 'visitor', phone: '+13035550100' });
     expect(session.visitor?.phoneMasked).toBe('•••0100');
     expect(bookings).toEqual([{ id: 501, propertyId: 1618, propertyName: 'Hazel', status: 'upcoming', date: '2026-10-24', time: '18:00', timeLabel: '6:00 PM', endTime: '18:45', bookedAt: null, timeZone: null, tourType: 'self_tour', createdBy: 'tour_app' }]);
@@ -113,7 +113,7 @@ describe('visitor and staff sessions', () => {
     calls.length = 0;
     const staff = await repository().restoreSession();
     expect(calls.map((c) => c.url.replace('http://cms.test/api/tour/v1', ''))).toEqual(['/auth/me']);
-    expect(staff).toMatchObject({ kind: 'staff', user: { role: 'super_admin' }, capabilities: { visits: true, visitorAuth: true } });
+    expect(staff).toMatchObject({ kind: 'staff', user: { role: 'super_admin' }, capabilities: { visits: true, visitorAuth: true, locationRequired: false, presence: false } });
   });
 
   it('a visitor token the server no longer accepts ends the session on restore and on any later call', async () => {
@@ -167,15 +167,19 @@ describe('visitor and staff sessions', () => {
     const ok = answer;
     answer = (call) => {
       if (call.url.endsWith('/visits') && call.method === 'POST') return json(201, { success: true, visit: visitJson, booking });
+      if (call.url.includes('/properties?near=')) return json(200, { success: true, properties: [{ id: 1618, name: 'Hazel', address: '4733 Hazel St', city: 'Burnaby', state: 'BC', zip: 'V5H 0J7', company: null, tour_enabled: true, is_sitemap: true, distance_m: 320 }], total: 1 });
       if (call.url.endsWith('/visits/77/events')) return json(207, { success: true, visit_id: 77, accepted: [{ index: 0, client_event_id: 'e1', kind: 'arrived', id: 1, duplicate: false }], rejected: [{ index: 1, client_event_id: 'e2', code: 'invalid_stop', message: 'This stop is not on the tour.' }] });
       if (call.url.endsWith('/visits/77/end')) return json(200, { success: true, visit: { ...visitJson, status: 'completed', active: false, ended_at: '2026-10-24T18:40:00Z' } });
       if (call.url.endsWith('/locks/pin')) return json(200, { success: true, stop_id: 'unit:1', provider: 'Igloohome', mode: 'igloohome', device_id: 'd', access_name: '101', pin: '221673337', valid_from: null, valid_until: null });
       return ok(call);
     };
-    const visit = await repo.startVisit({ clientVisitId: 'c0ffee00-0000-4000-8000-000000000001', bookingId: 501, tourType: 'self_tour', startedAt: '2026-10-24T18:00:00Z' });
-    expect(calls.at(-1)?.body).toMatchObject({ client_visit_id: 'c0ffee00-0000-4000-8000-000000000001', booking_id: 501, tour_type: 'self_tour', started_at: '2026-10-24T18:00:00Z', app_version: expect.any(String), device_time_zone: expect.any(String) });
+    const visit = await repo.startVisit({ clientVisitId: 'c0ffee00-0000-4000-8000-000000000001', bookingId: 501, tourType: 'self_tour', startedAt: '2026-10-24T18:00:00Z', latitude: 49.229, longitude: -122.997, accuracyM: 18, fixAt: '2026-10-24T17:59:50Z' });
+    expect(calls.at(-1)?.body).toMatchObject({ client_visit_id: 'c0ffee00-0000-4000-8000-000000000001', booking_id: 501, tour_type: 'self_tour', started_at: '2026-10-24T18:00:00Z', app_version: expect.any(String), device_time_zone: expect.any(String), latitude: 49.229, longitude: -122.997, accuracy_m: 18, fix_at: '2026-10-24T17:59:50Z' });
     expect(calls.at(-1)?.body).not.toHaveProperty('tour_user_id');
-    expect(visit).toMatchObject({ id: 77, accessEndsAt: '2026-10-24T18:45:00Z', accessMinutes: 45, bookingId: 501, verificationRequired: false, created: true });
+    expect(visit).toMatchObject({ id: 77, accessEndsAt: '2026-10-24T18:45:00Z', accessMinutes: 45, bookingId: 501, verificationRequired: false, created: true, proximity: 'verified', distanceM: 120, withinRadius: true, inHours: true, locationReceived: true, serverTime: '2026-10-24T18:00:01Z' });
+    await repo.startVisit({ clientVisitId: 'c0ffee00-0000-4000-8000-000000000001', tourType: 'self_tour', startedAt: '2026-10-24T18:00:00Z' });
+    expect(calls.at(-1)?.body).not.toHaveProperty('latitude');
+    expect(calls.at(-1)?.body).not.toHaveProperty('accuracy_m');
 
     const result = await repo.sendVisitEvents(77, [
       { clientEventId: 'e1', kind: 'arrived', stopId: 'unit:1', occurredAt: '2026-10-24T18:05:00Z', payload: { code: '221673337' } },
@@ -184,6 +188,10 @@ describe('visitor and staff sessions', () => {
     expect(calls.at(-1)?.body).toEqual({ events: [{ client_event_id: 'e1', kind: 'arrived', stop_id: 'unit:1', occurred_at: '2026-10-24T18:05:00Z', payload: { code: '221673337' } }, { client_event_id: 'e2', kind: 'skipped', stop_id: 'unit:999', occurred_at: '2026-10-24T18:06:00Z', payload: { reason: 'lock' } }] });
     expect(result.accepted).toEqual([{ index: 0, clientEventId: 'e1', kind: 'arrived', id: 1, duplicate: false }]);
     expect(result.rejected).toEqual([{ index: 1, clientEventId: 'e2', code: 'invalid_stop', message: 'This stop is not on the tour.' }]);
+
+    const near = await repo.getProperties({ near: { lat: 49.229, lng: -122.997 }, limit: 5 });
+    expect(calls.at(-1)?.url).toContain('/properties?near=49.229%2C-122.997&limit=5');
+    expect(near).toEqual([{ id: 1618, name: 'Hazel', address: '4733 Hazel St, Burnaby, BC', current: true, tourable: true, distanceM: 320 }]);
 
     await repo.getStopLockPin('unit:1', 77);
     expect(calls.at(-1)?.body).toEqual({ stop_id: 'unit:1', visit_id: 77 });
