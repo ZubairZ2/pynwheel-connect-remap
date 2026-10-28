@@ -1,6 +1,6 @@
 # Tour App: the check-in's ID step follows the server (`verification_required`)
 
-Branch `improvement/fixing_the_schedule_date_chnage` → `main`. October 28, 2026.
+Branch `improvement/fixing_to_show_verifcation_or_not` → `main`. October 28, 2026.
 
 ## Why
 

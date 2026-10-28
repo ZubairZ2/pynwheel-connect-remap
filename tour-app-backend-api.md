@@ -887,7 +887,7 @@ plan in `PUBLISH_SCHEDULING_TZ_FINDINGS_2026-10-25.md`.
 
 ## 23. The check-in's ID step follows the server: `verification_required` on `GET /properties/{id}` (October 28, 2026)
 
-Additive; no field removed or renamed. Branch `improvement/fixing_the_schedule_date_chnage`.
+Additive; no field removed or renamed. Branch `improvement/fixing_to_show_verifcation_or_not`.
 
 - **Why:** the app decided the ID step locally — `checkinModel` showed "One step before you check in … Verify My ID" before
   every check-in until the visitor had walked through the simulated Verify Identity flow, on every property. On October 28, 2026
