@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { initialAppState, type ScheduledTour } from './appState';
+import { initialAppState, type ScheduledTour, type VerificationInfo } from './appState';
 import { autoTourScenario, checkinModel, dayLabel, dayOffset, fmtCountdown, locationModel, needsIdVerification, resolveTourScenario, slotTime, tourCard } from './scenarios';
 
 const NOW = new Date(2026, 9, 17, 14, 0, 0).getTime(); // Sat Oct 17 2026, 2:00 PM local
@@ -9,6 +9,25 @@ const key = (offset: number) => {
   d.setDate(d.getDate() + offset);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
+
+/** The server's status of a visitor verified three days ago (October 28, 2026): the only thing besides the demo switch that clears the ask. */
+const verifiedOnServer = (patch: Partial<VerificationInfo> = {}): VerificationInfo => ({
+  propertyId: 1618,
+  provider: 'check_point_id',
+  providerAvailable: true,
+  propertyRequires: true,
+  required: false,
+  state: 'verified',
+  verifiedAt: '2026-10-14T14:00:00Z',
+  validUntil: '2026-11-13T14:00:00Z',
+  verifiedBy: 'CheckpointID',
+  validForDays: 30,
+  attemptsLeft: 5,
+  documentTypes: [],
+  card: { required: false, onFile: false, needed: false, last4: null, available: false, publishableKey: null },
+  fetchedAt: NOW,
+  ...patch
+});
 
 const booked = (patch: Partial<ScheduledTour> = {}): ScheduledTour => ({ id: 't1', status: 'scheduled', date: key(0), time: '6:00 PM', length: 45, unit: 'Unit 204', party: 1, source: 'app', createdAt: NOW, ...patch });
 
@@ -92,7 +111,10 @@ describe('check-in sheet', () => {
   it('is ready at the property when verified, asks for the ID otherwise', () => {
     const at = { ...base, demo: { ...base.demo, location: 'atProperty' as const } };
     expect(checkinModel(at, NOW, 'L', 'a', null).scenario).toBe('verify');
-    expect(checkinModel({ ...at, verified: true }, NOW, 'L', 'a', null).scenario).toBe('ready');
+    expect(checkinModel({ ...at, verification: verifiedOnServer() }, NOW, 'L', 'a', null).scenario).toBe('ready');
+    // A lapsed or never-made verification on the server does not clear the ask; neither does a flagged mismatch.
+    expect(checkinModel({ ...at, verification: verifiedOnServer({ state: 'expired', required: true }) }, NOW, 'L', 'a', null).scenario).toBe('verify');
+    expect(checkinModel({ ...at, verification: verifiedOnServer({ state: 'mismatch', required: true }) }, NOW, 'L', 'a', null).scenario).toBe('verify');
     expect(checkinModel({ ...at, demo: { ...at.demo, idVerified: true } }, NOW, 'L', 'a', null).scenario).toBe('ready');
   });
   it('asks for the ID only where the server requires it (October 28, 2026)', () => {
@@ -110,7 +132,7 @@ describe('check-in sheet', () => {
     expect(needsIdVerification(required)).toBe(true);
     expect(checkinModel(required, NOW, 'L', 'a', null).scenario).toBe('verify');
     expect(checkinModel({ ...required, demo: { ...required.demo, location: 'nearby' } }, NOW, 'L', 'a', null).options[0].action).toBe('verify');
-    expect(checkinModel({ ...required, verified: true }, NOW, 'L', 'a', null).scenario).toBe('ready');
+    expect(checkinModel({ ...required, verification: verifiedOnServer() }, NOW, 'L', 'a', null).scenario).toBe('ready');
     // The demo switch still forces the verified state, whatever the server said.
     expect(checkinModel({ ...required, demo: { ...required.demo, idVerified: true } }, NOW, 'L', 'a', null).scenario).toBe('ready');
     // Nothing said yet (demo data): the design's ask.

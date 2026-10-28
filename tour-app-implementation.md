@@ -655,3 +655,62 @@ was read from the signed-in design session this time, tweak by tweak; the seven 
 - `App.tsx`: "Book Another Tour" / "Book a New Time" open Schedule on the current property.
 - Tests: `zone.test.ts` (the owner's Vancouver/Karachi case, DST), `qaFixes.test.ts` (prefill, lifecycle, pruning),
   `scenarios.test.ts` (the window); 145 vitest, tsc clean.
+
+## 24. The real ID check: CheckpointID through the Pynwheel server, and the card on file (October 28, 2026)
+
+Replaces the simulated Verify Identity of §19 ("Simulate scan", "Simulate selfie", the fake card form and the phone-local
+`state.verified`). The root cause of that behaviour was §19's scope: the design refresh built the screens before any backend existed
+for them, so the flow set `verified: true` on a button tap and nothing ever asked the server. Backend §24 has the audit of the
+legacy app and the new endpoints.
+
+- **State** (`src/store/appState.ts`): `AppState.verified` and `requireCard` are gone. `AppState.verification: VerificationInfo |
+  null` is the server's status (`GET /properties/{id}/verification`) as last read — property-scoped, persisted so the profile can
+  show it offline, written only by `verifyStatus` / `verifyResult` / `verifyCardSaved` from server answers. `VerifyFlow` is the
+  real flow: `intro → document → front → back (licence, ID card) → selfie → submitting → result | card → done`, the three pictures in
+  memory for one attempt (`hydrate` never restores them; a result drops them), `statusLoading` / `statusError`, `result`, `error`,
+  `cardSaving` / `cardError`, `then`. `isVerified(state)` = `verification.state === 'verified' || demo.idVerified`;
+  `needsIdVerification` keeps §23's meaning on top of it. The reducer's `stepAfterStatus` moves a visitor the server calls verified
+  past the capture (to the card where one is still needed, else Done) and never leaves an unverified one on Done.
+- **Actions** (`useAppActions.ts`): `openVerify` reads the status; `verifyCaptured('selfie')` submits the three pictures once
+  (`submitIdVerification`, a 90 s request timeout for the provider's minute); the server's `outcome` decides the next step. A lost
+  request (offline, timeout) re-reads the status first — the server may have finished — and only then shows a retryable error with
+  the pictures kept; 503s are retryable; 422s (`attempt_limit`, `mismatch_flagged`, `not_required`) are not. `checkIn` on a 422
+  `verification_required` / `card_required` from `POST /visits` opens the flow with `then: 'start'` and refreshes the status; the
+  offline resend (`visitSync`) records the server's rule the same way. `saveCard(token)` posts the Stripe token only.
+- **Screen** (`VerifyScreen.tsx`): the intro of §19 with the real consent text and the server's word (loading, "couldn't reach
+  Pynwheel" with retry, not available on demo data, provider unavailable, mismatch flagged → Call leasing, attempts exhausted, no ID
+  check here); the document type (the legacy list); the camera (`services/idCapture.ts`: `getUserMedia`, back camera for the
+  document, front for the selfie un-mirrored, frames scaled to a 1600 px long edge JPEG; a photo picker when the camera is refused
+  or absent) with a preview to retake or use; the pending state while the server asks CheckpointID; the result with the server's
+  reason, the attempts left, Scan again / Try again / Check status, Call leasing, Not now; the card step (`services/stripeCard.ts`:
+  Stripe.js v3 loaded on demand, a card Element, `createToken`; the number never touches app state, storage or logs; an honest
+  "card collection is not available" state when the server has no Stripe keys); Done with the server's `valid_until` and provider.
+  Back is step-aware and disabled while submitting; coming back to the foreground re-reads the status. The profile's label reads the
+  server's `valid_until` (30 days, not the old 12-month copy).
+- **Repository**: `getVerificationStatus`, `submitIdVerification`, `saveCardOnFile` (`tourRepository.ts`, `pynwheelApi/*`); the
+  dummy provider throws `FeatureUnavailableError`, so demo data shows the "not available here" intro (the Demo scenarios switch
+  `idVerified` still stands in). Native: `NSCameraUsageDescription` (iOS) and `CAMERA` (Android) added; `cap sync` clean.
+- **Tests**: `verifyFlow.test.ts` (the state machine: status-driven steps, capture order per document, no local path to verified,
+  results and failures, the card step, finish / switch / sign-out / hydrate), `repositories/pynwheelApi/verification.test.ts`
+  (payloads, outcomes, error codes, the card token), `services/idCapture.test.ts`; `scenarios.test.ts` and `qaFixes.test.ts` moved
+  from `verified: true` to a server status. 24 files / 169 tests green, `tsc` clean, `npm run build` clean.
+- **Headless QA on the dev stack** (worktree Rails :3107 on `pynwheel_development`, Vite :3024, a local stand-in for the DVS
+  endpoint at :3199 so no real provider call was made — these are stubbed provider answers, not sandbox ones; Chrome's fake camera
+  device supplied the frames): on Hazel 1618 a new visitor signed in with the on-screen code, `GET /verification` answered
+  `required: true, state: never`, `POST /visits` was refused 422 `verification_required`, the flow photographed a passport and a
+  selfie, showed the pending state, the server wrote the row (`is_checkpoint_verified`, `verified_by = check_point_id`), Done read
+  "Valid for 30 days · until Nov 27, 2026 · CheckpointID", `POST /visits` then answered 201 with `verification_required: false`,
+  and the profile read "Verified · valid until Nov 27, 2026". With the stand-in answering `ValidationError` the result read "We
+  couldn't match your selfie to your ID · The Face has not been matched · 4 attempts left this hour", the leasing mail job was
+  queued once with the legacy subject and text (letter_opener then refused it for a blank From address — the development mailer
+  setting, the same for the legacy endpoint), and Scan again with the provider passing reached Done. With the stand-in down (503)
+  the result read "Verification is unavailable right now" with Try again / Check status, and Try again re-sent the kept pictures.
+  On Arbour Place 1601 (`visual_id_verification` and `credit_card_required` both on, open 09:00–17:00 Pacific) the intro's third
+  step read "Card on file · required here"; after the pass the flow went to the card step, which — this server having no Stripe
+  keys — showed "Card collection is not available right now … your ID verification is kept" with Call leasing / Back, the status
+  answered `state: verified, card.needed: true`, and `POST /visits` answered 422 `card_required`.
+  Walker: scratchpad `pw/idv_walk.mjs`; stand-in `dvs/fake_dvs.mjs` (modes pass / face / mrz / unknown / low / down / slow).
+- **Not exercised here:** a real CheckpointID answer (no DVS key is configured for Rails; the only known key is the one in the
+  legacy bundle, which was not used), a real Stripe token (no Stripe keys on this machine; the card step was exercised to its
+  "not available" state and the server side with Stripe stubbed), the camera on a device (the web view needs iOS 14.3+ for
+  `getUserMedia`; Capacitor grants the Android camera permission on request when the manifest declares it — to confirm on a phone).

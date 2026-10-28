@@ -201,14 +201,23 @@ class Api::TourApp::V1::VisitsTest < ActionDispatch::IntegrationTest
     assert_equal ['virtual_tour', 'offsite', false], [body['visit']['tour_type'], body['visit']['tour_site'], body['visit']['in_hours']]
   end
 
-  test 'a verified-ID property reports verification_required until the visitor is verified' do
-    @tour.update_columns(visual_id_verification: true)
+  test 'a verified-ID property refuses the check-in until the visitor is verified (October 28, 2026)' do
+    @tour.update_columns(visual_id_verification: true, credit_card_required: false)
     start_visit
-    assert_response :created
-    assert body['visit']['verification_required']
+    assert_response :unprocessable_entity, response.body
+    assert_equal 'verification_required', body['error']['code']
+    assert_equal 0, TourHistory.where(tour_user_id: @ann.id).count
     @ann.update_columns(is_checkpoint_verified: true, checkpoint_verified_at: 2.days.ago)
+    start_visit
+    assert_response :created, response.body
+    refute body['visit']['verification_required']
     get "#{@base}/visits/#{body['visit']['id']}", headers: auth
     refute body['visit']['verification_required']
+    # A verification that lapsed (older than 30 days) asks again, but never for a visit already open.
+    @ann.update_columns(checkpoint_verified_at: 40.days.ago)
+    start_visit
+    assert_response :success, 'the open visit is reused'
+    assert body['visit']['verification_required']
   end
 
   test 'visits are 404 while the switch is off' do

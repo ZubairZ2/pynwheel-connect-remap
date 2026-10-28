@@ -3,10 +3,10 @@ import { APP_VERSION, AR_INIT_LABELS, BOOKING_TIMES, CONCIERGE_GREETING_GENERAL,
 import type { LockBluetoothKey, LockPin, MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
 import { clearSession, loadSession, NO_CAPABILITIES, parseCapabilities, saveSession, type Capabilities, type Session, type SessionVisitor } from '~/services/session';
 import { placesFromBundle } from '../places';
-import { FeatureUnavailableError, type AppContent, type AvailabilityWindow, type BookingRequest, type BookingResult, type BookingSettings, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult, type VisitEndInput, type VisitEventInput, type VisitEventsResult, type VisitorBooking, type VisitorCodeSent, type VisitorProfilePatch, type VisitorVerifyRequest, type VisitRecord, type VisitStartInput } from '../tourRepository';
+import { FeatureUnavailableError, type AppContent, type AvailabilityWindow, type BookingRequest, type BookingResult, type BookingSettings, type IdVerificationInput, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult, type VerificationResult, type VerificationStatus, type VisitEndInput, type VisitEventInput, type VisitEventsResult, type VisitorBooking, type VisitorCodeSent, type VisitorProfilePatch, type VisitorVerifyRequest, type VisitRecord, type VisitStartInput } from '../tourRepository';
 import { ApiClient, ApiError } from './apiClient';
-import type { ApiAvailabilityResponse, ApiBookingCreateResponse, ApiBookingSettings, ApiDistancesResponse, ApiGraph, ApiHealthResponse, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiLoginResponse, ApiMapResponse, ApiPropertyDetail, ApiPropertySummary, ApiRouteResponse, ApiStopsResponse, ApiTourRouteResponse, ApiVisitEventsResponse, ApiVisitorMeResponse, ApiVisitorOtpResponse, ApiVisitorVerifyResponse, ApiVisitStartResponse } from './apiTypes';
-import { parseAvailability, parseBookingResult, parseBookingSettings, parseBundle, parseDistances, parseListing, parseLockBluetoothKey, parseLockPin, parseRoute, parseTourRoute, parseVisit, parseVisitEvents, parseVisitor, parseVisitorBookings } from './parsers';
+import type { ApiAvailabilityResponse, ApiBookingCreateResponse, ApiBookingSettings, ApiDistancesResponse, ApiGraph, ApiHealthResponse, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiLoginResponse, ApiMapResponse, ApiPropertyDetail, ApiPropertySummary, ApiRouteResponse, ApiStopsResponse, ApiTourRouteResponse, ApiVerificationAttemptResponse, ApiVerificationCardResponse, ApiVerificationStatusResponse, ApiVisitEventsResponse, ApiVisitorMeResponse, ApiVisitorOtpResponse, ApiVisitorVerifyResponse, ApiVisitStartResponse } from './apiTypes';
+import { parseAvailability, parseBookingResult, parseBookingSettings, parseBundle, parseDistances, parseListing, parseLockBluetoothKey, parseLockPin, parseRoute, parseTourRoute, parseVerificationResult, parseVerificationStatus, parseVisit, parseVisitEvents, parseVisitor, parseVisitorBookings } from './parsers';
 
 /**
  * The production provider: the Pynwheel Tour App API, served by the Rails CMS
@@ -30,6 +30,8 @@ import { parseAvailability, parseBookingResult, parseBookingSettings, parseBundl
 
 /** The API's path prefix on the Pynwheel CMS host (Rails `Api::TourApp::V1`, October 2026; the former FastAPI service answered under `/api/v1`). */
 const API = '/api/tour/v1';
+/** A CheckpointID check can take most of a minute: the verification request waits that long before giving up. */
+const VERIFICATION_TIMEOUT_MS = 90000;
 
 const NO_PROPERTY = 'Choose a property first.';
 
@@ -424,6 +426,31 @@ export class PynwheelApiTourRepository implements TourRepository {
     const { data } = await this.client.post<ApiLockBluetoothKeyResponse>(`${API}/properties/${id}/locks/bluetooth-key`, { stop_id: node, ...(visitId != null ? { visit_id: visitId } : {}) });
     if (typeof data.bluetooth_key !== 'string' || !data.bluetooth_key) throw new ApiError('malformed_response', 'The lock service answered without a Bluetooth key. Please try again.', 200);
     return parseLockBluetoothKey(data);
+  }
+
+  // ------------------------------- ID verification and the card on file (October 28, 2026)
+  async getVerificationStatus(): Promise<VerificationStatus> {
+    const id = await this.requireProperty();
+    const { data } = await this.client.get<ApiVerificationStatusResponse>(`${API}/properties/${id}/verification`);
+    return parseVerificationStatus(data.verification);
+  }
+
+  /** The pictures travel once, in this request, and are not kept here; the provider's own timeout is a minute, so this call waits longer than the rest. */
+  async submitIdVerification(input: IdVerificationInput): Promise<VerificationResult> {
+    const id = await this.requireProperty();
+    const { data } = await this.client.post<ApiVerificationAttemptResponse>(
+      `${API}/properties/${id}/verification`,
+      { document_type: input.documentType, front_image: input.frontImage, ...(input.backImage ? { back_image: input.backImage } : {}), selfie_image: input.selfieImage },
+      true,
+      VERIFICATION_TIMEOUT_MS
+    );
+    return parseVerificationResult(data);
+  }
+
+  async saveCardOnFile(cardToken: string): Promise<VerificationStatus> {
+    const id = await this.requireProperty();
+    const { data } = await this.client.post<ApiVerificationCardResponse>(`${API}/properties/${id}/verification/card`, { card_token: cardToken });
+    return parseVerificationStatus(data.verification);
   }
 
   // --------------------------------------------- features without a backend

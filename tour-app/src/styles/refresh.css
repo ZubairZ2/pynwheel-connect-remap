@@ -6208,3 +6208,116 @@
   font-size: 18px;
   letter-spacing: 2px;
 }
+
+/* ───────── Verify Identity: the real check (October 28, 2026) ───────── */
+.pw-verify__nobtn {
+  width: 40px;
+  height: 40px;
+  display: inline-block;
+}
+.pw-verify__status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 600 13px var(--pw-font-sans);
+  color: var(--pw-text-muted);
+}
+.pw-verify__docs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pw-verify__cardframe--live {
+  background: #000;
+}
+.pw-verify__video,
+.pw-verify__shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+.pw-verify__video--mirror {
+  transform: scaleX(-1);
+}
+.pw-verify__video--off {
+  opacity: 0;
+}
+.pw-verify__selfieframe {
+  position: relative;
+  width: 240px;
+  height: 300px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #000;
+  border: 4px solid var(--pw-primary);
+}
+.pw-verify__camwait {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+  font: 600 13px/1.45 var(--pw-font-sans);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+}
+.pw-verify__pick {
+  align-self: center;
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+  font: 700 13px var(--pw-font-sans);
+  color: var(--pw-primary);
+  cursor: pointer;
+}
+.pw-verify__pendingring {
+  width: 84px;
+  height: 84px;
+  border-radius: 999px;
+  background: var(--pw-primary-light-10);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pw-verify__failring {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  background: var(--pw-danger);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pw-verify__sub--center {
+  text-align: center;
+  text-wrap: pretty;
+}
+.pw-verify__attempts {
+  font: 700 12px var(--pw-font-sans);
+  color: var(--pw-text-subtle);
+  letter-spacing: 0.02em;
+}
+.pw-verify__stripe {
+  min-height: 46px;
+  padding: 13px 14px;
+  border: 1px solid var(--pw-stroke);
+  border-radius: var(--pw-r-10);
+  background: #fff;
+}
+.pw-verify__stripe--loading {
+  opacity: 0.6;
+}
+.pw-verify__error {
+  font: 600 13px/1.45 var(--pw-font-sans);
+  color: var(--pw-danger);
+}
+.pw-verify--done .pw-ci__options {
+  width: 100%;
+}

@@ -390,19 +390,19 @@ export interface CheckinModel {
   warn: { title: string; body: string; cta: string; action: 'qr' | 'retry' | 'settings' } | null;
 }
 
-/** The visitor's ID is verified as far as the app knows: the simulated Verify Identity flow, or the demo switch. */
-export const isVerified = (state: Pick<AppState, 'verified' | 'demo'>): boolean => state.verified || state.demo.idVerified;
+/** The visitor's ID is verified as far as the app knows: the server's status (`state.verification`, written only from `GET /verification` and the provider's answer), or the demo switch. */
+export const isVerified = (state: Pick<AppState, 'verification' | 'demo'>): boolean => state.verification?.state === 'verified' || state.demo.idVerified;
 
 /**
  * Whether the check-in must ask for the ID first (October 28, 2026). The
  * server decides: a property it answered `verification_required: false` for
  * goes straight to check-in. Until it has said (demo data), the sheet asks as
- * the design shows. The simulated flow and the demo switch clear the ask.
+ * the design shows. A verified status from the server and the demo switch clear the ask.
  */
-export const needsIdVerification = (state: Pick<AppState, 'verified' | 'demo' | 'verificationRequired'>): boolean => state.verificationRequired !== false && !isVerified(state);
+export const needsIdVerification = (state: Pick<AppState, 'verification' | 'demo' | 'verificationRequired'>): boolean => state.verificationRequired !== false && !isVerified(state);
 
 export const checkinModel = (
-  state: ScenarioState & Pick<AppState, 'location' | 'checkedIn' | 'guestProperty' | 'verified' | 'verificationRequired' | 'accessEndsAt' | 'schedule' | 'checkinFor'>,
+  state: ScenarioState & Pick<AppState, 'location' | 'checkedIn' | 'guestProperty' | 'verification' | 'verificationRequired' | 'accessEndsAt' | 'schedule' | 'checkinFor'>,
   now: number,
   propertyName: string,
   address: string,

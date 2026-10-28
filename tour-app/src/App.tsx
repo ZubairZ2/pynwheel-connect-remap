@@ -452,7 +452,7 @@ const Shell = () => {
           profile={profile}
           propertyName={bundle?.property.name ?? null}
           verified={verified}
-          verifiedLabel={verified ? `Verified · expires ${new Date(now + 365 * 86400000).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : 'Not verified'}
+          verifiedLabel={verified ? (state.verification?.validUntil ? `Verified · valid until ${new Date(state.verification.validUntil).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : `Verified${DEMO}`) : state.verification?.state === 'expired' ? 'Verification lapsed' : 'Not verified'}
           savedCount={stops.filter((s) => s.kind === 'unit' && state.favourites[s.node]).length}
           passesCount={state.tourPasses.length + (inPerson && state.accessEndsAt != null && state.accessEndsAt > now ? 1 : 0)}
           journey={{ ...state.journey, verified }}
@@ -640,15 +640,18 @@ const Shell = () => {
           <VerifyScreen
             propertyName={bundle.property.name}
             flow={state.verify}
-            requireCard={state.requireCard}
-            showCardDemo={bundle.demo}
+            verification={state.verification}
+            demoVerified={state.demo.idVerified}
             onBack={actions.verifyBack}
+            onRefresh={actions.refreshVerification}
             onConsent={() => dispatch({ type: 'verifyConsent' })}
             onNext={actions.verifyNext}
-            onCapture={actions.simulateCapture}
-            onCard={(field, value) => dispatch({ type: 'verifyCard', field, value })}
-            onSaveCard={actions.saveCard}
-            onToggleRequireCard={() => dispatch({ type: 'toggleRequireCard' })}
+            onChooseDocument={actions.verifyChooseDocument}
+            onCaptured={actions.verifyCaptured}
+            onRetake={actions.verifyRetake}
+            onRetry={actions.verifyRetry}
+            onSaveCard={(token) => void actions.saveCard(token)}
+            onCall={() => open('call')}
             onFinish={actions.verifyFinish}
           />
         );
