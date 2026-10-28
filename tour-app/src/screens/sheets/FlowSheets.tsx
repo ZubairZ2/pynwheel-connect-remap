@@ -6,7 +6,7 @@ import { Button, IconButton, Sheet } from '~/components/ui';
 import { Callout, Eyebrow, LinkRow, RoundAction, TonePill } from '~/components/ui2';
 import type { ScheduledTour, TourPass } from '~/store/appState';
 import type { CheckinModel, LocationModel } from '~/store/scenarios';
-import { dayLabel, fmtClock } from '~/store/scenarios';
+import { fmtClock, tourDayLabel } from '~/store/scenarios';
 import type { TourStopView } from '~/store/selectors';
 import { unitFacts } from '~/store/views';
 
@@ -450,8 +450,9 @@ interface UpcomingItem {
 export const upcomingItems = (tour: ScheduledTour | null, checkedIn: boolean, propertyName: string, heroImage: string, extras: DemoExtraTour[], now = Date.now()): UpcomingItem[] => {
   const list: UpcomingItem[] = [];
   if (tour && tour.status !== 'past' && tour.status !== 'cancelled' && tour.status !== 'missed') {
-    const today = dayLabel(tour.date, new Date(now)).startsWith('Today');
-    list.push({ id: 'main', name: propertyName, when: `${dayLabel(tour.date, new Date(now))} · ${tour.time} · ${tour.length} min`, img: heroImage, pill: checkedIn ? 'Checked in' : tour.status === 'pending' ? 'Waiting for approval' : today ? 'Today' : 'Scheduled', tone: checkedIn || today ? 'live' : tour.status === 'pending' ? 'warn' : 'primary', cta: checkedIn ? 'Continue Tour' : 'Start Tour', main: true });
+    const when = tourDayLabel(tour, now);
+    const today = when.startsWith('Today');
+    list.push({ id: 'main', name: propertyName, when: `${when} · ${tour.time} · ${tour.length} min`, img: heroImage, pill: checkedIn ? 'Checked in' : tour.status === 'pending' ? 'Waiting for approval' : today ? 'Today' : 'Scheduled', tone: checkedIn || today ? 'live' : tour.status === 'pending' ? 'warn' : 'primary', cta: checkedIn ? 'Continue Tour' : 'Start Tour', main: true });
   }
   extras.forEach((x) => list.push({ id: x.id, name: `${x.name}${DEMO}`, when: `${x.dayLabel} · ${x.time} · ${x.length} min`, img: x.img, pill: x.pill, tone: x.tone, cta: 'Start Tour', main: false }));
   return list;

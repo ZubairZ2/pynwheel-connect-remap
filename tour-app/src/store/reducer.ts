@@ -1,12 +1,11 @@
 import type { AccessMethod, LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
 import type { AvailabilityDay, BookingSettings } from '~/repositories/tourRepository';
-import { profileOf, slotsForDay } from './views';
+import { profileOf, propertyZone, scheduleDay, slotsForDay } from './views';
 import { DEMO_SCENARIOS_ENABLED } from '~/config/env';
 import { backScreenOf, topOverlay, type Overlay, type Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
 import type { Capabilities } from '~/services/session';
 import {
-  dayKey,
   initialAppState,
   initialDemoScenarios,
   initialGuided,
@@ -294,10 +293,11 @@ const toStop = (state: AppState, index: number): AppState => ({
  * the reducer (a property switch, the sign-in gate) rather than through
  * `useAppActions.openSchedule` (October 25, 2026).
  */
-const prefilledSchedule = (state: AppState): ScheduleDraft => {
+const prefilledSchedule = (state: AppState, propertyId: number | null): ScheduleDraft => {
   const p = profileOf(state, null);
   const s = state.schedule;
-  return { ...s, date: s.date < dayKey(0) ? dayKey(0) : s.date, first: s.first || p.first, last: s.last || p.last, phone: s.phone || p.phone, unit: s.unit || 'No preference' };
+  // The day is the property's, not the phone's (October 28, 2026); unknown until the property's rules are loaded.
+  return { ...s, date: scheduleDay(s.date, propertyZone({ propertyId, booking: state.booking })), first: s.first || p.first, last: s.last || p.last, phone: s.phone || p.phone, unit: s.unit || 'No preference' };
 };
 
 export const reducer = (state: AppState, action: Action): AppState => {
@@ -390,7 +390,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
       const overlays: Overlay[] = state.propertyId != null && pending === 'book' ? ['book'] : state.propertyId != null && pending === 'upcoming' ? ['upcoming'] : state.propertyId != null && pending === 'history' ? ['history'] : [];
       // Without a property the visitor picks one first; a pending Schedule survives so `selectProperty` can open it.
       const keep = state.propertyId == null && pending === 'schedule' ? pending : null;
-      return { ...state, screen, overlays, authStep: 'email', editingProfile: false, pendingAfterAuth: keep, guestGateWhy: null, scheduleDone: false, ...(screen === 'schedule' ? { schedule: prefilledSchedule(state) } : {}) };
+      return { ...state, screen, overlays, authStep: 'email', editingProfile: false, pendingAfterAuth: keep, guestGateWhy: null, scheduleDone: false, ...(screen === 'schedule' ? { schedule: prefilledSchedule(state, state.propertyId) } : {}) };
     }
     case 'editProfile':
       return { ...state, editingProfile: action.on };
@@ -420,7 +420,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
       {
       const then = action.then ?? state.pendingAfterAuth;
       // October 25, 2026: a Schedule opened straight after the switch is prefilled like `openSchedule` does.
-      const schedule = then === 'schedule' ? { schedule: prefilledSchedule(state), scheduleDone: false } : {};
+      const schedule = then === 'schedule' ? { schedule: prefilledSchedule(state, action.propertyId), scheduleDone: false } : {};
       if (state.propertyId === action.propertyId) return { ...state, ...schedule, screen: then === 'schedule' ? 'schedule' : 'home', overlays: [], searchQuery: '', pendingAfterAuth: null };
       // A new property: every tour, route and selection belonged to the old one.
       return { ...state, ...propertyScoped(), ...schedule, propertyId: action.propertyId, screen: then === 'schedule' ? 'schedule' : 'home', overlays: [], searchQuery: '', pendingAfterAuth: null, exploreId: null };
@@ -725,9 +725,10 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'bookingLoaded': {
       const days = Object.fromEntries(action.days.map((d) => [d.date, d]));
       const booking: BookingState = { ...state.booking, propertyId: action.propertyId, fetchedAt: action.now, status: 'ready', error: null, settings: action.settings, days };
-      // The draft keeps its time when the day still offers it; otherwise the day's first bookable
-      // time, and when the day has none at all, the first of the loaded days that does.
-      let date = state.schedule.date;
+      // The draft's day is the property's today when none was chosen or it has passed there (October 28,
+      // 2026). It keeps its time when the day still offers it; otherwise the day's first bookable time,
+      // and when the day has none at all, the first of the loaded days that does.
+      let date = scheduleDay(state.schedule.date, action.settings.timeZone, action.now);
       let options = slotsForDay(booking, date, action.now);
       if (!options.length) {
         const open = action.days.map((d) => d.date).find((key) => key >= date && slotsForDay(booking, key, action.now).length > 0);

@@ -2,8 +2,8 @@ import communityPhoto from '~/assets/images/community-pool.jpg';
 import sitePlan from '~/assets/images/site-plan.png';
 import { DEMO, LEASE_TERM_FACTORS } from '~/content/demoFixtures';
 import type { Unit } from '~/models';
-import type { AppContent, AvailabilitySlot, BookingSettings, PropertyBundle } from '~/repositories/tourRepository';
-import type { AppState, BookingState } from './appState';
+import type { AppContent, AvailabilitySlot, BookingRequest, BookingSettings, PropertyBundle } from '~/repositories/tourRepository';
+import type { AppState, BookingState, ScheduleDraft } from './appState';
 import { dayKeyInZone, zonedSlotMs } from './zone';
 import { availabilityText } from './access';
 import { markOf, unitLabel, unitPrice, type TourStopView } from './selectors';
@@ -14,6 +14,42 @@ import { markOf, unitLabel, unitPrice, type TourStopView } from './selectors';
  * unit facts the Stop screen shows and the Build Your Tour grouping. Pure
  * functions of the state and the loaded data.
  */
+
+/**
+ * The property's IANA zone, once its booking rules are loaded for the
+ * property the visitor is on; null before that (and for another property's
+ * rules that are still in the state).
+ */
+export const propertyZone = (state: Pick<AppState, 'propertyId' | 'booking'>): string | null =>
+  state.booking.settings && (state.booking.propertyId == null || state.propertyId == null || state.booking.propertyId === state.propertyId) ? state.booking.settings.timeZone : null;
+
+/**
+ * The Schedule draft's day, anchored to the property's calendar (October 28,
+ * 2026): the property's today when none is chosen yet or the chosen day has
+ * passed there; unchanged while the property's zone is not known yet (the
+ * rules' arrival anchors it then, see the `bookingLoaded` reducer).
+ */
+export const scheduleDay = (date: string, tz: string | null, now = Date.now()): string => {
+  if (!tz) return date;
+  const today = dayKeyInZone(now, tz);
+  return !date || date < today ? today : date;
+};
+
+/** The booking the Schedule screen sends: the property's calendar day and the slot's `HH:MM`, the visitor's details, the form's extras. */
+export const bookingRequestFor = (d: ScheduleDraft, slot: Pick<AvailabilitySlot, 'time'>, profile: Pick<Profile, 'first' | 'last' | 'email' | 'phone'>, settings: BookingSettings | null): BookingRequest => ({
+  date: d.date,
+  time: slot.time,
+  tourType: 'self_tour',
+  firstName: (d.first || profile.first).trim(),
+  lastName: (d.last || profile.last).trim(),
+  email: profile.email.trim(),
+  phone: (d.phone || profile.phone).trim(),
+  desiredUnit: d.unit && d.unit !== 'No preference' ? d.unit : undefined,
+  lengthMinutes: d.length,
+  partySize: d.party,
+  desiredBedroom: settings?.form.showDesiredBedroom && d.bedroom ? d.bedroom : undefined,
+  desiredMoveInDate: settings?.form.showDesiredMoveInDate && d.moveIn ? d.moveIn : undefined
+});
 
 /**
  * The self-tour slots of a day, from the booking rules the CMS answered: a

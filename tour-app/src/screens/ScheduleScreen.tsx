@@ -3,9 +3,9 @@ import { ScreenHeader } from '~/components/chrome';
 import { Icon } from '~/components/Icon';
 import { Button, IconButton } from '~/components/ui';
 import { Callout, Chip, Eyebrow, Segmented } from '~/components/ui2';
-import { dayKey, type BookingState, type ScheduleDraft } from '~/store/appState';
+import type { BookingState, ScheduleDraft } from '~/store/appState';
 import { dayKeyInZone } from '~/store/zone';
-import { DOW, MON, dayLabel, parseDay } from '~/store/scenarios';
+import { DOW, MON, dayLabelInZone, parseDay } from '~/store/scenarios';
 import { afterSlots, dayNote, daySlots, slotsForDay, tourLengthOptions, type Profile } from '~/store/views';
 import { LightShell } from './shared';
 
@@ -42,7 +42,7 @@ interface Props {
  * the leasing phone stay demo copy until the CMS carries them.
  */
 export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, unitOptions, verified, booking, profile, demo, phone, onChange, onConfirm, onRetry, onBack, onVerify, onCalendar, onDirections, onHome }: Props) => {
-  // The week starts on the property's today, not the phone's (October 25, 2026).
+  // The week starts on the property's today, not the phone's (October 25, 2026); the draft's day is one of these (October 28, 2026).
   const days = Array.from({ length: 7 }, (_, i) => dayKeyInZone(Date.now(), booking.settings?.timeZone, i));
   const day = daySlots(booking, draft.date);
   const after = afterSlots(booking, draft.date);
@@ -180,7 +180,7 @@ export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, uni
                   <option value="4">4+ bedrooms</option>
                 </select>
               ) : null}
-              {askMoveIn ? <input className="pw-input" type="date" aria-label="Desired move-in date" value={draft.moveIn} min={dayKey(0)} onChange={(e) => onChange({ moveIn: e.target.value })} /> : null}
+              {askMoveIn ? <input className="pw-input" type="date" aria-label="Desired move-in date" value={draft.moveIn} min={days[0]} onChange={(e) => onChange({ moveIn: e.target.value })} /> : null}
               <div className="pw-sched__partysub">{email ? `Confirmation to ${email}` : 'Sign in with your email to book.'}</div>
             </div>
           </div>
@@ -217,7 +217,7 @@ export const ScheduleScreen = ({ propertyName, propertyAddress, draft, done, uni
           </div>
           <div className="pw-sched__ticket">
             <div className="pw-sched__ticketdate">
-              <div>{dayLabel(draft.date)}</div>
+              <div>{dayLabelInZone(draft.date, booking.settings?.timeZone, Date.now())}</div>
               <div>
                 {draft.time} · {draft.length} min
               </div>

@@ -170,6 +170,7 @@ export interface ScheduledTour {
 }
 
 export interface ScheduleDraft {
+  /** `YYYY-MM-DD` in the property's calendar; '' until the property's today is known (October 28, 2026). */
   date: string;
   /** The slot's label ("6:00 PM"); the booking sends the slot's `HH:MM`. */
   time: string;
@@ -398,7 +399,7 @@ export const dayKey = (offset = 0, from: Date = new Date()): string => {
   return `${d.getFullYear()}-${m}-${day}`;
 };
 
-export const initialSchedule = (): ScheduleDraft => ({ date: dayKey(0), time: '', length: 45, unit: '', party: 1, first: '', last: '', phone: '', bedroom: '', moveIn: '' });
+export const initialSchedule = (): ScheduleDraft => ({ date: '', time: '', length: 45, unit: '', party: 1, first: '', last: '', phone: '', bedroom: '', moveIn: '' });
 
 export const initialBooking = (): BookingState => ({ propertyId: null, fetchedAt: 0, status: 'idle', error: null, settings: null, days: {}, saving: false, saveError: null });
 
