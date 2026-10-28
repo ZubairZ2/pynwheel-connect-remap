@@ -12,10 +12,9 @@ import type { StopEndpoint } from '~/core/utils/wayfinding/stopRoute';
 
 /**
  * Tour Setup on real data: the property's tour stops (`tour_stops` of the
- * community tour, in their sort order), its elevators (with their galleries
- * and Latch banks) and the routing inputs (the pathway graph, the building
- * starting points), as the plotting design's three tabs show them. Every
- * edit the tabs offer lives in `TourLocalState` until the page reloads.
+ * community tour, in their sort order) and the routing inputs (the pathway
+ * graph, the building starting points, the elevators as stops and graph
+ * nodes). Every edit the tabs offer lives in `TourLocalState` until Save.
  */
 
 export const T = CORE_STRINGS.tourSetup;
@@ -36,33 +35,20 @@ export interface LocalStop {
   local: boolean;
 }
 
-export interface LocalElevator {
-  key: string;
-  name: string;
-  building: string;
-  from: string;
-  to: string;
-  gated: boolean;
-}
-
-export interface LocalPhoto {
-  name: string;
-  url: string;
-}
-
 /**
- * The Tours page's tabs (Back Office design, Oct 13, 2026): the overview,
+ * The Tours page's tabs (Back Office design, Oct 27, 2026): the overview,
  * the stops (with the route preview and the shortest-path test that used to
- * be the Routing tab), the elevators, the locks, the visitors, live chat and
- * the settings (scheduling, booking form, booking link).
+ * be the Routing tab), the locks, the visitors, live chat and the settings
+ * (scheduling, booking form, booking link). The former Elevators tab is gone
+ * with the design: elevators stay stops of the route and nodes of the graph.
  */
-export type TourTab = 'overview' | 'stops' | 'elevators' | 'locks' | 'visitors' | 'chat' | 'settings';
+export type TourTab = 'overview' | 'stops' | 'locks' | 'visitors' | 'chat' | 'settings';
 
-export const TOUR_TABS: TourTab[] = ['overview', 'stops', 'elevators', 'locks', 'visitors', 'chat', 'settings'];
+export const TOUR_TABS: TourTab[] = ['overview', 'stops', 'locks', 'visitors', 'chat', 'settings'];
 
-/** `?tab=` of the Tours page; `routing` (the former tab) opens the stops, where the route preview now lives. */
+/** `?tab=` of the Tours page; `routing` and `elevators` (former tabs) open the stops, where their content now lives. */
 export const tourTabOf = (value: string | undefined): TourTab | undefined => {
-  if (value === 'routing') return 'stops';
+  if (value === 'routing' || value === 'elevators') return 'stops';
   return isTourTab(value) ? value : undefined;
 };
 
@@ -78,20 +64,11 @@ export interface TourConfirm {
 export type TourDialog =
   | { kind: 'addStop'; source: string; duration: string; talkingPoint: string }
   | { kind: 'editStop'; key: string; duration: string; talkingPoint: string }
-  | { kind: 'addElevator'; name: string; building: string; from: string; to: string; gated: boolean }
   | null;
 
 export interface TourLocalState {
   tab: TourTab;
   stops: LocalStop[];
-  /** Elevator id → gated on this page (overrides the stored lock provider). */
-  gated: Record<number, boolean>;
-  /** Elevator id (or local key) → photos added on this page. */
-  photos: Record<string, LocalPhoto[]>;
-  /** Elevator id → the stored photos' order on this page. */
-  photoOrder: Record<string, string[]>;
-  removedElevators: number[];
-  localElevators: LocalElevator[];
   routeFrom: string;
   routeTo: string;
   routeResult: { text: string; tone: 'muted' | 'ok' | 'warn' | 'crit' } | null;
@@ -126,11 +103,6 @@ export const initialTourState = (map: PropertyMap, tab: TourTab = 'overview'): T
     removed: false,
     local: false
   })),
-  gated: {},
-  photos: {},
-  photoOrder: {},
-  removedElevators: [],
-  localElevators: [],
   routeFrom: '',
   routeTo: '',
   routeResult: null,
@@ -394,79 +366,6 @@ export const stopSourceOptions = (map: PropertyMap, state: TourLocalState): Stop
   return [...amenities, ...units];
 };
 
-export interface ElevatorCard {
-  key: string;
-  name: string;
-  building: string;
-  rangeLabel: string;
-  gated: boolean;
-  lockLabel: string;
-  lockVariant: PillVariant;
-  photos: { key: string; src: string | null; name: string; local: boolean; position: string }[];
-  photoCount: string;
-  banks: { key: string; label: string }[];
-  directionalText: string | null;
-  description: string | null;
-  stopLabel: string | null;
-  local: boolean;
-}
-
-export const generateElevatorCards = (map: PropertyMap, levels: MapLevel[], state: TourLocalState): ElevatorCard[] => {
-  const stored = map.graph.elevators
-    .filter((elevator) => !state.removedElevators.includes(elevator.id))
-    .map((elevator): ElevatorCard => {
-      const level = elevatorLevel(levels, elevator);
-      const gated = state.gated[elevator.id] ?? !!elevator.lockProvider;
-      const storedPhotos = [
-        ...(elevator.image ? [{ key: `image:${elevator.id}`, src: elevator.image, name: i18n.t(T.elevators.mainImage), local: false }] : []),
-        ...elevator.gallery.map((photo) => ({ key: `gallery:${photo.id}`, src: photo.url, name: photo.name ?? i18n.t(T.elevators.photo), local: false }))
-      ];
-      const order = state.photoOrder[String(elevator.id)];
-      const ordered = order ? [...storedPhotos].sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key)) : storedPhotos;
-      const photos = [...ordered, ...(state.photos[String(elevator.id)] ?? []).map((photo) => ({ key: `local:${photo.url}`, src: photo.url, name: photo.name, local: true }))].map(
-        (photo, index) => ({ ...photo, position: `#${index + 1}` })
-      );
-      return {
-        key: String(elevator.id),
-        name: elevator.name ?? i18n.t(T.stops.kinds.elevator),
-        building: elevator.building ?? level?.sub ?? i18n.t(T.elevators.noBuilding),
-        rangeLabel: floorsText(elevator),
-        gated,
-        lockLabel: gated ? t(T.elevators.gated, { vendor: elevator.lockProvider ?? i18n.t(T.elevators.smartLock) }) : i18n.t(T.elevators.openAccess),
-        lockVariant: gated ? 'ok' : 'neutral',
-        photos,
-        photoCount: t(photos.length === 1 ? T.elevators.photoOne : T.elevators.photoMany, { count: photos.length }),
-        banks: elevator.banks.map((bank) => ({
-          key: String(bank.id),
-          label: [bank.name, bank.position, bank.lockName ? `${bank.lockType ?? ''} ${bank.lockName}`.trim() : null].filter(Boolean).join(' · ')
-        })),
-        directionalText: elevator.directionalText ? plainText(elevator.directionalText) : null,
-        description: elevator.description ? plainText(elevator.description) : null,
-        stopLabel: elevator.tourStop ? i18n.t(elevator.tourStop.visible ? T.elevators.onTour : T.elevators.hiddenStop) : null,
-        local: false
-      };
-    });
-  const local = state.localElevators.map(
-    (elevator): ElevatorCard => ({
-      key: elevator.key,
-      name: elevator.name,
-      building: elevator.building || i18n.t(T.elevators.noBuilding),
-      rangeLabel: `${elevator.from || '—'} → ${elevator.to || '—'}`,
-      gated: elevator.gated,
-      lockLabel: elevator.gated ? t(T.elevators.gated, { vendor: i18n.t(T.elevators.smartLock) }) : i18n.t(T.elevators.openAccess),
-      lockVariant: elevator.gated ? 'ok' : 'neutral',
-      photos: (state.photos[elevator.key] ?? []).map((photo, index) => ({ key: `local:${photo.url}`, src: photo.url, name: photo.name, local: true, position: `#${index + 1}` })),
-      photoCount: t((state.photos[elevator.key] ?? []).length === 1 ? T.elevators.photoOne : T.elevators.photoMany, { count: (state.photos[elevator.key] ?? []).length }),
-      banks: [],
-      directionalText: null,
-      description: null,
-      stopLabel: i18n.t(T.elevators.localOnly),
-      local: true
-    })
-  );
-  return [...stored, ...local];
-};
-
 /** Where a stop stands for routing: its door when it has one on its level, else its pin, in raster pixels. */
 export const stopEndpoints = (map: PropertyMap, levels: MapLevel[], graphs: Record<string, LevelGraph>, state: TourLocalState): StopEndpoint[] => {
   const cards = generateStopCards(map, levels, state);
@@ -502,7 +401,8 @@ export const stopEndpoints = (map: PropertyMap, levels: MapLevel[], graphs: Reco
 export interface TourSummary {
   stops: number;
   visible: number;
-  elevators: number;
+  /** Elevators of the property whose access is gated by a lock provider (shown as stops and graph nodes). */
+  gatedElevators: number;
   connections: number;
   subtitle: string;
   poolLabel: string;
@@ -512,12 +412,12 @@ export const generateTourSummary = (map: PropertyMap, state: TourLocalState): To
   const stops = state.stops.filter((stop) => !stop.removed);
   const visible = stops.filter((stop) => stop.visible).length;
   const connections = map.graph.hallways.reduce((sum, hallway) => sum + hallway.nextPoints.length, 0);
-  const elevators = map.graph.elevators.filter((elevator) => !state.removedElevators.includes(elevator.id)).length + state.localElevators.length;
+  const gatedElevators = map.graph.elevators.filter((elevator) => !!elevator.lockProvider).length;
   const pool = stopSourceOptions(map, state).length;
   return {
     stops: stops.length,
     visible,
-    elevators,
+    gatedElevators,
     connections,
     subtitle: stops.length
       ? t(T.header.subtitle, { count: t(stops.length === 1 ? T.header.stopOne : T.header.stopMany, { count: stops.length }), hidden: stops.length - visible ? t(T.header.hidden, { count: stops.length - visible }) : i18n.t(T.header.allVisible) })
@@ -537,7 +437,11 @@ export { generateMapLevels };
 
 /* ── saving ───────────────────────────────────────────────────────────── */
 
-/** The payload `TourSetup::Save` applies: what changed on the page against the stored tour, nothing more. */
+/**
+ * The payload `TourSetup::Save` applies: what changed on the page against the
+ * stored tour, nothing more. The service still accepts `elevators.delete`
+ * (the former Elevators tab); this page no longer sends it.
+ */
 export interface TourSetupSavePayload {
   base_version: number;
   stops: {
@@ -547,7 +451,6 @@ export interface TourSetupSavePayload {
     order: (number | string)[];
     duration: { id: number; duration_minutes: number | null }[];
   };
-  elevators: { delete: number[] };
 }
 
 const storedId = (key: string): number | null => (key.startsWith('stop:') ? Number(key.slice(5)) : null);
@@ -559,8 +462,7 @@ export const buildTourSetupPayload = (map: PropertyMap, state: TourLocalState): 
   const shown = state.stops.filter((stop) => !stop.removed);
   const payload: TourSetupSavePayload = {
     base_version: map.graph.tour?.tourSetupVersion ?? 0,
-    stops: { add: [], remove: [], visibility: [], order: [], duration: [] },
-    elevators: { delete: [...state.removedElevators] }
+    stops: { add: [], remove: [], visibility: [], order: [], duration: [] }
   };
   state.stops.forEach((stop) => {
     const id = storedId(stop.key);
@@ -598,7 +500,6 @@ export const tourSetupUnsavedCount = (map: PropertyMap, state: TourLocalState): 
     payload.stops.remove.length +
     payload.stops.visibility.length +
     payload.stops.duration.length +
-    (payload.stops.order.length && !payload.stops.add.length ? 1 : 0) +
-    payload.elevators.delete.length
+    (payload.stops.order.length && !payload.stops.add.length ? 1 : 0)
   );
 };

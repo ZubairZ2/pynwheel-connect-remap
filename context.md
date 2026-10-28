@@ -1495,3 +1495,31 @@ in `PUBLISH_SCHEDULING_TZ_FINDINGS_2026-10-25.md`; the API contract in `tour-app
   headlessly through Playwright; the app's resume is triggered in the pane by switching tabs (`visibilitychange`). Residue on the
   local prod copy: that user, OTP rows for +1111122222 / +11111122222, a visitor session for 16258, Hazel's tour published once
   (`tour_published_*`), booking 25503 untouched.
+
+## 44. Tour Setup on the Oct 27 design: tabs, settings rail, read-only causes, CRM-managed hours, widget hardening — implementation knowledge (October 27, 2026)
+
+Branch `feature/tour-setup-scheduler-fixes`. Findings and the verification matrix in `TOUR_SETUP_SCHEDULER_FIXES_QA_2026-10-27.md`.
+
+- **Reading the design.** `Oct_27_Pynwheel Admin - Back Office.html` is a bundler page; the Tour Setup screen is the
+  gzip-compressed `TourModule.dc.html` inside `__bundler/manifest` (decode base64 → gzip). Its `TABS` are Overview · Stops ·
+  Locks · Visitors · Live Chat · Settings with a role list each; `SET_GROUPS` has five groups and "Route & navigation" is the
+  `builder` section of Tour experience. There is no Elevators tab: elevators are stops of the route and nodes of the graph.
+- **Why everything was disabled on Heroku.** `useTourBooking.canEdit = meta.can_edit && meta.writes_enabled`; `writes_enabled` is
+  `Connect::Flags.writes_enabled?` (`PYN_CONNECT_WRITES`, production default off, `PYN_CONNECT_WRITES_COMMUNITY_IDS` allowlist).
+  The owner confirmed `off` on `pyn-system` and then set it on for an allowlist. The page now says which cause applies
+  (`readOnlyReason`: `writesOff` | `role`), on every panel and under the scheduler switch.
+- **CRM-managed hours.** `crm.managed_hours` (Yardi / Knock / Funnel) makes the hours and closures read-only (`hoursEditable`),
+  as the design's `hoursEditable: !managed`; the widget takes those slots from the CRM anyway. The server refuses nothing new.
+- **The booking link on Heroku.** `Scheduling::Settings#link` builds on `HOST_URL`; `pyn-system`'s value is the dead
+  `pyn-system.herokuapp.com` (Heroku "No such app") while the CMS runs at `pyn-system-16a05cad79df.herokuapp.com`. Connect prints
+  the configured host next to the link; the fix is the config variable (owner, manual mode).
+- **Gate parity.** `gates[:tour_on]` reads `communities.self_tour` as the widget's `can_user_schedule_tour` does, not
+  `Connect::ProductState.tour?`.
+- **Widget 404s.** `SchedulerWidget::WidgetsController#verify_community_code!` runs before `test_widget`: unknown property, or a
+  direct link whose `community_code` is missing / undecodable / signed elsewhere / for another property → `render plain:
+  'Not Found', status: 404`, before the placeholder `SchedualTour` is created. The action's method-level rescue still catches
+  rendering errors (the legacy stylesheet does not compile under the test asset pipeline, so the controller tests assert the
+  placeholder row, not the HTML).
+- **Deep links.** `tourTabOf` maps `routing` and `elevators` to `stops`; `settingsSectionOf` (pure, in `tourModule.generator`,
+  because the server page calls it) accepts the booking sections and `checks | tour_access | welcome | navigation | stop_options |
+  after | concierge | messages`.

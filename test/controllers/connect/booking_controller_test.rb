@@ -50,6 +50,17 @@ class Connect::BookingControllerTest < ActionDispatch::IntegrationTest
     assert_equal ENV['HOST_URL'].present? ? 'env' : 'request', data['link']['host_source']
   end
 
+  test 'the tour gate follows the widget\'s own rule (communities.self_tour), not the product option' do
+    sign_in users(:community_assistant)
+    @community.update_columns(self_tour: false, product_options: { 'product_options' => { 'self_tour' => { 'is_enabled' => true } } }.to_json)
+    assert Connect::ProductState.tour?(@community), 'the product option alone turns the product on elsewhere in Connect'
+    get "#{base}.json"
+    gate = body['data']['gates'].find { |g| g['key'] == 'tour_on' }
+    refute gate['ok'], 'the widget refuses a property without communities.self_tour, so the gate must too'
+    refute body['data']['widget_live']
+    assert_includes body['data']['link']['reasons'], 'Pynwheel Tour is Disabled'
+  end
+
   test 'availability lists the stepped slots of open days with the types open at each' do
     sign_in users(:community_assistant)
     monday = Date.today.next_occurring(:monday)

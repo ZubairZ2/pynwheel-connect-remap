@@ -13,8 +13,8 @@ import type { TourSetupController } from '~/core/hooks/useTourSetup';
 import type { TourBookingController } from '~/core/hooks/tour/useTourBooking';
 import type { TourOverviewController } from '~/core/hooks/tour/useTourOverview';
 import { i18n } from '~/resources/i18n';
-import { B, BOOKING_GROUPS, groupOfSection, type BookingGroup, type BookingSection } from '~/core/utils/generator/tour/tourBooking.generator';
-import { generateTourAttention, generateTourChecklist, generateTourKpis, generateTourSettingsGroups, type TourSettingsGroup } from '~/core/utils/generator/tour/tourModule.generator';
+import { B, BOOKING_GROUPS, groupOfSection, isBookingSection, type BookingGroup, type BookingSection } from '~/core/utils/generator/tour/tourBooking.generator';
+import { generateTourAttention, generateTourChecklist, generateTourKpis, generateTourSettingsGroups, tourSettingsGroupOf, type SettingsSection, type TourSettingsGroupId } from '~/core/utils/generator/tour/tourModule.generator';
 import type { StopCard } from '~/core/utils/generator/tour/tourSetup.generator';
 import { generateStopItems } from '~/core/utils/generator/tour/tourStops.generator';
 import { generateOnSite } from '~/core/utils/generator/tour/tourVisitors.generator';
@@ -35,11 +35,11 @@ interface OverviewProps {
 
 /** Overview: the setup checklist, six KPIs, the stops needing attention and who is touring right now. */
 export const OverviewTab = ({ controller, propId, mapHref, overview, onOpenStop }: OverviewProps) => {
-  const { stops, elevators, startPoints, summary, actions, state, publication } = controller;
+  const { stops, startPoints, summary, actions, state, publication } = controller;
   const items = useMemo(() => generateStopItems(stops, state, overview.stops), [stops, state, overview.stops]);
   const checklist = useMemo(
-    () => generateTourChecklist({ propId, stops, elevators, startPointsMissing: startPoints.missing, locks: overview.locks, items, publication }),
-    [propId, stops, elevators, startPoints.missing, overview.locks, items, publication]
+    () => generateTourChecklist({ propId, stops, gatedElevators: summary.gatedElevators, startPointsMissing: startPoints.missing, locks: overview.locks, items, publication }),
+    [propId, stops, summary.gatedElevators, startPoints.missing, overview.locks, items, publication]
   );
   const kpis = useMemo(() => generateTourKpis(summary, items, overview.visitors, overview.stops != null), [summary, items, overview.visitors, overview.stops]);
   const attention = useMemo(() => generateTourAttention(items), [items]);
@@ -195,23 +195,25 @@ export const ChatTab = ({ propId }: { propId: string }) => (
   </section>
 );
 
-type SettingsKey = BookingGroup | TourSettingsGroup['id'];
+type SettingsKey = BookingGroup | TourSettingsGroupId;
+const groupOfSettingsSection = (section: SettingsSection): SettingsKey => (isBookingSection(section) ? groupOfSection(section) : tourSettingsGroupOf(section));
 
 interface RailItem {
   id: SettingsKey;
   title: string;
   sub: string;
-  sections: BookingSection[];
+  sections: SettingsSection[];
 }
 
 /**
- * Settings: the design's rail (`SET_GROUPS`). Scheduling (tour types & slots,
- * visiting hours) and Booking & CRM (booking form, booking link, CRM & sync)
- * are the real booking settings, each group with pills for its sections and
- * `?section=` in the URL; Route & navigation shows the stored flags; the
- * remaining groups are not in Connect yet.
+ * Settings: the design's rail (`SET_GROUPS`, Oct 27 2026): Scheduling (tour
+ * types & slots, visiting hours) and Booking & CRM (booking form, booking
+ * link, CRM & sync) are the real booking settings; Access & security, Tour
+ * experience (where Route & navigation shows the stored flags) and Messages
+ * list the design's sections, which Connect has no page for yet. Each group
+ * has pills for its sections and `?section=` in the URL.
  */
-export const SettingsTab = ({ controller, booking, propertyId, propertyName, initialSection }: { controller: TourSetupController; booking: TourBookingController; propertyId: number; propertyName: string; initialSection?: BookingSection }) => {
+export const SettingsTab = ({ controller, booking, propertyId, propertyName, initialSection }: { controller: TourSetupController; booking: TourBookingController; propertyId: number; propertyName: string; initialSection?: SettingsSection }) => {
   const S = C.settings;
   const router = useRouter();
   const pathname = usePathname();
@@ -223,34 +225,35 @@ export const SettingsTab = ({ controller, booking, propertyId, propertyName, ini
       sub: i18n.t(group.id === 'scheduling' ? B.rail.schedulingSub : B.rail.bookingSub),
       sections: group.sections
     }));
-    const rest: RailItem[] = groups.map((group) => ({ id: group.id, title: group.title, sub: group.sub, sections: [] }));
+    const rest: RailItem[] = groups.map((group) => ({ id: group.id, title: group.title, sub: group.sub, sections: group.sections.map((row) => row.id) }));
     return [...bookingItems, ...rest];
   }, [groups]);
-  const [section, setSectionState] = useState<BookingSection | null>(initialSection ?? 'rules');
-  const [groupId, setGroupId] = useState<SettingsKey>(initialSection ? groupOfSection(initialSection) : 'scheduling');
+  const [section, setSectionState] = useState<SettingsSection>(initialSection ?? 'rules');
+  const [groupId, setGroupId] = useState<SettingsKey>(initialSection ? groupOfSettingsSection(initialSection) : 'scheduling');
   const current = items.find((item) => item.id === groupId) ?? items[0];
-  const group = groups.find((row) => row.id === groupId) ?? null;
+  const other = groups.flatMap((group) => group.sections).find((row) => row.id === section) ?? null;
+  const pillLabel = (id: SettingsSection): string => (isBookingSection(id) ? i18n.t(B.pills[id]) : (groups.flatMap((group) => group.sections).find((row) => row.id === id)?.title ?? id));
 
   const syncUrl = useCallback(
-    (next: BookingSection | null) => {
+    (next: SettingsSection) => {
       const params = new URLSearchParams();
       params.set('tab', 'settings');
-      if (next) params.set('section', next);
+      params.set('section', next);
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
     [pathname, router]
   );
   const openSection = useCallback(
-    (next: BookingSection) => {
-      setGroupId(groupOfSection(next));
+    (next: SettingsSection) => {
+      setGroupId(groupOfSettingsSection(next));
       setSectionState(next);
       syncUrl(next);
     },
     [syncUrl]
   );
   const openGroup = (item: RailItem) => {
+    const next = item.sections[0];
     setGroupId(item.id);
-    const next = item.sections[0] ?? null;
     setSectionState(next);
     syncUrl(next);
   };
@@ -272,39 +275,45 @@ export const SettingsTab = ({ controller, booking, propertyId, propertyName, ini
             <p className="bo-section__subtitle">{current.sub}</p>
           </div>
         </div>
-        {current.sections.length > 0 && section && (
+        <div className="bo-tm__pills" role="tablist" aria-label={current.title}>
+          {current.sections.map((id) => (
+            <button key={id} type="button" role="tab" aria-selected={id === section} aria-current={id === section ? 'true' : undefined} className={`bo-tm__pill${id === section ? ' bo-tm__pill--on' : ''}`} onClick={() => openSection(id)} data-testid={`settings-${id}`}>
+              {pillLabel(id)}
+            </button>
+          ))}
+        </div>
+        {isBookingSection(section) && (
           <>
-            <div className="bo-tm__pills" role="tablist" aria-label={current.title}>
-              {current.sections.map((id) => (
-                <button key={id} type="button" role="tab" aria-selected={id === section} aria-current={id === section ? 'true' : undefined} className={`bo-tm__pill${id === section ? ' bo-tm__pill--on' : ''}`} onClick={() => openSection(id)} data-testid={`settings-${id}`}>
-                  {i18n.t(B.pills[id])}
-                </button>
-              ))}
-            </div>
             <p className="bo-tx__intro">{i18n.t(B.intro[section])}</p>
             <BookingSectionView c={booking} section={section} propertyId={propertyId} propertyName={propertyName} onNavigate={openSection} />
           </>
         )}
-        {group?.source === 'real' && (
-          <>
-            <p className="bo-map__readonly" role="note">
-              {i18n.t(S.readOnly)}
-            </p>
-            <div className="bo-configgroup">
-              {group.rows.map((row) => (
-                <div key={row.label} className="bo-configrow">
-                  <span className="bo-configrow__label">{row.label}</span>
-                  {row.kind === 'toggle' ? (
-                    <Switch on={row.on} label={`${row.label}: ${i18n.t(row.on ? CORE_STRINGS.propertyDetail.products.enabled : CORE_STRINGS.propertyDetail.products.notEnabled)}`} />
-                  ) : (
-                    <span className="bo-configrow__value">{row.value}</span>
-                  )}
+        {other && (
+          <div data-testid={`settings-section-${other.id}`}>
+            <p className="bo-tx__intro">{other.intro}</p>
+            {other.source === 'real' ? (
+              <>
+                <p className="bo-map__readonly" role="note">
+                  {i18n.t(S.readOnly)}
+                </p>
+                <div className="bo-configgroup">
+                  {other.rows.map((row) => (
+                    <div key={row.label} className="bo-configrow">
+                      <span className="bo-configrow__label">{row.label}</span>
+                      {row.kind === 'toggle' ? (
+                        <Switch on={row.on} label={`${row.label}: ${i18n.t(row.on ? CORE_STRINGS.propertyDetail.products.enabled : CORE_STRINGS.propertyDetail.products.notEnabled)}`} />
+                      ) : (
+                        <span className="bo-configrow__value">{row.value}</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </>
+              </>
+            ) : (
+              <p className="bo-tm__empty">{i18n.t(S.unavailable)}</p>
+            )}
+          </div>
         )}
-        {group?.source === 'unavailable' && <p className="bo-tm__empty">{i18n.t(S.unavailable)}</p>}
       </section>
     </div>
   );
