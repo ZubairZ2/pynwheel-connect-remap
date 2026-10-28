@@ -181,3 +181,16 @@ describe('the booking lifecycle follows the CMS (October 25, 2026)', () => {
     expect(reducer({ ...s, booking: { ...s.booking, fetchedAt: 5 } }, { type: 'bookingStale' }).booking.fetchedAt).toBe(0);
   });
 });
+
+describe("the server's ID-verification answer (October 28, 2026)", () => {
+  it('is kept for the chosen property only and cleared on a property switch', () => {
+    const s = signedIn();
+    expect(s.verificationRequired).toBeNull();
+    const said = reducer(s, { type: 'verificationRequired', propertyId: 1618, required: false });
+    expect(said.verificationRequired).toBe(false);
+    expect(reducer(said, { type: 'verificationRequired', propertyId: 1618, required: false })).toBe(said);
+    expect(reducer(said, { type: 'verificationRequired', propertyId: 99, required: true }).verificationRequired).toBe(false);
+    expect(reducer(said, { type: 'verificationRequired', propertyId: 1618, required: true }).verificationRequired).toBe(true);
+    expect(reducer(said, { type: 'selectProperty', propertyId: 2 }).verificationRequired).toBeNull();
+  });
+});

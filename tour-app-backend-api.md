@@ -884,3 +884,26 @@ plan in `PUBLISH_SCHEDULING_TZ_FINDINGS_2026-10-25.md`.
   the grace period 10..60 whatever the client sends (tests added).
 - Tests: `test/controllers/connect/tour_controller_test.rb` (3), `test/services/tour_api/config_version_test.rb` (1), ETag and
   `booked_at` cases in `stops_test.rb`, `bookings_test.rb`, `visitor_bookings_test.rb`, `properties_test.rb`.
+
+## 23. The check-in's ID step follows the server: `verification_required` on `GET /properties/{id}` (October 28, 2026)
+
+Additive; no field removed or renamed. Branch `improvement/fixing_the_schedule_date_chnage`.
+
+- **Why:** the app decided the ID step locally — `checkinModel` showed "One step before you check in … Verify My ID" before
+  every check-in until the visitor had walked through the simulated Verify Identity flow, on every property. On October 28, 2026
+  two headless runs on John Pynwheel Demo 1411 (`visual_id_verification = false`, visit answers `verification_required: false`)
+  each had to pass the simulated scan and card before the sheet offered Start In-Person Tour. The design intends the step only
+  where the property requires it, and only the visit answers and the lock refusals carried the server's rule.
+- **`verification_required`** on `GET /properties/{id}` (`TourApi::Properties.detail(…, auth:)`): for a visitor session the
+  same answer the visits and lock endpoints give (`Visits::Rules.verification_required?` — true only on a
+  `visual_id_verification` property whose visitor has no verification within 30 days); for a staff session whether the property
+  asks at all (`tours.visual_id_verification`; the lock endpoints never gate staff).
+- **App** (`tour-app/`): `Property.verificationRequired` (null when an older server does not send it) and
+  `AppState.verificationRequired`, property-scoped and persisted, set from the property detail on load and from every visit answer
+  (`POST /visits`, the offline resend). `needsIdVerification(state)` in `src/store/scenarios.ts` is what the check-in sheet asks
+  on: `verificationRequired !== false && !isVerified(state)`. A `false` from the server goes straight to `ready` (Start
+  In-Person Tour); `true` or nothing said yet (demo data) asks as before; the simulated flow (`state.verified`) and the demo
+  switch `demo.idVerified` still clear the ask. `isVerified` keeps its meaning for the profile and Apply sheet. The pending
+  request's step 2 reads "ID check · Not needed here" instead of "ID verified" when the server does not ask.
+- Tests: `properties_test.rb` (visitor on a plain property → false; on a verified-ID property → true, verified within 30 days →
+  false; staff → the property's flag), vitest `scenarios.test.ts`, `parsers.test.ts`, `qaFixes.test.ts` (reducer scope).

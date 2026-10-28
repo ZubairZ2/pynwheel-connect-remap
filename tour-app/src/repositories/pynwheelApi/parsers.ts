@@ -291,7 +291,8 @@ export const parseBundle = (detail: ApiPropertyDetail, graph: ApiGraph, stops: A
     phone: strOrNull(detail.phone),
     email: strOrNull(detail.email),
     configVersion: strOrNull(detail.config_version),
-    publishedAt: strOrNull(detail.published_at)
+    publishedAt: strOrNull(detail.published_at),
+    verificationRequired: typeof detail.verification_required === 'boolean' ? detail.verification_required : null
   };
   return { property, buildings, levels, graph: wayfinding, units, amenities, stops: places, arPins: {}, floorLabels, demo: false };
 };

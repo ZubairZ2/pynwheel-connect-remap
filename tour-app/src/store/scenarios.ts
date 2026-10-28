@@ -380,17 +380,26 @@ export interface CheckinModel {
   warn: { title: string; body: string; cta: string; action: 'qr' | 'retry' | 'settings' } | null;
 }
 
+/** The visitor's ID is verified as far as the app knows: the simulated Verify Identity flow, or the demo switch. */
 export const isVerified = (state: Pick<AppState, 'verified' | 'demo'>): boolean => state.verified || state.demo.idVerified;
 
+/**
+ * Whether the check-in must ask for the ID first (October 28, 2026). The
+ * server decides: a property it answered `verification_required: false` for
+ * goes straight to check-in. Until it has said (demo data), the sheet asks as
+ * the design shows. The simulated flow and the demo switch clear the ask.
+ */
+export const needsIdVerification = (state: Pick<AppState, 'verified' | 'demo' | 'verificationRequired'>): boolean => state.verificationRequired !== false && !isVerified(state);
+
 export const checkinModel = (
-  state: ScenarioState & Pick<AppState, 'location' | 'checkedIn' | 'guestProperty' | 'verified' | 'accessEndsAt' | 'schedule' | 'checkinFor'>,
+  state: ScenarioState & Pick<AppState, 'location' | 'checkedIn' | 'guestProperty' | 'verified' | 'verificationRequired' | 'accessEndsAt' | 'schedule' | 'checkinFor'>,
   now: number,
   propertyName: string,
   address: string,
   extra: DemoExtraTour | null
 ): CheckinModel => {
   const loc = locationModel(state, propertyName, address);
-  const verified = isVerified(state);
+  const verified = !needsIdVerification(state);
   const { scenario: tourScenario, tour } = effectiveTour(state, now);
   let scenario: CheckinScenario;
   if (extra) scenario = extra.scenario;
@@ -478,7 +487,9 @@ export const checkinModel = (
         primaryAction: !verified ? 'verify' : 'chat',
         steps: [
           { n: '✓', text: 'Request sent', state: 'Done', tone: 'ok' },
-          { n: '2', text: !verified ? 'Verify your ID' : 'ID verified', state: !verified ? 'Speeds up approval' : 'Done', tone: !verified ? 'now' : 'ok' },
+          !verified
+            ? { n: '2', text: 'Verify your ID', state: 'Speeds up approval', tone: 'now' }
+            : { n: '2', text: isVerified(state) ? 'ID verified' : 'ID check', state: isVerified(state) ? 'Done' : 'Not needed here', tone: 'ok' },
           { n: '3', text: 'Leasing team approves', state: 'In review', tone: !verified ? 'next' : 'now' },
           { n: '4', text: 'You get a confirmation text', state: 'Next', tone: 'next' }
         ],

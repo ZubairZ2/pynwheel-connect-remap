@@ -91,6 +91,8 @@ export type Action =
   | { type: 'syncBookings'; propertyId: number; tours: ScheduledTour[] }
   /** The property's stops as just loaded: a persisted tour that names stops no longer on the list is pruned. */
   | { type: 'bundleLoaded'; nodes: string[] }
+  /** What the server said about ID verification at this property (the property detail, a visit answer); an answer for another property is dropped. */
+  | { type: 'verificationRequired'; propertyId: number; required: boolean | null }
   /** The booking rules the phone holds may be stale (the property's configuration moved): read them again next time. */
   | { type: 'bookingStale' }
   | { type: 'exitStop' }
@@ -239,6 +241,7 @@ const propertyScoped = (): Partial<AppState> => ({
   floorByLevel: {},
   scheduledTour: null,
   scheduleDone: false,
+  verificationRequired: null,
   checkedIn: false,
   accessEndsAt: null,
   passStart: null,
@@ -689,6 +692,9 @@ export const reducer = (state: AppState, action: Action): AppState => {
       const next = action.tours.find((t) => t.status === 'scheduled') ?? null;
       return next ? { ...state, scheduledTour: next } : state;
     }
+    case 'verificationRequired':
+      if (state.propertyId !== action.propertyId || state.verificationRequired === action.required) return state;
+      return { ...state, verificationRequired: action.required };
     case 'bundleLoaded': {
       const keep = new Set(action.nodes);
       const tourOrder = state.tourOrder.filter((n) => keep.has(n));

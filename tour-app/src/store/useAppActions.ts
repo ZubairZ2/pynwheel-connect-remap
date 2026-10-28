@@ -256,6 +256,7 @@ export const useAppActions = () => {
         const endsAt = accessEndsAtMs(record.accessEndsAt);
         const accessMs = endsAt != null && endsAt > now ? endsAt - now : ACCESS_MINUTES * 60000;
         dispatch({ type: 'checkIn', now, accessMs, visit: { ...visit, id: record.id } });
+        dispatch({ type: 'verificationRequired', propertyId: visit.propertyId, required: record.verificationRequired });
         dispatch({ type: 'goTourStart', startPointId: state.startPointId, virtual: false });
         const minutes = Math.max(1, Math.round(accessMs / 60000));
         toast(record.verificationRequired ? `Checked in. Door access is active for ${minutes} min once your ID is verified.` : `Checked in. Door access is active for ${minutes} min.`);
