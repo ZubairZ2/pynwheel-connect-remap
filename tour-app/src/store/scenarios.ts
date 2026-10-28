@@ -22,6 +22,16 @@ export const tourStartMs = (tour: Pick<ScheduledTour, 'date' | 'time' | 'bookedA
 export const tourDayLabel = (tour: Pick<ScheduledTour, 'date' | 'time' | 'bookedAtMs' | 'timeZone'>, now: number): string => {
   const tz = tour.timeZone ?? null;
   const key = tour.bookedAtMs != null && tz ? dayKeyInZone(tour.bookedAtMs, tz) : tour.date;
+  return dayLabelInZone(key, tz, now);
+};
+
+/**
+ * "Today, Oct 27" / "Tomorrow, Oct 28" / "Fri, Oct 30" for a calendar day of
+ * the property, relative to the property's today (October 28, 2026: a phone
+ * a day ahead of the property called its "Today" the next day); the phone's
+ * calendar when no zone is known.
+ */
+export const dayLabelInZone = (key: string, tz: string | null | undefined, now: number): string => {
   const off = tz ? dayOffsetInZone(key, tz, now) : dayOffset(key, new Date(now));
   const d = parseDay(key);
   const prefix = off === 0 ? 'Today' : off === 1 ? 'Tomorrow' : off === -1 ? 'Yesterday' : DOW[d.getDay()];

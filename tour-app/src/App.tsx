@@ -18,7 +18,7 @@ import type { TourStopView } from '~/store/selectors';
 import { checkinModel, extraTours, isVerified, locationModel, tourCard, effectiveTour } from '~/store/scenarios';
 import { accessMethodOf, alternateMethods, guidedSlots, guidedToursOffered, providerOf } from '~/store/access';
 import { bestMatchUnit, currentSegment, currentStop, distanceLabel, markOf, tourStopViews, tourStopsInOrder } from '~/store/selectors';
-import { dayLabel } from '~/store/scenarios';
+import { dayLabelInZone } from '~/store/scenarios';
 import type { GalleryPhoto } from './screens/sheets/FlowSheets';
 import { useAppActions } from '~/store/useAppActions';
 import { profileOf, startPoints } from '~/store/views';
@@ -237,7 +237,7 @@ const Shell = () => {
   // Book a Live Tour: the next days of the loaded calendar with the agent-guided times still open.
   const bookDays = Object.keys(state.booking.days)
     .sort()
-    .map((key) => ({ key, label: dayLabel(key, new Date(now)), times: guidedSlots(state.booking, key, now).map((s) => s.label) }));
+    .map((key) => ({ key, label: dayLabelInZone(key, state.booking.settings?.timeZone, now), times: guidedSlots(state.booking, key, now).map((s) => s.label) }));
   const bookBlocked = !guidedToursOffered(state.booking.settings) ? 'This property does not offer agent-guided tours. You can still book a self-tour.' : state.booking.settings && !state.booking.settings.bookable ? `Bookings are paused: ${state.booking.settings.gateError ?? 'the scheduler is off'}.` : state.booking.status === 'error' ? (state.booking.error ?? 'The booking calendar could not be loaded.') : state.booking.status === 'ready' && !bookDays.some((d) => d.times.length) ? 'No guided-tour times are open in the next week. Call the leasing office to arrange one.' : null;
 
   // ── derived views of the design refresh ──
