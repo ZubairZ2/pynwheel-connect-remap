@@ -1,13 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
-import { mapEditorRoute, propIntegrationsRoute, propRoute, tourContentRoute } from '~/config/app/connectRoutes';
+import { mapEditorRoute, propRoute, tourContentRoute } from '~/config/app/connectRoutes';
 import { APP_ROUTES, legacyCmsURLs } from '~/config/app/urls';
 import { i18n } from '~/resources/i18n';
 import { Icon } from '~/core/components/atoms/connect/Icon';
-import { SafeImage } from '~/core/components/atoms/SafeImage';
 import { StatusPill } from '~/core/components/atoms/StatusPill';
 import { Breadcrumb } from '~/core/components/molecules/Breadcrumb';
 import { Modal } from '~/core/components/molecules/Modal';
@@ -16,7 +15,6 @@ import { useTourSetup, type TourSetupController } from '~/core/hooks/useTourSetu
 import type { TourPublication } from '~/core/models/data/tourModules.data';
 import { formatWhen } from '~/core/utils/generator/tour/tourLocks.generator';
 import { useTourBooking } from '~/core/hooks/tour/useTourBooking';
-import type { BookingSection } from '~/core/utils/generator/tour/tourBooking.generator';
 import { useTourOverview } from '~/core/hooks/tour/useTourOverview';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
 import { CORE_STRINGS } from '~/config/app/strings';
@@ -24,7 +22,7 @@ import { t } from '~/core/utils/generator/inventory/inventoryText';
 import { pinKey } from '~/core/utils/generator/map/mapState';
 import { M } from '~/core/utils/generator/map/mapText';
 import { generateSetupSwitcher } from '~/core/utils/generator/productSetup.generator';
-import { generateTourHeadPills } from '~/core/utils/generator/tour/tourModule.generator';
+import { generateTourHeadPills, type SettingsSection } from '~/core/utils/generator/tour/tourModule.generator';
 import { T, type StopCard, type TourTab } from '~/core/utils/generator/tour/tourSetup.generator';
 import { LocksTab } from './tour/LocksTab';
 import { StopsTab } from './tour/StopsTab';
@@ -38,16 +36,17 @@ interface Props {
   /** The tab to open on (`?tab=`); the Overview otherwise. */
   initialTab?: TourTab;
   /** The Settings section to open on (`?section=`); the booking rules otherwise. */
-  initialSection?: BookingSection;
+  initialSection?: SettingsSection;
 }
 
 /**
- * Tour Setup on real data: the Back Office design's Tours page (Oct 13, 2026)
- * around the plotting design's `tourSetup` screen. Overview, Stops (with the
- * route preview), Elevators, Locks, Visitors and Settings (scheduling, the
- * booking form and link) read the CMS; the route order lives on the page
- * until Save, while the stop drawer, the lock, visitor and booking actions
- * write through the Connect endpoints (when writes are enabled).
+ * Tour Setup on real data: the Back Office design's Tour Module (Oct 27,
+ * 2026). Overview, Stops (with the route preview), Locks, Visitors, Live Chat
+ * and Settings (scheduling, the booking form and link) read the CMS; the
+ * route order lives on the page until Save, while the stop drawer, the lock,
+ * visitor and booking actions write through the Connect endpoints (when
+ * writes are enabled). Elevators are stops of the route and nodes of the
+ * graph; the design has no tab of their own.
  */
 export const TourSetupScreen = ({ map, error, initialTab, initialSection }: Props) =>
   map ? <TourSetup map={map} initialTab={initialTab} initialSection={initialSection} /> : <TourUnavailable error={error ?? null} />;
@@ -62,9 +61,9 @@ const mapHref = (propId: string, card: StopCard): string => {
   return `${mapEditorRoute(propId)}${query ? `?${query}` : ''}`;
 };
 
-const TourSetup = ({ map, initialTab, initialSection }: { map: PropertyMap; initialTab?: TourTab; initialSection?: BookingSection }) => {
+const TourSetup = ({ map, initialTab, initialSection }: { map: PropertyMap; initialTab?: TourTab; initialSection?: SettingsSection }) => {
   const controller = useTourSetup(map, initialTab);
-  const { state, summary, actions, stops, elevators } = controller;
+  const { state, summary, actions, stops } = controller;
   const propertyId = map.inventory.property.id;
   const propId = String(propertyId);
   const booking = useTourBooking(propertyId, state.tab === 'visitors' || state.tab === 'settings');
@@ -81,13 +80,12 @@ const TourSetup = ({ map, initialTab, initialSection }: { map: PropertyMap; init
   const tabs: { id: TourTab; label: string; count: number | null }[] = [
     { id: 'overview', label: i18n.t(TB.overview), count: null },
     { id: 'stops', label: i18n.t(TB.stops), count: summary.stops },
-    { id: 'elevators', label: i18n.t(TB.elevators), count: summary.elevators },
     { id: 'locks', label: i18n.t(TB.locks), count: null },
     { id: 'visitors', label: i18n.t(TB.visitors), count: null },
     { id: 'chat', label: i18n.t(TB.chat), count: null },
     { id: 'settings', label: i18n.t(TB.settings), count: null }
   ];
-  const pills = generateTourHeadPills(summary, stops, elevators, controller.unsaved);
+  const pills = generateTourHeadPills(summary, stops, controller.unsaved);
   const stopHref = (card: StopCard) => mapHref(propId, card);
   const openStop = (key: string) => {
     setStopFocus(key);
@@ -177,7 +175,6 @@ const TourSetup = ({ map, initialTab, initialSection }: { map: PropertyMap; init
       {state.tab === 'stops' && (
         <StopsTab controller={controller} propertyId={propertyId} propId={propId} mapHref={stopHref} focusKey={stopFocus} openAddSignal={addSignal} onOpenLocks={() => actions.setTab('locks')} />
       )}
-      {state.tab === 'elevators' && <ElevatorsTab controller={controller} propId={propId} />}
       {state.tab === 'locks' && <LocksTab propertyId={propertyId} legacyUrl={legacyCmsURLs.locks(propertyId)} />}
       {state.tab === 'visitors' && <VisitorsTab propertyId={propertyId} settings={booking.settings} listSignal={visitorsListSignal} />}
       {state.tab === 'chat' && <ChatTab propId={propId} />}
@@ -188,151 +185,8 @@ const TourSetup = ({ map, initialTab, initialSection }: { map: PropertyMap; init
   );
 };
 
-const ElevatorsTab = ({ controller, propId }: { controller: TourSetupController; propId: string }) => {
-  const { elevators, actions } = controller;
-  const fileRef = useRef<HTMLInputElement | null>(null);
-  const pendingRef = useRef<string | null>(null);
-  return (
-    <div className="bo-tour__list" data-testid="tour-elevators">
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        hidden
-        data-testid="elevator-photo-file"
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          if (file && pendingRef.current) actions.addPhoto(pendingRef.current, file);
-          event.target.value = '';
-        }}
-      />
-      <div className="bo-tour__bar">
-        <div className="bo-tour__bartext">
-          <div className="bo-tour__bartitle">{i18n.t(T.elevators.title)}</div>
-          <div className="bo-tour__barsub">{i18n.t(T.elevators.subtitle)}</div>
-        </div>
-        <Link href={propIntegrationsRoute(propId)} className="bo-tour__smallbtn bo-tour__smallbtn--md">
-          {i18n.t(T.elevators.lockVendors)}
-        </Link>
-        <button type="button" className="bo-tour__smallbtn bo-tour__smallbtn--md bo-tour__smallbtn--accent" onClick={actions.openAddElevator}>
-          {i18n.t(T.elevators.add)}
-        </button>
-      </div>
-      {elevators.map((elevator) => (
-        <article key={elevator.key} className="bo-tour__elevator">
-          <div className="bo-tour__elevatorhead">
-            <div className="bo-tour__elevatoricon">
-              <Icon name="properties" style={{ display: 'flex' }} />
-            </div>
-            <div className="bo-tour__elevatortext">
-              <div className="bo-tour__elevatorname">
-                <span>{elevator.name}</span>
-                <StatusPill variant={elevator.lockVariant} label={elevator.lockLabel} />
-                {elevator.stopLabel && <StatusPill variant={elevator.local ? 'info' : 'neutral'} label={elevator.stopLabel} />}
-              </div>
-              <div className="bo-tour__elevatorsub">
-                {elevator.building} · {t(T.elevators.serves, { range: elevator.rangeLabel })} · {elevator.photoCount}
-              </div>
-            </div>
-            <span className="bo-tour__gatedlabel">{i18n.t(T.elevators.gatedLabel)}</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={elevator.gated}
-              aria-label={`${i18n.t(T.elevators.gatedLabel)} · ${elevator.name}`}
-              className={`bo-switch bo-switch--control${elevator.gated ? ' bo-switch--on' : ''}`}
-              onClick={() => actions.toggleGated(elevator.key)}
-            >
-              <span className="bo-switch__knob" />
-            </button>
-            <button
-              type="button"
-              className="bo-tour__smallbtn bo-tour__smallbtn--md"
-              onClick={() => {
-                pendingRef.current = elevator.key;
-                fileRef.current?.click();
-              }}
-            >
-              {i18n.t(T.elevators.addPhoto)}
-            </button>
-            <button type="button" className="bo-tour__iconbtn bo-tour__iconbtn--md bo-tour__iconbtn--danger" aria-label={t(T.elevators.delete, { name: elevator.name })} onClick={() => actions.removeElevator(elevator.key)}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 7h16" />
-                <path d="M9 7V5h6v2" />
-                <path d="M6 7l1 13h10l1-13" />
-                <path d="M10 11v6M14 11v6" />
-              </svg>
-            </button>
-          </div>
-          {(elevator.directionalText || elevator.description || elevator.banks.length > 0) && (
-            <div className="bo-tour__elevatormeta">
-              {elevator.directionalText && (
-                <span>
-                  <b>{i18n.t(T.elevators.directional)}</b> {elevator.directionalText}
-                </span>
-              )}
-              {elevator.description && (
-                <span>
-                  <b>{i18n.t(T.elevators.description)}</b> {elevator.description}
-                </span>
-              )}
-              {elevator.banks.length > 0 && (
-                <span>
-                  <b>{i18n.t(T.elevators.banks)}</b> {elevator.banks.map((bank) => bank.label).join(' · ')}
-                </span>
-              )}
-            </div>
-          )}
-          <div className="bo-tour__photos">
-            {elevator.photos.map((photo) => (
-              <div key={photo.key} className="bo-tour__photo">
-                {photo.src ? (
-                  <div className="bo-tour__photoimg">
-                    <SafeImage className="bo-tour__photofile" src={photo.src} alt={photo.name} fallback={i18n.t(T.elevators.photoUnavailable)} />
-                  </div>
-                ) : (
-                  <div className="bo-tour__photoimg bo-tour__photoimg--missing">{i18n.t(T.elevators.photoUnavailable)}</div>
-                )}
-                <div className="bo-tour__photobar">
-                  <span className="bo-tour__photopos" title={photo.name}>
-                    {photo.position}
-                    {photo.local ? ` · ${i18n.t(T.elevators.localPhoto)}` : ''}
-                  </span>
-                  {photo.src && (
-                    <a className="bo-tour__iconbtn bo-tour__iconbtn--xs" href={photo.src} target="_blank" rel="noopener noreferrer" aria-label={i18n.t(T.elevators.preview)} title={i18n.t(T.elevators.preview)}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M1.6 12S5.5 5 12 5s10.4 7 10.4 7-3.9 7-10.4 7S1.6 12 1.6 12z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                    </a>
-                  )}
-                  {!photo.local && (
-                    <>
-                      <button type="button" className="bo-tour__iconbtn bo-tour__iconbtn--xs" aria-label={i18n.t(T.elevators.moveEarlier)} onClick={() => actions.movePhoto(elevator.key, photo.key, -1)}>
-                        ←
-                      </button>
-                      <button type="button" className="bo-tour__iconbtn bo-tour__iconbtn--xs" aria-label={i18n.t(T.elevators.moveLater)} onClick={() => actions.movePhoto(elevator.key, photo.key, 1)}>
-                        →
-                      </button>
-                    </>
-                  )}
-                  <button type="button" className="bo-tour__iconbtn bo-tour__iconbtn--xs bo-tour__iconbtn--danger" aria-label={i18n.t(T.elevators.removePhoto)} onClick={() => actions.removePhoto(elevator.key, photo.key)}>
-                    ×
-                  </button>
-                </div>
-              </div>
-            ))}
-            {elevator.photos.length === 0 && <div className="bo-tour__nophotos">{i18n.t(T.elevators.noPhotos)}</div>}
-          </div>
-        </article>
-      ))}
-      {elevators.length === 0 && <div className="bo-tour__emptycard">{i18n.t(T.elevators.empty)}</div>}
-    </div>
-  );
-};
-
 const TourDialogs = ({ controller }: { controller: TourSetupController }) => {
-  const { state, sources, buildings, summary, actions, stops, map, dialogProblem } = controller;
+  const { state, sources, summary, actions, stops, map, dialogProblem } = controller;
   const dialog = state.dialog;
   const editing = dialog?.kind === 'editStop' ? stops.find((row) => row.key === dialog.key) ?? null : null;
   const confirm = state.confirm;
@@ -343,7 +197,7 @@ const TourDialogs = ({ controller }: { controller: TourSetupController }) => {
         {i18n.t(T.dialogs.cancel)}
       </button>
       <button type="button" className="bo-btn bo-btn--primary" onClick={actions.saveDialog} disabled={!!dialogProblem}>
-        {i18n.t(dialog?.kind === 'addStop' ? T.dialogs.addStop : dialog?.kind === 'addElevator' ? T.dialogs.addElevator : T.dialogs.saveChanges)}
+        {i18n.t(dialog?.kind === 'addStop' ? T.dialogs.addStop : T.dialogs.saveChanges)}
       </button>
     </>
   );
@@ -365,7 +219,7 @@ const TourDialogs = ({ controller }: { controller: TourSetupController }) => {
     <>
       <Modal
         open={!!dialog}
-        title={i18n.t(dialog?.kind === 'addStop' ? T.dialogs.addStopTitle : dialog?.kind === 'addElevator' ? T.dialogs.addElevatorTitle : T.dialogs.editStopTitle)}
+        title={i18n.t(dialog?.kind === 'addStop' ? T.dialogs.addStopTitle : T.dialogs.editStopTitle)}
         subtitle={dialog?.kind === 'editStop' && editing ? `${editing.name} · ${editing.kindLabel} · ${editing.whereLabel}` : undefined}
         width={520}
         onClose={actions.closeDialog}
@@ -400,42 +254,6 @@ const TourDialogs = ({ controller }: { controller: TourSetupController }) => {
               <span className="bo-dlg__fieldlabel">{i18n.t(T.stops.talkingPoint)}</span>
               <textarea className="bo-field bo-dlg__textarea" value={dialog.talkingPoint} onChange={(event) => actions.setDialog({ talkingPoint: event.target.value })} />
               <span className="bo-dlg__fieldhint">{i18n.t(T.dialogs.talkingHint)}</span>
-            </label>
-          </div>
-        )}
-        {dialog?.kind === 'addElevator' && (
-          <div className="bo-dlg bo-dlg--stacked">
-            <label className="bo-dlg__field">
-              <span className="bo-dlg__fieldlabel">{i18n.t(T.dialogs.bankName)}</span>
-              <input className="bo-field" value={dialog.name} placeholder={i18n.t(T.dialogs.bankNamePlaceholder)} onChange={(event) => actions.setDialog({ name: event.target.value })} />
-            </label>
-            <label className="bo-dlg__field">
-              <span className="bo-dlg__fieldlabel">{i18n.t(T.dialogs.building)}</span>
-              <select className="bo-field" value={dialog.building} onChange={(event) => actions.setDialog({ building: event.target.value })}>
-                <option value="">{i18n.t(T.elevators.noBuilding)}</option>
-                {buildings.map((building) => (
-                  <option key={building} value={building}>
-                    {building}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="bo-dlg__grid bo-dlg__grid--two">
-              <label className="bo-dlg__field">
-                <span className="bo-dlg__fieldlabel">{i18n.t(T.dialogs.servesFrom)}</span>
-                <input className="bo-field" value={dialog.from} placeholder={i18n.t(T.dialogs.servesFromPlaceholder)} onChange={(event) => actions.setDialog({ from: event.target.value })} />
-              </label>
-              <label className="bo-dlg__field">
-                <span className="bo-dlg__fieldlabel">{i18n.t(T.dialogs.servesTo)}</span>
-                <input className="bo-field" value={dialog.to} placeholder={i18n.t(T.dialogs.servesToPlaceholder)} onChange={(event) => actions.setDialog({ to: event.target.value })} />
-              </label>
-            </div>
-            <label className="bo-dlg__field">
-              <span className="bo-dlg__fieldlabel">{i18n.t(T.elevators.gatedLabel)}</span>
-              <select className="bo-field" value={dialog.gated ? 'yes' : 'no'} onChange={(event) => actions.setDialog({ gated: event.target.value === 'yes' })}>
-                <option value="yes">{i18n.t(T.dialogs.yes)}</option>
-                <option value="no">{i18n.t(T.dialogs.no)}</option>
-              </select>
             </label>
           </div>
         )}
@@ -492,7 +310,6 @@ const TourDialogs = ({ controller }: { controller: TourSetupController }) => {
         <p className="bo-map__dialogtext">
           {t(T.publish.body, {
             stops: t(summary.stops === 1 ? T.header.stopOne : T.header.stopMany, { count: summary.stops }),
-            elevators: summary.elevators,
             property: map.inventory.property.name
           })}
         </p>

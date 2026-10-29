@@ -18,7 +18,7 @@ import type { TourStopView } from '~/store/selectors';
 import { checkinModel, extraTours, isVerified, locationModel, tourCard, effectiveTour } from '~/store/scenarios';
 import { accessMethodOf, alternateMethods, guidedSlots, guidedToursOffered, providerOf } from '~/store/access';
 import { bestMatchUnit, currentSegment, currentStop, distanceLabel, markOf, tourStopViews, tourStopsInOrder } from '~/store/selectors';
-import { dayLabel } from '~/store/scenarios';
+import { dayLabelInZone } from '~/store/scenarios';
 import type { GalleryPhoto } from './screens/sheets/FlowSheets';
 import { useAppActions } from '~/store/useAppActions';
 import { profileOf, startPoints } from '~/store/views';
@@ -237,7 +237,7 @@ const Shell = () => {
   // Book a Live Tour: the next days of the loaded calendar with the agent-guided times still open.
   const bookDays = Object.keys(state.booking.days)
     .sort()
-    .map((key) => ({ key, label: dayLabel(key, new Date(now)), times: guidedSlots(state.booking, key, now).map((s) => s.label) }));
+    .map((key) => ({ key, label: dayLabelInZone(key, state.booking.settings?.timeZone, now), times: guidedSlots(state.booking, key, now).map((s) => s.label) }));
   const bookBlocked = !guidedToursOffered(state.booking.settings) ? 'This property does not offer agent-guided tours. You can still book a self-tour.' : state.booking.settings && !state.booking.settings.bookable ? `Bookings are paused: ${state.booking.settings.gateError ?? 'the scheduler is off'}.` : state.booking.status === 'error' ? (state.booking.error ?? 'The booking calendar could not be loaded.') : state.booking.status === 'ready' && !bookDays.some((d) => d.times.length) ? 'No guided-tour times are open in the next week. Call the leasing office to arrange one.' : null;
 
   // ── derived views of the design refresh ──
@@ -297,6 +297,9 @@ const Shell = () => {
       case 'calendar':
         actions.addToCalendar();
         break;
+      case 'retry':
+        actions.locRefresh();
+        break;
       default:
         close('checkin');
     }
@@ -306,6 +309,9 @@ const Shell = () => {
     switch (ci.primaryAction) {
       case 'start':
         void actions.checkIn();
+        break;
+      case 'location':
+        actions.locAsk('ask');
         break;
       case 'verify':
         actions.openVerify('start');
@@ -452,7 +458,7 @@ const Shell = () => {
           profile={profile}
           propertyName={bundle?.property.name ?? null}
           verified={verified}
-          verifiedLabel={verified ? `Verified · expires ${new Date(now + 365 * 86400000).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : 'Not verified'}
+          verifiedLabel={verified ? (state.verification?.validUntil ? `Verified · valid until ${new Date(state.verification.validUntil).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : `Verified${DEMO}`) : state.verification?.state === 'expired' ? 'Verification lapsed' : 'Not verified'}
           savedCount={stops.filter((s) => s.kind === 'unit' && state.favourites[s.node]).length}
           passesCount={state.tourPasses.length + (inPerson && state.accessEndsAt != null && state.accessEndsAt > now ? 1 : 0)}
           journey={{ ...state.journey, verified }}
@@ -495,6 +501,9 @@ const Shell = () => {
           onLocationAsk={() => actions.locAsk('ask')}
           onLocationManage={() => actions.locAsk('manage')}
           onNearby={(n) => dispatch({ type: 'openExplore', id: n.id })}
+          nearby={data.nearby}
+          nearbyDemo={repository.source !== 'pynwheel-api'}
+          onNearbyProperty={(n) => void actions.selectProperty(n.id, n.tourable, n.name)}
           onSeeAll={() => goTab('search')}
           onGuestSignIn={actions.guestSignIn}
           onFind={onFind}
@@ -592,6 +601,9 @@ const Shell = () => {
             onLocationAsk={() => actions.locAsk('ask')}
             onLocationManage={() => actions.locAsk('manage')}
             onNearby={(n) => dispatch({ type: 'openExplore', id: n.id })}
+          nearby={data.nearby}
+          nearbyDemo={repository.source !== 'pynwheel-api'}
+          onNearbyProperty={(n) => void actions.selectProperty(n.id, n.tourable, n.name)}
             onSeeAll={() => goTab('search')}
             onGuestSignIn={actions.guestSignIn}
             onFind={onFind}
@@ -640,15 +652,18 @@ const Shell = () => {
           <VerifyScreen
             propertyName={bundle.property.name}
             flow={state.verify}
-            requireCard={state.requireCard}
-            showCardDemo={bundle.demo}
+            verification={state.verification}
+            demoVerified={state.demo.idVerified}
             onBack={actions.verifyBack}
+            onRefresh={actions.refreshVerification}
             onConsent={() => dispatch({ type: 'verifyConsent' })}
             onNext={actions.verifyNext}
-            onCapture={actions.simulateCapture}
-            onCard={(field, value) => dispatch({ type: 'verifyCard', field, value })}
-            onSaveCard={actions.saveCard}
-            onToggleRequireCard={() => dispatch({ type: 'toggleRequireCard' })}
+            onChooseDocument={actions.verifyChooseDocument}
+            onCaptured={actions.verifyCaptured}
+            onRetake={actions.verifyRetake}
+            onRetry={actions.verifyRetry}
+            onSaveCard={(token) => void actions.saveCard(token)}
+            onCall={() => open('call')}
             onFinish={actions.verifyFinish}
           />
         );
@@ -966,7 +981,7 @@ const Shell = () => {
               }} onClose={() => close('skip')} />
               <SosSheet open={has('sos')} onCall911={actions.call911} onCallLeasing={actions.callLeasing} onShareLocation={actions.shareLocation} onClose={() => close('sos')} />
               <ReportSheet open={has('report')} propertyName={bundle.property.name} onReport={actions.reportIssue} onClose={() => close('report')} />
-              <CheckinSheet open={has('checkin')} model={ci} onPrimary={onCheckinPrimary} onOption={onCheckinOption} onWarn={(a) => (a === 'qr' ? actions.openQr('checkin') : a === 'retry' ? (close('checkin'), actions.locRefresh()) : (close('checkin'), actions.locOpenSettings()))} onVirtual={actions.startVirtualTour} onClose={() => close('checkin')} />
+              <CheckinSheet open={has('checkin')} model={ci} onPrimary={onCheckinPrimary} onOption={onCheckinOption} onWarn={(a) => (a === 'qr' ? actions.openQr('property') : a === 'retry' ? actions.locRefresh() : (close('checkin'), actions.locOpenSettings()))} onVirtual={actions.startVirtualTour} onClose={() => close('checkin')} />
               <UpcomingSheet
                 open={has('upcoming')}
                 items={upcoming}

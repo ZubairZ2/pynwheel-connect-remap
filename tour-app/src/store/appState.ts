@@ -1,5 +1,6 @@
 import type { AccessMethod, LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
-import type { AvailabilityDay, BookingSettings } from '~/repositories/tourRepository';
+import type { Fix, LocationAccess, LocationFailureReason } from '~/services/location';
+import type { AvailabilityDay, BookingSettings, IdDocumentType, Proximity, VerificationOutcome, VerificationStatus } from '~/repositories/tourRepository';
 import { NO_CAPABILITIES, type Capabilities } from '~/services/session';
 import type { Overlay, Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
@@ -127,6 +128,16 @@ export interface VisitState {
   /** Staff sessions: the visitor the admin tours with. */
   tourUserId: number | null;
   end: { endedAt: string; reason: 'completed' | 'abandoned'; abandonedAtStop: string | null } | null;
+  /** The server's verdict on the check-in's fix (October 28, 2026); null until the server answered. */
+  proximity?: Proximity | null;
+}
+
+/** Why the server refused the in-person check-in (October 28, 2026): outside the radius, or nothing it could verify. */
+export interface CheckinRefusal {
+  code: 'outside_property' | 'location_unverified';
+  message: string;
+  proximity: Proximity | null;
+  distanceM: number | null;
 }
 
 /** How a guest found the property they are looking at (the design's `guestProperty`). */
@@ -170,6 +181,7 @@ export interface ScheduledTour {
 }
 
 export interface ScheduleDraft {
+  /** `YYYY-MM-DD` in the property's calendar; '' until the property's today is known (October 28, 2026). */
   date: string;
   /** The slot's label ("6:00 PM"); the booking sends the slot's `HH:MM`. */
   time: string;
@@ -202,17 +214,40 @@ export interface BookingState {
   saveError: string | null;
 }
 
-/** The identity check (simulated: CheckpointID is not integrated in this phase). */
-export type VerifyStep = 'intro' | 'scan' | 'selfie' | 'card' | 'done';
+/**
+ * The identity check (October 28, 2026): the real CheckpointID verification,
+ * run by the Pynwheel server. The flow photographs the document (front, and
+ * the back for a licence or ID card) and a selfie, sends them once, waits for
+ * the server's reading of the provider's answer, then — where the property
+ * asks — takes a card through Stripe.js. The pictures live in this object,
+ * in memory, until the answer comes; `hydrate` never restores them.
+ */
+export type VerifyStep = 'intro' | 'document' | 'front' | 'back' | 'selfie' | 'submitting' | 'result' | 'card' | 'done';
+export type VerifyCapture = 'front' | 'back' | 'selfie';
+
+/** Which document types are photographed on both sides (the server's list says the same; this is the app's fallback). */
+export const DOCUMENT_NEEDS_BACK: Record<IdDocumentType, boolean> = { drivers_license: true, id_card: true, passport: false, passport_card: false, international_id: false };
 
 export interface VerifyFlow {
   step: VerifyStep;
   consent: boolean;
-  scanning: boolean;
-  card: { number: string; expiry: string; zip: string };
+  documentType: IdDocumentType;
+  images: Record<VerifyCapture, string | null>;
+  /** `GET /verification` in flight / refused (`unavailable`: the provider has no backend here, e.g. demo data). */
+  statusLoading: boolean;
+  statusError: { message: string; unavailable: boolean } | null;
+  /** The provider's answer as the server read it (a failure is shown on the result step; a pass moves on). */
+  result: { outcome: VerificationOutcome; reason: string | null } | null;
+  /** The attempt could not be completed (the provider or the server unreachable, the attempt limit, …). */
+  error: { code: string; message: string; retryable: boolean } | null;
+  cardSaving: boolean;
+  cardError: string | null;
   /** `start` = check in and start the tour once verified (from the check-in sheet). */
   then: 'start' | null;
 }
+
+/** The server's verification status of the signed-in visitor at the current property, as last read. */
+export type VerificationInfo = VerificationStatus & { fetchedAt: number };
 
 /** An access window the visitor had (the design's "Tour passes"). */
 export interface TourPass {
@@ -228,11 +263,23 @@ export type Reaction = 'love' | 'like' | 'no';
 export type LocationPermission = 'ask' | 'on' | 'off';
 
 export interface LocationState {
+  /** The sheets' view of the permission: not asked, usable, or off (derived from `access`, or the visitor's "Not now"). */
   perm: LocationPermission;
+  /** What the phone allows, in detail (October 28, 2026; `services/location.ts`). */
+  access: LocationAccess;
   locating: boolean;
+  /** The last reading good enough to send to the server, or null. */
+  fix: Fix | null;
+  /** Why the last attempt gave no reading, or null. */
+  failure: LocationFailureReason | null;
   /** Which location sheet is open: the first ask, the ask that then picks the property, or "manage". */
   sheet: 'ask' | 'pick' | 'manage' | null;
 }
+
+/** The sheets' triad for what the phone allows. */
+export const permissionOf = (access: LocationAccess): LocationPermission => (access === 'granted' || access === 'coarse' ? 'on' : access === 'prompt' || access === 'unavailable' ? 'ask' : 'off');
+
+export const initialLocation = (): LocationState => ({ perm: 'ask', access: 'prompt', locating: false, fix: null, failure: null, sheet: null });
 
 /** The design's Tweaks, as runtime demo scenarios the owner can switch in Settings › Demo scenarios. `auto` = whatever the app's own state says. */
 export type DemoTourScenario = 'auto' | 'today' | 'upcoming' | 'pending' | 'past' | 'missed' | 'cancelled' | 'none';
@@ -328,12 +375,26 @@ export interface AppState {
   // ── the design refresh (UI-only) ──
   demo: DemoScenarios;
   location: LocationState;
+  /** The last refusal of an in-person check-in, shown by the check-in sheet until the next attempt. */
+  checkinRefusal: CheckinRefusal | null;
   schedule: ScheduleDraft;
   scheduleDone: boolean;
   booking: BookingState;
   scheduledTour: ScheduledTour | null;
-  verified: boolean;
-  requireCard: boolean;
+  /**
+   * The server's word on the visitor's ID verification and card at this
+   * property (`GET /properties/{id}/verification`, refreshed by every
+   * attempt): property-scoped, persisted so the profile can show it offline;
+   * null until read. Never set by anything the phone decided.
+   */
+  verification: VerificationInfo | null;
+  /**
+   * Whether the server asks for ID verification before this property's
+   * check-in (October 28, 2026): read from the property detail and from every
+   * visit answer; null until the server has said (demo data never does, and
+   * then the check-in sheet asks as the design shows).
+   */
+  verificationRequired: boolean | null;
   verify: VerifyFlow;
   checkedIn: boolean;
   accessEndsAt: number | null;
@@ -379,7 +440,19 @@ export const initialWayfinding = (): WayfindingState => ({
 
 export const initialGuided = (): GuidedState => ({ status: 'idle', tour: null, error: null, view: null, sim: initialSimulationState('point'), stepFree: false, rerouting: false });
 
-export const initialVerify = (): VerifyFlow => ({ step: 'intro', consent: false, scanning: false, card: { number: '', expiry: '', zip: '' }, then: null });
+export const initialVerify = (): VerifyFlow => ({
+  step: 'intro',
+  consent: false,
+  documentType: 'drivers_license',
+  images: { front: null, back: null, selfie: null },
+  statusLoading: false,
+  statusError: null,
+  result: null,
+  error: null,
+  cardSaving: false,
+  cardError: null,
+  then: null
+});
 
 /** `YYYY-MM-DD` of a day `offset` days from today, local time. */
 export const dayKey = (offset = 0, from: Date = new Date()): string => {
@@ -391,7 +464,7 @@ export const dayKey = (offset = 0, from: Date = new Date()): string => {
   return `${d.getFullYear()}-${m}-${day}`;
 };
 
-export const initialSchedule = (): ScheduleDraft => ({ date: dayKey(0), time: '', length: 45, unit: '', party: 1, first: '', last: '', phone: '', bedroom: '', moveIn: '' });
+export const initialSchedule = (): ScheduleDraft => ({ date: '', time: '', length: 45, unit: '', party: 1, first: '', last: '', phone: '', bedroom: '', moveIn: '' });
 
 export const initialBooking = (): BookingState => ({ propertyId: null, fetchedAt: 0, status: 'idle', error: null, settings: null, days: {}, saving: false, saveError: null });
 
@@ -450,13 +523,14 @@ export const initialAppState = (): AppState => ({
   guided: initialGuided(),
   floorByLevel: {},
   demo: initialDemoScenarios(),
-  location: { perm: 'ask', locating: false, sheet: null },
+  location: initialLocation(),
+  checkinRefusal: null,
   schedule: initialSchedule(),
   booking: initialBooking(),
   scheduleDone: false,
   scheduledTour: null,
-  verified: false,
-  requireCard: true,
+  verification: null,
+  verificationRequired: null,
   verify: initialVerify(),
   checkedIn: false,
   accessEndsAt: null,
@@ -509,8 +583,8 @@ export const PERSISTED_KEYS = [
   'floorByLevel',
   'demo',
   'scheduledTour',
-  'verified',
-  'requireCard',
+  'verification',
+  'verificationRequired',
   'checkedIn',
   'accessEndsAt',
   'passStart',

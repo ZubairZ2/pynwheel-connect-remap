@@ -13,5 +13,6 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" tools:replace="android:maxSdkVersion" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" tools:targetApi="s" tools:replace="android:usesPermissionFlags" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" tools:replace="android:maxSdkVersion" />
+    <!-- Fine location is the app's own permission since October 28, 2026 (it used to be bounded to API 30 here, for BLE scans only). -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 </manifest>

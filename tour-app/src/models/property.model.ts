@@ -98,4 +98,11 @@ export interface Property {
   /** The configuration version the bundle was read under and when the tour was last published (October 25, 2026); null for demo data. */
   configVersion?: string | null;
   publishedAt?: string | null;
+  /**
+   * Whether the server asks this visitor for ID verification before check-in
+   * (`verification_required` of `GET /properties/{id}`, October 28, 2026):
+   * true only on a `visual_id_verification` property whose visitor has no
+   * verification on file. Null when the server did not say (demo data).
+   */
+  verificationRequired?: boolean | null;
 }

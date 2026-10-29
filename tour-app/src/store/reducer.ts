@@ -1,14 +1,16 @@
 import type { AccessMethod, LockBluetoothKey, LockPin, RouteResult, TourHistoryEntry, TourRoute } from '~/models';
-import type { AvailabilityDay, BookingSettings } from '~/repositories/tourRepository';
-import { profileOf, slotsForDay } from './views';
+import type { Fix, LocationAccess, LocationFailureReason } from '~/services/location';
+import type { AvailabilityDay, BookingSettings, IdDocumentType, VerificationOutcome, VerificationStatus } from '~/repositories/tourRepository';
+import { profileOf, propertyZone, scheduleDay, slotsForDay } from './views';
 import { DEMO_SCENARIOS_ENABLED } from '~/config/env';
 import { backScreenOf, topOverlay, type Overlay, type Screen } from '~/navigation/screens';
 import { initialSimulationState, type SimulationState } from '~/wayfinding/simulation';
 import type { Capabilities } from '~/services/session';
 import {
-  dayKey,
+  DOCUMENT_NEEDS_BACK,
   initialAppState,
   initialDemoScenarios,
+  permissionOf,
   initialGuided,
   initialPhoneAuth,
   initialSchedule,
@@ -26,7 +28,7 @@ import {
   type ScheduledTour,
   type TourMode,
   type TourPass,
-  type VerifyStep, type BookingState, type VisitState } from './appState';
+  type VerifyCapture, type VerifyStep, type VerificationInfo, type BookingState, type VisitState, type CheckinRefusal } from './appState';
 
 /**
  * Every state change of the app, in one pure reducer. The async flows
@@ -91,6 +93,8 @@ export type Action =
   | { type: 'syncBookings'; propertyId: number; tours: ScheduledTour[] }
   /** The property's stops as just loaded: a persisted tour that names stops no longer on the list is pruned. */
   | { type: 'bundleLoaded'; nodes: string[] }
+  /** What the server said about ID verification at this property (the property detail, a visit answer); an answer for another property is dropped. */
+  | { type: 'verificationRequired'; propertyId: number; required: boolean | null }
   /** The booking rules the phone holds may be stale (the property's configuration moved): read them again next time. */
   | { type: 'bookingStale' }
   | { type: 'exitStop' }
@@ -157,7 +161,9 @@ export type Action =
   | { type: 'locAsk'; sheet: 'ask' | 'pick' | 'manage' }
   | { type: 'locClose' }
   | { type: 'locLocating' }
-  | { type: 'locLocated' }
+  | { type: 'locAccess'; access: LocationAccess }
+  | { type: 'locFix'; fix: Fix }
+  | { type: 'locFailed'; reason: LocationFailureReason }
   | { type: 'locDeny' }
   | { type: 'qrOpen'; mode: 'property' | 'checkin' }
   | { type: 'linkStep'; step: AppState['linkStep'] }
@@ -172,18 +178,32 @@ export type Action =
   | { type: 'bookingFailed'; message: string }
   | { type: 'bookingSaving' }
   | { type: 'bookingSaveFailed'; message: string }
+  // ── the ID check (October 28, 2026): every fact about the verification comes from the server ──
   | { type: 'openVerify'; then: 'start' | null }
-  | { type: 'verifyStep'; step: VerifyStep }
+  /** `GET /verification` answered (an answer for another property is dropped). */
+  | { type: 'verifyStatus'; propertyId: number; status: VerificationStatus; now: number }
+  | { type: 'verifyStatusFailed'; message: string; unavailable: boolean }
   | { type: 'verifyConsent' }
-  | { type: 'verifyScanning'; on: boolean }
-  | { type: 'verifyCard'; field: 'number' | 'expiry' | 'zip'; value: string }
-  | { type: 'toggleRequireCard' }
-  | { type: 'verified' }
+  | { type: 'verifyStep'; step: VerifyStep }
+  | { type: 'verifyDocumentType'; documentType: IdDocumentType }
+  /** A picture taken; the next capture step follows (the selfie is the last: the actions submit right after). */
+  | { type: 'verifyCaptured'; kind: VerifyCapture; image: string }
+  | { type: 'verifyRetake'; kind: VerifyCapture }
+  | { type: 'verifySubmitting' }
+  /** The server's reading of the provider's answer; the pictures are dropped either way. */
+  | { type: 'verifyResult'; propertyId: number; outcome: VerificationOutcome; reason: string | null; status: VerificationStatus; now: number }
+  /** The attempt could not run (provider or server unreachable, the attempt limit …); a retryable one keeps the pictures. */
+  | { type: 'verifyFailed'; code: string; message: string; retryable: boolean }
+  | { type: 'verifyCardSaving' }
+  | { type: 'verifyCardSaved'; propertyId: number; status: VerificationStatus; now: number }
+  | { type: 'verifyCardFailed'; message: string }
   | { type: 'verifyFinish' }
   | { type: 'openCheckin'; for: string | null }
   | { type: 'checkIn'; now: number; accessMs: number; visit?: VisitState | null }
   | { type: 'visitStarted'; clientVisitId: string; id: number; accessEndsAt: number | null }
   | { type: 'visitLocal'; clientVisitId: string }
+  | { type: 'checkinRefused'; refusal: CheckinRefusal }
+  | { type: 'visitRefused'; clientVisitId: string; refusal: CheckinRefusal }
   | { type: 'visitEnding'; clientVisitId: string; end: NonNullable<VisitState['end']> }
   | { type: 'visitClosed'; clientVisitId: string }
   | { type: 'extendAccess'; ms: number }
@@ -239,6 +259,8 @@ const propertyScoped = (): Partial<AppState> => ({
   floorByLevel: {},
   scheduledTour: null,
   scheduleDone: false,
+  verificationRequired: null,
+  verification: null,
   checkedIn: false,
   accessEndsAt: null,
   passStart: null,
@@ -291,10 +313,25 @@ const toStop = (state: AppState, index: number): AppState => ({
  * the reducer (a property switch, the sign-in gate) rather than through
  * `useAppActions.openSchedule` (October 25, 2026).
  */
-const prefilledSchedule = (state: AppState): ScheduleDraft => {
+const prefilledSchedule = (state: AppState, propertyId: number | null): ScheduleDraft => {
   const p = profileOf(state, null);
   const s = state.schedule;
-  return { ...s, date: s.date < dayKey(0) ? dayKey(0) : s.date, first: s.first || p.first, last: s.last || p.last, phone: s.phone || p.phone, unit: s.unit || 'No preference' };
+  // The day is the property's, not the phone's (October 28, 2026); unknown until the property's rules are loaded.
+  return { ...s, date: scheduleDay(s.date, propertyZone({ propertyId, booking: state.booking })), first: s.first || p.first, last: s.last || p.last, phone: s.phone || p.phone, unit: s.unit || 'No preference' };
+};
+
+/**
+ * Where the ID check stands once the server has spoken (October 28, 2026): a
+ * visitor the server calls verified skips the capture (to the card where one
+ * is still needed, else to Done), whatever the phone was showing; a visitor
+ * it does not call verified never sits on Done.
+ */
+const stepAfterStatus = (step: VerifyStep, info: VerificationInfo): VerifyStep => {
+  if (info.state === 'verified') {
+    if (step === 'intro' || step === 'submitting' || step === 'result' || step === 'card' || step === 'done') return info.card.needed ? 'card' : 'done';
+    return step;
+  }
+  return step === 'done' || step === 'card' ? 'intro' : step;
 };
 
 export const reducer = (state: AppState, action: Action): AppState => {
@@ -321,6 +358,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
       next.visit = next.visit ?? null;
       next.location = { ...state.location, sheet: null, locating: false };
       next.verify = initialVerify();
+      next.verification = next.verification ?? null;
       // An access window that ended while the app was closed is over, and its door codes with it.
       if (next.accessEndsAt != null && next.accessEndsAt <= Date.now()) {
         next.checkedIn = false;
@@ -340,7 +378,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'openOverlay':
       return state.overlays.includes(action.overlay) ? state : { ...state, overlays: [...state.overlays, action.overlay] };
     case 'closeOverlay':
-      return { ...state, overlays: without(state.overlays, action.overlay) };
+      return { ...state, overlays: without(state.overlays, action.overlay), checkinRefusal: action.overlay === 'checkin' ? null : state.checkinRefusal };
     case 'closeTopOverlay': {
       const top = topOverlay(state.overlays);
       return top ? { ...state, overlays: without(state.overlays, top) } : state;
@@ -387,7 +425,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
       const overlays: Overlay[] = state.propertyId != null && pending === 'book' ? ['book'] : state.propertyId != null && pending === 'upcoming' ? ['upcoming'] : state.propertyId != null && pending === 'history' ? ['history'] : [];
       // Without a property the visitor picks one first; a pending Schedule survives so `selectProperty` can open it.
       const keep = state.propertyId == null && pending === 'schedule' ? pending : null;
-      return { ...state, screen, overlays, authStep: 'email', editingProfile: false, pendingAfterAuth: keep, guestGateWhy: null, scheduleDone: false, ...(screen === 'schedule' ? { schedule: prefilledSchedule(state) } : {}) };
+      return { ...state, screen, overlays, authStep: 'email', editingProfile: false, pendingAfterAuth: keep, guestGateWhy: null, scheduleDone: false, ...(screen === 'schedule' ? { schedule: prefilledSchedule(state, state.propertyId) } : {}) };
     }
     case 'editProfile':
       return { ...state, editingProfile: action.on };
@@ -417,7 +455,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
       {
       const then = action.then ?? state.pendingAfterAuth;
       // October 25, 2026: a Schedule opened straight after the switch is prefilled like `openSchedule` does.
-      const schedule = then === 'schedule' ? { schedule: prefilledSchedule(state), scheduleDone: false } : {};
+      const schedule = then === 'schedule' ? { schedule: prefilledSchedule(state, action.propertyId), scheduleDone: false } : {};
       if (state.propertyId === action.propertyId) return { ...state, ...schedule, screen: then === 'schedule' ? 'schedule' : 'home', overlays: [], searchQuery: '', pendingAfterAuth: null };
       // A new property: every tour, route and selection belonged to the old one.
       return { ...state, ...propertyScoped(), ...schedule, propertyId: action.propertyId, screen: then === 'schedule' ? 'schedule' : 'home', overlays: [], searchQuery: '', pendingAfterAuth: null, exploreId: null };
@@ -657,11 +695,17 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'locClose':
       return { ...state, location: { ...state.location, sheet: null }, overlays: without(state.overlays, 'location') };
     case 'locLocating':
-      return { ...state, location: { perm: 'on', locating: true, sheet: null }, overlays: without(state.overlays, 'location') };
-    case 'locLocated':
-      return { ...state, location: { ...state.location, locating: false } };
+      return { ...state, checkinRefusal: null, location: { ...state.location, locating: true, failure: null, sheet: null }, overlays: without(state.overlays, 'location') };
+    case 'locAccess':
+      return { ...state, location: { ...state.location, access: action.access, perm: permissionOf(action.access) } };
+    case 'locFix':
+      return { ...state, location: { ...state.location, perm: 'on', locating: false, fix: action.fix, failure: null } };
+    case 'locFailed': {
+      const off = action.reason === 'denied' || action.reason === 'denied_forever' || action.reason === 'services_off';
+      return { ...state, location: { ...state.location, locating: false, failure: action.reason, perm: off ? 'off' : state.location.perm } };
+    }
     case 'locDeny':
-      return { ...state, location: { perm: 'off', locating: false, sheet: null }, overlays: without(state.overlays, 'location') };
+      return { ...state, location: { ...state.location, perm: 'off', locating: false, sheet: null }, overlays: without(state.overlays, 'location') };
     case 'qrOpen':
       return { ...state, qrMode: action.mode, overlays: withOnTop(without(without(state.overlays, 'checkin'), 'location'), 'qr') };
     case 'linkStep':
@@ -689,6 +733,9 @@ export const reducer = (state: AppState, action: Action): AppState => {
       const next = action.tours.find((t) => t.status === 'scheduled') ?? null;
       return next ? { ...state, scheduledTour: next } : state;
     }
+    case 'verificationRequired':
+      if (state.propertyId !== action.propertyId || state.verificationRequired === action.required) return state;
+      return { ...state, verificationRequired: action.required };
     case 'bundleLoaded': {
       const keep = new Set(action.nodes);
       const tourOrder = state.tourOrder.filter((n) => keep.has(n));
@@ -719,9 +766,10 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'bookingLoaded': {
       const days = Object.fromEntries(action.days.map((d) => [d.date, d]));
       const booking: BookingState = { ...state.booking, propertyId: action.propertyId, fetchedAt: action.now, status: 'ready', error: null, settings: action.settings, days };
-      // The draft keeps its time when the day still offers it; otherwise the day's first bookable
-      // time, and when the day has none at all, the first of the loaded days that does.
-      let date = state.schedule.date;
+      // The draft's day is the property's today when none was chosen or it has passed there (October 28,
+      // 2026). It keeps its time when the day still offers it; otherwise the day's first bookable time,
+      // and when the day has none at all, the first of the loaded days that does.
+      let date = scheduleDay(state.schedule.date, action.settings.timeZone, action.now);
       let options = slotsForDay(booking, date, action.now);
       if (!options.length) {
         const open = action.days.map((d) => d.date).find((key) => key >= date && slotsForDay(booking, key, action.now).length > 0);
@@ -742,30 +790,60 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'cancelTour':
       return { ...state, scheduledTour: state.scheduledTour ? { ...state.scheduledTour, status: 'cancelled' } : null, overlays: [], checkinFor: null };
     case 'openVerify':
-      return { ...state, screen: 'verify', overlays: [], verify: { ...initialVerify(), step: state.verified ? 'done' : 'intro', then: action.then } };
-    case 'verifyStep':
-      return { ...state, verify: { ...state.verify, step: action.step, scanning: false } };
+      // The status is read on open; until it answers the intro waits (a verified visitor is moved on by `verifyStatus`).
+      return { ...state, screen: 'verify', overlays: [], verify: { ...initialVerify(), then: action.then, statusLoading: true } };
+    case 'verifyStatus': {
+      if (state.propertyId !== action.propertyId) return { ...state, verify: { ...state.verify, statusLoading: false } };
+      const info: VerificationInfo = { ...action.status, fetchedAt: action.now };
+      return { ...state, verification: info, verificationRequired: info.required, verify: { ...state.verify, statusLoading: false, statusError: null, step: stepAfterStatus(state.verify.step, info) } };
+    }
+    case 'verifyStatusFailed':
+      return { ...state, verify: { ...state.verify, statusLoading: false, statusError: { message: action.message, unavailable: action.unavailable } } };
     case 'verifyConsent':
       return { ...state, verify: { ...state.verify, consent: !state.verify.consent } };
-    case 'verifyScanning':
-      return { ...state, verify: { ...state.verify, scanning: action.on } };
-    case 'verifyCard':
-      return { ...state, verify: { ...state.verify, card: { ...state.verify.card, [action.field]: action.value } } };
-    case 'toggleRequireCard': {
-      const requireCard = !state.requireCard;
-      // Turning the card off while on the card step completes the check.
-      const onCard = state.verify.step === 'card' && !requireCard;
-      return { ...state, requireCard, verified: onCard ? true : state.verified, verify: onCard ? { ...state.verify, step: 'done' } : state.verify };
+    case 'verifyStep':
+      return { ...state, verify: { ...state.verify, step: action.step, error: null } };
+    case 'verifyDocumentType':
+      return { ...state, verify: { ...state.verify, documentType: action.documentType, images: { front: null, back: null, selfie: null }, result: null, error: null, step: 'front' } };
+    case 'verifyCaptured': {
+      const images = { ...state.verify.images, [action.kind]: action.image };
+      const step: VerifyStep = action.kind === 'front' ? (DOCUMENT_NEEDS_BACK[state.verify.documentType] ? 'back' : 'selfie') : 'selfie';
+      return { ...state, verify: { ...state.verify, images, step } };
     }
-    case 'verified':
-      return { ...state, verified: true, verify: { ...state.verify, step: 'done', scanning: false } };
+    case 'verifyRetake':
+      return { ...state, verify: { ...state.verify, images: { ...state.verify.images, [action.kind]: null }, step: action.kind, error: null } };
+    case 'verifySubmitting':
+      return { ...state, verify: { ...state.verify, step: 'submitting', result: null, error: null } };
+    case 'verifyResult': {
+      const passed = action.outcome === 'verified' || action.outcome === 'already_verified';
+      const info: VerificationInfo = { ...action.status, fetchedAt: action.now };
+      const mine = state.propertyId === action.propertyId;
+      const step: VerifyStep = passed ? (info.card.needed ? 'card' : 'done') : 'result';
+      return {
+        ...state,
+        ...(mine ? { verification: info, verificationRequired: info.required } : {}),
+        verify: { ...state.verify, step, images: { front: null, back: null, selfie: null }, result: { outcome: action.outcome, reason: action.reason }, error: null }
+      };
+    }
+    case 'verifyFailed':
+      return { ...state, verify: { ...state.verify, step: 'result', result: null, error: { code: action.code, message: action.message, retryable: action.retryable }, images: action.retryable ? state.verify.images : { front: null, back: null, selfie: null } } };
+    case 'verifyCardSaving':
+      return { ...state, verify: { ...state.verify, cardSaving: true, cardError: null } };
+    case 'verifyCardSaved': {
+      const info: VerificationInfo = { ...action.status, fetchedAt: action.now };
+      const mine = state.propertyId === action.propertyId;
+      return { ...state, ...(mine ? { verification: info, verificationRequired: info.required } : {}), verify: { ...state.verify, cardSaving: false, cardError: null, step: info.card.needed ? 'card' : 'done' } };
+    }
+    case 'verifyCardFailed':
+      return { ...state, verify: { ...state.verify, cardSaving: false, cardError: action.message } };
     case 'verifyFinish':
-      return { ...state, screen: 'home', overlays: [], verify: { ...state.verify, then: null } };
+      return { ...state, screen: 'home', overlays: [], verify: initialVerify() };
     case 'openCheckin':
       return { ...state, checkinFor: action.for, overlays: withOnTop(without(state.overlays, 'upcoming'), 'checkin') };
     case 'checkIn':
       return {
         ...state,
+        checkinRefusal: null,
         checkedIn: true,
         virtualTour: false,
         accessEndsAt: action.now + action.accessMs,
@@ -780,6 +858,13 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'visitLocal':
       if (state.visit?.clientVisitId !== action.clientVisitId) return state;
       return { ...state, visit: { ...state.visit, status: 'local' } };
+    // The server refused the in-person check-in at once: the visitor stays where they are, with the reason on the sheet.
+    case 'checkinRefused':
+      return { ...state, checkinRefusal: action.refusal, location: { ...state.location, locating: false }, overlays: withOnTop(state.overlays, 'checkin') };
+    // A check-in kept on the phone while offline was refused when it reached the server: the phone-side session ends.
+    case 'visitRefused':
+      if (state.visit?.clientVisitId !== action.clientVisitId) return state;
+      return { ...state, ...tourScoped(), visit: null, checkedIn: false, accessEndsAt: null, virtualTour: false, checkinRefusal: action.refusal, screen: 'home', overlays: ['checkin'] };
     case 'visitEnding':
       if (state.visit?.clientVisitId !== action.clientVisitId) return state;
       return { ...state, visit: { ...state.visit, status: 'ended', end: state.visit.end ?? action.end } };

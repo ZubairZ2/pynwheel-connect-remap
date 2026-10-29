@@ -2,9 +2,10 @@ import type { Amenity, AmenityIcon, Building, GraphNode, LeaseTerm, LockBluetoot
 import { emptyMedia } from '~/models';
 import type { StopKind } from '~/models';
 import type { SessionVisitor } from '~/services/session';
-import type { AvailabilityDay, AvailabilityWindow, BookingResult, BookingSettings, PropertyBundle, StopDistance, VisitEventsResult, VisitRecord, VisitorBooking } from '../tourRepository';
+import type { AvailabilityDay, AvailabilityWindow, BookingResult, BookingSettings, IdDocumentType, PropertyBundle, StopDistance, VerificationOutcome, VerificationResult, VerificationStatus, VisitEventsResult, VisitRecord, VisitorBooking } from '../tourRepository';
+import { PROXIMITIES } from '../tourRepository';
 import { ApiError } from './apiClient';
-import type { ApiAvailabilityDay, ApiAvailabilityResponse, ApiBookingCreateResponse, ApiBookingSettings, ApiDistancesResponse, ApiGraph, ApiLeg, ApiLevel, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiMapResponse, ApiNode, ApiPropertyDetail, ApiPropertySummary, ApiRoute, ApiRouteStep, ApiStop, ApiStopLock, ApiStopsResponse, ApiTourRouteResponse, ApiVisit, ApiVisitEventsResponse, ApiVisitor, ApiVisitorBooking } from './apiTypes';
+import type { ApiAvailabilityDay, ApiAvailabilityResponse, ApiBookingCreateResponse, ApiBookingSettings, ApiDistancesResponse, ApiGraph, ApiLeg, ApiLevel, ApiLockBluetoothKeyResponse, ApiLockPinResponse, ApiMapResponse, ApiNode, ApiPropertyDetail, ApiPropertySummary, ApiRoute, ApiRouteStep, ApiStop, ApiStopLock, ApiStopsResponse, ApiTourRouteResponse, ApiVerificationAttemptResponse, ApiVerificationStatus, ApiVisit, ApiVisitEventsResponse, ApiVisitor, ApiVisitorBooking } from './apiTypes';
 
 /**
  * snake_case API JSON → the camelCase models the screens consume. The only
@@ -291,7 +292,8 @@ export const parseBundle = (detail: ApiPropertyDetail, graph: ApiGraph, stops: A
     phone: strOrNull(detail.phone),
     email: strOrNull(detail.email),
     configVersion: strOrNull(detail.config_version),
-    publishedAt: strOrNull(detail.published_at)
+    publishedAt: strOrNull(detail.published_at),
+    verificationRequired: typeof detail.verification_required === 'boolean' ? detail.verification_required : null
   };
   return { property, buildings, levels, graph: wayfinding, units, amenities, stops: places, arPins: {}, floorLabels, demo: false };
 };
@@ -301,7 +303,8 @@ export const parseListing = (p: ApiPropertySummary, currentId: number | null): P
   name: p.name,
   address: [p.address, p.city, p.state].filter(Boolean).join(', ') || (p.company ?? ''),
   current: p.id === currentId,
-  tourable: !!p.tour_enabled
+  tourable: !!p.tour_enabled,
+  ...(typeof p.distance_m === 'number' ? { distanceM: p.distance_m } : {})
 });
 
 const parseLeg = (l: ApiLeg): RouteLeg =>
@@ -478,7 +481,13 @@ export const parseVisit = (v: ApiVisit | null | undefined): VisitRecord => {
     accessEndsAt: strOrNull(v.access_window?.ends_at),
     accessMinutes: numOrNull(v.access_window?.minutes),
     verificationRequired: bool(v.verification_required, false),
-    created: bool(v.created, true)
+    created: bool(v.created, true),
+    proximity: PROXIMITIES.find((p) => p === v.proximity) ?? null,
+    distanceM: numOrNull(v.distance_m),
+    withinRadius: typeof v.within_radius === 'boolean' ? v.within_radius : null,
+    inHours: typeof v.in_hours === 'boolean' ? v.in_hours : null,
+    locationReceived: bool(v.location_received, false),
+    serverTime: strOrNull(v.server_time)
   };
 };
 
@@ -486,3 +495,46 @@ export const parseVisitEvents = (r: ApiVisitEventsResponse): VisitEventsResult =
   accepted: list<ApiVisitEventsResponse['accepted'][number]>(r?.accepted).map((a) => ({ index: num(a.index, -1), clientEventId: strOrNull(a.client_event_id), kind: str(a.kind), id: numOrNull(a.id), duplicate: bool(a.duplicate, false) })),
   rejected: list<ApiVisitEventsResponse['rejected'][number]>(r?.rejected).map((x) => ({ index: num(x.index, -1), clientEventId: strOrNull(x.client_event_id), code: str(x.code, 'rejected'), message: str(x.message) }))
 });
+
+// ---- ID verification and the card on file (October 28, 2026) ----
+const VERIFICATION_STATES = ['verified', 'expired', 'never', 'mismatch'] as const;
+const DOCUMENT_TYPES: IdDocumentType[] = ['drivers_license', 'id_card', 'passport', 'passport_card', 'international_id'];
+const OUTCOMES: VerificationOutcome[] = ['verified', 'already_verified', 'face_mismatch', 'document_unreadable', 'rejected'];
+
+export const parseVerificationStatus = (v: ApiVerificationStatus | null | undefined): VerificationStatus => {
+  if (!v || typeof v !== 'object' || typeof v.property_id !== 'number') throw new ApiError('malformed_response', 'The server answered without the verification status. Please try again.', 200);
+  const card = v.card && typeof v.card === 'object' ? v.card : ({} as ApiVerificationStatus['card']);
+  const state = (VERIFICATION_STATES as readonly string[]).includes(str(v.state)) ? (v.state as VerificationStatus['state']) : 'never';
+  return {
+    propertyId: v.property_id,
+    provider: str(v.provider, 'check_point_id'),
+    providerAvailable: bool(v.provider_available, false),
+    propertyRequires: bool(v.property_requires, false),
+    required: bool(v.required, state !== 'verified'),
+    state,
+    verifiedAt: strOrNull(v.verified_at),
+    validUntil: strOrNull(v.valid_until),
+    verifiedBy: strOrNull(v.verified_by),
+    validForDays: num(v.valid_for_days, 30),
+    attemptsLeft: num(v.attempts_left, 0),
+    documentTypes: list<{ key: string; label: string; back: boolean }>(v.document_types)
+      .filter((t) => t && DOCUMENT_TYPES.includes(t.key as IdDocumentType))
+      .map((t) => ({ key: t.key as IdDocumentType, label: str(t.label, t.key), back: bool(t.back, false) })),
+    card: {
+      required: bool(card.required, false),
+      onFile: bool(card.on_file, false),
+      needed: bool(card.needed, false),
+      last4: strOrNull(card.last4),
+      available: bool(card.available, false),
+      publishableKey: strOrNull(card.publishable_key)
+    }
+  };
+};
+
+export const parseVerificationResult = (body: ApiVerificationAttemptResponse): VerificationResult => {
+  const result = body && typeof body === 'object' ? body.result : null;
+  if (!result || typeof result !== 'object' || !OUTCOMES.includes(result.outcome as VerificationOutcome)) {
+    throw new ApiError('malformed_response', 'The server answered without a verification result. Please try again.', 200);
+  }
+  return { outcome: result.outcome as VerificationOutcome, reason: strOrNull(result.reason), code: strOrNull(result.code), status: parseVerificationStatus(body.verification) };
+};

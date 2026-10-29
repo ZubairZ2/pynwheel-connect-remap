@@ -49,9 +49,13 @@ export interface SessionVisitor {
 export interface Capabilities {
   visits: boolean;
   visitorAuth: boolean;
+  /** The server refuses an in-person check-in it cannot place at the property (October 28, 2026). */
+  locationRequired: boolean;
+  /** The server keeps a presence state from `location` events during a visit. */
+  presence: boolean;
 }
 
-export const NO_CAPABILITIES: Capabilities = { visits: false, visitorAuth: false };
+export const NO_CAPABILITIES: Capabilities = { visits: false, visitorAuth: false, locationRequired: false, presence: false };
 
 export interface Session {
   kind: SessionKind;
@@ -64,8 +68,13 @@ export interface Session {
 }
 
 export const parseCapabilities = (raw: unknown): Capabilities => {
-  const c = raw && typeof raw === 'object' ? (raw as { visits?: unknown; visitor_auth?: unknown; visitorAuth?: unknown }) : {};
-  return { visits: c.visits === true, visitorAuth: c.visitor_auth === true || c.visitorAuth === true };
+  const c = raw && typeof raw === 'object' ? (raw as { visits?: unknown; visitor_auth?: unknown; visitorAuth?: unknown; location_required?: unknown; locationRequired?: unknown; presence?: unknown }) : {};
+  return {
+    visits: c.visits === true,
+    visitorAuth: c.visitor_auth === true || c.visitorAuth === true,
+    locationRequired: c.location_required === true || c.locationRequired === true,
+    presence: c.presence === true
+  };
 };
 
 export const loadSession = async (): Promise<Session | null> => {

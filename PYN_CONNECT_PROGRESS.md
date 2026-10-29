@@ -2876,10 +2876,33 @@ the owner's decisions, the PASS/FAIL matrix); contract `tour-app-backend-api.md`
   + Playwright `connectOverCDP`). One fix came out of it: the booking rules now load as soon as a live booking exists, so the
   check-in window uses the property's grace period from the first screen.
 
-## 50. Property clone script: an isolated, property-centred clone with its own company (October 28, 2026)
+## 50. Tour Setup on the Oct 27 design: Elevators tab removed, five-group settings rail, read-only causes, managed hours, widget hardening (October 27, 2026)
+
+Branch `feature/tour-setup-scheduler-fixes`. Report `TOUR_SETUP_SCHEDULER_FIXES_QA_2026-10-27.md`; knowledge `context.md` §44;
+PR text `PR_DESCRIPTION_tour_setup_scheduler_fixes.md`.
+
+- **Decided by the owner.** The design's five rail groups; visiting hours read-only when a CRM manages the calendar; the
+  widget-status gate follows the widget's `self_tour` rule; the Heroku `HOST_URL` fix and the Connect writes allowlist are
+  config, applied by the owner in manual mode (writes are now on for 1411 and nine other properties; 1618 stays read-only there).
+- **Connect.** Tabs Overview · Stops · Locks · Visitors · Live Chat · Settings; the Elevators tab, its local-only edits, dialog,
+  strings and CSS are gone; five-step checklist; `?tab=elevators` → Stops. Settings rail Scheduling · Booking & CRM · Access &
+  security · Tour experience · Messages with pills and `?section=` per section; Route & navigation under Tour experience.
+  `readOnlyReason` notes (role vs `PYN_CONNECT_WRITES`); `hoursEditable`; the link panel prints the configured host.
+- **Rails.** `Scheduling::Settings#gates` tour gate = `communities.self_tour`; `verify_community_code!` on the public widget
+  (404 before any write); seven widget controller tests, one gate test.
+- **Verified.** tsc, vitest (28), next build, Rails (21 runs) pass; headless Playwright on the local pair (Rails :3100 on
+  `pynwheel_development`, Connect :3005): 31/31 on 1411, 1618 and 229 as admin and as a visitor-detail user — save → reload →
+  persisted → restored for the slot length and the button text, direct link 200 and bad codes 404, managed hours read-only,
+  the two read-only notes. Production untouched.
+
+## 51. Location, proximity and presence: the phone's position, the server's verdict (October 28, 2026)
+
+Branch `feature/tour-app-location-proximity` (from main 84efde65a). Server: `Visits::Rules.proximity`, the strict radius gate (`PYN_TOUR_LOCATION_REQUIRED`), `accuracy_m` / `fix_at` / `proximity` on `tour_histories`, `server_time`, the arrival email only when verified; `Visits::Presence` and the `location` event kind with a confirmed departure email (`PYN_TOUR_PRESENCE`); `GET /properties?near=`; coordinates filtered from logs; Hazel 1618's dev coordinates moved to Burnaby. App: `@capacitor/geolocation` with `services/location.ts`, the check-in sends the fix and renders the server's refusal, the QR / "Use my location" bypasses are gone, presence samples every two minutes, the Home near-you row from the server. Tests: 31 Minitest cases across visits / rules / properties, 156 vitest cases. Verified end to end on the dev stack with a real visitor against John Pynwheel Demo 1411 (API matrix and the app's booking → check-in walk). Docs: `tour-app-backend-api.md` §21 + properties row, `tour-app-implementation.md` §24, `context.md` §45. The two follow-ups found on the way (the server-driven ID step, the Schedule screen's "today" in the property's zone) landed as PRs #47 and #46.
+
+## 52. Property clone script: an isolated, property-centred clone with its own company (October 28, 2026)
 
 **Brief:** the October 28 clone-script brief (property first; its company as a supporting dependency; new ids; strict isolation; test administrator; dry run by default; production confirmations; audit manifest; integrity verification; rehearsal before production). **Branch** `feature/property-clone-script`, worktree `/Users/zubairzulifqar/pynwheel-property-clone`.
 
-**Delivered:** `rake property_clone:dry_run|execute|verify|baseline|compare_baseline|test_admin` (`lib/tasks/property_clone.rake`), `app/services/property_clone/` (Policy, Plan, Runner, IdMap, Baseline, Verifier, FileCopier, TestAdmin, EnvironmentGuard, Manifest, Report), `script/property_clone/{dependency_map,isolation_rehearsal}.rb`, tests under `test/services/property_clone/` and `test/integration/property_clone_access_test.rb`, documents under `docs/property_clone/` (dependency map, runbook, test-admin procedure, report, dry-run and manifest samples). context.md §44 holds the implementation knowledge.
+**Delivered:** `rake property_clone:dry_run|execute|verify|baseline|compare_baseline|test_admin` (`lib/tasks/property_clone.rake`), `app/services/property_clone/` (Policy, Plan, Runner, IdMap, Baseline, Verifier, FileCopier, TestAdmin, EnvironmentGuard, Manifest, Report), `script/property_clone/{dependency_map,isolation_rehearsal}.rb`, tests under `test/services/property_clone/` and `test/integration/property_clone_access_test.rb`, documents under `docs/property_clone/` (dependency map, runbook, test-admin procedure, report, dry-run and manifest samples). context.md §46 holds the implementation knowledge.
 
 **Rehearsal (not production):** Hazel 1618 / QuadReal 596 on `pynwheel_audit_clone` → property 8044 / company 1048, 915 rows across 34 populated tables plus 90 statuses, 13/13 integrity checks PASS, the source fingerprint (89 digests) identical before and after the clone and after the isolation rehearsal driven as the test administrator; see `docs/property_clone/REPORT_2026-10-28.md` for every PASS / FAIL / BLOCKED / NOT RUN item, the open risks and the production prerequisites. Production has NOT been run.

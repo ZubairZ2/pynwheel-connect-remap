@@ -15,7 +15,7 @@ const publication = (patch: Partial<TourPublication> = {}): TourPublication => (
 });
 
 const step = (pub: TourPublication | null | undefined) =>
-  generateTourChecklist({ propId: '1618', stops: [], elevators: [], startPointsMissing: false, locks: null, items: [], publication: pub }).steps.find((s) => s.id === 'publish')!;
+  generateTourChecklist({ propId: '1618', stops: [], gatedElevators: 0, startPointsMissing: false, locks: null, items: [], publication: pub }).steps.find((s) => s.id === 'publish')!;
 
 describe('the overview checklist publish step (October 25, 2026)', () => {
   it('is not done until the tour was published from Connect', () => {

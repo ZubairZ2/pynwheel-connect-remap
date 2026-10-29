@@ -6,7 +6,7 @@ import { Button, IconButton, Sheet } from '~/components/ui';
 import { Callout, Eyebrow, LinkRow, RoundAction, TonePill } from '~/components/ui2';
 import type { ScheduledTour, TourPass } from '~/store/appState';
 import type { CheckinModel, LocationModel } from '~/store/scenarios';
-import { dayLabel, fmtClock } from '~/store/scenarios';
+import { fmtClock, tourDayLabel } from '~/store/scenarios';
 import type { TourStopView } from '~/store/selectors';
 import { unitFacts } from '~/store/views';
 
@@ -162,11 +162,13 @@ export const LocationSheet = ({ open, sheet, model, onAllow, onDeny, onOpenSetti
       </span>
       {denied ? (
         <>
-          <div className="pw-ci__title">Location is turned off</div>
-          <div className="pw-locsheet__body">To turn it on, open your phone&rsquo;s Settings, go to Pynwheel, then Location, and choose &ldquo;While Using the App&rdquo;. You can still find a property without it.</div>
-          <Button height={48} onClick={onOpenSettings}>
-            Open Settings
-          </Button>
+          <div className="pw-ci__title">{model.deniedTitle}</div>
+          <div className="pw-locsheet__body">{model.deniedBody}</div>
+          {model.access === 'unavailable' ? null : (
+            <Button height={48} onClick={onOpenSettings}>
+              Open Settings
+            </Button>
+          )}
         </>
       ) : manage ? (
         <>
@@ -179,7 +181,7 @@ export const LocationSheet = ({ open, sheet, model, onAllow, onDeny, onOpenSetti
       ) : (
         <>
           <div className="pw-ci__title">Turn on location</div>
-          <div className="pw-locsheet__body">We use your location to find the property you&rsquo;re at and show nearby properties. It&rsquo;s only used while the app is open.{DEMO}</div>
+          <div className="pw-locsheet__body">We use your location to confirm you&rsquo;re at the property when you start a tour and to show properties near you. It&rsquo;s only used while the app is open.</div>
           <Button height={48} onClick={onAllow}>
             Allow Location
           </Button>
@@ -450,8 +452,9 @@ interface UpcomingItem {
 export const upcomingItems = (tour: ScheduledTour | null, checkedIn: boolean, propertyName: string, heroImage: string, extras: DemoExtraTour[], now = Date.now()): UpcomingItem[] => {
   const list: UpcomingItem[] = [];
   if (tour && tour.status !== 'past' && tour.status !== 'cancelled' && tour.status !== 'missed') {
-    const today = dayLabel(tour.date, new Date(now)).startsWith('Today');
-    list.push({ id: 'main', name: propertyName, when: `${dayLabel(tour.date, new Date(now))} · ${tour.time} · ${tour.length} min`, img: heroImage, pill: checkedIn ? 'Checked in' : tour.status === 'pending' ? 'Waiting for approval' : today ? 'Today' : 'Scheduled', tone: checkedIn || today ? 'live' : tour.status === 'pending' ? 'warn' : 'primary', cta: checkedIn ? 'Continue Tour' : 'Start Tour', main: true });
+    const when = tourDayLabel(tour, now);
+    const today = when.startsWith('Today');
+    list.push({ id: 'main', name: propertyName, when: `${when} · ${tour.time} · ${tour.length} min`, img: heroImage, pill: checkedIn ? 'Checked in' : tour.status === 'pending' ? 'Waiting for approval' : today ? 'Today' : 'Scheduled', tone: checkedIn || today ? 'live' : tour.status === 'pending' ? 'warn' : 'primary', cta: checkedIn ? 'Continue Tour' : 'Start Tour', main: true });
   }
   extras.forEach((x) => list.push({ id: x.id, name: `${x.name}${DEMO}`, when: `${x.dayLabel} · ${x.time} · ${x.length} min`, img: x.img, pill: x.pill, tone: x.tone, cta: 'Start Tour', main: false }));
   return list;

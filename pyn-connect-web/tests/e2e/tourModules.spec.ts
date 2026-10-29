@@ -52,7 +52,7 @@ test.describe('Tour Setup modules (real data)', () => {
     await expect(page.getByTestId('tour-live')).toBeVisible();
     // The KPI that needs the CMS rows fills in once they arrive.
     await expect(page.locator('[data-kpi="onsite"] .bo-tm__kpivalue')).not.toHaveText('—', { timeout: 30_000 });
-    for (const id of ['overview', 'stops', 'elevators', 'locks', 'visitors', 'chat', 'settings']) {
+    for (const id of ['overview', 'stops', 'locks', 'visitors', 'chat', 'settings']) {
       await expect(page.getByTestId(`tour-tab-${id}`)).toBeVisible();
     }
     expect(errors, 'page errors').toEqual([]);
@@ -196,8 +196,12 @@ test.describe('Tour Setup modules (real data)', () => {
     await expect(page.getByTestId('booking-link')).toBeVisible();
     await page.getByTestId('settings-crm').click();
     await expect(page.getByTestId('booking-crm')).toBeVisible();
-    await page.getByTestId('settings-group-navigation').click();
+    // October 27, 2026: the design's five groups; Route & navigation is a section of Tour experience.
+    await expect(page.getByTestId('settings-group-navigation')).toHaveCount(0);
+    await page.getByTestId('settings-group-experience').click();
+    await page.getByTestId('settings-navigation').click();
     await expect(page.locator('.bo-configgroup')).toBeVisible();
+    await expect(page).toHaveURL(/section=navigation/);
     expect(errors, 'page errors').toEqual([]);
     expect(writes, 'non-GET requests').toEqual([]);
   });

@@ -13,8 +13,14 @@
 # and the `*_digest` columns mask the Tour App's visitor sign-in and the
 # visitor's contact details (October 23, 2026). `phone` also covers
 # `phone_number`, `code` also covers `pin_code` and `country_code`.
+# The phone's position (`latitude`/`longitude`/`lat`/`lng`, the fix's
+# `accuracy_m`, the `near` query of the property list) is masked too
+# (October 28, 2026): a visitor's whereabouts never belong in a log line. The
+# coordinate keys are matched whole so that `plate`, `template` and the like
+# stay readable.
 Rails.application.config.filter_parameters += [:password, :token, :guest_bluetooth_key, :client_secret, :iglooworks_api_key, :image, :csv,
-                                               :otp, :code, :phone, :email, :guest_pin, :guest_key, :id_card, :digest, :access_token]
+                                               :otp, :code, :phone, :email, :guest_pin, :guest_key, :id_card, :digest, :access_token,
+                                               /\Alat(itude)?\z/, /\Al(o)?ng(itude)?\z/, :accuracy_m, :near]
 
 # ActiveRecord copies `filter_parameters` into `filter_attributes` when it
 # loads; an earlier initializer of this app loads it before this file runs, so

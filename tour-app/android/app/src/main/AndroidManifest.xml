@@ -33,9 +33,15 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- The igloohome Bluetooth SDK's manifests also ask for coarse and background location (its geofenced
-         "quick unlock") and for notifications (its firmware updates), which this app never uses; the Bluetooth permissions it needs come from the plugin. -->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" tools:node="remove" />
+    <!-- The ID check photographs the visitor's document and a selfie through the web view (getUserMedia), where the property requires it. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- Location while the app is open (October 28, 2026): the check-in sends a fix the server judges against the
+         property, and the tour reports presence samples. Never in the background: the igloohome Bluetooth SDK's
+         manifests ask for background location (its geofenced "quick unlock") and for notifications (its firmware
+         updates), which this app never uses; the Bluetooth permissions it needs come from the plugin. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" tools:node="remove" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" tools:node="remove" />
 </manifest>

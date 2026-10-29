@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react';
+import { acquireFix, checkPermission, watchFixes, type Fix } from '~/services/location';
 import { useRepository } from '~/repositories/repositoryContext';
 import { onAppStateChange } from '~/services/native';
 import { loadPersisted, savePersisted } from '~/services/persistence';
@@ -23,6 +24,11 @@ export type { AppContextValue, AppData, DataStatus } from './appContext';
  */
 
 const HEARTBEAT_MS = 2 * 60000;
+/** A reading older than this, or coarser than this, is not worth reporting as a presence sample. */
+const FRESH_FIX_MS = 60000;
+const SAMPLE_ACCURACY_M = 150;
+/** How many location samples may wait in the outbox for one visit. */
+const KEEP_SAMPLES = 10;
 /** How often, at most, a resume re-checks the property's configuration version. */
 const REVALIDATE_MS = 60000;
 
@@ -34,7 +40,9 @@ const pick = (state: AppState): PersistedState => {
   return out as PersistedState;
 };
 
-const EMPTY: AppData = { status: 'idle', error: null, bundle: null, content: null, places: [], distances: {}, properties: [], propertiesStatus: 'idle' };
+const EMPTY: AppData = { status: 'idle', error: null, bundle: null, content: null, places: [], distances: {}, properties: [], propertiesStatus: 'idle', nearby: [], nearbyStatus: 'idle' };
+/** How many properties the Home row shows near the phone. */
+const NEARBY_LIMIT = 5;
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const repository = useRepository();
@@ -144,6 +152,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         dispatch({ type: 'setHistory', history: content.tourHistory });
         const nodes = [...bundle.amenities.filter((a) => a.showInStopsList).map((a) => a.node), ...bundle.units.filter((u) => u.showInStopsList).map((u) => u.node)];
         dispatch({ type: 'bundleLoaded', nodes });
+        dispatch({ type: 'verificationRequired', propertyId: bundle.property.id, required: bundle.property.verificationRequired ?? null });
         if (!nodes.length) return;
         repository
           .getStopDistances(nodes)
@@ -209,6 +218,48 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [repository]);
 
+  // 3b. The properties near the phone's reading (October 28, 2026), for the Home row; asked again when the reading moves.
+  const fixLat = state.location.fix?.lat ?? null;
+  const fixLng = state.location.fix?.lng ?? null;
+  useEffect(() => {
+    if (!hydrated || !state.signedIn || fixLat == null || fixLng == null) {
+      setData((d) => (d.nearby.length || d.nearbyStatus !== 'idle' ? { ...d, nearby: [], nearbyStatus: 'idle' } : d));
+      return;
+    }
+    let cancelled = false;
+    setData((d) => ({ ...d, nearbyStatus: 'loading' }));
+    repository
+      .getProperties({ near: { lat: fixLat, lng: fixLng }, limit: NEARBY_LIMIT })
+      .then((nearby) => {
+        if (!cancelled) setData((d) => ({ ...d, nearby, nearbyStatus: 'ready' }));
+      })
+      .catch(() => {
+        if (!cancelled) setData((d) => ({ ...d, nearbyStatus: 'error' }));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [repository, hydrated, state.signedIn, fixLat, fixLng]);
+
+  // 5b. What the phone allows, read without asking once the state is up; a phone that already allows it gives a first reading
+  // quietly, so Home and the check-in have one ready (October 28, 2026).
+  useEffect(() => {
+    if (!hydrated) return;
+    let live = true;
+    void checkPermission().then(async (access) => {
+      if (!live) return;
+      dispatch({ type: 'locAccess', access });
+      if (access !== 'granted' && access !== 'coarse') return;
+      const result = await acquireFix();
+      if (!live) return;
+      if (result.ok) dispatch({ type: 'locFix', fix: result.fix });
+      else dispatch({ type: 'locFailed', reason: result.failure.reason });
+    });
+    return () => {
+      live = false;
+    };
+  }, [hydrated]);
+
   useEffect(() => {
     if (!hydrated) return;
     return onAppStateChange((active) => {
@@ -235,6 +286,31 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const visitId = state.visit?.id ?? null;
   const visitClientId = state.visit?.clientVisitId ?? null;
   const heartbeat = hydrated && state.signedIn && state.checkedIn && state.visit?.status === 'active' && visitId != null && visitClientId != null && state.visit.propertyId === state.propertyId;
+  // 7. Presence (October 28, 2026): while the server keeps it (`capabilities.presence`) and the phone allows it, the tour
+  // watches the phone's readings in the foreground and the two-minute tick reports the freshest accurate one as a
+  // `location` sample instead of a bare heartbeat; the server decides what the samples mean. Only the newest few
+  // samples ever wait in the outbox, so an hour offline never replays a track.
+  const sampling = heartbeat && state.capabilities.presence && state.location.perm === 'on' && state.visit?.tourType !== 'virtual_tour';
+  const lastFix = useRef<Fix | null>(null);
+  useEffect(() => {
+    if (!sampling) {
+      lastFix.current = null;
+      return;
+    }
+    const keep = (fix: Fix) => {
+      lastFix.current = fix;
+    };
+    let stop = watchFixes(keep);
+    const resume = onAppStateChange((active) => {
+      stop();
+      stop = active ? watchFixes(keep) : () => undefined;
+    });
+    return () => {
+      stop();
+      resume();
+      lastFix.current = null;
+    };
+  }, [sampling]);
   useEffect(() => {
     if (!heartbeat || visitClientId == null) return;
     const propertyId = latest.current.visit?.propertyId;
@@ -243,8 +319,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
       const visit = syncableVisit(latest.current);
       if (!visit || visit.clientVisitId !== visitClientId || visit.end) return;
+      const fix = lastFix.current;
+      const fresh = fix && Date.now() - Date.parse(fix.fixAt) <= FRESH_FIX_MS && fix.accuracyM <= SAMPLE_ACCURACY_M ? fix : null;
+      const event = fresh
+        ? { clientVisitId: visitClientId, propertyId, kind: 'location' as const, stopId: null, occurredAt: fresh.fixAt, payload: { lat: fresh.lat, lng: fresh.lng, accuracy_m: fresh.accuracyM } }
+        : { clientVisitId: visitClientId, propertyId, kind: 'heartbeat' as const, stopId: null };
       void visitQueue
-        .append({ clientVisitId: visitClientId, propertyId, kind: 'heartbeat', stopId: null })
+        .append(event)
+        .then(() => visitQueue.prune(visitClientId, 'location', KEEP_SAMPLES))
         .then(() => syncVisit({ repository, dispatch }, visit))
         .catch(() => undefined);
     };

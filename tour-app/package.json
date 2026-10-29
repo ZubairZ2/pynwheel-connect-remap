@@ -2,7 +2,7 @@
   "name": "pynwheel-tour-app",
   "version": "0.1.0",
   "private": true,
-  "description": "Pynwheel Tour \u2014 the self-guided tour mobile app (Capacitor, iOS + Android). Frontend only; every value marked * is local dummy data.",
+  "description": "Pynwheel Tour — the self-guided tour mobile app (Capacitor, iOS + Android). Frontend only; every value marked * is local dummy data.",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 3012 --strictPort",
@@ -22,6 +22,7 @@
   "dependencies": {
     "@capacitor/app": "^8.0.0",
     "@capacitor/core": "^8.5.0",
+    "@capacitor/geolocation": "^8.2.4",
     "@capacitor/haptics": "^8.0.0",
     "@capacitor/keyboard": "^8.0.0",
     "@capacitor/preferences": "^8.0.0",

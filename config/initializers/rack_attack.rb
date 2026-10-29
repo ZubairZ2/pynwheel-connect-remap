@@ -27,8 +27,10 @@ class Rack::Attack
     {}
   end
 
+  # The built-in reviewer phone (Visitors::Otp::TEST_PHONE) has no per-phone limit.
   def self.phone_key(req)
-    tour_body(req)['phone'].to_s.gsub(/[^0-9+]/, '').presence
+    key = tour_body(req)['phone'].to_s.gsub(/[^0-9+]/, '').presence
+    key unless key&.delete('+') == '123456789'
   end
 
   throttle('notify-email/ip', limit: 10, period: 60) do |req|
@@ -70,6 +72,10 @@ class Rack::Attack
   end
   throttle('tour-visits/ip', limit: 120, period: 60) do |req|
     req.ip if req.post? && req.path.match?(%r{\A#{TOUR_API}/properties/\d+/visits})
+  end
+  # ID verification attempts and card tokens (October 28, 2026): a provider call each; a visitor needs a handful, never a storm.
+  throttle('tour-verification/ip', limit: 10, period: 10.minutes) do |req|
+    req.ip if req.post? && req.path.match?(%r{\A#{TOUR_API}/properties/\d+/verification(/card)?\z})
   end
 
   self.throttled_responder = lambda do |req|

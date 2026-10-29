@@ -221,6 +221,17 @@ export interface VisitorProfilePatch {
   smsEnabled?: boolean;
 }
 
+/** `GET /properties?near=lat,lng`: the properties near the phone (October 28, 2026). Nearness names candidates; the check-in decides presence. */
+export interface NearbyQuery {
+  near: { lat: number; lng: number };
+  radiusKm?: number;
+  limit?: number;
+}
+
+/** The server's verdict on where the phone was at check-in (October 28, 2026): only `verified` proves the visitor at the property. */
+export type Proximity = 'verified' | 'outside' | 'unverified_no_fix' | 'unverified_poor_accuracy' | 'unverified_no_property_coords';
+export const PROXIMITIES: Proximity[] = ['verified', 'outside', 'unverified_no_fix', 'unverified_poor_accuracy', 'unverified_no_property_coords'];
+
 /** `POST /properties/{id}/visits`: the check-in the CMS records (`Visits::Start`). */
 export interface VisitStartInput {
   /** A UUID made once per check-in and kept, so a retry answers the same visit. */
@@ -231,6 +242,9 @@ export interface VisitStartInput {
   startedAt: string;
   latitude?: number | null;
   longitude?: number | null;
+  /** The phone's horizontal accuracy radius (metres) and the reading's own time, with the coordinates. */
+  accuracyM?: number | null;
+  fixAt?: string | null;
   /** Staff sessions only: the visitor the admin tours with (the booking's visitor id). */
   tourUserId?: number | null;
 }
@@ -250,6 +264,78 @@ export interface VisitRecord {
   verificationRequired: boolean;
   /** False when the same `clientVisitId` had already been answered. */
   created: boolean;
+  /** The server's verdict on the fix sent with the check-in, and the centre's distance from the property. */
+  proximity: Proximity | null;
+  distanceM: number | null;
+  withinRadius: boolean | null;
+  inHours: boolean | null;
+  locationReceived: boolean;
+  /** The server's clock when it answered (ISO 8601), to notice a phone clock that is off. */
+  serverTime: string | null;
+}
+
+// ---- ID verification and the card on file (October 28, 2026) ----
+
+/** `Visitors::Status.id_check` on the server: verified within the validity window, lapsed, never, or flagged by the leasing team. */
+export type VerificationState = 'verified' | 'expired' | 'never' | 'mismatch';
+
+/** The document types CheckpointID verifies (the legacy app's list); `back` says whether its back is photographed too. */
+export type IdDocumentType = 'drivers_license' | 'id_card' | 'passport' | 'passport_card' | 'international_id';
+
+export interface IdDocumentOption {
+  key: IdDocumentType;
+  label: string;
+  back: boolean;
+}
+
+/** `GET /properties/{id}/verification`: what the server requires of this visitor here, and what it knows. */
+export interface VerificationStatus {
+  propertyId: number;
+  /** `check_point_id`; anything else cannot be verified from the app. */
+  provider: string;
+  /** The server holds the provider's key (without it no attempt can run). */
+  providerAvailable: boolean;
+  /** The property asks for ID verification at all (`tours.visual_id_verification`). */
+  propertyRequires: boolean;
+  /** This visitor must verify before check-in (the property asks and no verification is current). */
+  required: boolean;
+  state: VerificationState;
+  verifiedAt: string | null;
+  validUntil: string | null;
+  verifiedBy: string | null;
+  validForDays: number;
+  attemptsLeft: number;
+  documentTypes: IdDocumentOption[];
+  card: {
+    /** The property's booking form asks for a card (`tours.credit_card_required`). */
+    required: boolean;
+    onFile: boolean;
+    /** The check-in waits for a card: a verified-ID property that asks for one, and none on file. */
+    needed: boolean;
+    last4: string | null;
+    /** The server can take a card (Stripe is configured). */
+    available: boolean;
+    /** The Stripe publishable key to tokenize with, only while a card is needed. */
+    publishableKey: string | null;
+  };
+}
+
+export type VerificationOutcome = 'verified' | 'already_verified' | 'face_mismatch' | 'document_unreadable' | 'rejected';
+
+/** `POST /properties/{id}/verification`: the provider's answer as the server read it, and the refreshed status. */
+export interface VerificationResult {
+  outcome: VerificationOutcome;
+  reason: string | null;
+  code: string | null;
+  status: VerificationStatus;
+}
+
+export interface IdVerificationInput {
+  documentType: IdDocumentType;
+  /** JPEG data URLs straight from the camera; they go to the server once and are never kept. */
+  frontImage: string;
+  backImage: string | null;
+  selfieImage: string;
 }
 
 export interface VisitEndInput {
@@ -306,7 +392,8 @@ export interface TourRepository {
   updateVisitorProfile(patch: VisitorProfilePatch): Promise<Session>;
 
   // --- property selection
-  getProperties(): Promise<PropertyListing[]>;
+  /** The properties the user may tour; with `near`, only those within reach of the phone, nearest first, with `distanceM`. */
+  getProperties(options?: NearbyQuery): Promise<PropertyListing[]>;
   selectProperty(propertyId: number): Promise<void>;
   currentPropertyId(): number | null;
 
@@ -353,6 +440,14 @@ export interface TourRepository {
   /** Up to 100 events in order; a refused request (network, 5xx, 429) rejects as a whole, a refused event is listed in `rejected`. */
   sendVisitEvents(visitId: number, events: VisitEventInput[]): Promise<VisitEventsResult>;
   endVisit(visitId: number, input: VisitEndInput): Promise<VisitRecord>;
+
+  // ---- ID verification and the card on file (October 28, 2026) ----
+  /** What the server requires of the signed-in visitor at the current property. */
+  getVerificationStatus(): Promise<VerificationStatus>;
+  /** One CheckpointID attempt, run by the server; the answer is the server's reading of the provider's, never the app's. */
+  submitIdVerification(input: IdVerificationInput): Promise<VerificationResult>;
+  /** A Stripe.js card token (never a card number) → the card on file; answers the refreshed status. */
+  saveCardOnFile(cardToken: string): Promise<VerificationStatus>;
 }
 
 /** Thrown by a provider for a feature its backend does not offer. */

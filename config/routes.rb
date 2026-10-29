@@ -1140,6 +1140,10 @@ Rails.application.routes.draw do
     get    'properties/:property_id/visits/:visit_id', to: 'visits#show'
     post   'properties/:property_id/visits/:visit_id/events', to: 'visits#events'
     post   'properties/:property_id/visits/:visit_id/end', to: 'visits#finish'
+    # October 28, 2026: the visitor's ID verification (CheckpointID, called from Rails) and card on file.
+    get    'properties/:property_id/verification', to: 'verification#show'
+    post   'properties/:property_id/verification', to: 'verification#create'
+    post   'properties/:property_id/verification/card', to: 'verification#card'
     match '*unmatched', to: 'errors#not_found', via: :all
   end
 

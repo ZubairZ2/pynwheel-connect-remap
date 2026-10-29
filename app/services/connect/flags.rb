@@ -13,6 +13,8 @@ module Connect
   # the visitor (prospect) sign-in of the Tour App (`/api/tour/v1/visitor/*`
   # and the acceptance of visitor session tokens). The app reads both as
   # `capabilities` and hides what the server does not offer (October 23, 2026).
+  # `PYN_TOUR_LOCATION_REQUIRED=on|off` decides whether an in-person check-in
+  # needs a verified location (October 28, 2026).
   #
   # Production defaults every switch to off; development and test to on.
   module Flags
@@ -41,9 +43,26 @@ module Connect
       mode('PYN_TOUR_VISITOR_AUTH') == 'on'
     end
 
+    # `PYN_TOUR_LOCATION_REQUIRED=on|off` (October 28, 2026): on, an in-person
+    # (self or guided) check-in by a visitor is refused unless the server
+    # verified the phone within `Visits::Rules::RADIUS_KM` of the property;
+    # off, only a fix verified *outside* the radius is refused and an
+    # unverifiable one is recorded as such. Staff check-ins never need it.
+    def tour_location_required?
+      mode('PYN_TOUR_LOCATION_REQUIRED') == 'on'
+    end
+
+    # `PYN_TOUR_PRESENCE=on|off` (October 28, 2026): on, the `location` events
+    # the Tour App reports during a visit keep its presence state and a
+    # confirmed departure emails the property (`Visits::Presence`); off, they
+    # are acknowledged and dropped, and the app need not sample at all.
+    def tour_presence_enabled?
+      mode('PYN_TOUR_PRESENCE') == 'on'
+    end
+
     # What the Tour App may rely on from this server.
     def tour_capabilities
-      { visits: tour_visits_enabled?, visitor_auth: tour_visitor_auth_enabled? }
+      { visits: tour_visits_enabled?, visitor_auth: tour_visitor_auth_enabled?, location_required: tour_location_required?, presence: tour_presence_enabled? }
     end
 
     def mode(name)

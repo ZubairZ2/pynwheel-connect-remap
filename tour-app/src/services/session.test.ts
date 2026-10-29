@@ -28,10 +28,10 @@ describe('the session store', () => {
       user: { id: 9, name: 'Ada Lovelace', email: 'ada@example.com', role: 'visitor', phone: '+13035550100' },
       visitor: { id: 9, firstName: 'Ada', lastName: 'Lovelace', name: 'Ada Lovelace', email: 'ada@example.com', phone: '+13035550100', phoneMasked: '•••0100', smsEnabled: true },
       propertyId: 1618,
-      capabilities: { visits: true, visitorAuth: true }
+      capabilities: { visits: true, visitorAuth: true, locationRequired: false, presence: false }
     });
     const loaded = await loadSession();
-    expect(loaded).toMatchObject({ kind: 'visitor', accessToken: 'vst_abc', propertyId: 1618, capabilities: { visits: true, visitorAuth: true } });
+    expect(loaded).toMatchObject({ kind: 'visitor', accessToken: 'vst_abc', propertyId: 1618, capabilities: { visits: true, visitorAuth: true, locationRequired: false, presence: false } });
     expect(loaded?.visitor?.phone).toBe('+13035550100');
     expect(loaded?.user.role).toBe('visitor');
     await clearSession();
@@ -52,9 +52,10 @@ describe('the session store', () => {
   });
 
   it('parses capabilities from the API (snake_case) and from the store (camelCase), false when missing', () => {
-    expect(parseCapabilities({ visits: true, visitor_auth: true })).toEqual({ visits: true, visitorAuth: true });
-    expect(parseCapabilities({ visits: true, visitorAuth: false })).toEqual({ visits: true, visitorAuth: false });
-    expect(parseCapabilities(null)).toEqual({ visits: false, visitorAuth: false });
-    expect(parseCapabilities({ visits: 'yes' })).toEqual({ visits: false, visitorAuth: false });
+    expect(parseCapabilities({ visits: true, visitor_auth: true })).toEqual({ visits: true, visitorAuth: true, locationRequired: false, presence: false });
+    expect(parseCapabilities({ visits: true, visitorAuth: false, locationRequired: true, presence: true })).toEqual({ visits: true, visitorAuth: false, locationRequired: true, presence: true });
+    expect(parseCapabilities({ visits: true, visitor_auth: true, location_required: true, presence: false })).toEqual({ visits: true, visitorAuth: true, locationRequired: true, presence: false });
+    expect(parseCapabilities(null)).toEqual({ visits: false, visitorAuth: false, locationRequired: false, presence: false });
+    expect(parseCapabilities({ visits: 'yes', location_required: 'on' })).toEqual({ visits: false, visitorAuth: false, locationRequired: false, presence: false });
   });
 });

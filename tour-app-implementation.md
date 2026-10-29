@@ -655,3 +655,80 @@ was read from the signed-in design session this time, tweak by tweak; the seven 
 - `App.tsx`: "Book Another Tour" / "Book a New Time" open Schedule on the current property.
 - Tests: `zone.test.ts` (the owner's Vancouver/Karachi case, DST), `qaFixes.test.ts` (prefill, lifecycle, pruning),
   `scenarios.test.ts` (the window); 145 vitest, tsc clean.
+
+## 24. The phone's location, the server's proximity verdict, presence during the tour, and the properties near you (October 28, 2026)
+
+What changed, in one line: the app now reads the phone's real position, sends it with the check-in, and lets the server say whether the visitor is at the property; nothing on the phone decides that any more. Branch `feature/tour-app-location-proximity`; contract `tour-app-backend-api.md` §21 (Proximity, Presence) and the properties row.
+
+**Location acquisition (`src/services/location.ts`).** `@capacitor/geolocation` 8.2.4 behind the same guarded style as `native.ts`. `checkPermission()` / `requestPermission()` answer a `LocationAccess`: `prompt`, `granted`, `coarse` (iOS Precise Off / Android approximate), `denied`, `denied_forever` (refused again after a first ask, remembered in Preferences), `services_off` (the plugin throws), `unavailable` (no provider). `acquireFix()` is one accuracy-aware wait: `watchPosition` with high accuracy, the first reading within 50 m wins, otherwise after 12 s the best reading within 200 m, otherwise `poor_accuracy` with the best effort attached (the check-in still sends it, with its accuracy); one wait is shared by concurrent callers and the watch is always cleared. `watchFixes()` is one shared watch for the tour's samples. Off the phone the same calls use `navigator.geolocation` (and the Permissions API), so the Vite build and Playwright (`context.setGeolocation`) drive it. iOS: `NSLocationWhenInUseUsageDescription` + `NSLocationAlwaysAndWhenInUseUsageDescription` (same string; the plugin wants both), no background mode. Android: `ACCESS_COARSE_LOCATION` + `ACCESS_FINE_LOCATION`, `ACCESS_BACKGROUND_LOCATION` still removed; the BLE plugin's FINE declaration lost its `maxSdkVersion="30"` bound. `LocationState` (`appState.ts`) carries `access`, `fix`, `failure` beside the sheets' `perm` triad (`permissionOf`); `locAllow` / `locRefresh` ask and acquire; the provider checks the permission at start and takes a first reading quietly when the phone already allows it.
+
+**Check-in (`useAppActions.ts#checkIn`, `scenarios.ts#checkinModel`).** A recorded check-in first takes a fix (`fixForCheckIn`: asks when never asked, waits when allowed) and posts `latitude, longitude, accuracy_m, fix_at`. The answer's `proximity` is kept on `VisitState`; `outside_property` and `location_unverified` become `state.checkinRefusal` and the sheet's `outside` ("You're about 1.9 mi from …", Refresh location · Call leasing · Reschedule · Cancel) or `unverified` (the server's reason; "In-person check-in is not available here yet" for a property without coordinates) scenarios; `permission` asks to turn on location only when `capabilities.location_required` says the server needs it. `locationModel.atProperty` is now `checkedIn || visit.proximity === 'verified'` (or the forced demo scenario): how the property was found (location, QR, link) proves nothing, the simulated QR only selects the property (`qrMode 'checkin'` is gone), "Use my location" only selects. A check-in kept on the phone while offline (`visit.id == null`) cannot request a door code (the server refuses `visit_required` anyway; the app now says "Confirming your check-in with the property…" and syncs); a late `outside_property` / `location_unverified` on sync is `visitRefused`: the phone-side session ends and the sheet shows the reason. A phone clock more than five minutes off `server_time` gets a toast.
+
+**Presence (`AppProvider.tsx`, `visitQueue.ts`).** While `capabilities.presence` is on and the phone allows location, the tour watches readings in the foreground and the two-minute tick reports the freshest one (≤ 60 s old, ≤ 150 m) as a `location` event with `{lat, lng, accuracy_m}` instead of a bare heartbeat; `visitQueue.prune` keeps the newest ten samples per visit so an hour offline never replays a track. The server (`Visits::Presence`) decides on_site / leaving / departed / away / returned and emails the departure once.
+
+**Near you (`HomeScreen.tsx`, `getProperties({near})`).** `GET /properties?near=lat,lng&limit=5` from the last fix fills the Home row with real properties and their straight-line `distanceM` ("0.3 mi away"); a tap selects the property. Demo listings remain on the dummy provider only. The Home line "0.3 mi from …" is still the design's demo text (marked *); the row below it is real.
+
+**Tests.** `src/services/location.test.ts` (mocked plugin: first good fix, best-of, poor accuracy, services off, denied forever, single-flight, shared watch, browser fallback), `scenarios.test.ts` (the refusal, permission and locating variants; the phone never decides presence), `visitorAuth.test.ts` (`checkinRefused` / `visitRefused`), `visitorSession.test.ts` (the fix in the body, the verdict fields, the near URL), `visitQueue.test.ts` (prune). 156 vitest cases green; `npm run typecheck` clean.
+
+**Verified on October 28, 2026 (dev stack :3105 / :3022, headless Chrome with a Denver geolocation).** The near-you request fires from the first quiet fix; booking today's next slot, the Home card's Start Tour opens the check-in sheet. The API matrix against John Pynwheel Demo 1411 with a real visitor: no fix → 422 `location_unverified` (`unverified_no_fix`); 3 km → 422 `outside_property` (`distance_m` 3002); 800 m with a 400 m circle → `unverified_poor_accuracy`; 300 m → 201 `verified` + "A tour has begun"; a reuse with a 3 km fix answers `outside` but keeps `verified` on the row; location events on_site → leaving → on_site → leaving ×2 → departed (one "Visitor has departed") → away → returned. Near Burnaby: Hazel 1618 and 2000 at 1 m (Hazel's dev coordinates were moved from Lahore to its Burnaby address that day).
+
+**Known, not changed here.** The app still asked for its local simulated ID verification before a check-in on every property (`state.verified`), whatever the server's `verification_required` — replaced by the real flow of §25; and the Schedule screen takes "today" from the phone's zone (a browser in Asia/Karachi booked Oct 28 for a Denver property whose today was Oct 27) — both pre-existing, outside this branch.
+
+## 25. The real ID check: CheckpointID through the Pynwheel server, and the card on file (October 28, 2026)
+
+Replaces the simulated Verify Identity of §19 ("Simulate scan", "Simulate selfie", the fake card form and the phone-local
+`state.verified`). The root cause of that behaviour was §19's scope: the design refresh built the screens before any backend existed
+for them, so the flow set `verified: true` on a button tap and nothing ever asked the server. Backend §24 has the audit of the
+legacy app and the new endpoints.
+
+- **State** (`src/store/appState.ts`): `AppState.verified` and `requireCard` are gone. `AppState.verification: VerificationInfo |
+  null` is the server's status (`GET /properties/{id}/verification`) as last read — property-scoped, persisted so the profile can
+  show it offline, written only by `verifyStatus` / `verifyResult` / `verifyCardSaved` from server answers. `VerifyFlow` is the
+  real flow: `intro → document → front → back (licence, ID card) → selfie → submitting → result | card → done`, the three pictures in
+  memory for one attempt (`hydrate` never restores them; a result drops them), `statusLoading` / `statusError`, `result`, `error`,
+  `cardSaving` / `cardError`, `then`. `isVerified(state)` = `verification.state === 'verified' || demo.idVerified`;
+  `needsIdVerification` keeps §23's meaning on top of it. The reducer's `stepAfterStatus` moves a visitor the server calls verified
+  past the capture (to the card where one is still needed, else Done) and never leaves an unverified one on Done.
+- **Actions** (`useAppActions.ts`): `openVerify` reads the status; `verifyCaptured('selfie')` submits the three pictures once
+  (`submitIdVerification`, a 90 s request timeout for the provider's minute); the server's `outcome` decides the next step. A lost
+  request (offline, timeout) re-reads the status first — the server may have finished — and only then shows a retryable error with
+  the pictures kept; 503s are retryable; 422s (`attempt_limit`, `mismatch_flagged`, `not_required`) are not. `checkIn` on a 422
+  `verification_required` / `card_required` from `POST /visits` opens the flow with `then: 'start'` and refreshes the status; the
+  offline resend (`visitSync`) records the server's rule the same way. `saveCard(token)` posts the Stripe token only.
+- **Screen** (`VerifyScreen.tsx`): the intro of §19 with the real consent text and the server's word (loading, "couldn't reach
+  Pynwheel" with retry, not available on demo data, provider unavailable, mismatch flagged → Call leasing, attempts exhausted, no ID
+  check here); the document type (the legacy list); the camera (`services/idCapture.ts`: `getUserMedia`, back camera for the
+  document, front for the selfie un-mirrored, frames scaled to a 1600 px long edge JPEG; a photo picker when the camera is refused
+  or absent) with a preview to retake or use; the pending state while the server asks CheckpointID; the result with the server's
+  reason, the attempts left, Scan again / Try again / Check status, Call leasing, Not now; the card step (`services/stripeCard.ts`:
+  Stripe.js v3 loaded on demand, a card Element, `createToken`; the number never touches app state, storage or logs; an honest
+  "card collection is not available" state when the server has no Stripe keys); Done with the server's `valid_until` and provider.
+  Back is step-aware and disabled while submitting; coming back to the foreground re-reads the status. The profile's label reads the
+  server's `valid_until` (30 days, not the old 12-month copy).
+- **Repository**: `getVerificationStatus`, `submitIdVerification`, `saveCardOnFile` (`tourRepository.ts`, `pynwheelApi/*`); the
+  dummy provider throws `FeatureUnavailableError`, so demo data shows the "not available here" intro (the Demo scenarios switch
+  `idVerified` still stands in). Native: `NSCameraUsageDescription` (iOS) and `CAMERA` (Android) added; `cap sync` clean.
+- **Tests**: `verifyFlow.test.ts` (the state machine: status-driven steps, capture order per document, no local path to verified,
+  results and failures, the card step, finish / switch / sign-out / hydrate), `repositories/pynwheelApi/verification.test.ts`
+  (payloads, outcomes, error codes, the card token), `services/idCapture.test.ts`; `scenarios.test.ts` and `qaFixes.test.ts` moved
+  from `verified: true` to a server status. 24 files / 169 tests green, `tsc` clean, `npm run build` clean.
+- **Headless QA on the dev stack** (worktree Rails :3107 on `pynwheel_development`, Vite :3024, a local stand-in for the DVS
+  endpoint at :3199 so no real provider call was made — these are stubbed provider answers, not sandbox ones; Chrome's fake camera
+  device supplied the frames): on Hazel 1618 a new visitor signed in with the on-screen code, `GET /verification` answered
+  `required: true, state: never`, `POST /visits` was refused 422 `verification_required`, the flow photographed a passport and a
+  selfie, showed the pending state, the server wrote the row (`is_checkpoint_verified`, `verified_by = check_point_id`), Done read
+  "Valid for 30 days · until Nov 27, 2026 · CheckpointID", `POST /visits` then answered 201 with `verification_required: false`,
+  and the profile read "Verified · valid until Nov 27, 2026". With the stand-in answering `ValidationError` the result read "We
+  couldn't match your selfie to your ID · The Face has not been matched · 4 attempts left this hour", the leasing mail job was
+  queued once with the legacy subject and text (letter_opener then refused it for a blank From address — the development mailer
+  setting, the same for the legacy endpoint), and Scan again with the provider passing reached Done. With the stand-in down (503)
+  the result read "Verification is unavailable right now" with Try again / Check status, and Try again re-sent the kept pictures.
+  On Arbour Place 1601 (`visual_id_verification` and `credit_card_required` both on, open 09:00–17:00 Pacific) the intro's third
+  step read "Card on file · required here"; after the pass the flow went to the card step, which — this server having no Stripe
+  keys — showed "Card collection is not available right now … your ID verification is kept" with Call leasing / Back, the status
+  answered `state: verified, card.needed: true`, and `POST /visits` answered 422 `card_required`.
+  Walker: scratchpad `pw/idv_walk.mjs`; stand-in `dvs/fake_dvs.mjs` (modes pass / face / mrz / unknown / low / down / slow).
+- **Not exercised here:** a real CheckpointID answer (no DVS key is configured for Rails; the only known key is the one in the
+  legacy bundle, which was not used), a real Stripe token (no Stripe keys on this machine; the card step was exercised to its
+  "not available" state and the server side with Stripe stubbed), the camera on a device (the web view needs iOS 14.3+ for
+  `getUserMedia`; Capacitor grants the Android camera permission on request when the manifest declares it — to confirm on a phone).

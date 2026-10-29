@@ -1,4 +1,5 @@
 import type { LockBluetoothKey, LockPin, MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
+import type { NearbyQuery } from '~/repositories/tourRepository';
 import { AFTER_HOURS_SLOTS, DAY_SLOTS, PARTY_MAX, TOUR_LENGTHS } from '~/content/demoFixtures';
 import { NO_CAPABILITIES, type Capabilities, type Session } from '~/services/session';
 import { placesFromBundle } from '../places';
@@ -27,7 +28,7 @@ import {
   type DummyProperty
 } from '~/dummy';
 import { RouteService } from '~/wayfinding/routeService';
-import { FeatureUnavailableError, type AppContent, type AvailabilityWindow, type BookingRequest, type BookingResult, type BookingSettings, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult, type VisitEndInput, type VisitEventInput, type VisitEventsResult, type VisitorBooking, type VisitorCodeSent, type VisitorProfilePatch, type VisitorVerifyRequest, type VisitRecord, type VisitStartInput } from '../tourRepository';
+import { FeatureUnavailableError, type AppContent, type AvailabilityWindow, type BookingRequest, type BookingResult, type BookingSettings, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult, type VerificationResult, type VerificationStatus, type IdVerificationInput, type VisitEndInput, type VisitEventInput, type VisitEventsResult, type VisitorBooking, type VisitorCodeSent, type VisitorProfilePatch, type VisitorVerifyRequest, type VisitRecord, type VisitStartInput } from '../tourRepository';
 
 /**
  * The dummy provider: answers every repository call from local dummy data,
@@ -108,9 +109,10 @@ export class DummyTourRepository implements TourRepository {
     throw new FeatureUnavailableError('Editing a visitor profile');
   }
 
-  async getProperties(): Promise<PropertyListing[]> {
+  async getProperties(options?: NearbyQuery): Promise<PropertyListing[]> {
     await this.delay('read');
-    return NEARBY_PROPERTIES.map((p) => ({ ...p, current: p.id === this.propertyId }));
+    // Demo data has no coordinates: "near you" is the same list with made-up distances, in order.
+    return NEARBY_PROPERTIES.map((p, i) => ({ ...p, current: p.id === this.propertyId, ...(options?.near ? { distanceM: 300 + i * 450 } : {}) })).slice(0, options?.limit ?? NEARBY_PROPERTIES.length);
   }
 
   async selectProperty(propertyId: number): Promise<void> {
@@ -300,6 +302,19 @@ export class DummyTourRepository implements TourRepository {
 
   async endVisit(_visitId: number, _input: VisitEndInput): Promise<VisitRecord> {
     throw new FeatureUnavailableError('Visit recording');
+  }
+
+  // ID verification runs on the Pynwheel server against CheckpointID; demo data has neither (the Demo scenarios switch stands in).
+  async getVerificationStatus(): Promise<VerificationStatus> {
+    throw new FeatureUnavailableError('ID verification');
+  }
+
+  async submitIdVerification(_input: IdVerificationInput): Promise<VerificationResult> {
+    throw new FeatureUnavailableError('ID verification');
+  }
+
+  async saveCardOnFile(_cardToken: string): Promise<VerificationStatus> {
+    throw new FeatureUnavailableError('The card on file');
   }
 
   async startApplication(unitNode: string): Promise<{ id: string }> {

@@ -44,9 +44,11 @@ describe('lock answers and in-flight requests', () => {
 
 describe('sign-out', () => {
   it('does not carry the verified badge over to the next account', () => {
-    const state = reducer({ ...signedIn(), verified: true }, { type: 'signOut' });
+    const verification = { propertyId: 1618, provider: 'check_point_id', providerAvailable: true, propertyRequires: true, required: false, state: 'verified' as const, verifiedAt: '2026-10-14T14:00:00Z', validUntil: '2026-11-13T14:00:00Z', verifiedBy: 'CheckpointID', validForDays: 30, attemptsLeft: 5, documentTypes: [], card: { required: false, onFile: false, needed: false, last4: null, available: false, publishableKey: null }, fetchedAt: 1 };
+    const state = reducer({ ...signedIn(), verification }, { type: 'signOut' });
     expect(state.signedIn).toBe(false);
-    expect(state.verified).toBe(initialAppState().verified);
+    expect(state.verification).toBe(initialAppState().verification);
+    expect(state.verification).toBeNull();
   });
 });
 
@@ -179,5 +181,18 @@ describe('the booking lifecycle follows the CMS (October 25, 2026)', () => {
     expect(pruned.screen).toBe('home');
     expect(pruned.toast).toMatch(/stops changed/);
     expect(reducer({ ...s, booking: { ...s.booking, fetchedAt: 5 } }, { type: 'bookingStale' }).booking.fetchedAt).toBe(0);
+  });
+});
+
+describe("the server's ID-verification answer (October 28, 2026)", () => {
+  it('is kept for the chosen property only and cleared on a property switch', () => {
+    const s = signedIn();
+    expect(s.verificationRequired).toBeNull();
+    const said = reducer(s, { type: 'verificationRequired', propertyId: 1618, required: false });
+    expect(said.verificationRequired).toBe(false);
+    expect(reducer(said, { type: 'verificationRequired', propertyId: 1618, required: false })).toBe(said);
+    expect(reducer(said, { type: 'verificationRequired', propertyId: 99, required: true }).verificationRequired).toBe(false);
+    expect(reducer(said, { type: 'verificationRequired', propertyId: 1618, required: true }).verificationRequired).toBe(true);
+    expect(reducer(said, { type: 'selectProperty', propertyId: 2 }).verificationRequired).toBeNull();
   });
 });

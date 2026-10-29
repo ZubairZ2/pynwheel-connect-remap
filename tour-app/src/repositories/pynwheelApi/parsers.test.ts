@@ -127,6 +127,10 @@ describe('API parsers', () => {
     expect(plain.media).toEqual({ image: null, floorplanImage: null, photos: [], virtualTourUrl: null });
     expect(plain.availabilityKnown).toBe(true);
     expect(parseBundle({ ...detail, phone: '7789000352', email: 'hazel@quadreal.com' }, graph, stops, 'x').property).toMatchObject({ phone: '7789000352', email: 'hazel@quadreal.com' });
+    // October 28, 2026: the server's ID-verification answer; null (not false) when an older server does not send it.
+    expect(parseBundle(detail, graph, stops, 'x').property.verificationRequired).toBeNull();
+    expect(parseBundle({ ...detail, verification_required: false }, graph, stops, 'x').property.verificationRequired).toBe(false);
+    expect(parseBundle({ ...detail, verification_required: true }, graph, stops, 'x').property.verificationRequired).toBe(true);
   });
 
   it('never crashes on missing fields', () => {

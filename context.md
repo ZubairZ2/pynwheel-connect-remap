@@ -1496,7 +1496,44 @@ in `PUBLISH_SCHEDULING_TZ_FINDINGS_2026-10-25.md`; the API contract in `tour-app
   local prod copy: that user, OTP rows for +1111122222 / +11111122222, a visitor session for 16258, Hazel's tour published once
   (`tour_published_*`), booking 25503 untouched.
 
-## 44. Property clone script — implementation knowledge (October 28, 2026)
+## 44. Tour Setup on the Oct 27 design: tabs, settings rail, read-only causes, CRM-managed hours, widget hardening — implementation knowledge (October 27, 2026)
+
+Branch `feature/tour-setup-scheduler-fixes`. Findings and the verification matrix in `TOUR_SETUP_SCHEDULER_FIXES_QA_2026-10-27.md`.
+
+- **Reading the design.** `Oct_27_Pynwheel Admin - Back Office.html` is a bundler page; the Tour Setup screen is the
+  gzip-compressed `TourModule.dc.html` inside `__bundler/manifest` (decode base64 → gzip). Its `TABS` are Overview · Stops ·
+  Locks · Visitors · Live Chat · Settings with a role list each; `SET_GROUPS` has five groups and "Route & navigation" is the
+  `builder` section of Tour experience. There is no Elevators tab: elevators are stops of the route and nodes of the graph.
+- **Why everything was disabled on Heroku.** `useTourBooking.canEdit = meta.can_edit && meta.writes_enabled`; `writes_enabled` is
+  `Connect::Flags.writes_enabled?` (`PYN_CONNECT_WRITES`, production default off, `PYN_CONNECT_WRITES_COMMUNITY_IDS` allowlist).
+  The owner confirmed `off` on `pyn-system` and then set it on for an allowlist. The page now says which cause applies
+  (`readOnlyReason`: `writesOff` | `role`), on every panel and under the scheduler switch.
+- **CRM-managed hours.** `crm.managed_hours` (Yardi / Knock / Funnel) makes the hours and closures read-only (`hoursEditable`),
+  as the design's `hoursEditable: !managed`; the widget takes those slots from the CRM anyway. The server refuses nothing new.
+- **The booking link on Heroku.** `Scheduling::Settings#link` builds on `HOST_URL`; `pyn-system`'s value is the dead
+  `pyn-system.herokuapp.com` (Heroku "No such app") while the CMS runs at `pyn-system-16a05cad79df.herokuapp.com`. Connect prints
+  the configured host next to the link; the fix is the config variable (owner, manual mode).
+- **Gate parity.** `gates[:tour_on]` reads `communities.self_tour` as the widget's `can_user_schedule_tour` does, not
+  `Connect::ProductState.tour?`.
+- **Widget 404s.** `SchedulerWidget::WidgetsController#verify_community_code!` runs before `test_widget`: unknown property, or a
+  direct link whose `community_code` is missing / undecodable / signed elsewhere / for another property → `render plain:
+  'Not Found', status: 404`, before the placeholder `SchedualTour` is created. The action's method-level rescue still catches
+  rendering errors (the legacy stylesheet does not compile under the test asset pipeline, so the controller tests assert the
+  placeholder row, not the HTML).
+- **Deep links.** `tourTabOf` maps `routing` and `elevators` to `stops`; `settingsSectionOf` (pure, in `tourModule.generator`,
+  because the server page calls it) accepts the booking sections and `checks | tour_access | welcome | navigation | stop_options |
+  after | concierge | messages`.
+
+## 45. Location, proximity and presence on the Tour App — implementation knowledge (October 28, 2026)
+
+- **Who decides presence:** the server, from the fix the app sends (`Visits::Rules.proximity`, error-circle rule, 1 km): `verified` / `outside` / `unverified_no_fix` / `unverified_poor_accuracy` / `unverified_no_property_coords`. `outside` refuses an in-person check-in by a visitor on every property (the legacy client's rule, now server-side); any `unverified_*` refuses while `PYN_TOUR_LOCATION_REQUIRED` is on (`capabilities.location_required`; production default off). Staff and virtual visits are never refused. Nothing missing ever counts as presence (the legacy helper rescued to `true`).
+- **Arrival email:** only for a `verified` in-person check-in (and for a virtual one), where the legacy app emailed within 1 km only. **Departure:** `Visits::Presence` on `location` events — 3 readings beyond 1 km + 250 m over ≥ 5 min, one "Visitor has departed" per visit (`departed_notified_at`), a return resets without a second email; `PYN_TOUR_PRESENCE` (`capabilities.presence`) gates it. No sample is stored, only the last reading that counted (`tour_histories.last_fix_*`, `presence_state`, `outside_since`, `outside_fix_count`, `returned_at`).
+- **The app** (`tour-app/src/services/location.ts`): `@capacitor/geolocation` 8.2.4, accuracy-aware single wait (50 m good / 12 s / 200 m best-of), a shared watch for samples every 2 min in the foreground, browser fallback. The simulated QR and "Use my location" only select a property. Hazel 1618's dev coordinates were corrected to Burnaby (49.2289979, -122.9973885) on October 28, 2026; 39 communities still share one Lahore pair and 38 have none, which the gate refuses with `unverified_no_property_coords`.
+- **Near you:** `GET /properties?near=lat,lng` (haversine, `distance_m`, ≤ 25 km, ≤ 50) — candidates only, never presence.
+- **Logs:** `latitude` / `longitude` / `lat` / `lng` / `accuracy_m` / `near` are filtered parameters. The production lograge custom formatter (`config.lograge.formattter`, a typo) is *not* activated on purpose: `lib/lograge/formatters/json_custom.rb` reads an undefined `data` and logs an error per request when wired in; leave the typo until the formatter is fixed.
+- **Traps:** the OTP endpoint is throttled 10 per IP per hour (Rack::Attack in the dev memory cache: restart the server to reset); the `maps_test.rb` SVG failures pre-exist this branch; `db:migrate` against the test database re-dumps `db/schema.rb` — re-dump from `pynwheel_development`.
+
+## 46. Property clone script — implementation knowledge (October 28, 2026)
 
 Branch `feature/property-clone-script`. A property-centred, production-safe clone: one `communities` row, the company it belongs to and every record the property needs, into new rows with new ids. Entry points `rake property_clone:{dry_run,execute,verify,baseline,compare_baseline,test_admin}` (`lib/tasks/property_clone.rake`); services in `app/services/property_clone/`; documents in `docs/property_clone/` (DEPENDENCY_MAP.md is generated by `script/property_clone/dependency_map.rb`, RUNBOOK.md, TEST_ADMIN.md, REPORT_2026-10-28.md, samples/).
 

@@ -18,6 +18,8 @@ export interface PropertyListing {
   current: boolean;
   /** Whether the app can tour it; a listing that cannot be toured only notifies. */
   tourable: boolean;
+  /** Straight-line distance from the phone (metres) when the list was asked for "near you" (October 28, 2026). */
+  distanceM?: number | null;
 }
 
 export interface Listing {

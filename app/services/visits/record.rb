@@ -8,12 +8,14 @@ module Visits
   # property's clock, the code the app showed as `stop_pin`), plus the new
   # `kind`, `occurred_at` and `tour_history_id`; a door event (`unlocked`,
   # `unlock_failed`) is a `lock_histories` row; `heartbeat` only keeps the
-  # visit active. Each event is its own savepoint, so one bad item never
+  # visit active; `location` (`payload {lat, lng, accuracy_m}`, October 28,
+  # 2026) updates the visit's presence through Visits::Presence and stores no
+  # row of its own. Each event is its own savepoint, so one bad item never
   # loses the batch; a repeated `client_event_id` is acknowledged as a
   # duplicate, not written twice (a unique index guards the race).
   class Record
     MAX_EVENTS = 100
-    KINDS = %w[arrived skipped photo note issue unlocked unlock_failed heartbeat].freeze
+    KINDS = %w[arrived skipped photo note issue unlocked unlock_failed heartbeat location].freeze
     STOP_KINDS = %w[arrived skipped photo note issue].freeze
     LOCK_KINDS = %w[unlocked unlock_failed].freeze
     STOP_ID = /\A(unit|amenity|elevator):(\d+)\z/
@@ -78,8 +80,23 @@ module Visits
           stop = stop!(raw[:stop_id], index)
         end
         payload = raw[:payload].is_a?(Hash) ? raw[:payload].to_h.with_indifferent_access : {}
-        Item.new(index: index, client_event_id: client_event_id&.to_s&.downcase, kind: kind, stop: stop,
-                 occurred_at: Rules.instant(raw[:occurred_at], @now, loc: ['body', 'events', index, 'occurred_at']), payload: payload)
+        item = Item.new(index: index, client_event_id: client_event_id&.to_s&.downcase, kind: kind, stop: stop,
+                        occurred_at: Rules.instant(raw[:occurred_at], @now, loc: ['body', 'events', index, 'occurred_at']), payload: payload)
+        fix_of!(item) if kind == 'location'
+        item
+      end
+
+      # A `location` event's reading, validated: both coordinates required,
+      # the accuracy optional. Kept on the item, never in a row.
+      def fix_of!(item)
+        loc = ['body', 'events', item.index, 'payload']
+        latitude = Rules.coordinate(item.payload[:lat], loc: loc + ['lat'], range: -90.0..90.0)
+        longitude = Rules.coordinate(item.payload[:lng], loc: loc + ['lng'], range: -180.0..180.0)
+        raise TourApi::ApiError.validation([{ loc: loc + ['lat'], message: 'Field required' }]) if latitude.nil?
+        raise TourApi::ApiError.validation([{ loc: loc + ['lng'], message: 'Field required' }]) if longitude.nil?
+
+        item.payload[:fix] = Presence::Fix.new(latitude: latitude, longitude: longitude, occurred_at: item.occurred_at, client_event_id: item.client_event_id,
+                                               accuracy_m: Rules.coordinate(item.payload[:accuracy_m], loc: loc + ['accuracy_m'], range: 0.0..100_000.0))
       end
 
       # The tour stop row of `unit:N` / `amenity:N` / `elevator:N` on this visit's tour.
@@ -92,6 +109,11 @@ module Visits
       end
 
       def write(item)
+        if item.kind == 'location'
+          outcome = Presence.apply!(@community, @visit, item.payload[:fix], now: @now, whodunnit: @whodunnit)
+          return { index: item.index, client_event_id: item.client_event_id, kind: item.kind, id: nil, duplicate: outcome == 'duplicate', presence: outcome }
+        end
+
         duplicate = item.client_event_id && existing(item)
         return { index: item.index, client_event_id: item.client_event_id, kind: item.kind, id: duplicate.id, duplicate: true } if duplicate
 

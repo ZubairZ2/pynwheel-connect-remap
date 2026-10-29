@@ -24,6 +24,10 @@ module Visitors
     RESEND_AFTER = 60
     MAX_SENDS_PER_DAY = 5
     E164 = /\A\+[1-9]\d{6,14}\z/
+    # The built-in reviewer phone (October 27, 2026), like the legacy app's
+    # +10123456789: no SMS, no limits, always this code, shown on the code step.
+    TEST_PHONE = '+123456789'
+    TEST_CODE = '123456'
 
     class Normalizer
       include SchedualTours::Notifications
@@ -35,6 +39,7 @@ module Visitors
     # The E.164 form of what the app typed, or nil when it is not a phone.
     def normalize(raw, country_code)
       digits = raw.to_s.gsub(/[^0-9+]/, '')
+      return TEST_PHONE if digits.delete('+') == TEST_PHONE.delete('+')
       return nil if digits.gsub('+', '').length < 7
 
       phone = Normalizer.new.normalize_phone(digits, country_code.presence || 'US').to_s
@@ -44,9 +49,10 @@ module Visitors
     # Always `{sent: true, resend_after: RESEND_AFTER}` for a valid phone: a
     # phone that was asked again inside RESEND_AFTER, or MAX_SENDS_PER_DAY
     # times today, gets the same answer and no SMS.
-    def request!(phone:, country_code: nil, ip: nil, community_id: nil, now: Time.current)
+    def request!(phone:, country_code: nil, ip: nil, now: Time.current)
       number = normalize(phone, country_code)
       raise TourApi::ApiError.validation([{ loc: %w[body phone], message: 'Enter a valid phone number with its country code.' }]) if number.nil?
+      return { sent: true, resend_after: 0, debug_code: TEST_CODE } if number == TEST_PHONE
 
       row = VisitorOtp.find_or_initialize_by(phone_number: number)
       sends_today = row.last_sent_at && row.last_sent_at.to_date == now.to_date ? row.sends_today : 0
@@ -56,7 +62,7 @@ module Visitors
       code = generate_code(number)
       row.assign_attributes(code_digest: digest(number, code), expires_at: now + TTL, attempts: 0, sends_today: sends_today + 1, last_sent_at: now, created_ip: ip)
       row.save!
-      deliver(number, code, community_id) unless test_phone?(number)
+      deliver(number, code) unless test_phone?(number)
       answer = { sent: true, resend_after: RESEND_AFTER }
       # A test phone got no SMS, so its code is shown on the code step.
       answer[:debug_code] = code if debug_codes? || test_phone?(number)
@@ -77,6 +83,7 @@ module Visitors
     def verify!(phone:, code:, profile: {}, country_code: nil, now: Time.current)
       number = normalize(phone, country_code)
       raise invalid_code if number.nil?
+      return resolve_visitor!(number, profile) if number == TEST_PHONE && code.to_s.strip == TEST_CODE
 
       row = VisitorOtp.find_by(phone_number: number)
       raise invalid_code if row.nil? || row.expired?(now) || row.attempts >= MAX_ATTEMPTS
@@ -128,11 +135,13 @@ module Visitors
       OpenSSL::HMAC.hexdigest('SHA256', Rails.application.secret_key_base.to_s, "visitor-otp:#{number}:#{code}")
     end
 
-    # Queued, never sent inline. A queue that cannot be reached is logged
+    # Queued, never sent inline, with no community: like the legacy generate_otp,
+    # so NotificationValidatorService never drops the code on a test property.
+    # A queue that cannot be reached is logged
     # (without the code or the number) and answered like a sent code: the
     # visitor can ask again, and nothing says whether the phone is known.
-    def deliver(number, code, community_id)
-      TwilioSmsWorker.perform_async("Your Pynwheel Tour sign-in code is #{code}. It expires in #{TTL.in_minutes.to_i} minutes.", number, nil, community_id)
+    def deliver(number, code)
+      TwilioSmsWorker.perform_async("Your Pynwheel Tour sign-in code is #{code}. It expires in #{TTL.in_minutes.to_i} minutes.", number)
     rescue StandardError => e
       Rails.logger.error("[tour-api] visitor otp not queued #{e.class}")
     end

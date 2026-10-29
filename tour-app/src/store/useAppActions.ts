@@ -1,4 +1,6 @@
 import { useMemo, useRef } from 'react';
+import { acquireFix, requestPermission, type Fix, type LocationAccess } from '~/services/location';
+import { PROXIMITIES } from '~/repositories/tourRepository';
 import { CONCIERGE_GREETING_GUEST } from '~/content/appCopy';
 import { ACCESS_MINUTES, DEMO, EXTEND_MINUTES, HOLD_HOURS, LEASING_EMAIL } from '~/content/demoFixtures';
 import type { AccessMethod } from '~/models';
@@ -7,17 +9,16 @@ import { levelOfStop } from './views';
 import type { TourHistoryEntry } from '~/models';
 import { ApiError, isRetryable } from '~/repositories/pynwheelApi/apiClient';
 import { useRepository } from '~/repositories/repositoryContext';
-import { FeatureUnavailableError, type VisitorBooking } from '~/repositories/tourRepository';
+import { FeatureUnavailableError, type IdDocumentType, type VisitorBooking } from '~/repositories/tourRepository';
 import { BluetoothUnlockError, unlockOverBluetooth } from '~/services/iglooBle';
 import { success, tap } from '~/services/native';
 import { uuid, visitQueue, type VisitEventKind } from '~/services/visitQueue';
 import { useApp } from './appContext';
-import type { AppState, ScheduleDraft, ScheduledTour, TourPass, VerifyStep, VisitState } from './appState';
-import { dayKey } from './appState';
+import { DOCUMENT_NEEDS_BACK, type AppState, type CheckinRefusal, type ScheduleDraft, type ScheduledTour, type TourPass, type VerifyCapture, type VerifyFlow, type VisitState } from './appState';
 import { fmtTime } from './scenarios';
 import { dayKeyInZone, zonedSlotMs } from './zone';
 import { bestMatchUnit, currentStop, markOf, selectedNodes, tourStopViews } from './selectors';
-import { profileOf, slotByLabel, slotsForDay } from './views';
+import { bookingRequestFor, profileOf, propertyZone, scheduleDay, slotByLabel, slotsForDay } from './views';
 import { accessEndsAtMs, syncVisit, visitRecording } from './visitSync';
 
 /** A photo larger than this (as a data URL) is not uploaded; a note with the caption goes instead. */
@@ -31,7 +32,7 @@ const bookingIdOf = (id: string): number | null => (/^\d+$/.test(id) ? Number(id
 export const tourFromBooking = (b: VisitorBooking, now: number): ScheduledTour => ({
   id: String(b.id),
   status: b.status === 'cancelled' ? 'cancelled' : b.status === 'completed' ? 'past' : b.status === 'missed' ? 'missed' : 'scheduled',
-  date: b.date ?? dayKey(0, new Date(now)),
+  date: b.date ?? dayKeyInZone(now, b.timeZone),
   time: b.timeLabel ?? '',
   length: 45,
   unit: 'No preference',
@@ -200,9 +201,11 @@ export const useAppActions = () => {
     const openSchedule = (patch: Partial<ScheduleDraft> = {}) => {
       const booked = state.scheduledTour && state.scheduledTour.status !== 'past' && state.scheduledTour.status !== 'cancelled' && state.scheduledTour.status !== 'missed' ? state.scheduledTour : null;
       const profile = profileOf(state, content);
+      // The day is the property's calendar day (October 28, 2026): its today until the visitor picks one, and
+      // unknown ('') until the property's rules are loaded, when `bookingLoaded` anchors it.
       const base: ScheduleDraft = booked
         ? { ...state.schedule, date: booked.date, time: booked.time, length: booked.length, unit: booked.unit, party: booked.party }
-        : { ...state.schedule, date: state.schedule.date < dayKeyInZone(Date.now(), state.booking.settings?.timeZone) ? dayKeyInZone(Date.now(), state.booking.settings?.timeZone) : state.schedule.date };
+        : { ...state.schedule, date: scheduleDay(state.schedule.date, propertyZone(state)) };
       const draft = { ...base, ...patch };
       if (!draft.first) draft.first = profile.first;
       if (!draft.last) draft.last = profile.last;
@@ -214,6 +217,46 @@ export const useAppActions = () => {
     };
 
     /** The phone-only check-in of the design: a simulated window, marked as such. */
+    /** The reading sent with a recorded check-in: asks the phone when it was never asked, waits for a fix when it may. */
+    const fixForCheckIn = async (): Promise<Fix | null> => {
+      let access = state.location.access;
+      if (access === 'prompt') {
+        dispatch({ type: 'locLocating' });
+        access = await requestPermission();
+        dispatch({ type: 'locAccess', access });
+      }
+      if (access !== 'granted' && access !== 'coarse') {
+        dispatch({ type: 'locFailed', reason: access === 'prompt' || access === 'unavailable' ? 'unavailable' : access });
+        return null;
+      }
+      dispatch({ type: 'locLocating' });
+      const result = await acquireFix();
+      if (result.ok) {
+        dispatch({ type: 'locFix', fix: result.fix });
+        return result.fix;
+      }
+      dispatch({ type: 'locFailed', reason: result.failure.reason });
+      return result.failure.bestEffort ?? null;
+    };
+
+    const refusalOf = (error: ApiError): CheckinRefusal => {
+      const details = (error.details ?? {}) as { proximity?: unknown; distance_m?: unknown };
+      return {
+        code: error.code === 'outside_property' ? 'outside_property' : 'location_unverified',
+        message: error.message,
+        proximity: PROXIMITIES.find((p) => p === details.proximity) ?? null,
+        distanceM: typeof details.distance_m === 'number' ? details.distance_m : null
+      };
+    };
+
+    /** A phone clock more than five minutes off the server's is worth a word: the server clamps what the app reports. */
+    const warnClockSkew = (serverTime: string | null) => {
+      const server = serverTime ? Date.parse(serverTime) : NaN;
+      if (!Number.isFinite(server)) return;
+      const minutes = Math.round(Math.abs(server - Date.now()) / 60000);
+      if (minutes > 5) toast(`Your phone's clock is about ${minutes} min off. Tour times follow the property's clock.`);
+    };
+
     const checkInLocally = (now: number, visit: VisitState | null = null) => {
       dispatch({ type: 'checkIn', now, accessMs: ACCESS_MINUTES * 60000, visit });
       dispatch({ type: 'goTourStart', startPointId: state.startPointId, virtual: false });
@@ -251,16 +294,28 @@ export const useAppActions = () => {
         tourUserId,
         end: null
       };
+      // The phone's reading goes with the check-in; the server judges it. A reading too coarse to be sure is still sent
+      // with its accuracy (the server may still place it inside, or say what it needs); a refusal keeps the visitor here.
+      const fix = await fixForCheckIn();
       try {
-        const record = await repository.startVisit({ clientVisitId: visit.clientVisitId, bookingId: visit.bookingId, tourType: visit.tourType, startedAt: visit.startedAt, tourUserId });
+        const record = await repository.startVisit({
+          clientVisitId: visit.clientVisitId, bookingId: visit.bookingId, tourType: visit.tourType, startedAt: visit.startedAt, tourUserId,
+          ...(fix ? { latitude: fix.lat, longitude: fix.lng, accuracyM: fix.accuracyM, fixAt: fix.fixAt } : {})
+        });
         const endsAt = accessEndsAtMs(record.accessEndsAt);
         const accessMs = endsAt != null && endsAt > now ? endsAt - now : ACCESS_MINUTES * 60000;
-        dispatch({ type: 'checkIn', now, accessMs, visit: { ...visit, id: record.id } });
+        dispatch({ type: 'checkIn', now, accessMs, visit: { ...visit, id: record.id, proximity: record.proximity } });
+        dispatch({ type: 'verificationRequired', propertyId: visit.propertyId, required: record.verificationRequired });
         dispatch({ type: 'goTourStart', startPointId: state.startPointId, virtual: false });
         const minutes = Math.max(1, Math.round(accessMs / 60000));
         toast(record.verificationRequired ? `Checked in. Door access is active for ${minutes} min once your ID is verified.` : `Checked in. Door access is active for ${minutes} min.`);
+        warnClockSkew(record.serverTime);
         void success();
       } catch (error) {
+        if (error instanceof ApiError && (error.code === 'outside_property' || error.code === 'location_unverified')) {
+          dispatch({ type: 'checkinRefused', refusal: refusalOf(error) });
+          return;
+        }
         if (error instanceof ApiError && error.status === 404 && error.code === 'disabled') {
           // The server switched visit recording off: back to the phone-only check-in, and the UI stops asking.
           dispatch({ type: 'setCapabilities', capabilities: { ...state.capabilities, visits: false } });
@@ -272,7 +327,64 @@ export const useAppActions = () => {
           checkInLocally(now, visit);
           return;
         }
+        if (error instanceof ApiError && error.status === 422 && (error.code === 'verification_required' || error.code === 'card_required')) {
+          // October 28, 2026: the server holds the requirements; whatever the phone believed, the ID check (or its card step) comes first.
+          if (error.code === 'verification_required') dispatch({ type: 'verificationRequired', propertyId: visit.propertyId, required: true });
+          dispatch({ type: 'openVerify', then: 'start' });
+          void refreshVerification();
+          toast(error.message);
+          return;
+        }
         toast(messageOf(error, 'The check-in was refused. Please try again.'));
+      }
+    };
+
+    // ── the ID check (October 28, 2026): the server runs CheckpointID and holds the only verified state ──
+    const refreshVerification = async () => {
+      if (state.propertyId == null) {
+        dispatch({ type: 'verifyStatusFailed', message: 'Choose a property first.', unavailable: true });
+        return;
+      }
+      try {
+        const status = await repository.getVerificationStatus();
+        dispatch({ type: 'verifyStatus', propertyId: status.propertyId, status, now: Date.now() });
+      } catch (error) {
+        if (error instanceof FeatureUnavailableError) dispatch({ type: 'verifyStatusFailed', message: 'ID verification runs on the Pynwheel server and is not available with demo data.', unavailable: true });
+        else dispatch({ type: 'verifyStatusFailed', message: messageOf(error, 'The verification status could not be loaded.'), unavailable: false });
+      }
+    };
+    /** The three pictures go to the server once; the answer is the server's reading of CheckpointID's, and only that moves the flow on. */
+    const submitVerification = async (images: VerifyFlow['images']) => {
+      if (!images.front || !images.selfie || state.verify.step === 'submitting') return;
+      dispatch({ type: 'verifySubmitting' });
+      try {
+        const result = await repository.submitIdVerification({ documentType: state.verify.documentType, frontImage: images.front, backImage: images.back, selfieImage: images.selfie });
+        dispatch({ type: 'verifyResult', propertyId: result.status.propertyId, outcome: result.outcome, reason: result.reason, status: result.status, now: Date.now() });
+        if (result.outcome === 'verified' || result.outcome === 'already_verified') void success();
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 0) {
+          // The request was lost (offline, or the provider took longer than the app waits). The server may still have
+          // finished: its status decides, never a guess.
+          try {
+            const status = await repository.getVerificationStatus();
+            dispatch({ type: 'verifyStatus', propertyId: status.propertyId, status, now: Date.now() });
+            if (status.state === 'verified') return;
+          } catch {
+            /* still unreachable: the pictures are kept for a retry */
+          }
+          dispatch({ type: 'verifyFailed', code: error.code, message: error.message, retryable: true });
+          return;
+        }
+        if (error instanceof ApiError) {
+          // 503 (the provider or Stripe down) is worth another try later; 422s (the attempt limit, a flagged mismatch, a property that does not ask) are not.
+          dispatch({ type: 'verifyFailed', code: error.code, message: error.message, retryable: isRetryable(error) });
+          return;
+        }
+        if (error instanceof FeatureUnavailableError) {
+          dispatch({ type: 'verifyFailed', code: 'unavailable', message: error.message, retryable: false });
+          return;
+        }
+        dispatch({ type: 'verifyFailed', code: 'unknown', message: messageOf(error, 'The verification could not be completed.'), retryable: true });
       }
     };
 
@@ -426,7 +538,7 @@ export const useAppActions = () => {
       /** Start Self-Tour: a guest is asked to sign in; a member schedules the self-tour (the booking is local demo data). */
       startSelfTour: guarded('schedule a self-tour', 'schedule', () => openSchedule()),
       openSchedule,
-      scheduleSecondVisit: () => openSchedule({ date: dayKey(1) }),
+      scheduleSecondVisit: () => openSchedule({ date: dayKeyInZone(Date.now(), propertyZone(state), 1) }),
       setSchedule: (patch: Partial<ScheduleDraft>) => dispatch({ type: 'setSchedule', patch }),
       loadBooking,
       /** Books the self-tour through the repository: the CMS checks the slot, the visitor and the rules, and keeps the booking. */
@@ -443,30 +555,15 @@ export const useAppActions = () => {
           return;
         }
         const profile = profileOf(state, content);
-        const first = (d.first || profile.first).trim();
-        const last = (d.last || profile.last).trim();
-        const phone = (d.phone || profile.phone).trim();
-        const email = profile.email.trim();
-        if (!first || !last || !phone || !email) {
+        // The property's calendar day and the slot's clock: the CMS reads both in the property's zone.
+        const request = bookingRequestFor(d, slot, profile, state.booking.settings);
+        if (!request.firstName || !request.lastName || !request.phone || !request.email) {
           toast('Add your name, phone and email to book.');
           return;
         }
         dispatch({ type: 'bookingSaving' });
         try {
-          const result = await repository.requestBooking({
-            date: d.date,
-            time: slot.time,
-            tourType: 'self_tour',
-            firstName: first,
-            lastName: last,
-            email,
-            phone,
-            desiredUnit: d.unit && d.unit !== 'No preference' ? d.unit : undefined,
-            lengthMinutes: d.length,
-            partySize: d.party,
-            desiredBedroom: state.booking.settings?.form.showDesiredBedroom && d.bedroom ? d.bedroom : undefined,
-            desiredMoveInDate: state.booking.settings?.form.showDesiredMoveInDate && d.moveIn ? d.moveIn : undefined
-          });
+          const result = await repository.requestBooking(request);
           if (d.first && d.first !== profile.first) dispatch({ type: 'setProfileField', field: 'first', value: d.first });
           if (d.last && d.last !== profile.last) dispatch({ type: 'setProfileField', field: 'last', value: d.last });
           if (d.phone && d.phone !== profile.phone) dispatch({ type: 'setProfileField', field: 'phone', value: d.phone });
@@ -541,33 +638,65 @@ export const useAppActions = () => {
       getDirections: () => toast(`Opening Maps to ${bundle?.property.address ?? 'the property'}${DEMO}`),
 
       // ── identity check (simulated) ──
-      openVerify: (then: 'start' | null = null) => dispatch({ type: 'openVerify', then }),
+      // ── the ID check: CheckpointID through the Pynwheel server, and the card on file through Stripe.js (October 28, 2026) ──
+      openVerify: (then: 'start' | null = null) => {
+        dispatch({ type: 'openVerify', then });
+        void refreshVerification();
+      },
+      /** Reads the server's status again (on resume, after a failure): the server's word is the only thing that moves the flow on. */
+      refreshVerification: () => void refreshVerification(),
       verifyNext: () => {
         if (!state.verify.consent) {
-          toast('Please agree to the self-tour terms');
+          toast('Please agree to the self-tour terms to continue.');
           return;
         }
-        dispatch({ type: 'verifyStep', step: 'scan' });
+        dispatch({ type: 'verifyStep', step: 'document' });
       },
-      simulateCapture: (next: VerifyStep) => {
-        if (state.verify.scanning) return;
-        dispatch({ type: 'verifyScanning', on: true });
-        later('verify', 1200, () => {
-          if (next === 'done') dispatch({ type: 'verified' });
-          else dispatch({ type: 'verifyStep', step: next });
-        });
+      verifyChooseDocument: (documentType: IdDocumentType) => dispatch({ type: 'verifyDocumentType', documentType }),
+      /** A picture taken; the selfie is the last one, and the three go to the server at once. */
+      verifyCaptured: (kind: VerifyCapture, image: string) => {
+        dispatch({ type: 'verifyCaptured', kind, image });
+        if (kind === 'selfie') void submitVerification({ ...state.verify.images, selfie: image });
       },
-      saveCard: () => dispatch({ type: 'verified' }),
+      verifyRetake: (kind: VerifyCapture) => dispatch({ type: 'verifyRetake', kind }),
+      /** After a failure: the same pictures again when only the sending failed, else new pictures. */
+      verifyRetry: () => {
+        const { images, error } = state.verify;
+        if (error?.retryable && images.front && images.selfie) void submitVerification(images);
+        else dispatch({ type: 'verifyStep', step: 'document' });
+      },
       verifyBack: () => {
-        const order: VerifyStep[] = ['intro', 'scan', 'selfie', 'card', 'done'];
-        const st = state.verify.step;
-        if (st === 'intro' || st === 'done') {
-          dispatch({ type: 'navigate', screen: 'home' });
-          return;
+        switch (state.verify.step) {
+          case 'submitting':
+            return;
+          case 'document':
+          case 'result':
+            dispatch({ type: 'verifyStep', step: 'intro' });
+            return;
+          case 'front':
+            dispatch({ type: 'verifyStep', step: 'document' });
+            return;
+          case 'back':
+            dispatch({ type: 'verifyRetake', kind: 'front' });
+            return;
+          case 'selfie':
+            dispatch({ type: 'verifyRetake', kind: DOCUMENT_NEEDS_BACK[state.verify.documentType] ? 'back' : 'front' });
+            return;
+          default:
+            dispatch({ type: 'verifyFinish' });
         }
-        let i = order.indexOf(st) - 1;
-        if (order[i] === 'card' && !state.requireCard) i -= 1;
-        dispatch({ type: 'verifyStep', step: order[Math.max(0, i)] });
+      },
+      /** A Stripe.js token (never a card number) → the server's card on file. */
+      saveCard: async (token: string) => {
+        if (state.verify.cardSaving) return;
+        dispatch({ type: 'verifyCardSaving' });
+        try {
+          const status = await repository.saveCardOnFile(token);
+          dispatch({ type: 'verifyCardSaved', propertyId: status.propertyId, status, now: Date.now() });
+          void success();
+        } catch (error) {
+          dispatch({ type: 'verifyCardFailed', message: messageOf(error, 'The card could not be saved. Please try again.') });
+        }
       },
       verifyFinish: () => {
         if (state.verify.then === 'start') {
@@ -576,28 +705,41 @@ export const useAppActions = () => {
         } else dispatch({ type: 'verifyFinish' });
       },
 
-      // ── location (simulated: the app has no geolocation plugin in this phase) ──
+      // ── location (October 28, 2026: the phone's own reading through services/location.ts; the server judges it) ──
       locAsk: (sheet: 'ask' | 'pick' | 'manage' = 'ask') => dispatch({ type: 'locAsk', sheet }),
       locAllow: () => {
         const then = state.location.sheet;
         dispatch({ type: 'locLocating' });
-        later('loc', 1500, () => {
-          dispatch({ type: 'locLocated' });
+        void (async () => {
+          const access: LocationAccess = await requestPermission();
+          dispatch({ type: 'locAccess', access });
+          if (access !== 'granted' && access !== 'coarse') {
+            dispatch({ type: 'locFailed', reason: access === 'prompt' || access === 'unavailable' ? 'unavailable' : access });
+            return;
+          }
+          const result = await acquireFix();
+          if (!result.ok) {
+            dispatch({ type: 'locFailed', reason: result.failure.reason });
+            return;
+          }
+          dispatch({ type: 'locFix', fix: result.fix });
           if (then === 'pick') {
             dispatch({ type: 'guestFound', via: 'near' });
-            toast(`${propertyName} found${DEMO}`);
+            toast(`${propertyName} found`);
           }
-        });
+        })();
       },
       locRefresh: () => {
         dispatch({ type: 'locLocating' });
-        later('loc', 1500, () => {
-          dispatch({ type: 'locLocated' });
-          toast(`Location updated${DEMO}`);
+        void acquireFix().then((result) => {
+          if (result.ok) {
+            dispatch({ type: 'locFix', fix: result.fix });
+            toast('Location updated');
+          } else dispatch({ type: 'locFailed', reason: result.failure.reason });
         });
       },
       locDeny: () => dispatch({ type: 'locDeny' }),
-      locOpenSettings: () => toast(`Opening Settings · Pynwheel · Location${DEMO}`),
+      locOpenSettings: () => toast('Open Settings · Pynwheel · Location · While Using the App'),
       atProperty: () => {
         if (state.location.perm === 'on') {
           dispatch({ type: 'guestFound', via: 'near' });
@@ -605,14 +747,11 @@ export const useAppActions = () => {
         } else dispatch({ type: 'locAsk', sheet: 'pick' });
       },
       openQr: (mode: 'property' | 'checkin' = 'property') => dispatch({ type: 'qrOpen', mode }),
+      // A code found on site names the property; it never stands in for the location the server checks at check-in.
       qrFound: () => {
-        const mode = state.qrMode;
         dispatch({ type: 'closeOverlay', overlay: 'qr' });
-        if (mode === 'checkin') void checkIn();
-        else {
-          dispatch({ type: 'guestFound', via: 'qr' });
-          toast(`${propertyName} found${DEMO}`);
-        }
+        dispatch({ type: 'guestFound', via: 'qr' });
+        toast(`${propertyName} found${DEMO}`);
       },
       openLink: () => dispatch({ type: 'linkStep', step: 'enter' }),
       linkFound: () => {
@@ -707,6 +846,12 @@ export const useAppActions = () => {
        */
       requestLockPin: async (node: string) => {
         if (!bundle || lockRequests.current.has(node)) return;
+        if (recordingAllowed && state.visit?.status === 'active' && state.visit.id == null && state.visit.propertyId === state.propertyId) {
+          // Checked in on the phone while offline: the property has not confirmed the visit yet, and no door opens before it does.
+          toast('Confirming your check-in with the property… try the door again in a moment.');
+          void sync(state.visit);
+          return;
+        }
         const propertyId = state.propertyId;
         lockRequests.current.add(node);
         dispatch({ type: 'lockPinStart', node });
@@ -911,7 +1056,7 @@ export const useAppActions = () => {
         const unit = bundle.units.find((u) => u.showInStopsList && u.available)?.name ?? 'No preference';
         // The first day with an agent-guided time still open, from the calendar already loaded (the sheet reloads it).
         const days = Object.keys(state.booking.days).sort();
-        const day = days.find((key) => guidedSlots(state.booking, key).length > 0) ?? days[0] ?? dayKey(0);
+        const day = days.find((key) => guidedSlots(state.booking, key).length > 0) ?? days[0] ?? dayKeyInZone(Date.now(), propertyZone(state));
         const time = guidedSlots(state.booking, day)[0]?.label ?? '';
         dispatch({ type: 'openBook', day, time, unit });
         void loadBooking();

@@ -1,4 +1,5 @@
 import type { Dispatch } from 'react';
+import { PROXIMITIES } from '~/repositories/tourRepository';
 import { ApiError, isRetryable } from '~/repositories/pynwheelApi/apiClient';
 import type { TourRepository } from '~/repositories/tourRepository';
 import { visitQueue, type VisitQueue } from '~/services/visitQueue';
@@ -64,9 +65,23 @@ const pass = async (deps: VisitSyncDeps, initial: VisitState): Promise<void> => 
       const record = await repository.startVisit({ clientVisitId: visit.clientVisitId, bookingId: visit.bookingId, tourType: visit.tourType, startedAt: visit.startedAt, tourUserId: visit.tourUserId });
       visit = { ...visit, id: record.id };
       dispatch({ type: 'visitStarted', clientVisitId: visit.clientVisitId, id: record.id, accessEndsAt: visit.end ? null : accessEndsAtMs(record.accessEndsAt) });
+      dispatch({ type: 'verificationRequired', propertyId: visit.propertyId, required: record.verificationRequired });
     } catch (error) {
       if (isRetryable(error) || !(error instanceof ApiError)) return;
+      if (error.code === 'outside_property' || error.code === 'location_unverified') {
+        // The property would not have let this visitor in: the phone-side session ends with the reason (October 28, 2026).
+        const details = (error.details ?? {}) as { proximity?: unknown; distance_m?: unknown };
+        dispatch({
+          type: 'visitRefused',
+          clientVisitId: visit.clientVisitId,
+          refusal: { code: error.code, message: error.message, proximity: PROXIMITIES.find((p) => p === details.proximity) ?? null, distanceM: typeof details.distance_m === 'number' ? details.distance_m : null }
+        });
+        await queue.drop(visit.clientVisitId);
+        return;
+      }
       // Refused for good: the tour stays a phone-only one; its events have nowhere to go.
+      // October 28, 2026: refused for the ID check — the server's rule, remembered for the next check-in.
+      if (error.code === 'verification_required') dispatch({ type: 'verificationRequired', propertyId: visit.propertyId, required: true });
       dispatch({ type: 'visitLocal', clientVisitId: visit.clientVisitId });
       await queue.drop(visit.clientVisitId);
       return;
