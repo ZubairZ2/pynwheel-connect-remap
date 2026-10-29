@@ -221,6 +221,17 @@ export interface VisitorProfilePatch {
   smsEnabled?: boolean;
 }
 
+/** `GET /properties?near=lat,lng`: the properties near the phone (October 28, 2026). Nearness names candidates; the check-in decides presence. */
+export interface NearbyQuery {
+  near: { lat: number; lng: number };
+  radiusKm?: number;
+  limit?: number;
+}
+
+/** The server's verdict on where the phone was at check-in (October 28, 2026): only `verified` proves the visitor at the property. */
+export type Proximity = 'verified' | 'outside' | 'unverified_no_fix' | 'unverified_poor_accuracy' | 'unverified_no_property_coords';
+export const PROXIMITIES: Proximity[] = ['verified', 'outside', 'unverified_no_fix', 'unverified_poor_accuracy', 'unverified_no_property_coords'];
+
 /** `POST /properties/{id}/visits`: the check-in the CMS records (`Visits::Start`). */
 export interface VisitStartInput {
   /** A UUID made once per check-in and kept, so a retry answers the same visit. */
@@ -231,6 +242,9 @@ export interface VisitStartInput {
   startedAt: string;
   latitude?: number | null;
   longitude?: number | null;
+  /** The phone's horizontal accuracy radius (metres) and the reading's own time, with the coordinates. */
+  accuracyM?: number | null;
+  fixAt?: string | null;
   /** Staff sessions only: the visitor the admin tours with (the booking's visitor id). */
   tourUserId?: number | null;
 }
@@ -250,6 +264,14 @@ export interface VisitRecord {
   verificationRequired: boolean;
   /** False when the same `clientVisitId` had already been answered. */
   created: boolean;
+  /** The server's verdict on the fix sent with the check-in, and the centre's distance from the property. */
+  proximity: Proximity | null;
+  distanceM: number | null;
+  withinRadius: boolean | null;
+  inHours: boolean | null;
+  locationReceived: boolean;
+  /** The server's clock when it answered (ISO 8601), to notice a phone clock that is off. */
+  serverTime: string | null;
 }
 
 // ---- ID verification and the card on file (October 28, 2026) ----
@@ -370,7 +392,8 @@ export interface TourRepository {
   updateVisitorProfile(patch: VisitorProfilePatch): Promise<Session>;
 
   // --- property selection
-  getProperties(): Promise<PropertyListing[]>;
+  /** The properties the user may tour; with `near`, only those within reach of the phone, nearest first, with `distanceM`. */
+  getProperties(options?: NearbyQuery): Promise<PropertyListing[]>;
   selectProperty(propertyId: number): Promise<void>;
   currentPropertyId(): number | null;
 

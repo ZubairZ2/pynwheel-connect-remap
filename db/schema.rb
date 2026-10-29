@@ -2385,6 +2385,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.uuid "client_visit_id"
     t.string "ended_reason"
     t.boolean "location_received", default: false, null: false
+    t.integer "accuracy_m"
+    t.datetime "fix_at"
+    t.string "proximity"
+    t.string "presence_state"
+    t.datetime "last_fix_at"
+    t.integer "last_fix_distance_m"
+    t.integer "last_fix_accuracy_m"
+    t.uuid "last_location_event_id"
+    t.datetime "outside_since"
+    t.integer "outside_fix_count", default: 0, null: false
+    t.datetime "departed_notified_at"
+    t.datetime "returned_at"
     t.index ["client_visit_id"], name: "index_tour_histories_on_client_visit_id", unique: true, where: "(client_visit_id IS NOT NULL)"
     t.index ["community_id"], name: "index_tour_histories_on_community_id"
     t.index ["schedual_tour_id"], name: "index_tour_histories_on_schedual_tour_id"

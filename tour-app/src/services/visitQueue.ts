@@ -19,13 +19,13 @@ import { ApiError, isRetryable } from '~/repositories/pynwheelApi/apiClient';
  * record: the store only appends when the visit is a real, server-side one.
  */
 
-export type VisitEventKind = 'arrived' | 'skipped' | 'note' | 'photo' | 'issue' | 'unlocked' | 'unlock_failed' | 'heartbeat';
+export type VisitEventKind = 'arrived' | 'skipped' | 'note' | 'photo' | 'issue' | 'unlocked' | 'unlock_failed' | 'heartbeat' | 'location';
 
 /** An event as the API takes it. */
 export interface VisitEventInput {
   clientEventId: string;
   kind: VisitEventKind;
-  /** `unit:N` | `amenity:N` | `elevator:N`; required except for a heartbeat. */
+  /** `unit:N` | `amenity:N` | `elevator:N`; required except for a heartbeat or a location sample. */
   stopId: string | null;
   /** ISO 8601 */
   occurredAt: string;
@@ -207,6 +207,21 @@ export class VisitQueue {
 
   async size(): Promise<number> {
     return (await this.ready()).length;
+  }
+
+  /**
+   * Keeps only the newest `keep` events of one kind for a visit (the older
+   * ones are forgotten): a presence sample loses its worth within minutes,
+   * so an hour offline must not replay a track when the phone is back.
+   */
+  async prune(clientVisitId: string, kind: VisitEventKind, keep: number): Promise<number> {
+    const items = await this.ready();
+    const ofKind = items.filter((e) => e.clientVisitId === clientVisitId && e.kind === kind);
+    if (ofKind.length <= keep) return 0;
+    const drop = new Set(ofKind.slice(0, ofKind.length - keep));
+    this.items = items.filter((e) => !drop.has(e));
+    await this.persist();
+    return drop.size;
   }
 
   /**

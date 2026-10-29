@@ -23,6 +23,9 @@ export interface AppData {
   /** The properties the signed-in user may tour (the property picker). */
   properties: PropertyListing[];
   propertiesStatus: 'idle' | 'loading' | 'ready' | 'error';
+  /** The properties near the phone's last reading, nearest first (October 28, 2026); empty until there is a reading. */
+  nearby: PropertyListing[];
+  nearbyStatus: 'idle' | 'loading' | 'ready' | 'error';
 }
 
 export interface AppContextValue {

@@ -1,4 +1,5 @@
 import { ACCESS_MINUTES, DEMO, DEMO_EXTRA_TOURS, type DemoExtraTour } from '~/content/demoFixtures';
+import type { LocationAccess } from '~/services/location';
 import type { AppState, BookingState, DemoLocationScenario, DemoTourScenario, ScheduledTour } from './appState';
 import { dayKeyInZone, dayOffsetInZone, zonedSlotMs } from './zone';
 
@@ -322,21 +323,46 @@ export interface LocationModel {
   primaryAction: 'refresh' | 'qr' | 'settings';
   nearTitle: string;
   nearNeedsLocation: boolean;
+  /** What the phone allows, for the sheets' wording. */
+  access: LocationAccess;
+  deniedTitle: string;
+  deniedBody: string;
   offTitle: string;
   offSub: string;
   offCta: string;
 }
 
-export const resolveLocationScenario = (state: Pick<AppState, 'demo' | 'location'>): LocationScenario => {
+export const resolveLocationScenario = (state: Pick<AppState, 'demo' | 'location'>, online: boolean = typeof navigator === 'undefined' || navigator.onLine !== false): LocationScenario => {
   if (state.demo.location !== 'auto') return state.demo.location;
-  return state.location.perm === 'on' ? 'on' : state.location.perm === 'off' ? 'denied' : 'notAsked';
+  const { perm, access, failure } = state.location;
+  if (perm === 'off') return 'denied';
+  if (perm === 'ask') return 'notAsked';
+  if (!online) return 'offline';
+  if (access === 'coarse') return 'preciseOff';
+  if (failure === 'poor_accuracy' || failure === 'timeout') return 'approximate';
+  return 'on';
 };
 
-export const locationModel = (state: Pick<AppState, 'demo' | 'location' | 'checkedIn' | 'guestProperty'>, propertyName: string, address: string): LocationModel => {
+/** The "location is off" sheet's words for what the phone actually said. */
+export const deniedCopy = (access: LocationAccess): { title: string; body: string } => {
+  switch (access) {
+    case 'services_off':
+      return { title: 'Location Services are off', body: "Your phone's Location Services are turned off. Turn them on in Settings, then try again. You can still find a property without them." };
+    case 'denied_forever':
+      return { title: 'Location is turned off', body: 'Pynwheel no longer has permission to use your location. Open your phone\u2019s Settings, go to Pynwheel, then Location, and choose \u201cWhile Using the App\u201d.' };
+    case 'unavailable':
+      return { title: 'Location is not available', body: 'This device cannot report a location. You can still find a property by name, link or QR code.' };
+    default:
+      return { title: 'Location is turned off', body: 'To turn it on, open your phone\u2019s Settings, go to Pynwheel, then Location, and choose \u201cWhile Using the App\u201d. You can still find a property without it.' };
+  }
+};
+
+export const locationModel = (state: Pick<AppState, 'demo' | 'location' | 'checkedIn' | 'guestProperty' | 'visit'>, propertyName: string, address: string): LocationModel => {
   const scenario = resolveLocationScenario(state);
   const perm: LocationModel['perm'] = scenario === 'denied' ? 'off' : scenario === 'notAsked' ? 'ask' : 'on';
   const street = address.split(',')[0] || address;
-  const atProperty = scenario === 'atProperty' || (scenario !== 'nearby' && perm === 'on' && (state.checkedIn || state.guestProperty === 'near' || state.guestProperty === 'qr'));
+  // At the property = the server said so at check-in (or the forced demo scenario). How the property was found (location, QR, link) proves nothing.
+  const atProperty = scenario === 'atProperty' || (scenario !== 'nearby' && (state.checkedIn || state.visit?.proximity === 'verified'));
   const base = atProperty
     ? { line: `You're at ${propertyName}${DEMO}`, lineSub: '', manageSub: 'Detected from your location. Not right? Refresh, scan the QR code on site, or search for the property.', primaryLabel: 'Refresh Location', primaryAction: 'refresh' as const }
     : { line: `0.3 mi from ${propertyName}${DEMO}`, lineSub: `· ${street}`, manageSub: "Showing the closest property. If you're already there, refresh or scan the QR code at the entrance.", primaryLabel: 'Refresh Location', primaryAction: 'refresh' as const };
@@ -354,6 +380,8 @@ export const locationModel = (state: Pick<AppState, 'demo' | 'location' | 'check
     ...v,
     nearTitle: perm === 'on' ? 'Properties near you' : 'Featured properties',
     nearNeedsLocation: perm !== 'on' && !state.location.locating,
+    access: state.location.access,
+    ...(({ title, body }) => ({ deniedTitle: title, deniedBody: body }))(deniedCopy(state.location.access)),
     offTitle: perm === 'off' ? 'Location is off' : 'Location not turned on',
     offSub: perm === 'off' ? 'Turn it on to find properties near you.' : 'Turn on to see where you are and nearby properties.',
     offCta: perm === 'off' ? 'Fix' : 'Turn on'
@@ -362,14 +390,17 @@ export const locationModel = (state: Pick<AppState, 'demo' | 'location' | 'check
 
 // ───────── Check-in sheet ─────────
 
-export type CheckinScenario = 'ready' | 'verify' | 'away' | 'active' | 'uncertain' | 'pending' | 'early';
+export type CheckinScenario = 'ready' | 'verify' | 'away' | 'active' | 'uncertain' | 'pending' | 'early' | 'outside' | 'unverified' | 'permission';
 
 export interface CheckinOption {
   title: string;
   sub: string;
-  action: 'qr' | 'late' | 'reschedule' | 'cancel' | 'call' | 'verify' | 'startPoint' | 'endTour' | 'calendar' | 'close';
+  action: 'qr' | 'late' | 'reschedule' | 'cancel' | 'call' | 'verify' | 'startPoint' | 'endTour' | 'calendar' | 'close' | 'retry';
   danger?: boolean;
 }
+
+/** "0.3 mi" / "1.4 mi" for the distance the server measured. */
+export const distanceLabel = (metres: number): string => `${Math.max(0.1, metres / 1609.344).toFixed(1)} mi`;
 
 export interface CheckinStep {
   n: string;
@@ -384,7 +415,7 @@ export interface CheckinModel {
   title: string;
   sub: string;
   primary: string;
-  primaryAction: 'start' | 'verify' | 'close' | 'resume' | 'chat' | 'calendar';
+  primaryAction: 'start' | 'verify' | 'close' | 'resume' | 'chat' | 'calendar' | 'location';
   options: CheckinOption[];
   steps: CheckinStep[] | null;
   warn: { title: string; body: string; cta: string; action: 'qr' | 'retry' | 'settings' } | null;
@@ -402,7 +433,7 @@ export const isVerified = (state: Pick<AppState, 'verification' | 'demo'>): bool
 export const needsIdVerification = (state: Pick<AppState, 'verification' | 'demo' | 'verificationRequired'>): boolean => state.verificationRequired !== false && !isVerified(state);
 
 export const checkinModel = (
-  state: ScenarioState & Pick<AppState, 'location' | 'checkedIn' | 'guestProperty' | 'verification' | 'verificationRequired' | 'accessEndsAt' | 'schedule' | 'checkinFor'>,
+  state: ScenarioState & Pick<AppState, 'location' | 'checkedIn' | 'guestProperty' | 'verification' | 'verificationRequired' | 'accessEndsAt' | 'schedule' | 'checkinFor' | 'checkinRefusal' | 'capabilities' | 'visit'>,
   now: number,
   propertyName: string,
   address: string,
@@ -411,14 +442,21 @@ export const checkinModel = (
   const loc = locationModel(state, propertyName, address);
   const verified = !needsIdVerification(state);
   const { scenario: tourScenario, tour } = effectiveTour(state, now);
+  const refusal = state.checkinRefusal;
+  // The server, not the phone, decides whether the visitor is at the property: the sheet only asks for what the server will need.
+  const needsLocation = state.capabilities.locationRequired && state.demo.location === 'auto';
   let scenario: CheckinScenario;
   if (extra) scenario = extra.scenario;
   else if (state.checkedIn) scenario = 'active';
   else if (tourScenario === 'pending') scenario = 'pending';
   else if (tourScenario === 'upcoming') scenario = 'early';
+  else if (refusal) scenario = refusal.code === 'outside_property' ? 'outside' : 'unverified';
+  else if (loc.scenario === 'nearby') scenario = 'away';
   else if (loc.scenario === 'approximate' || loc.scenario === 'offline' || loc.scenario === 'preciseOff') scenario = 'uncertain';
-  else if (!loc.atProperty) scenario = 'away';
-  else scenario = !verified ? 'verify' : 'ready';
+  else if (!verified) scenario = 'verify';
+  else if (needsLocation && loc.perm !== 'on') scenario = 'permission';
+  else scenario = 'ready';
+  const locating = state.location.locating;
   const time = extra?.time ?? tour?.time ?? '6:00 PM';
   const name = extra?.name ?? propertyName;
   const dayText = extra?.dayLabel ?? (tour ? tourDayLabel(tour, now) : '');
@@ -426,7 +464,45 @@ export const checkinModel = (
   const opt = (title: string, sub: string, action: CheckinOption['action'], danger = false): CheckinOption => ({ title, sub, action, danger });
   switch (scenario) {
     case 'ready':
-      return { scenario, tone: 'ok', title: `You're at ${name}`, sub: `Your ${time} tour is ready. Check in to unlock doors for ${ACCESS_MINUTES} minutes.${DEMO}`, primary: 'Start In-Person Tour', primaryAction: 'start', steps: null, warn: null, options: [opt('Check in with the QR code', 'Use the code at the entrance if location is off', 'qr'), opt('Running late?', 'Let the leasing team know', 'late'), opt('Reschedule', 'Pick a different time', 'reschedule')] };
+      return { scenario, tone: 'ok', title: loc.atProperty ? `You're at ${name}` : `Ready for ${name}`, sub: `Your ${time} tour is ready. Check in to unlock doors for ${ACCESS_MINUTES} minutes; we confirm you're at the property first.${DEMO}`, primary: locating ? 'Finding your location…' : 'Start In-Person Tour', primaryAction: 'start', steps: null, warn: null, options: [opt('Running late?', 'Let the leasing team know', 'late'), opt('Reschedule', 'Pick a different time', 'reschedule')] };
+    case 'outside':
+      return {
+        scenario,
+        tone: 'warn',
+        title: 'Start your tour once you arrive',
+        sub: `${refusal?.distanceM != null ? `You're about ${distanceLabel(refusal.distanceM)} from ${name}. ` : ''}When you're at the property, try again to check in and unlock doors.`,
+        primary: locating ? 'Finding your location…' : 'Try Again',
+        primaryAction: 'start',
+        steps: null,
+        warn: null,
+        options: [opt('Refresh location', 'Get a new reading from your phone', 'retry'), opt('Call leasing', 'Let the team know where you are', 'call'), opt('Reschedule', 'Pick a different time', 'reschedule'), opt('Cancel tour', 'Free up your time slot', 'cancel', true)]
+      };
+    case 'unverified': {
+      const noCoords = refusal?.proximity === 'unverified_no_property_coords';
+      return {
+        scenario,
+        tone: 'warn',
+        title: noCoords ? 'In-person check-in is not available here yet' : "We couldn't confirm you're at the property",
+        sub: refusal?.message ?? 'Try again, outdoors if you can.',
+        primary: noCoords ? 'Got It' : locating ? 'Finding your location…' : 'Try Again',
+        primaryAction: noCoords ? 'close' : 'start',
+        steps: null,
+        warn: null,
+        options: [...(noCoords ? [] : [opt('Refresh location', 'Get a new reading from your phone', 'retry')]), opt('Call leasing', 'The team can help you in', 'call'), opt('Reschedule', 'Pick a different time', 'reschedule')]
+      };
+    }
+    case 'permission':
+      return {
+        scenario,
+        tone: 'warn',
+        title: 'Turn on location to check in',
+        sub: `We confirm you're at ${name} before doors unlock. Your location is only used while the app is open.`,
+        primary: 'Turn On Location',
+        primaryAction: 'location',
+        steps: null,
+        warn: null,
+        options: [opt('Call leasing', 'The team can help you in', 'call'), opt('Reschedule', 'Pick a different time', 'reschedule')]
+      };
     case 'verify':
       return {
         scenario,
@@ -452,7 +528,7 @@ export const checkinModel = (
         primaryAction: 'close',
         steps: null,
         warn: null,
-        options: [...(!verified ? [opt('Verify your ID on the way', 'Required before doors open. Takes about a minute.', 'verify')] : []), opt("I'm here, but location is wrong", 'Scan the QR code at the entrance instead', 'qr'), opt('Running late?', 'Let the leasing team know', 'late'), opt('Reschedule', 'Pick a different time', 'reschedule'), opt('Cancel tour', 'Free up your time slot', 'cancel', true)]
+        options: [...(!verified ? [opt('Verify your ID on the way', 'Required before doors open. Takes about a minute.', 'verify')] : []), opt("I'm here, but location is wrong", 'Get a new reading from your phone', 'retry'), opt('Running late?', 'Let the leasing team know', 'late'), opt('Reschedule', 'Pick a different time', 'reschedule'), opt('Cancel tour', 'Free up your time slot', 'cancel', true)]
       };
     case 'active': {
       const left = Math.max(0, Math.round(((state.accessEndsAt ?? now) - now) / 60000));
@@ -470,9 +546,9 @@ export const checkinModel = (
     }
     case 'uncertain': {
       const W: Record<string, [string, string, string, 'qr' | 'retry' | 'settings']> = {
-        approximate: ["We can't confirm you're on site", "Your location is approximate. You can still start. If a door doesn't open, scan the QR code at the entrance.", 'Scan QR Code', 'qr'],
-        offline: ["You're offline", "Doors need a connection to unlock. You can start now, but move near an entrance or Wi-Fi if a door doesn't respond.", 'Retry Connection', 'retry'],
-        preciseOff: ['Precise location is off', "We can't confirm which building you're in. You can still start, or turn on Precise Location in Settings for the smoothest unlocks.", 'Open Settings', 'settings']
+        approximate: ["We can't confirm you're on site yet", "Your location reading is approximate. The property confirms you're there before doors unlock, so try again, outdoors if you can.", 'Try Again', 'retry'],
+        offline: ["You're offline", 'Check-in and doors need a connection. Move near an entrance or Wi-Fi and retry.', 'Retry Connection', 'retry'],
+        preciseOff: ['Precise location is off', "We can't confirm which building you're in. Turn on Precise Location in Settings, or try anyway: the property decides from the reading.", 'Open Settings', 'settings']
       };
       const w = W[loc.scenario] ?? W.approximate;
       return {
@@ -480,11 +556,11 @@ export const checkinModel = (
         tone: 'warn',
         title: !verified ? 'One step before you start' : 'Ready when you are',
         sub: `Your ${time} tour at ${name}.`,
-        primary: !verified ? 'Verify My ID' : 'Start In-Person Tour',
+        primary: !verified ? 'Verify My ID' : locating ? 'Finding your location…' : 'Start In-Person Tour',
         primaryAction: !verified ? 'verify' : 'start',
         steps: null,
         warn: { title: w[0], body: w[1], cta: w[2], action: w[3] },
-        options: [...(loc.scenario === 'approximate' ? [] : [opt('Scan the QR code to confirm', 'Most reliable way to check in', 'qr')]), opt('Running late?', 'Let the leasing team know', 'late'), opt('Reschedule', 'Pick a different time', 'reschedule')]
+        options: [opt('Running late?', 'Let the leasing team know', 'late'), opt('Reschedule', 'Pick a different time', 'reschedule')]
       };
     }
     case 'pending':

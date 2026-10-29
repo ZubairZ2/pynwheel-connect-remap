@@ -1,4 +1,5 @@
 import communityPhoto from '~/assets/images/community-pool.jpg';
+import type { NearbyQuery } from '~/repositories/tourRepository';
 import { APP_VERSION, AR_INIT_LABELS, BOOKING_TIMES, CONCIERGE_GREETING_GENERAL, CONCIERGE_GREETING_STOP, CONCIERGE_HUMAN_REPLY, CONCIERGE_NOT_CONNECTED, CONCIERGE_PROMPTS, HELP_ITEMS, ONBOARDING_SLIDES, SUPPORT_EMAIL, upcomingDays } from '~/content/appCopy';
 import type { LockBluetoothKey, LockPin, MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
 import { clearSession, loadSession, NO_CAPABILITIES, parseCapabilities, saveSession, type Capabilities, type Session, type SessionVisitor } from '~/services/session';
@@ -258,7 +259,16 @@ export class PynwheelApiTourRepository implements TourRepository {
   }
 
   // ---------------------------------------------------------- property choice
-  async getProperties(): Promise<PropertyListing[]> {
+  async getProperties(options?: NearbyQuery): Promise<PropertyListing[]> {
+    if (options?.near) {
+      // Never cached: the answer is for one position, and it carries no coordinates of its own.
+      const query = new URLSearchParams({ near: `${options.near.lat},${options.near.lng}` });
+      if (options.limit != null) query.set('limit', String(options.limit));
+      if (options.radiusKm != null) query.set('radius_km', String(options.radiusKm));
+      const { data } = await this.client.get<{ properties: ApiPropertySummary[] }>(`${API}/properties?${query.toString()}`);
+      const current = this.currentPropertyId();
+      return (Array.isArray(data.properties) ? data.properties : []).map((p) => parseListing(p, current));
+    }
     // One request however many callers ask at once (the provider's list load and `getContent` start together).
     if (this.propertiesInflight) return this.propertiesInflight;
     const promise = this.client
@@ -509,7 +519,9 @@ export class PynwheelApiTourRepository implements TourRepository {
       ...(input.bookingId != null ? { booking_id: input.bookingId } : {}),
       tour_type: input.tourType,
       started_at: input.startedAt,
-      ...(input.latitude != null && input.longitude != null ? { latitude: input.latitude, longitude: input.longitude } : {}),
+      ...(input.latitude != null && input.longitude != null
+        ? { latitude: input.latitude, longitude: input.longitude, ...(input.accuracyM != null ? { accuracy_m: input.accuracyM } : {}), ...(input.fixAt ? { fix_at: input.fixAt } : {}) }
+        : {}),
       device_time_zone: deviceTimeZone(),
       app_version: APP_VERSION,
       ...(input.tourUserId != null ? { tour_user_id: input.tourUserId } : {})

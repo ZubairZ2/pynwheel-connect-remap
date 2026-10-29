@@ -5,10 +5,15 @@ module TourApi
   module Visits
     module_function
 
-    def visit_json(community, visit, now: nil, created: nil, within_radius: nil, in_hours: nil, verification_required: nil)
+    def visit_json(community, visit, now: nil, created: nil, within_radius: nil, in_hours: nil, verification_required: nil, proximity: nil, distance_m: nil, accuracy_m: nil)
       now ||= ::Visits::Rules.now(community)
       minutes = ::Visits::Rules.access_minutes(community)
       status = Visitors::Status.visit_status(visit, now)
+      # The check-in's verdict where the row carries one; a row from before
+      # October 28, 2026 (or a legacy one) is judged again from what it stored.
+      recorded = ::Visits::Rules.proximity(community, visit.latitude&.to_f, visit.longitude&.to_f, visit.accuracy_m)
+      proximity ||= visit.proximity.presence || recorded.first
+      distance_m ||= recorded.last
       {
         id: visit.id,
         status: status,
@@ -25,9 +30,16 @@ module TourApi
         within_radius: within_radius,
         in_hours: in_hours,
         location_received: visit.location_received == true,
+        proximity: proximity,
+        distance_m: distance_m,
+        accuracy_m: accuracy_m || visit.accuracy_m,
+        fix_at: Text.timestamp(visit.fix_at),
+        presence: visit.presence_state.presence && { state: visit.presence_state, fix_at: Text.timestamp(visit.last_fix_at), distance_m: visit.last_fix_distance_m,
+                                                     departed_at: Text.timestamp(visit.departed_notified_at), returned_at: Text.timestamp(visit.returned_at) }.compact,
         verification_required: verification_required.nil? ? ::Visits::Rules.verification_required?(community, visit.tour_user, now) : verification_required,
         events: VisitedStop.where(tour_history_id: visit.id).count,
-        created: created
+        created: created,
+        server_time: Text.timestamp(Time.now)
       }.compact
     end
 

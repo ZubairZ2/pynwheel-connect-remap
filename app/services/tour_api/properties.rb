@@ -7,6 +7,9 @@ module TourApi
   # Self-Guided Tour is on → 422 `tour_disabled`).
   module Properties
     LIST_TTL = 60.seconds
+    # How far "near you" reaches (kilometres), and how many properties it lists at most (October 28, 2026).
+    NEAR_RADIUS_KM = ENV.fetch('PYN_TOUR_NEAR_RADIUS_KM', '25').to_f.clamp(1.0, 500.0)
+    NEAR_LIMIT_MAX = 50
 
     # The whole list is remembered per process for a minute (803 rows); the
     # access filter runs per request on top of it.
@@ -63,7 +66,28 @@ module TourApi
       AllowedEmail.where(community_id: community.id).where('lower(email) = ?', visitor.email.to_s.downcase).exists?
     end
 
-    def list(context, query: nil, tour_only: false)
+    # `near: [latitude, longitude]` (October 28, 2026) keeps the properties with coordinates within `radius_km`
+    # (NEAR_RADIUS_KM at most) of the phone, nearest first, `limit` at most, each with `distance_m` (straight-line,
+    # the same measure the check-in's radius uses); the coordinates themselves are never answered. Nearness
+    # names candidates only: being at a property is decided at check-in.
+    def list(context, query: nil, tour_only: false, near: nil, radius_km: nil, limit: nil)
+      rows = visible(context, query: query, tour_only: tour_only)
+      return rows if near.nil?
+
+      radius_m = (radius_km || NEAR_RADIUS_KM).clamp(0.1, NEAR_RADIUS_KM) * 1000
+      coordinates = Community.where(id: rows.map { |row| row[:id] }).where.not(latitude: nil).where.not(longitude: nil).pluck(:id, :latitude, :longitude).to_h { |id, lat, lng| [id, [lat.to_f, lng.to_f]] }
+      rows.filter_map do |row|
+        point = coordinates[row[:id]]
+        next if point.nil?
+
+        distance_m = (Geocoder::Calculations.distance_between(near, point, units: :km) * 1000).round
+        next if distance_m > radius_m
+
+        row.merge(distance_m: distance_m)
+      end.sort_by { |row| [row[:distance_m], row[:id]] }.first((limit || 10).clamp(1, NEAR_LIMIT_MAX))
+    end
+
+    def visible(context, query: nil, tour_only: false)
       rows = if context.staff?
                all_summaries.select { |row| accessible?(context, row[:id]) }
              else

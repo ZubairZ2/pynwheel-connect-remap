@@ -17,7 +17,7 @@ class Api::TourApp::V1::VerificationTest < ActionDispatch::IntegrationTest
   setup do
     fake_jobs!
     build_tour_app_fixtures!
-    @community.update_columns(time_zone: 'America/Denver', email: 'leasing@example.test, manager@example.test')
+    @community.update_columns(time_zone: 'America/Denver', latitude: 39.7392, longitude: -104.9903, email: 'leasing@example.test, manager@example.test')
     @tour.update_columns(visual_id_verification: true, credit_card_required: false, verification_type: 'check_point_id', only_scheduled_tour: false)
     TourSetting.create!(tour: @tour, allow_self_tour: true, allow_guided_tour: true, time_intervel: '30 min', length_stay_limit: 45, do_limit_max_tour: false)
     %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday].each_with_index do |day, i|
@@ -252,7 +252,8 @@ class Api::TourApp::V1::VerificationTest < ActionDispatch::IntegrationTest
   end
 
   test 'the check-in starts only once the server-side requirements hold' do
-    start = ->(headers = auth, extra = {}) { post_json("#{@base}/visits", { client_visit_id: SecureRandom.uuid, tour_type: 'self_tour' }.merge(extra), headers) }
+    # A fix at the property, so the proximity gate (which runs first) passes and only the ID and card gates are exercised here.
+    start = ->(headers = auth, extra = {}) { post_json("#{@base}/visits", { client_visit_id: SecureRandom.uuid, tour_type: 'self_tour', latitude: 39.7419, longitude: -104.9903, accuracy_m: 20 }.merge(extra), headers) }
     start.call
     assert_response :unprocessable_entity, response.body
     assert_equal 'verification_required', body['error']['code']
