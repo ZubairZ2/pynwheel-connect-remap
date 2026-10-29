@@ -1,4 +1,5 @@
 class CsvfileUploader < CarrierWave::Uploader::Base
+  prepend SharedSourceStorage
 
   include CarrierWave::MiniMagick
 

@@ -1,4 +1,5 @@
 class AvatarUploader < CarrierWave::Uploader::Base
+  prepend SharedSourceStorage
   include CarrierWave::RMagick
   storage Rails.env.development? ? :file : :fog
 

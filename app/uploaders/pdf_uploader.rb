@@ -1,4 +1,5 @@
 class PdfUploader < CarrierWave::Uploader::Base
+  prepend SharedSourceStorage
 
   include CarrierWave::MiniMagick
 

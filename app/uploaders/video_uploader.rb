@@ -1,4 +1,5 @@
 class VideoUploader < CarrierWave::Uploader::Base
+  prepend SharedSourceStorage
   include ::CarrierWave::Backgrounder::Delay
   include CarrierWaveDirect::Uploader
   storage Rails.env.development? ? :file : :fog 

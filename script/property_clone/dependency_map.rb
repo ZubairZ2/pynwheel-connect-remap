@@ -60,7 +60,7 @@ policy.exclusions.each { |ex| puts "| `#{ex.table}` | #{ex.category} | #{ex.reas
 puts
 puts '## Files (S3)'
 puts
-puts 'Every CarrierWave uploader stores under `uploads/<model>/<mount>/<record id>/`, so the clone gets its own copy of each folder (server-side copy, never overwriting, never deleting), after the database transaction. The `*_url` columns (`' + policy::URL_COLUMNS.join('`, `') + '`) are rewritten to the clone prefix only once the copy succeeded; until then they read the source objects (read-only). Models with uploaders among the cloned tables:'
+puts 'Every CarrierWave uploader stores under `uploads/<model>/<mount>/<record id>/`. By default the clone does NOT copy objects: every cloned row gets `file_source_id` = the source row\'s id and `SharedSourceStorage` makes its uploaders read the source folder, so inventory images, floor plans and the SVG maps are the very same objects. Writing is never shared: a record only deletes objects inside its own id folder, version regeneration is skipped while shared, and the first upload on a cloned record detaches it (its other files are copied into its own folder, then `file_source_id` is cleared). With `COPY_FILES=1` the folders are copied under the clone ids after COMMIT instead, the `*_url` columns (`' + policy::URL_COLUMNS.join('`, `') + '`) rewritten and `file_source_id` cleared. Tables with uploaders among the cloned ones (all carry `file_source_id`):'
 puts
 (policy.steps).each do |step|
   klass = step.model&.safe_constantize

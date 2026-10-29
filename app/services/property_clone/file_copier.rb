@@ -72,6 +72,7 @@ module PropertyClone
           entry.objects << { 'key' => key, 'target' => target, 'copied' => true }
         end
         rewrite_urls(entry)
+        detach(entry)
         entry.status = 'COPIED'
         @logger&.puts("  #{entry.table}##{entry.source_id} #{entry.mount}: #{entry.objects.size} objects -> #{entry.clone_prefix}")
       end
@@ -94,6 +95,14 @@ module PropertyClone
         true
       rescue Aws::S3::Errors::NotFound, Aws::S3::Errors::NoSuchKey
         false
+      end
+
+      # The row now owns its objects: it stops reading the source's folder.
+      def detach(entry)
+        conn = ActiveRecord::Base.connection
+        return unless @plan.table_columns(entry.table).include?(Policy::FILE_SOURCE_COLUMN)
+
+        conn.execute("UPDATE #{conn.quote_table_name(entry.table)} SET file_source_id = NULL WHERE id = #{conn.quote(entry.clone_id)}")
       end
 
       def rewrite_urls(entry)

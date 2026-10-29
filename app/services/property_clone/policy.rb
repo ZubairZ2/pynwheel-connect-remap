@@ -23,7 +23,7 @@
 module PropertyClone
   module Policy
     SUFFIX = ' [SCRIPT TESTING]'
-    VERSION = '2026-10-28.1'
+    VERSION = '2026-10-29.1'
 
     CATEGORIES = {
       clone: 'Clone as a new independent record',
@@ -342,6 +342,12 @@ module PropertyClone
 
     # *_url columns that mirror an uploader path; rewritten when files are copied.
     URL_COLUMNS = %w[standard_image_url svg_image_url thumb_image_url large_image_url ios_image_url].freeze
+
+    # Shared upload folders (October 29, 2026): on every cloned table that has
+    # it, the column names the record whose S3 folder the row reads
+    # (SharedSourceStorage). The Runner sets it to the source row's id, so the
+    # clone shows the original's images and maps without copying objects.
+    FILE_SOURCE_COLUMN = 'file_source_id'
 
     def self.steps
       STEPS

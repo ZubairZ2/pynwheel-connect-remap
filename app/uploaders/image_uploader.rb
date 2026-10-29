@@ -1,4 +1,5 @@
 class ImageUploader < CarrierWave::Uploader::Base
+  prepend SharedSourceStorage
 
   # Include RMagick or MiniMagick support:
    include CarrierWave::RMagick
