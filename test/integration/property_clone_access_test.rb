@@ -47,11 +47,11 @@ class PropertyCloneAccessTest < ActionDispatch::IntegrationTest
     get '/communities.json'
     assert_response :success
     assert_equal [@clone.id], body['data'].map { |row| row['id'] }
-    # Legacy limitation, reported: `Ability` has no rule for the "Company admin"
-    # role, so CompaniesController (load_and_authorize_resource) refuses it the
-    # companies listing, its own company included. Nothing of the source is exposed.
+    # Connect's sign-in route verifies the session with this listing, so it
+    # must answer (a "Company admin" would get 403: no rule in Ability).
     get '/companies.json'
-    assert_response :forbidden
+    assert_response :success
+    assert_equal [@clone_company.id], body['data'].map { |row| row['id'] }
 
     # Connect reads keyed on the property id (User#can_access_community?)
     get "/communities/#{@clone.id}/connect/stops.json"
