@@ -1,6 +1,6 @@
 # Property clone: dependency map
 
-Generated from `app/services/property_clone/policy.rb` (policy 2026-10-28.1) by `script/property_clone/dependency_map.rb`. The property is the primary object; its company is a supporting dependency. Everything below is derived from the models, associations and schema in this repository.
+Generated from `app/services/property_clone/policy.rb` (policy 2026-10-29.1) by `script/property_clone/dependency_map.rb`. The property is the primary object; its company is a supporting dependency. Everything below is derived from the models, associations and schema in this repository.
 
 ## Categories
 
@@ -19,7 +19,7 @@ Every step runs after its parents. `remap` lists plain foreign keys rewritten to
 |---|---|---|---|---|---|---|---|---|
 | 1 | `companies` | sanitize | the property's company (communities.company_id) |  |  |  | email, phone | Owning company: new id, name suffixed, contact email/phone cleared (notification targets). Its users, sibling properties, regions and groups the property does not use are not copied. |
 | 2 | `company_settings` | clone_remap | company_id = source company | company_id→companies |  |  |  |  |
-| 3 | `credentials (company level)` | sanitize | company_id = source company AND community_id IS NULL | company_id→companies, community_id→communities |  |  | password, username, licence_key, api_token, resman_apikey, zaremba_username, zaremba_password, crm_username, crm_password, crm_client_id, crm_client_secret, rentcafe_v2_auth_token, rentcafe_v2_token_expires_at, yardi_username, yardi_password, rentmanager_username, rentmanager_password, rentmanager_auth_token, property_id, pmc_id, site_id, c_code, p_code, url, server_name, database, platform, interface_entity, resman_partner_id, resman_account_id, resman_property_id, zaremba_filename, zaremba_property_id, entrata_url, xml_filename, xml_domain, perq_property_id, rentmanager_property_id, rentmanager_base_url, app_folio_property_id, app_folio_database_id, app_folio_property_group_id, apartmentlist_url, yardi_rent_cafe_api_url, crm_provider, data_error_message, data_error_exp | Company-level PMS credential: secrets and provider identifiers cleared, display settings kept. |
+| 3 | `credentials (company level)` | sanitize | company_id = source company AND community_id IS NULL | company_id→companies |  |  | password, username, licence_key, api_token, resman_apikey, zaremba_username, zaremba_password, crm_username, crm_password, crm_client_id, crm_client_secret, rentcafe_v2_auth_token, rentcafe_v2_token_expires_at, yardi_username, yardi_password, rentmanager_username, rentmanager_password, rentmanager_auth_token, property_id, pmc_id, site_id, c_code, p_code, url, server_name, database, platform, interface_entity, resman_partner_id, resman_account_id, resman_property_id, zaremba_filename, zaremba_property_id, entrata_url, xml_filename, xml_domain, perq_property_id, rentmanager_property_id, rentmanager_base_url, app_folio_property_id, app_folio_database_id, app_folio_property_group_id, apartmentlist_url, yardi_rent_cafe_api_url, crm_provider, data_error_message, data_error_exp | Company-level PMS credential: secrets and provider identifiers cleared, display settings kept. |
 | 4 | `regions` | clone_remap | the property's region (communities.region_id) | company_id→companies |  |  | email, phone, contact | Only the region the property belongs to (Region#name is unique application-wide, so it is suffixed). |
 | 5 | `community_groups` | clone_remap | the property's portfolio group (communities.community_group_id) | company_id→companies, region_id→regions |  |  | code | Only the portfolio group the property belongs to (name unique application-wide, code unique with properties). |
 | 6 | `group_designs` | clone_remap | community_group_id IN cloned community_groups | community_group_id→community_groups |  |  |  |  |
@@ -149,5 +149,39 @@ Every step runs after its parents. `remap` lists plain foreign keys rewritten to
 
 ## Files (S3)
 
-Every CarrierWave uploader stores under `uploads/<model>/<mount>/<record id>/`, so the clone gets its own copy of each folder (server-side copy, never overwriting, never deleting), after the database transaction. The `*_url` columns (`standard_image_url`, `svg_image_url`, `thumb_image_url`, `large_image_url`, `ios_image_url`) are rewritten to the clone prefix only once the copy succeeded; until then they read the source objects (read-only). Models with uploaders among the cloned tables:
+Every CarrierWave uploader stores under `uploads/<model>/<mount>/<record id>/`. By default the clone does NOT copy objects: every cloned row gets `file_source_id` = the source row's id and `SharedSourceStorage` makes its uploaders read the source folder, so inventory images, floor plans and the SVG maps are the very same objects. Writing is never shared: a record only deletes objects inside its own id folder, version regeneration is skipped while shared, and the first upload on a cloned record detaches it (its other files are copied into its own folder, then `file_source_id` is cleared). With `COPY_FILES=1` the folders are copied under the clone ids after COMMIT instead, the `*_url` columns (`standard_image_url`, `svg_image_url`, `thumb_image_url`, `large_image_url`, `ios_image_url`) rewritten and `file_source_id` cleared. Tables with uploaders among the cloned ones (all carry `file_source_id`):
 
+- `CommunityGroup`: logo
+- `GroupDesign`: background_image
+- `GroupHomepageImage`: image
+- `GroupHomepageVideo`: video
+- `Community`: logo, email_logo, secondary_logo, self_tour_logo, map_logo, brand_details_pdf, file, background_svg_image
+- `FavoriteImage`: image
+- `Design`: secondary_page_background_image, global_nav_button_on, global_nav_button_off, filter_button, gallery_button, filter_panel_background_image, filter_label_image, gallery_button_on_image, pynwheel_touch_hardware_spec
+- `Gable`: home_page_nav_bg_image, global_nav_bg_image, filter_panel_bg_image, application_bg_image_gables, apartment_bg_image_gables, gallery_bg_image_gables, favourite_bg_image_gables, additional_pages_bg_image_gables
+- `Expressionist`: home_page_button_image, application_background_image, apartment_nav_bg_image, gallery_nav_bg_image, favourities_nav_bg_image, additional_pages_nav_bg_image, apartment_btn_on_image, gallery_btn_on_image, neighborhood_btn_on_image, imagepage_btn_on_image, webpage_btn_on_image, favourite_btn_on_image, apartment_btn_off_image, gallery_btn_off_image, neighborhood_btn_off_image, imagepage_btn_off_image, webpage_btn_off_image, favourite_btn_off_image, home_page_background_image, global_nav_background_image, neighborhood_bg_image
+- `HomeScreen`: appartments_button, galleries_button, neighborhood_button, favorities_button, about_button, floorplan_button, building_button
+- `MainScreen`: appartments_button, galleries_button, neighborhood_button, favorities_button
+- `HomePageImage`: image
+- `HomepageIcon`: image
+- `HomePageVideo`: video
+- `Location`: image
+- `DesignDirection`: image, file
+- `HardwareSpec`: image
+- `GalleryImage`: image, video
+- `AdditionalImage`: image
+- `AdditionalFile`: file
+- `Tutorial`: video
+- `Floorplan`: image, secondary_image, file
+- `Floorplate`: image, svg_image, label_image, file
+- `Sitemap`: image, svg_image, label_image, file
+- `Unit`: image, secondary_image
+- `Amenity`: image
+- `AmenityGallery`: image
+- `Elevator`: image
+- `ElevatorGallery`: image
+- `StopGallery`: image
+
+## Company-level dependencies
+
+Cloned: the company row (name suffixed, contact e-mail/phone cleared), `company_settings`, the company-level `credentials` row (secrets and provider identifiers cleared), and only the region and portfolio group the property belongs to (with the group design and its images). Not cloned: the company's users and their assignments, its other properties, regions and groups, its PaperTrail history. The clone company therefore shares no mutable row with the source company.

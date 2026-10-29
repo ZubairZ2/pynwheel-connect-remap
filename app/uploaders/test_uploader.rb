@@ -1,4 +1,5 @@
 class TestUploader < CarrierWave::Uploader::Base
+  prepend SharedSourceStorage
   include CarrierWave::RMagick
   include Sprockets::Rails::Helper
   storage :fog

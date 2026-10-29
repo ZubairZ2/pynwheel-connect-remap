@@ -111,6 +111,9 @@ module PropertyClone
           result[:cleared].concat(decision[:notes].map { |n| "##{src['id']}: #{n}" })
           step.sanitized_columns.each { |col, value| overrides[col] = value if columns.include?(col) }
           step.self_ref_columns.each { |col| overrides[col] = nil if columns.include?(col) }
+          # Shared upload folders: the clone reads the original record's files
+          # (or the original's own source, for a clone of a clone).
+          overrides[Policy::FILE_SOURCE_COLUMN] = src[Policy::FILE_SOURCE_COLUMN].presence || src['id'] if columns.include?(Policy::FILE_SOURCE_COLUMN)
           overrides.merge!(step.overrides.call(plan.context, src)) if step.overrides
           new_id = insert_copy(step.table, columns, src['id'], overrides)
           id_map.set(step.table, src['id'], new_id)

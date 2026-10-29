@@ -11,12 +11,19 @@
 #   rake property_clone:test_admin[<clone company id>,<clone property id>]
 #                                              # TEST_ADMIN_EMAIL=... [TEST_ADMIN_PASSWORD=... non-production only]
 #
-# Options: CLONE_SUFFIX (default " [SCRIPT TESTING]"), SKIP_FILES=1 (no S3 copy),
+#   rake property_clone:share_files[1618]      # MANIFEST=<execute manifest>: point an older clone's rows at the
+#                                              # source's upload folders (file_source_id)
+#
+# Files: by default the clone READS the source records' S3 folders (file_source_id,
+# SharedSourceStorage); nothing is copied. COPY_FILES=1 copies every folder under
+# the clone ids instead (bucket access required). SKIP_FILES is accepted and means
+# the default.
+# Options: CLONE_SUFFIX (default " [SCRIPT TESTING]"),
 # PROPERTY_CLONE_FAIL_AT=<table>|end (test hook: raise inside the transaction).
 namespace :property_clone do
   def property_clone_options
     { suffix: ENV['CLONE_SUFFIX'].presence || PropertyClone::Policy::SUFFIX,
-      options: { skip_files: ENV['SKIP_FILES'] == '1', fail_at: ENV['PROPERTY_CLONE_FAIL_AT'].presence }.compact }
+      options: { copy_files: ENV['COPY_FILES'] == '1', fail_at: ENV['PROPERTY_CLONE_FAIL_AT'].presence }.compact }
   end
 
   def property_clone_source_id(args)
@@ -33,7 +40,7 @@ namespace :property_clone do
     opts = property_clone_options
     plan = PropertyClone::Plan.new(source_id, suffix: opts[:suffix], options: opts[:options]).resolve!
     PropertyClone::Report.plan(plan)
-    files = { 'mode' => 'planned', 'entries' => plan.file_plan.size, 'details' => PropertyClone::FileCopier.plan(plan).map { |e| e.to_h.transform_keys(&:to_s) } }
+    files = { 'mode' => opts[:options][:copy_files] ? 'planned copy (COPY_FILES=1)' : 'shared: the clone reads the source folders (file_source_id)', 'entries' => plan.file_plan.size, 'details' => PropertyClone::FileCopier.plan(plan).map { |e| e.to_h.transform_keys(&:to_s) } }
     manifest = PropertyClone::Manifest.build(plan: plan, mode: :dry_run, environment: info, files: files, status: plan.conflicts.any? ? 'conflicts' : 'ok')
     path = PropertyClone::Manifest.write(manifest)
     puts
@@ -69,8 +76,8 @@ namespace :property_clone do
     PropertyClone::Report.verification(verifier)
 
     entries = PropertyClone::FileCopier.plan(plan, runner.id_map)
-    files = if opts[:options][:skip_files]
-              { 'mode' => 'skipped (SKIP_FILES=1)', 'entries' => entries.size, 'details' => entries.map { |e| e.to_h.transform_keys(&:to_s) } }
+    files = if !opts[:options][:copy_files]
+              { 'mode' => 'shared: the clone reads the source folders (file_source_id)', 'entries' => entries.size, 'details' => entries.map { |e| e.to_h.transform_keys(&:to_s) } }
             elsif entries.empty?
               { 'mode' => 'nothing to copy', 'entries' => 0, 'details' => [] }
             else
@@ -91,6 +98,19 @@ namespace :property_clone do
     puts
     puts "Manifest: #{path}"
     abort 'Verification FAILED: review the manifest before using the clone.' unless verifier.passed?
+  end
+
+  desc 'Point an existing clone at the source upload folders (MANIFEST=path; for clones made before shared folders)'
+  task :share_files, [:source_id] => :environment do |_t, args|
+    source_id = property_clone_source_id(args)
+    info = PropertyClone::EnvironmentGuard.require_execute!(source_id)
+    PropertyClone::Report.environment(info)
+    path = ENV['MANIFEST'].presence || abort('MANIFEST=<path to the execute manifest> is required')
+    data = PropertyClone::Manifest.read(path)
+    abort "the manifest is for property #{data.dig('source', 'property_id')}, not #{source_id}" unless data.dig('source', 'property_id').to_i == source_id
+    result = PropertyClone::ShareFiles.call(PropertyClone::IdMap.from_h(data['id_map']), force: ENV['FORCE'] == '1')
+    result.tables.each { |table, n| puts format('  %-28s %5d rows', table, n) }
+    puts "#{result.rows} rows now read their source record's upload folder."
   end
 
   desc 'Re-run the integrity checks of a clone from its manifest (MANIFEST=path)'

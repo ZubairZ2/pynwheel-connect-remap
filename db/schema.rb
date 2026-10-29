@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_29_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -34,6 +34,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.integer "imagepage_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["imagepage_id"], name: "index_additional_files_on_imagepage_id"
   end
 
@@ -49,6 +50,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.float "crop_w"
     t.float "crop_h"
     t.boolean "do_crop", default: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["imagepage_id"], name: "index_additional_images_on_imagepage_id"
   end
 
@@ -101,6 +103,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "amenity_type", default: ""
     t.integer "tour_visiting_order_number"
     t.jsonb "pointer_data", default: {}
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["amenityable_type", "amenityable_id"], name: "index_amenities_on_amenityable_type_and_amenityable_id"
     t.index ["community_id"], name: "index_amenities_on_community_id"
   end
@@ -115,6 +118,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "directional_text"
     t.integer "sort"
     t.integer "associated_amenity_gallery_id"
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["amenity_id"], name: "index_amenity_galleries_on_amenity_id"
   end
 
@@ -389,6 +393,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "available_map_views"
     t.string "default_map_view"
     t.boolean "hide_map_unit_numbers", default: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index "(((map_analytics_settings -> 'data_layer'::text) ->> 'enabled'::text))", name: "idx_communities_map_analytics_data_layer_enabled", where: "(((map_analytics_settings -> 'data_layer'::text) ->> 'enabled'::text) = 'true'::text)"
     t.index ["community_group_id"], name: "index_communities_on_community_group_id"
     t.index ["company_id"], name: "index_communities_on_company_id"
@@ -413,6 +418,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "menu_button_shade", default: "light"
     t.integer "creator_id"
     t.integer "region_id"
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["company_id"], name: "index_community_groups_on_company_id"
     t.index ["region_id"], name: "index_community_groups_on_region_id"
   end
@@ -607,6 +613,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.string "file"
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["community_id"], name: "index_design_directions_on_community_id"
   end
 
@@ -754,6 +761,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.text "property_map_vacant_leased_color", default: "#f9d648"
     t.text "property_map_model_color", default: "#f57396"
     t.text "property_map_missing_color", default: "#eecea5"
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
   end
 
   create_table "doors", id: :serial, force: :cascade do |t|
@@ -833,6 +841,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "name"
     t.string "description", default: ""
     t.string "directional_text", default: ""
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["elevator_id"], name: "index_elevator_galleries_on_elevator_id"
   end
 
@@ -856,6 +865,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "kind", default: "elevator", null: false
     t.boolean "accessible", default: true, null: false
     t.jsonb "floor_positions", default: {}, null: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["community_id", "kind"], name: "index_elevators_on_community_id_and_kind"
     t.index ["community_id"], name: "index_elevators_on_community_id"
     t.index ["floorplate_id"], name: "index_elevators_on_floorplate_id"
@@ -958,6 +968,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "overlay_color"
     t.string "overlay_opacity"
     t.string "overlay_text_position"
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
   end
 
   create_table "favorite_images", id: :serial, force: :cascade do |t|
@@ -967,6 +978,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.datetime "updated_at", precision: nil, null: false
     t.string "name"
     t.integer "sort"
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["favorite_setting_id"], name: "index_favorite_images_on_favorite_setting_id"
   end
 
@@ -1098,6 +1110,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "description_title", default: "More Details"
     t.boolean "show_description_on_card", default: false
     t.boolean "expand_description_in_popup", default: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["community_id"], name: "index_floorplans_on_community_id"
     t.check_constraint "expand_description_in_popup IS NOT NULL", name: "floorplans_expand_description_in_popup_not_null", validate: false
     t.check_constraint "show_description_on_card IS NOT NULL", name: "floorplans_show_description_on_card_not_null", validate: false
@@ -1130,6 +1143,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.integer "wayfinding_version", default: 0, null: false
     t.jsonb "svg_to_image_transform"
     t.decimal "scale_ft_per_px", precision: 10, scale: 6
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["community_id"], name: "index_floorplates_on_community_id"
   end
 
@@ -1171,6 +1185,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.boolean "display_gallery_bg_image_gables"
     t.boolean "display_favourite_bg_image_gables"
     t.boolean "display_additional_pages_bg_image_gables"
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
   end
 
   create_table "galleries", id: :serial, force: :cascade do |t|
@@ -1200,6 +1215,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "large_image_url"
     t.string "video"
     t.boolean "do_crop", default: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["community_id"], name: "index_gallery_images_on_community_id"
     t.index ["gallery_id"], name: "index_gallery_images_on_gallery_id"
   end
@@ -1229,6 +1245,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "logo_size"
     t.boolean "display_button_image", default: false
     t.boolean "display_button_text", default: true
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["community_group_id"], name: "index_group_designs_on_community_group_id"
   end
 
@@ -1243,6 +1260,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.integer "group_design_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["group_design_id"], name: "index_group_homepage_images_on_group_design_id"
   end
 
@@ -1251,6 +1269,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.integer "group_design_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["group_design_id"], name: "index_group_homepage_videos_on_group_design_id"
   end
 
@@ -1379,6 +1398,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.integer "community_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["community_id"], name: "index_hardware_specs_on_community_id"
   end
 
@@ -1398,6 +1418,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "large_image_url"
     t.boolean "do_crop", default: false
     t.boolean "is_small", default: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
   end
 
   create_table "home_page_videos", id: :serial, force: :cascade do |t|
@@ -1406,6 +1427,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.integer "design_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
   end
 
   create_table "home_screens", id: :serial, force: :cascade do |t|
@@ -1422,6 +1444,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "about_button"
     t.string "floorplan_button"
     t.string "building_button"
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
   end
 
   create_table "homepage_icons", id: :serial, force: :cascade do |t|
@@ -1435,6 +1458,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.float "crop_h"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["design_id"], name: "index_homepage_icons_on_design_id"
   end
 
@@ -1631,6 +1655,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.float "distance"
     t.string "time"
     t.float "rating"
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["neighborhood_id"], name: "index_locations_on_neighborhood_id"
   end
 
@@ -1665,6 +1690,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.integer "design_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
   end
 
   create_table "map_filters", force: :cascade do |t|
@@ -2220,6 +2246,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.integer "wayfinding_version", default: 0, null: false
     t.jsonb "svg_to_image_transform"
     t.decimal "scale_ft_per_px", precision: 10, scale: 6
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["community_id"], name: "index_sitemaps_on_community_id"
   end
 
@@ -2248,6 +2275,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "name"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["tour_stop_id"], name: "index_stop_galleries_on_tour_stop_id"
   end
 
@@ -2626,6 +2654,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.boolean "pynwheel_touch", default: true
     t.boolean "pynwheel_maps", default: true
     t.boolean "self_tour", default: true
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["community_id"], name: "index_tutorials_on_community_id"
   end
 
@@ -2743,6 +2772,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
     t.string "description_title", default: "More Details"
     t.boolean "expand_description_in_popup", default: false
     t.boolean "show_on_map_is_updated"
+    t.integer "file_source_id", comment: "record whose upload folder this record reads (shared files of a property clone)"
     t.index ["community_id"], name: "index_units_on_community_id"
     t.index ["floorplan_id"], name: "index_units_on_floorplan_id"
     t.index ["floorplate_id"], name: "index_units_on_floorplate_id"

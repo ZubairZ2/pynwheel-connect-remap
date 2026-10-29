@@ -1,4 +1,5 @@
 class DesignUploader < CarrierWave::Uploader::Base
+  prepend SharedSourceStorage
 
   include CarrierWave::MiniMagick
 

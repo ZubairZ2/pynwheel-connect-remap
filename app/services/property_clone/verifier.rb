@@ -38,6 +38,7 @@ module PropertyClone
       check('9 clone has no row the source could share') { no_shared_rows }
       check('10 sensitive columns and integrations policy') { sensitive_policy }
       check('11 source company and property unchanged') { source_unchanged }
+      check('12 uploaded files shared with the source records') { files_shared }
       self
     end
 
@@ -144,7 +145,7 @@ module PropertyClone
           pairs = @plan.rows_for(step.key).filter_map { |r| (c = @id_map.get(step.table, r['id'])) && [r['id'], c] }
           next if pairs.empty?
 
-          skip = ['id', 'created_at', 'updated_at'] + step.remap_columns.keys + step.poly_pairs.flatten + step.self_ref_columns + step.sanitized_columns.keys + override_columns(step) + serialized_columns(step.table)
+          skip = ['id', 'created_at', 'updated_at', Policy::FILE_SOURCE_COLUMN] + step.remap_columns.keys + step.poly_pairs.flatten + step.self_ref_columns + step.sanitized_columns.keys + override_columns(step) + serialized_columns(step.table)
           cols = @plan.table_columns(step.table) - skip
           next if cols.empty?
 
@@ -343,6 +344,42 @@ module PropertyClone
       end
 
       # ---- 11 -------------------------------------------------------------
+
+      # Every cloned row that shows an uploaded file reads the source row's
+      # folder (file_source_id = source id), unless the files were copied
+      # (then the column is NULL and the *_url columns name the own folder).
+      def files_shared
+        problems = []
+        shared = 0
+        @plan.steps.each do |step|
+          next unless @plan.table_columns(step.table).include?(Policy::FILE_SOURCE_COLUMN)
+
+          klass = step.model&.safe_constantize
+          next unless klass.respond_to?(:uploaders)
+
+          mounts = klass.uploaders.keys.map(&:to_s) & @plan.table_columns(step.table)
+          next if mounts.empty?
+
+          pairs = @plan.rows_for(step.key).filter_map { |r| (c = @id_map.get(step.table, r['id'])) && [r['id'], c] }
+          next if pairs.empty?
+
+          present = mounts.map { |m| "(#{qc(m)} IS NOT NULL AND #{qc(m)} <> '')" }.join(' OR ')
+          pairs.each do |source_id, clone_id|
+            row = conn.select_one("SELECT file_source_id, (#{present}) AS has_file FROM #{qt(step.table)} WHERE id = #{q(clone_id)}")
+            next unless row && row['has_file']
+
+            owner = conn.select_value("SELECT COALESCE(file_source_id, id) FROM #{qt(step.table)} WHERE id = #{q(source_id)}").to_i
+            if row['file_source_id'].to_i == owner
+              shared += 1
+            elsif row['file_source_id'].nil? && @plan.options[:files_copied]
+              shared += 1
+            else
+              problems << "#{step.table}##{clone_id}: file_source_id=#{row['file_source_id'].inspect}, expected #{owner}"
+            end
+          end
+        end
+        verdict(problems, "#{shared} rows read their source record's upload folder")
+      end
 
       def source_unchanged
         return ['NOT RUN', 'no baseline captured'] unless @baseline

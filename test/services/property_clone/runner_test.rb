@@ -126,7 +126,7 @@ class PropertyClone::RunnerTest < ActiveSupport::TestCase
     verifier = PropertyClone::Verifier.new(@plan, @runner.id_map, baseline: @runner.baseline).run
     failures = verifier.checks.select { |c| c.status == 'FAIL' }
     assert_empty failures.map { |c| "#{c.name}: #{c.detail}" }
-    assert_equal 13, verifier.checks.size
+    assert_equal 14, verifier.checks.size
     assert verifier.checks.all? { |c| c.status == 'PASS' }, verifier.checks.map(&:to_h).inspect
   end
 

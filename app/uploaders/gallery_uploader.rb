@@ -1,4 +1,5 @@
 class GalleryUploader < CarrierWave::Uploader::Base
+  prepend SharedSourceStorage
   include CarrierWave::RMagick
   include CarrierWave::Video
   include CarrierWave::Video::Thumbnailer

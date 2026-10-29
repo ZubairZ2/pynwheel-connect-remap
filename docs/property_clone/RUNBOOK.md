@@ -10,7 +10,7 @@ The clone is named `<source name> [SCRIPT TESTING]` under a company named `<sour
 | Need | Why |
 |---|---|
 | A Rails console/dyno on the target environment with the branch deployed | the task runs inside the application (`heroku run -a <app> ...` on Heroku) |
-| `S3_BUCKET_NAME` and AWS keys of that environment | the file phase copies objects within that bucket (server-side `CopyObject`; `ListBucket`, `GetObject`, `PutObject` on `uploads/*`) |
+| `S3_BUCKET_NAME` and AWS keys of that environment | only with `COPY_FILES=1` (server-side `CopyObject`); by default the clone reads the source's folders and needs no bucket access |
 | The source property id, confirmed by name in the dry run | never hard-coded; passed as the task argument |
 | No other clone run for the same property at the same time | the run takes `pg_advisory_xact_lock('property_clone', <source id>)`; a second run waits, then fails as a duplicate |
 | A disposable or staging rehearsal done first | section 2 |
@@ -32,8 +32,8 @@ Read it with the owner. Stop if the conflicts list is not empty, if an expected 
 On a copy of production (`createdb -T` or a Heroku fork/`pg:copy` into a staging database):
 
 ```bash
-# dry run, then execute with SKIP_FILES=1 if the rehearsal database has no bucket access
-PROPERTY_CLONE_EXECUTE=1 CONFIRM_DATABASE=<db name> CONFIRM_SOURCE=<id> SKIP_FILES=1 \
+# dry run, then execute (files are shared with the source by default; COPY_FILES=1 copies them instead)
+PROPERTY_CLONE_EXECUTE=1 CONFIRM_DATABASE=<db name> CONFIRM_SOURCE=<id> \
   bundle exec rake "property_clone:execute[<id>]"
 # bootstrap the test administrator (non-production: a password may be supplied)
 PROPERTY_CLONE_EXECUTE=1 CONFIRM_DATABASE=<db name> TEST_ADMIN_EMAIL=test@gmail.com TEST_ADMIN_PASSWORD=Testing123 \
@@ -61,8 +61,8 @@ Every line of the verification and of the rehearsal must read PASS. The rehearsa
    ALLOW_PRODUCTION=1 CONFIRM_PRODUCTION=<the same database name> \
      bundle exec rake "property_clone:execute[<id>]"
    ```
-   Order of events: environment check → plan → `pg_advisory_xact_lock` → duplicate check → one transaction copying every table in dependency order (new ids, remapped references, sanitized columns) → second pass (self references, `deleted_ids`, `next_points`, `sort_hash`, favourites) → COMMIT → integrity verification (13 checks) → S3 folder copy and `*_url` rewrite → manifest.
-   A failure before COMMIT rolls everything back and writes a `rolled_back` manifest; nothing is left behind. A failure in the file phase leaves the database clone in place: the manifest lists each folder's status, and the phase can be re-run (it never overwrites an object that already exists).
+   Order of events: environment check → plan → `pg_advisory_xact_lock` → duplicate check → one transaction copying every table in dependency order (new ids, remapped references, sanitized columns, `file_source_id` = the source row) → second pass (self references, `deleted_ids`, `next_points`, `sort_hash`, favourites) → COMMIT → integrity verification (14 checks) → manifest. With `COPY_FILES=1` an S3 folder copy with `*_url` rewrite runs after the verification.
+   A failure before COMMIT rolls everything back and writes a `rolled_back` manifest; nothing is left behind. A failure in the optional file phase leaves the database clone in place: the manifest lists each folder's status, and the phase can be re-run (it never overwrites an object that already exists).
 5. **Verify**: the task prints the 13 checks and exits non-zero if any FAIL. Re-run later at any time:
    ```bash
    MANIFEST=tmp/property_clones/<execute manifest>.json bundle exec rake "property_clone:verify[<id>]"
@@ -83,7 +83,7 @@ Every line of the verification and of the rehearsal must read PASS. The rehearsa
 - It cannot notify anyone from the source: property/company e-mail and phone, property-manager contact, eBrochure sender/BCC are cleared; chat is off.
 - It cannot charge: card requirement and the ID-verification fee are off.
 - It has no visitors, bookings, visit history, favourites, residents, allowed e-mails, partner map keys, analytics or audit history (the owner can approve copying bookings/visitors separately; the policy would need a step for that).
-- Its files are its own copies once the file phase reports `COPIED`; a folder reported `MISSING_SOURCE` had no object on S3 for the source either.
+- Its images, floor plans and maps are the source's own S3 objects, read through `file_source_id` (`SharedSourceStorage`). The clone can never delete or overwrite them: deleting a cloned record leaves the shared folder alone, cropping is skipped while shared, and the first new upload on a cloned record copies its other files into its own folder before storing. A clone made before October 29, 2026 is pointed at the source folders with `rake property_clone:share_files[<id>]` (`MANIFEST=` its execute manifest). With `COPY_FILES=1` the clone owns copies instead.
 - Its `kiosk code` (`communities.code`) is empty (unique across properties and groups); set one if the Touch kiosk should be tested.
 
 ## 5. Recovery
@@ -100,7 +100,7 @@ raise 'not a clone' unless clone_company.name.end_with?(' [SCRIPT TESTING]') && 
 clone_company.delete_company      # CompanyDestroyWorker: dependent: :destroy over the company's properties
 ```
 
-Files copied to `uploads/<model>/<mount>/<clone id>/` are deleted by the models' uploaders during that destroy; objects under the source ids are never touched. The test administrator (`users` row + `community_users`) is removed with the company (`dependent: :destroy`).
+Objects under the source ids are never touched by that destroy (shared folders are skipped by the uploaders); only files the clone uploaded itself, under its own ids, are deleted. The test administrator (`users` row + `community_users`) is removed with the company (`dependent: :destroy`).
 
 **Partial file phase**: re-run only the file phase from a console:
 
@@ -118,4 +118,4 @@ PropertyClone::FileCopier.new(entries, bucket: ENV.fetch('S3_BUCKET_NAME'), clie
 - No persistent clone marker exists in the schema: idempotency rests on the company name suffix (a second run for the same source is refused while a `<company> [SCRIPT TESTING]` company exists) and on the manifest. A `property_clones` audit table (source id, clone id, manifest, run status) would make this robust against renames; it needs a migration and the owner's approval.
 - `created_at`/`updated_at` are copied from the source rows.
 - `CloneCommunityJob` (the legacy "Clone Community" button) is untouched; it copies only the community row and its design, into the same company, and is not what this task does.
-- The file phase cannot be rehearsed without bucket access; it is covered by unit tests with a fake S3 client.
+- The optional copy phase (`COPY_FILES=1`) cannot be rehearsed without bucket access; it is covered by unit tests with a fake S3 client. The shared-folder default needs no bucket access and is covered by `test/uploaders/shared_source_storage_test.rb`.
