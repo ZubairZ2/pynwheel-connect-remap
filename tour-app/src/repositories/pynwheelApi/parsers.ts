@@ -188,9 +188,10 @@ export const parseBundle = (detail: ApiPropertyDetail, graph: ApiGraph, stops: A
   // The map endpoint carries what the graph payload (the Rails shape) does not: the SVG path and calibration per level.
   if (map && Array.isArray(map.levels)) {
     const extras = new Map(map.levels.map((l) => [l.id, parseLevel(l)]));
+    const backgroundSvgPath = strOrNull(map.background?.svg_path);
     wayfinding.levels = wayfinding.levels.map((l) => {
       const extra = extras.get(l.id);
-      return extra ? { ...l, svgPath: extra.svgPath, svgTransform: extra.svgTransform, svgSize: extra.svgSize } : l;
+      return extra ? { ...l, svgPath: extra.svgPath, svgTransform: extra.svgTransform, svgSize: extra.svgSize, backgroundSvgPath } : l;
     });
   }
   const levels = wayfinding.levels;

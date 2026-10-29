@@ -5,6 +5,7 @@ module TourApi
   # from the Tour App payload of `Wayfinding::GraphSerializer`.
   module Maps
     SVG_PATH = '/api/tour/v1/properties/%<property_id>d/map/levels/%<level_id>s/svg'
+    BACKGROUND_PATH = '/api/tour/v1/properties/%<property_id>d/map/background/svg'
 
     module_function
 
@@ -33,8 +34,37 @@ module TourApi
       buildings << { name: payload[:buildings].first || 'Property', level_ids: unassigned } if unassigned.any? && buildings.empty?
       {
         success: true, property_id: community.id, graph_version: payload[:version], is_sitemap: payload[:is_sitemap],
-        auto_wayfinding: payload[:auto_wayfinding], scale: payload[:scale], buildings: buildings, levels: levels
+        auto_wayfinding: payload[:auto_wayfinding], scale: payload[:scale], buildings: buildings, levels: levels,
+        background: background(community)
       }
+    end
+
+    # A Beans property's one shared background map (`communities.background_svg_image`),
+    # which every floor SVG of the property overlays in the same drawing units: the
+    # renter map, the Map SDK and Connect's Map & Plotting canvas composite the two,
+    # and so does the app (October 29, 2026). Nil for every other property: the CMS
+    # draws the background only where `is_beans_svg` is set.
+    def background(community)
+      return nil unless beans_background?(community)
+
+      { svg_path: format(BACKGROUND_PATH, property_id: community.id) }
+    end
+
+    def beans_background?(community)
+      community.is_beans_svg? && community.read_attribute(:background_svg_image).present?
+    end
+
+    # The background SVG, read server-side and validated like a floor SVG.
+    def background_svg(community, base_url)
+      raise ApiError.not_found('This property has no background map.', code: 'no_background') unless beans_background?(community)
+
+      hint = Connect::UploadUrl.bucket_hint(community)
+      url = Connect::UploadUrl.upload(community, :background_svg_image, base_url, bucket: Connect::UploadUrl.bucket_of(community, hint))
+      raise ApiError.not_found('This property has no background map.', code: 'no_background') if url.blank?
+
+      Assets.svg(url, local_base: base_url)
+    rescue Assets::Error => e
+      raise ApiError.new(e.code == 'invalid_svg' ? 422 : 502, e.code, e.message)
     end
 
     def level(community, built, payload, level_id)

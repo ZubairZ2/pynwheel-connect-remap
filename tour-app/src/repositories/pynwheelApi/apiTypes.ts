@@ -72,6 +72,8 @@ export interface ApiMapResponse {
   auto_wayfinding: boolean;
   buildings: { name: string; level_ids: string[] }[];
   levels: ApiLevel[];
+  /** A Beans property's shared background map, served through the API like a floor SVG; null for other properties. */
+  background?: { svg_path: string } | null;
 }
 
 export interface ApiNode {

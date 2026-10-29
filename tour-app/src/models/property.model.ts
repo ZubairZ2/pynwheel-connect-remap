@@ -65,6 +65,11 @@ export interface MapLevel {
   svgTransform?: AffineTransform | null;
   /** The SVG's intrinsic size recorded at upload, when known. */
   svgSize?: { width: number; height: number } | null;
+  /**
+   * API path of the property's one shared background map (a Beans property's `communities.background_svg_image`), which
+   * this level's floor SVG overlays in the same drawing units (October 29, 2026). Null for every other property.
+   */
+  backgroundSvgPath?: string | null;
   width: number;
   height: number;
   space: CoordinateSpace;
