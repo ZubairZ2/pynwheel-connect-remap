@@ -38,6 +38,7 @@ PROPERTY_CLONE_EXECUTE=1 CONFIRM_DATABASE=<db name> CONFIRM_SOURCE=<id> \
 # bootstrap the test administrator (non-production: a password may be supplied)
 PROPERTY_CLONE_EXECUTE=1 CONFIRM_DATABASE=<db name> TEST_ADMIN_EMAIL=test@gmail.com TEST_ADMIN_PASSWORD=Testing123 \
   bundle exec rake "property_clone:test_admin[<clone company id>,<clone property id>]"
+# a clone made with CLONE_SUFFIX=" ..." needs the same CLONE_SUFFIX on test_admin and share_files
 # drive the clone through the real routes and compare the source fingerprint
 MANIFEST=tmp/property_clones/<execute manifest>.json ADMIN_EMAIL=test@gmail.com \
   bundle exec rails runner script/property_clone/isolation_rehearsal.rb

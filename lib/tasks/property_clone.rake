@@ -163,7 +163,11 @@ namespace :property_clone do
     community = Community.find_by(id: args[:community_id].to_i) || abort('unknown property id')
     info = PropertyClone::EnvironmentGuard.describe
     PropertyClone::Report.environment(info)
-    abort 'refusing: the company name does not carry the clone suffix (is this a cloned company?)' unless company.name.to_s.end_with?(ENV['CLONE_SUFFIX'].presence || PropertyClone::Policy::SUFFIX)
+    suffix = ENV['CLONE_SUFFIX'].presence || PropertyClone::Policy::SUFFIX
+    unless company.name.to_s.end_with?(suffix)
+      abort "refusing: company #{company.id} #{company.name.inspect} does not end with #{suffix.inspect} (is this a cloned company?). " \
+            'If the clone was made with another CLONE_SUFFIX, pass the same CLONE_SUFFIX to this command.'
+    end
     abort "refusing: CONFIRM_DATABASE must equal #{info[:database]}" unless ENV['CONFIRM_DATABASE'] == info[:database]
     abort 'refusing: PROPERTY_CLONE_EXECUTE=1 is required' unless ENV['PROPERTY_CLONE_EXECUTE'] == '1'
     email = ENV['TEST_ADMIN_EMAIL'].presence || abort('TEST_ADMIN_EMAIL is required')
