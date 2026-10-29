@@ -641,9 +641,6 @@
   background: var(--pw-route);
   transition: width 0.12s linear;
 }
-.pw-play--compact .pw-play__bar {
-  margin-top: 2px;
-}
 
 /* The smart-lock door code (igloohome / Iglooworks): the code, its validity, how to use it. */
 .pw-lockcode {

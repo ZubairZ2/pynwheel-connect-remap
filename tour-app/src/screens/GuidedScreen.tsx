@@ -78,7 +78,7 @@ export const nextStepToRead = (stepIndex: number, maxRead: number): number => (s
  * / current / next, a "I'm on Floor 3 →" checkpoint on every floor change
  * that moves the walker on, a secured-floor note on an elevator the CMS
  * marks with a lock vendor), Avoid stairs (a real step-free recalculation),
- * Play Route with the replay control on the map, the audio guide that reads
+ * Play Route from the replay control on the map, the audio guide that reads
  * the current direction and resumes where it paused, I've Arrived and Skip.
  * The AR variant keeps the photo background with the small map.
  */
@@ -218,27 +218,6 @@ export const GuidedScreen = (p: Props) => {
     </div>
   );
 
-  const playerControls = route ? (
-    <div className="pw-play pw-play--compact">
-      <button type="button" className="pw-play__main" onClick={player.controls.toggle} aria-label={player.label}>
-        <Icon name={playing ? 'pause' : 'play'} size={12} color="#fff" />
-        {player.label}
-      </button>
-      <button type="button" className="pw-play__sq" onClick={player.controls.prev} aria-label="Previous point" disabled={player.live.status === 'idle'}>
-        <Icon name="prev" size={12} />
-      </button>
-      <button type="button" className="pw-play__sq" onClick={player.controls.next} aria-label="Next point" disabled={player.live.status === 'idle'}>
-        <Icon name="next" size={12} />
-      </button>
-      <button type="button" className="pw-play__sq" onClick={player.controls.stop} aria-label="Stop" disabled={player.live.status === 'idle'}>
-        <Icon name="stop" size={12} />
-      </button>
-      <div className="pw-play__bar" aria-hidden>
-        <span style={{ width: `${Math.round((player.position?.progress ?? 0) * 100)}%` }} />
-      </div>
-    </div>
-  ) : null;
-
   if (mode === 'ar') {
     return (
       <DarkShell className="pw-guidedar" background={<ArBackground strong />}>
@@ -312,7 +291,6 @@ export const GuidedScreen = (p: Props) => {
         </div>
         <div className="pw-guided__title">Walk To {stop?.name ?? '…'}</div>
         {map(p.expanded ? 440 : 250, true)}
-        {playerControls}
         <div className="pw-guided__dir">
           <div className="pw-guided__dirhead">
             <div>
