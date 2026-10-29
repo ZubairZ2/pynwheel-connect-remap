@@ -695,6 +695,15 @@ export interface WfLayerAnchor {
   idle: boolean;
   /** On the floor SVG: the polygon the unit is plotted on (`PlotTarget.key`). */
   polygon: string | null;
+  /**
+   * Its ring is drawn only under the pointer: on the floor SVG the unit is
+   * its polygon (Plotting draws no marker on a polygon placement, and Connect
+   * takes the polygon itself), so a linked anchor's ring would only be a dark
+   * circle on every unit. An unlinked or selected anchor still shows its
+   * ring, as does one on the floor image, where the ring is the unit's only
+   * mark.
+   */
+  quiet: boolean;
 }
 
 export interface WfLayer {
@@ -808,17 +817,22 @@ export const generateWfLayer = (plate: WfPlate, level: MapLevel, state: LocalMap
       .map((anchor) => ({ key: anchor.door!, xPct: pct(anchor.x!, dims?.w), yPct: pct(anchor.y!, dims?.h) })),
     anchors: anchors
       .filter((anchor): anchor is WfAnchor & { pin: { x: number; y: number }; kind: 'unit' | 'amenity' } => anchor.kind !== 'stop' && !!anchor.pin)
-      .map((anchor) => ({
-        key: anchor.key,
-        kind: anchor.kind,
-        name: anchor.label,
-        xPct: pct(anchor.pin.x, dims?.w),
-        yPct: pct(anchor.pin.y, dims?.h),
-        linked: anchor.linked,
-        selected: state.wfFrom === anchor.key || state.wfSelLink === anchor.key,
-        idle: plate.points.length === 0,
-        polygon: anchor.polygon
-      })),
+      .map((anchor) => {
+        const selected = state.wfFrom === anchor.key || state.wfSelLink === anchor.key;
+        const idle = plate.points.length === 0;
+        return {
+          key: anchor.key,
+          kind: anchor.kind,
+          name: anchor.label,
+          xPct: pct(anchor.pin.x, dims?.w),
+          yPct: pct(anchor.pin.y, dims?.h),
+          linked: anchor.linked,
+          selected,
+          idle,
+          polygon: anchor.polygon,
+          quiet: !!anchor.polygon && !selected && (anchor.linked || idle)
+        };
+      }),
     bend: bend ? { x1: pct(bend.grab.x, dims!.w), y1: pct(bend.grab.y, dims!.h), x2: pct(bend.drop.x, dims!.w), y2: pct(bend.drop.y, dims!.h) } : null
   };
 };
