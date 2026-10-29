@@ -18,8 +18,10 @@ module Verification
     # the public widget collects at booking time and the app's own bookings do
     # not), and the visitor has none (`strip_customer_id`). On a property
     # without ID verification the flag keeps its legacy meaning (the widget's)
-    # and never blocks a tour: `credit_card_required` defaults to true on every
-    # tour row, so a gate on it alone would stop walk-ins everywhere.
+    # and never blocks a tour: `credit_card_required` defaulted to true on every
+    # tour row until October 29, 2026 (new rows now default to false, existing
+    # rows keep their value), so a gate on it alone would stop walk-ins on
+    # every property set up before then.
     def card_needed?(community, visitor)
       tour = community.community_tour
       tour.present? && tour.visual_id_verification == true && tour.credit_card_required == true && visitor.strip_customer_id.blank?

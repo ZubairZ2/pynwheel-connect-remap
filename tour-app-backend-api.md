@@ -958,7 +958,8 @@ Additive endpoints; one behaviour change on `POST /visits` (below). Branch `feat
   lock endpoints refused.
 - **The card rule, deliberately narrow.** `card_needed?` = the property asks for ID verification (`visual_id_verification`) **and**
   its booking form asks for a card (`credit_card_required`) **and** the visitor has no `strip_customer_id`. `credit_card_required`
-  defaults to true on every `tours` row and the legacy app never gated a tour on it (the public widget collects the card at booking;
+  defaulted to true on every `tours` row until October 29, 2026 (migration `20261029100000` makes new rows default to false;
+  existing rows keep their value) and the legacy app never gated a tour on it (the public widget collects the card at booking;
   the legacy app's own card screen belonged to Authenteq's verification fee), so a gate on the flag alone would have blocked
   walk-ins everywhere. Inside the identity flow — the design's third step — it is enforced.
 - Tests: `test/services/verification/checkpoint_test.rb` (5), `test/controllers/api/tour_app/v1/verification_test.rb` (9: status,

@@ -18,7 +18,9 @@ refused door codes; a visitor could check in unverified at a property that requi
   account's `sk_…` key embedded in the bundle, decides from `code` / `antiSpoofing ≥ 80` / `confidence ≥ 55`, then tells the API
   `initialize_tour?verfied_by_provider=check_point_id&verified_at=…`, which writes `is_checkpoint_verified` on the app's word.
 - The legacy app never asked for a card before a CheckpointID tour; its card screen belonged to Authenteq's verification fee. The
-  public widget collects a card at booking when `credit_card_required` (which defaults to **true** on every `tours` row).
+  public widget collects a card at booking when `credit_card_required` (which defaulted to **true** on every `tours` row; this
+  branch changes the column default to **false** for new rows with `20261029100000_change_credit_card_required_default_to_false`,
+  existing rows keep their value).
 
 ## Server (additive endpoints, one behaviour change)
 
