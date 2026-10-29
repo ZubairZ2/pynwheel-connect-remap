@@ -2,11 +2,15 @@
 
 module PropertyClone
   # Bootstraps the test administrator of a cloned company through the
-  # existing Devise/role model: a "Company admin" of the clone company with
-  # Pynwheel Connect access and an assignment to the cloned property. That
-  # role's reach is the company's own properties (User#can_access_community?,
-  # AccessibleCommunitiesQuery, Ability), so it can operate the clone and
-  # nothing else.
+  # existing Devise/role model: a "Community admin" of the clone company,
+  # assigned to the cloned property, with Pynwheel Connect access. That role's
+  # reach is its assigned properties (User#can_access_community?,
+  # AccessibleCommunitiesQuery) and its own company (Ability: read/update
+  # Company, manage Community of that company), so it can operate the clone
+  # and nothing else. Not "Company admin": `Ability` has no rule for that
+  # role, CompaniesController answers it 403, and Connect's sign-in route
+  # verifies the new session with GET /companies.json, so a Company admin
+  # cannot sign in to Connect at all (found October 29, 2026).
   #
   # An existing account with the same e-mail is never touched (status
   # :exists). Outside production a password may be supplied (TEST_ADMIN_PASSWORD).
@@ -43,7 +47,7 @@ module PropertyClone
 
       generated = @password.nil?
       secret = @password || SecureRandom.base58(32)
-      user = User.new(email: @email, first_name: 'Script', last_name: 'Tester', role: 'Company admin', company_id: @company.id,
+      user = User.new(email: @email, first_name: 'Script', last_name: 'Tester', role: 'Community admin', company_id: @company.id,
                       pynwheel_connect_access: true, pynwheel_launch_access: false)
       user.password = secret
       user.password_confirmation = secret

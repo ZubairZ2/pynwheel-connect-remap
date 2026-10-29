@@ -7,14 +7,14 @@ The test administrator is created through the existing Devise + role model, by `
 | Field | Value | Why |
 |---|---|---|
 | `users.email` | the requested address (`test@gmail.com`), lower-cased | identity |
-| `users.role` | `Company admin` | the narrowest existing role whose reach is "the company's own properties" (`User#can_access_community?`, `AccessibleCommunitiesQuery#base_scope`, `AccessibleCompaniesQuery`) |
-| `users.company_id` | the clone company | that company owns exactly the cloned property, so the reach is exactly the clone |
+| `users.role` | `Community admin` | reach = the assigned properties (`User#can_access_community?`, `AccessibleCommunitiesQuery`) plus read/update of its own company (`Ability`). Not `Company admin`: that role has no rule in `Ability`, `CompaniesController` answers it 403 and Connect's sign-in route (which verifies the session with `GET /companies.json`) then refuses the sign-in altogether (found October 29, 2026) |
+| `users.company_id` | the clone company | `Ability` scopes `Company` and `Community` rules to it; it owns exactly the cloned property |
 | `users.pynwheel_connect_access` | true | `Users::SessionsController#create` signs out any user without it |
 | `users.pynwheel_launch_access` | false | not needed |
-| `community_users` | one row for the cloned property (`chat_enable: false`) | the assignment the legacy pages and the chat code read |
+| `community_users` | one row for the cloned property (`chat_enable: false`) | the assignment that defines a Community admin's reach (`User#can_access_community?`) |
 | password | supplied (`TEST_ADMIN_PASSWORD`, non-production only) or random | see below |
 
-Not granted: Super admin (would see every property), Regional admin (region-wide), Dwelo admin. `Company admin` has no CanCan rule in `Ability`, so the HTML company pages (`CompaniesController`, `load_and_authorize_resource`) are refused to it, including its own company's; this is the legacy behaviour for that role and is reported, not changed.
+Not granted: Super admin (every property), Company admin (see above), Regional admin (region-wide), Dwelo admin.
 
 ## Safeguards
 

@@ -16,7 +16,7 @@ clone_id = manifest['clone']['property_id']
 clone_company_id = manifest['clone']['company_id']
 id_map = PropertyClone::IdMap.from_h(manifest['id_map'])
 admin = User.find_by!(email: ENV.fetch('ADMIN_EMAIL').downcase)
-raise "admin #{admin.id} is not a Company admin of the clone company" unless admin.role == 'Company admin' && admin.company_id == clone_company_id
+raise "admin #{admin.id} is not a Community admin of the clone company" unless admin.role == 'Community admin' && admin.company_id == clone_company_id
 
 plan = PropertyClone::Plan.new(source_id, suffix: manifest['suffix'], options: { allow_clone_users: true }).resolve!
 baseline = PropertyClone::Baseline.capture(plan)
@@ -54,7 +54,7 @@ session.get '/communities.json'
 ids = (json(session)['data'] || []).map { |r| r['id'] }
 record.call('GET /communities.json lists only the clone', ids == [clone_id] ? 'PASS' : 'FAIL', ids.inspect)
 session.get '/companies.json'
-record.call('GET /companies.json', session.response.status == 200 ? 'PASS' : 'NOT RUN', "status #{session.response.status} (#{(json(session)['data'] || []).map { |r| r['id'] }.inspect})")
+record.call('GET /companies.json lists only the clone company', (json(session)['data'] || []).map { |r| r['id'] } == [clone_company_id] ? 'PASS' : 'FAIL', "status #{session.response.status} (#{(json(session)['data'] || []).map { |r| r['id'] }.inspect})")
 
 # 2. stops: edit, reorder, hide, remove on the clone; refused on the source
 session.get "/communities/#{clone_id}/connect/stops.json"

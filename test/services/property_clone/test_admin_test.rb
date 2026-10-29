@@ -13,7 +13,7 @@ class PropertyClone::TestAdminTest < ActiveSupport::TestCase
     assert_equal :created, result.status
     user = User.find(result.user_id)
     assert_equal 'test-admin@example.test', user.email
-    assert_equal 'Company admin', user.role
+    assert_equal 'Community admin', user.role
     assert_equal @company.id, user.company_id
     assert user.pynwheel_connect_access
     refute user.pynwheel_launch_access
@@ -38,6 +38,7 @@ class PropertyClone::TestAdminTest < ActiveSupport::TestCase
     assert_equal digest, existing.encrypted_password
     assert_equal companies(:one).id, existing.company_id
     assert_equal 'Community admin', existing.role
+    assert_equal digest, existing.encrypted_password
     refute CommunityUser.where(user_id: existing.id, community_id: @property.id).exists?
   end
 
