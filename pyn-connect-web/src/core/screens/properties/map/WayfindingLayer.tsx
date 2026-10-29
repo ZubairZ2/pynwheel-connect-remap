@@ -163,7 +163,8 @@ export const WayfindingLayer = ({
           data-testid="wf-anchor"
           data-linked={anchor.idle ? undefined : anchor.linked ? '1' : '0'}
           data-polygon={anchor.polygon ?? undefined}
-          className={`bo-wf__anchor bo-wf__anchor--${anchor.kind}${anchor.idle ? ' bo-wf__anchor--idle' : anchor.linked ? '' : ' bo-wf__anchor--unlinked'}${anchor.selected ? ' bo-wf__anchor--selected' : ''}`}
+          data-quiet={anchor.quiet ? '1' : undefined}
+          className={`bo-wf__anchor bo-wf__anchor--${anchor.kind}${anchor.idle ? ' bo-wf__anchor--idle' : anchor.linked ? '' : ' bo-wf__anchor--unlinked'}${anchor.selected ? ' bo-wf__anchor--selected' : ''}${anchor.quiet ? ' bo-wf__anchor--quiet' : ''}`}
           style={{ left: `${anchor.xPct}%`, top: `${anchor.yPct}%` }}
           title={tool == null && anchor.linked ? `${anchor.name} · ${i18n.t(W.hints.link)}` : anchor.name}
           onPointerDown={wf.onAnchorDown(anchor.key, false)}

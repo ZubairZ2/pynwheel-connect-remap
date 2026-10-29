@@ -4700,6 +4700,9 @@ select {
 .bo-wf__anchor--unlinked { border-color: #c62534; border-style: dashed; }
 .bo-wf__anchor--idle { opacity: 0.55; }
 .bo-wf__anchor--selected { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #e0a800; z-index: 6; }
+/* On the floor SVG the unit is its polygon: a linked anchor shows its ring only under the pointer. */
+.bo-wf__anchor--quiet { border-color: transparent; background: transparent; }
+.bo-wf__anchor--quiet:hover { border-color: #171a21; background: rgba(255, 255, 255, 0.35); }
 .bo-wf__linkhit { stroke-width: 10; }
 .bo-wf__unlinkedlink { margin-top: 5px; }
 .bo-wf__tools--none { box-shadow: inset 0 0 0 1px #d8dce4; }
