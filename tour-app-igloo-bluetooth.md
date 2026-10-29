@@ -269,3 +269,72 @@ is `bluetooth_off` with the message "Bluetooth is off. Tap Turn on Bluetooth…"
 button that asks again (`LockRequestState.errorCode` carries the plugin's code). iOS cannot switch the radio on from an app; its
 `enableBluetooth` answers the current state (Core Bluetooth shows its own alert). Web: `{enabled: false}`.
 Tests: `iglooBle.test.ts` (refusal → `bluetooth_off` without a scan; acceptance → scan continues), vitest 104.
+
+## 12. iOS, October 25, 2026: the legacy framework wiring removed; the SDK 3.x port blocked on access
+
+**What happened.** The first TestFlight archive of the Capacitor app with the plugin in the package list failed
+before compiling: `product 'iOSDFULibrary' required by package 'igloohome-ble' … not found in package
+'IOS-DFU-Library'`. Checked against every `4.*` tag of the Nordic library: none ships a product named
+`iOSDFULibrary` (4.11.1 included; they all export `NordicDFU`), so the legacy `IgloohomeSDK.xcframework` wiring
+of §8 could never have resolved under Swift Package Manager. The framework is also the same generation as the
+Android aar that refused the developer API's 32-byte guest keys (§11), so even a successful link would not have
+opened a door with today's eKeys.
+
+**Change (branch `feature/igloohome-ios-plugin-prep`).** `plugins/igloohome-ble/Package.swift` keeps only the
+Capacitor dependency; the xcframework symlink, the Rx / RxBluetoothKit / Nordic DFU dependencies and the legacy
+Swift branch are gone (git history has them). `IgloohomeBlePlugin.swift` is the `unavailable` implementation
+plus the working Bluetooth permission prompt (`requestPermissions` settles through the Core Bluetooth delegate).
+`ios/App/App/Info.plist` gains `NSBluetoothAlwaysUsageDescription` and `NSBluetoothPeripheralUsageDescription`;
+`ios/App/CapApp-SPM/Package.swift` now lists the plugin as `npx cap sync ios` writes it. A `README.md` in the
+plugin holds the port recipe. Verified: Release archive (build 2, `com.pynwheel.SelfTourDev`) with the target
+`IgloohomeBlePlugin` compiled and the plugin's strings in the App binary; vitest 145/145. One trap: an archive in
+a DerivedData that had seen the failed manifest resolved the package but silently skipped its target; a fresh
+`-derivedDataPath` built it.
+
+**Blocker, owner's side.** The SDK 3.x iOS package (`https://gitlab.com/igloohome/iglooaccess-ios-sdk.git`,
+from 3.5.0, products `IgloohomeSDK` + `IglooSDKCore`, iOS 15, Swift 6) is a private project. The token on this
+Mac (`~/.igloohome_sdk_token`) is a GitLab *project* access token for the Android SDK project only
+(`project_64441730_bot_…`, scopes `read_api` + `read_repository`): GitLab answers 404 for the iOS project and
+`git ls-remote` is refused; the project is not public and igloohome publishes no iOS SDK docs. The owner needs an
+iOS SDK token from the portal's SDK Access page (the Android one came from there on October 19). With it: a
+GitLab account in Xcode › Settings › Accounts or a `~/.netrc` line (`machine gitlab.com login oauth2 password …`),
+the two dependency lines from the README in `Package.swift`, and the port of `IgloohomeBlePlugin.swift` to the
+Kotlin plugin's shape (scan → `lockFound` by Bluetooth name; `connect` settles lock + key; `unlock(deviceId, key,
+now)` under the app's timeout; `disconnect`). Hardware: an iPhone 11 is known to this Mac but was unavailable;
+TestFlight (build 3 onwards) is the test route.
+
+## 13. iOS, October 25, 2026 (later): the SDK 3.x port
+
+With the iOS SDK token issued from the portal (`~/.igloohome_ios_sdk_token`; GitLab project 64441741, scopes
+`read_api` + `read_repository`), the plugin's iOS half was ported to igloohome's `IgloohomeSDK` 3.5.0 on branch
+`feature/igloohome-ios-plugin-prep`:
+
+- `Package.swift`: `https://gitlab.com/igloohome/iglooaccess-ios-sdk.git` from 3.5.0, product `IgloohomeSDK` (the
+  package's only dependency is Alamofire; the Bluetooth protocol is the prebuilt `IglooSDKCore` binary it carries;
+  swift-tools 6.3, so Xcode 26.3+ / Swift 6.3+ is needed to resolve it; this Mac's Xcode 27 has Swift 6.4).
+- `IgloohomeBlePlugin.swift`: the Kotlin plugin's shape over the SDK's `IglooPlugin` (a main-actor type):
+  `scansLock()` → `lockFound` by `bluetoothDeviceName` (no RSSI in this SDK); `connect` settles lock + key after the
+  scan saw the lock; `unlock(name, key:, timeInSeconds: now)` under the app's timeout (on timeout the plugin
+  rejects and disconnects behind the SDK); `disconnect(name)`. The radio is read through one Core Bluetooth central
+  manager created only when the permission may be asked (its creation is the system prompt, and with the radio off
+  the system's "Turn On Bluetooth" alert, which `enableBluetooth` re-shows by recreating it). `initialize` before the
+  permission answers `supported: true, enabled: true` (the state cannot be read without prompting) and the real
+  state once authorized. All state lives on the main queue; SDK calls run in main-actor tasks. Errors map from
+  `IgloohomeError` (`bluetoothIsTurnedOff` → `bluetooth_off`, `lockNotFound` / `maxScanAttempts` → `not_found`,
+  `timeout`, `connection` / `bluetooth` / `pairingFailed` → `connect_failed`, "Invalid rights" / "Guest key not
+  found" → `invalid_key`, "in progress" → `busy`), then from the SDK's words.
+- Verified: Release archive in a fresh DerivedData with the SDK resolved from a local clone of tag 3.5.0 (the
+  committed manifest uses the URL; the build Mac had no SPM credential for gitlab.com yet, see the README): the
+  `IgloohomeBlePlugin` target compiled with no warnings, `IglooSDKCore.framework` embedded, build 2 of
+  `com.pynwheel.SelfTourDev`, app bundle 14 MB. vitest 145/145 (the JavaScript side is unchanged).
+- Not verified: a door. No iPhone was available to this Mac; the TestFlight build is the hardware route. The eKey
+  must carry `LOCK` + `UNLOCK` (the lock disconnects at once without them; the backend's developer-API eKey does).
+- SPM credential for the URL dependency: a GitLab account in Xcode › Settings › Accounts, or `~/.netrc`
+  (`machine gitlab.com` / `login oauth2` / `password <token>`); the auto-mode classifier refused to write the file
+  from the session, so the owner adds it.
+- **TestFlight:** App Store Connect already held a build 2 of `com.pynwheel.SelfTourDev` (uploaded from the Organizer
+  before the port), so the SDK build went up as **build 3** (`CURRENT_PROJECT_VERSION = 3`, archive "App 25-10-2026
+  build 3" in the Organizer; `xcodebuild -exportArchive` with `method app-store-connect`, `destination upload`,
+  `uploadSymbols false` because the prebuilt `IglooSDKCore` ships no dSYM). "Upload succeeded" at 06:44 on October 25,
+  2026; adding it to the tester group is done in App Store Connect › TestFlight. Build 2 on TestFlight answers
+  "Bluetooth unlock is not available in this build"; build 3 is the one to test doors with.
