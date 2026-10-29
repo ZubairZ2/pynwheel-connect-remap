@@ -63,6 +63,19 @@ module Visits
 
       started_at = Rules.instant(attrs[:started_at], @now, loc: %w[body started_at])
       verification_required = Rules.verification_required?(@community, @visitor, @now)
+      # October 28, 2026: an on-site tour starts only once the property's identity requirements hold on the server — the
+      # ID verification the legacy app walked through before `initialize_tour`, and, on such a property, the card on file
+      # its booking form asks for (`Verification::Status.card_needed?`). Staff drive a visit on a visitor's behalf without
+      # them (as the lock endpoints never gate staff); a virtual tour (outside visiting hours) opens no door and is never gated.
+      if @staff.nil? && Rules::ONSITE_TYPES.include?(tour_type)
+        if verification_required
+          raise TourApi::ApiError.unprocessable('verification_required', 'This property asks for ID verification before your tour can start.',
+                                                { state: Visitors::Status.id_check(@visitor, @now)[:state] })
+        end
+        if Verification::Status.card_needed?(@community, @visitor)
+          raise TourApi::ApiError.unprocessable('card_required', 'This property asks for a card on file before your tour can start.')
+        end
+      end
       tour_key = SecureRandom.hex
       visit = nil
       ApplicationRecord.transaction do

@@ -28,7 +28,7 @@ import {
   type DummyProperty
 } from '~/dummy';
 import { RouteService } from '~/wayfinding/routeService';
-import { FeatureUnavailableError, type AppContent, type AvailabilityWindow, type BookingRequest, type BookingResult, type BookingSettings, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult, type VisitEndInput, type VisitEventInput, type VisitEventsResult, type VisitorBooking, type VisitorCodeSent, type VisitorProfilePatch, type VisitorVerifyRequest, type VisitRecord, type VisitStartInput } from '../tourRepository';
+import { FeatureUnavailableError, type AppContent, type AvailabilityWindow, type BookingRequest, type BookingResult, type BookingSettings, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult, type VerificationResult, type VerificationStatus, type IdVerificationInput, type VisitEndInput, type VisitEventInput, type VisitEventsResult, type VisitorBooking, type VisitorCodeSent, type VisitorProfilePatch, type VisitorVerifyRequest, type VisitRecord, type VisitStartInput } from '../tourRepository';
 
 /**
  * The dummy provider: answers every repository call from local dummy data,
@@ -302,6 +302,19 @@ export class DummyTourRepository implements TourRepository {
 
   async endVisit(_visitId: number, _input: VisitEndInput): Promise<VisitRecord> {
     throw new FeatureUnavailableError('Visit recording');
+  }
+
+  // ID verification runs on the Pynwheel server against CheckpointID; demo data has neither (the Demo scenarios switch stands in).
+  async getVerificationStatus(): Promise<VerificationStatus> {
+    throw new FeatureUnavailableError('ID verification');
+  }
+
+  async submitIdVerification(_input: IdVerificationInput): Promise<VerificationResult> {
+    throw new FeatureUnavailableError('ID verification');
+  }
+
+  async saveCardOnFile(_cardToken: string): Promise<VerificationStatus> {
+    throw new FeatureUnavailableError('The card on file');
   }
 
   async startApplication(unitNode: string): Promise<{ id: string }> {

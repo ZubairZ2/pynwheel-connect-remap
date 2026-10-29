@@ -442,3 +442,37 @@ export interface ApiVisitEventsResponse {
   accepted: { index: number; client_event_id: string | null; kind: string; id: number | null; duplicate: boolean }[];
   rejected: { index: number; client_event_id: string | null; code: string; message: string }[];
 }
+
+// ---- ID verification and the card on file (October 28, 2026) ----
+export interface ApiVerificationStatus {
+  property_id: number;
+  provider: string;
+  provider_available: boolean;
+  property_requires: boolean;
+  required: boolean;
+  state: 'verified' | 'expired' | 'never' | 'mismatch';
+  verified_at: string | null;
+  valid_until: string | null;
+  verified_by: string | null;
+  valid_for_days: number;
+  attempts_left: number;
+  document_types: { key: string; label: string; back: boolean }[];
+  card: { required: boolean; on_file: boolean; needed: boolean; last4: string | null; available: boolean; publishable_key: string | null };
+}
+
+export interface ApiVerificationStatusResponse {
+  success: true;
+  verification: ApiVerificationStatus;
+}
+
+export interface ApiVerificationAttemptResponse {
+  success: true;
+  result: { outcome: string; reason?: string | null; code?: string | null };
+  verification: ApiVerificationStatus;
+}
+
+export interface ApiVerificationCardResponse {
+  success: true;
+  card: { saved: boolean; last4: string | null };
+  verification: ApiVerificationStatus;
+}

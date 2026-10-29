@@ -80,6 +80,8 @@ const pass = async (deps: VisitSyncDeps, initial: VisitState): Promise<void> => 
         return;
       }
       // Refused for good: the tour stays a phone-only one; its events have nowhere to go.
+      // October 28, 2026: refused for the ID check — the server's rule, remembered for the next check-in.
+      if (error.code === 'verification_required') dispatch({ type: 'verificationRequired', propertyId: visit.propertyId, required: true });
       dispatch({ type: 'visitLocal', clientVisitId: visit.clientVisitId });
       await queue.drop(visit.clientVisitId);
       return;

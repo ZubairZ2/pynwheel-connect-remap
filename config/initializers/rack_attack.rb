@@ -73,6 +73,10 @@ class Rack::Attack
   throttle('tour-visits/ip', limit: 120, period: 60) do |req|
     req.ip if req.post? && req.path.match?(%r{\A#{TOUR_API}/properties/\d+/visits})
   end
+  # ID verification attempts and card tokens (October 28, 2026): a provider call each; a visitor needs a handful, never a storm.
+  throttle('tour-verification/ip', limit: 10, period: 10.minutes) do |req|
+    req.ip if req.post? && req.path.match?(%r{\A#{TOUR_API}/properties/\d+/verification(/card)?\z})
+  end
 
   self.throttled_responder = lambda do |req|
     match = req.env['rack.attack.match_data'] || {}

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_10_28_100001) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_29_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -2519,7 +2519,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_28_100001) do
     t.string "marker_icon_size"
     t.string "dotted_line_color", default: "#008FD5"
     t.string "max_tour_users"
-    t.boolean "credit_card_required", default: true
+    t.boolean "credit_card_required", default: false
     t.integer "starting_floor"
     t.json "floor_elevator", default: "{}", null: false
     t.string "building"

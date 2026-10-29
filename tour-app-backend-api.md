@@ -929,3 +929,66 @@ Additive; no field removed or renamed. Branch `improvement/fixing_to_show_verifc
   request's step 2 reads "ID check · Not needed here" instead of "ID verified" when the server does not ask.
 - Tests: `properties_test.rb` (visitor on a plain property → false; on a verified-ID property → true, verified within 30 days →
   false; staff → the property's flag), vitest `scenarios.test.ts`, `parsers.test.ts`, `qaFixes.test.ts` (reducer scope).
+
+## 24. ID verification through Rails: `GET`/`POST /properties/{id}/verification`, `POST …/verification/card`, and the check-in gate (October 28, 2026)
+
+Additive endpoints; one behaviour change on `POST /visits` (below). Branch `feature/tour-app-real-id-verification`.
+
+- **What the audit found.** Rails had no CheckpointID integration: `config/routes.rb` names `tour_users#checkpoint_verification` (the
+  hosted onboarding page) and `tours#checkpoint_verification_response` (the callback), but neither action exists in any controller
+  or in the repository's history, no CheckpointID host or key is referenced anywhere, and the Heroku app has no `CHECKPOINT*`
+  config. The legacy Pynwheel Tour app (branch `feature/legacy-app-in-repo`) verified a visitor by itself: `Home → Checkpoint →
+  Main → FrontView` photograph the document and a selfie with the phone's camera and `Response.js` posts them to
+  `https://dvs.checkpointid.com/api/verify` with the account's `sk_…` key embedded in the app bundle, decides from `code`,
+  `faceVerificationResult.antiSpoofing` (≥ 80) and `.confidence` (≥ 55), then calls `initialize_tour?verfied_by_provider=
+  check_point_id&verified_at=…`, and the legacy API writes `is_checkpoint_verified` / `checkpoint_verified_at` on the app's word
+  (`update_verification_attributes`). The hosted-onboarding WebView (`CheckPointScreen/index.js`, polling
+  `my.checkpointid.com/api/PublicOnboarding/Requests`) is registered but never navigated to, and its CMS page is gone. Failures
+  went to `POST /api/v1/mis_match_verification`, which mails the leasing team on every call.
+- **The same provider, called from Rails.** `Verification::Checkpoint` posts the same request the legacy app posted
+  (`documentType` 1 licence / 2 passport / 6 ID card, passport card, international ID; `verifyFace: true`; the three base64 images)
+  with the key from `CHECKPOINT_DVS_API_KEY` (host `CHECKPOINT_DVS_URL`, production by default) and reads the same three fields with
+  the same thresholds and reasons ("The Face has not been matched", "Unable to capture mrz from the image of the document."). Two
+  legacy holes are closed: an unknown error `code` and a missing face result are `rejected`, never a pass. The key never leaves the
+  server; the legacy bundle's key should be rotated.
+- **`GET /properties/{id}/verification`** → `{verification: {property_id, provider, provider_available, property_requires, required,
+  state (verified | expired | never | mismatch), verified_at, valid_until, verified_by, valid_for_days: 30, attempts_left,
+  document_types[{key,label,back}], card{required, on_file, needed, last4, available, publishable_key}}}`
+  (`Verification::Status`). `required` is `Visits::Rules.verification_required?`, `state` is `Visitors::Status.id_check` — the same
+  answers the visits, locks and property endpoints give. A visitor reads themself; staff pass `tour_user_id` of a visitor of the
+  property.
+- **`POST /properties/{id}/verification`** `{document_type, front_image, back_image? (required for a licence or ID card),
+  selfie_image}` (JPEG/PNG data URLs or bare base64, ≤ 6 MB each; visitor only) → `{result: {outcome, reason?, code?},
+  verification}` (`Verification::Attempt`). Outcomes: `verified` (the row is written: `is_checkpoint_verified`,
+  `checkpoint_verified_at`, `verified_by = check_point_id`), `already_verified` (current within 30 days: the provider is not
+  called), `face_mismatch`, `document_unreadable`, `rejected`. Refusals: 422 `not_required` (the property does not ask),
+  `provider_unsupported` (a `verification_type` other than `check_point_id`; Authenteq stays retired), `mismatch_flagged`
+  (`id_selfie_mismatch` set by the leasing team), `attempt_limit` (five attempts an hour per visitor, counted from the audit rows;
+  `details.retry_after`), `validation_error`; 503 `provider_unavailable` (no key, the provider unreachable, a non-result answer).
+  A failure tells the leasing team exactly as `mis_match_verification` did (`DelayedSchedulerMailerJob`, subject "ID Verification
+  Issue for <name>", the same text and reason, every address in `communities.email`) — once per visitor and property in 24 hours,
+  not on every retry. Audit rows (`TourApi::Audit`): `id_verification_passed` / `id_verification_failed` with the outcome and the
+  provider's code only; no picture is ever stored or logged. Rack::Attack: 10 POSTs per IP per 10 minutes on both POST routes.
+- **`POST /properties/{id}/verification/card`** `{card_token}` (a Stripe.js `tok_…`; a card number is refused as a validation
+  error) → `{card: {saved, last4}, verification}` (`Verification::Card`): `Stripe::Token.retrieve`, then the CMS's own
+  `StripeServices#create_customer` → `tour_users.strip_customer_id`, `card_last_digits`; audit `card_saved`. 422 `card_not_required`,
+  `card_declined` (Stripe's message), `card_invalid`; 503 `card_unavailable` without `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY`.
+- **The check-in gate.** `Visits::Start` (`POST /properties/{id}/visits`) now refuses a visitor's on-site tour (`self_tour`,
+  `guided_tour`) with 422 `verification_required` (`details.state`) while `Visits::Rules.verification_required?` holds, and with 422
+  `card_required` while `Verification::Status.card_needed?` holds. Staff-driven visits and virtual tours (outside visiting hours)
+  are not gated; a visit already open is still answered. Until now the endpoint only reported `verification_required` and only the
+  lock endpoints refused.
+- **The card rule, deliberately narrow.** `card_needed?` = the property asks for ID verification (`visual_id_verification`) **and**
+  its booking form asks for a card (`credit_card_required`) **and** the visitor has no `strip_customer_id`. `credit_card_required`
+  defaulted to true on every `tours` row until October 29, 2026 (migration `20261029100000` makes new rows default to false;
+  existing rows keep their value) and the legacy app never gated a tour on it (the public widget collects the card at booking;
+  the legacy app's own card screen belonged to Authenteq's verification fee), so a gate on the flag alone would have blocked
+  walk-ins everywhere. Inside the identity flow — the design's third step — it is enforced.
+- Tests: `test/services/verification/checkpoint_test.rb` (5), `test/controllers/api/tour_app/v1/verification_test.rb` (9: status,
+  no key → 503, pass writes the row from the provider answer only and never calls the provider again, failure mails once with the
+  legacy reason, attempt limit / provider down / validation, not-required / unsupported / flagged, visitor-vs-staff scope, the card
+  with Stripe stubbed, the gate), `visits_test.rb` updated (a verified-ID property refuses until verified; an open visit is still
+  reused). Whole suite: 373 runs, 4 failures, all pre-existing and unrelated (`maps_test` ×2 on the SVG plate fixture,
+  `partner_configurations_controller_test`, and `visitor_auth_test`'s debug-code case when run after other files; alone it passes).
+- **Configuration to set (not in this repository):** `CHECKPOINT_DVS_API_KEY` (and optionally `CHECKPOINT_DVS_URL`) on the Heroku
+  app; `STRIPE_*` are already there. Without the key the status says `provider_available: false` and an attempt is 503.

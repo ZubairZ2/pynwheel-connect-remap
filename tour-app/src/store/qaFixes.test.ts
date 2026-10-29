@@ -44,9 +44,11 @@ describe('lock answers and in-flight requests', () => {
 
 describe('sign-out', () => {
   it('does not carry the verified badge over to the next account', () => {
-    const state = reducer({ ...signedIn(), verified: true }, { type: 'signOut' });
+    const verification = { propertyId: 1618, provider: 'check_point_id', providerAvailable: true, propertyRequires: true, required: false, state: 'verified' as const, verifiedAt: '2026-10-14T14:00:00Z', validUntil: '2026-11-13T14:00:00Z', verifiedBy: 'CheckpointID', validForDays: 30, attemptsLeft: 5, documentTypes: [], card: { required: false, onFile: false, needed: false, last4: null, available: false, publishableKey: null }, fetchedAt: 1 };
+    const state = reducer({ ...signedIn(), verification }, { type: 'signOut' });
     expect(state.signedIn).toBe(false);
-    expect(state.verified).toBe(initialAppState().verified);
+    expect(state.verification).toBe(initialAppState().verification);
+    expect(state.verification).toBeNull();
   });
 });
 

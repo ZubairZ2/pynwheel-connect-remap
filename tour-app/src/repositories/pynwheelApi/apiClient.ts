@@ -65,10 +65,10 @@ export class ApiClient {
     return this.options.baseUrl;
   }
 
-  async request<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown, extraHeaders: Record<string, string> = {}, auth = true): Promise<{ data: T; status: number; headers: Headers }> {
+  async request<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown, extraHeaders: Record<string, string> = {}, auth = true, timeoutMs = this.options.timeoutMs): Promise<{ data: T; status: number; headers: Headers }> {
     if (auth) await this.options.beforeRequest?.();
     const controller = new AbortController();
-    const timer = window.setTimeout(() => controller.abort(), this.options.timeoutMs);
+    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
     const headers: Record<string, string> = { Accept: 'application/json', ...extraHeaders };
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     const token = auth ? this.options.getToken() : null;
@@ -139,8 +139,9 @@ export class ApiClient {
     return this.request<T>('GET', path, undefined, headers);
   }
 
-  post<T>(path: string, body: unknown, auth = true): Promise<{ data: T; status: number; headers: Headers }> {
-    return this.request<T>('POST', path, body, {}, auth);
+  /** `timeoutMs` overrides the client's timeout for one slow call (the ID verification waits on the provider). */
+  post<T>(path: string, body: unknown, auth = true, timeoutMs?: number): Promise<{ data: T; status: number; headers: Headers }> {
+    return this.request<T>('POST', path, body, {}, auth, timeoutMs);
   }
 
   put<T>(path: string, body: unknown): Promise<{ data: T; status: number; headers: Headers }> {

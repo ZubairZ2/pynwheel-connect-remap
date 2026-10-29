@@ -9,13 +9,12 @@ import { levelOfStop } from './views';
 import type { TourHistoryEntry } from '~/models';
 import { ApiError, isRetryable } from '~/repositories/pynwheelApi/apiClient';
 import { useRepository } from '~/repositories/repositoryContext';
-import { FeatureUnavailableError, type VisitorBooking } from '~/repositories/tourRepository';
+import { FeatureUnavailableError, type IdDocumentType, type VisitorBooking } from '~/repositories/tourRepository';
 import { BluetoothUnlockError, unlockOverBluetooth } from '~/services/iglooBle';
 import { success, tap } from '~/services/native';
 import { uuid, visitQueue, type VisitEventKind } from '~/services/visitQueue';
 import { useApp } from './appContext';
-import type { AppState, ScheduleDraft, ScheduledTour, TourPass, VerifyStep, VisitState } from './appState';
-import type { CheckinRefusal } from './appState';
+import { DOCUMENT_NEEDS_BACK, type AppState, type CheckinRefusal, type ScheduleDraft, type ScheduledTour, type TourPass, type VerifyCapture, type VerifyFlow, type VisitState } from './appState';
 import { fmtTime } from './scenarios';
 import { dayKeyInZone, zonedSlotMs } from './zone';
 import { bestMatchUnit, currentStop, markOf, selectedNodes, tourStopViews } from './selectors';
@@ -328,7 +327,64 @@ export const useAppActions = () => {
           checkInLocally(now, visit);
           return;
         }
+        if (error instanceof ApiError && error.status === 422 && (error.code === 'verification_required' || error.code === 'card_required')) {
+          // October 28, 2026: the server holds the requirements; whatever the phone believed, the ID check (or its card step) comes first.
+          if (error.code === 'verification_required') dispatch({ type: 'verificationRequired', propertyId: visit.propertyId, required: true });
+          dispatch({ type: 'openVerify', then: 'start' });
+          void refreshVerification();
+          toast(error.message);
+          return;
+        }
         toast(messageOf(error, 'The check-in was refused. Please try again.'));
+      }
+    };
+
+    // ── the ID check (October 28, 2026): the server runs CheckpointID and holds the only verified state ──
+    const refreshVerification = async () => {
+      if (state.propertyId == null) {
+        dispatch({ type: 'verifyStatusFailed', message: 'Choose a property first.', unavailable: true });
+        return;
+      }
+      try {
+        const status = await repository.getVerificationStatus();
+        dispatch({ type: 'verifyStatus', propertyId: status.propertyId, status, now: Date.now() });
+      } catch (error) {
+        if (error instanceof FeatureUnavailableError) dispatch({ type: 'verifyStatusFailed', message: 'ID verification runs on the Pynwheel server and is not available with demo data.', unavailable: true });
+        else dispatch({ type: 'verifyStatusFailed', message: messageOf(error, 'The verification status could not be loaded.'), unavailable: false });
+      }
+    };
+    /** The three pictures go to the server once; the answer is the server's reading of CheckpointID's, and only that moves the flow on. */
+    const submitVerification = async (images: VerifyFlow['images']) => {
+      if (!images.front || !images.selfie || state.verify.step === 'submitting') return;
+      dispatch({ type: 'verifySubmitting' });
+      try {
+        const result = await repository.submitIdVerification({ documentType: state.verify.documentType, frontImage: images.front, backImage: images.back, selfieImage: images.selfie });
+        dispatch({ type: 'verifyResult', propertyId: result.status.propertyId, outcome: result.outcome, reason: result.reason, status: result.status, now: Date.now() });
+        if (result.outcome === 'verified' || result.outcome === 'already_verified') void success();
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 0) {
+          // The request was lost (offline, or the provider took longer than the app waits). The server may still have
+          // finished: its status decides, never a guess.
+          try {
+            const status = await repository.getVerificationStatus();
+            dispatch({ type: 'verifyStatus', propertyId: status.propertyId, status, now: Date.now() });
+            if (status.state === 'verified') return;
+          } catch {
+            /* still unreachable: the pictures are kept for a retry */
+          }
+          dispatch({ type: 'verifyFailed', code: error.code, message: error.message, retryable: true });
+          return;
+        }
+        if (error instanceof ApiError) {
+          // 503 (the provider or Stripe down) is worth another try later; 422s (the attempt limit, a flagged mismatch, a property that does not ask) are not.
+          dispatch({ type: 'verifyFailed', code: error.code, message: error.message, retryable: isRetryable(error) });
+          return;
+        }
+        if (error instanceof FeatureUnavailableError) {
+          dispatch({ type: 'verifyFailed', code: 'unavailable', message: error.message, retryable: false });
+          return;
+        }
+        dispatch({ type: 'verifyFailed', code: 'unknown', message: messageOf(error, 'The verification could not be completed.'), retryable: true });
       }
     };
 
@@ -582,33 +638,65 @@ export const useAppActions = () => {
       getDirections: () => toast(`Opening Maps to ${bundle?.property.address ?? 'the property'}${DEMO}`),
 
       // ── identity check (simulated) ──
-      openVerify: (then: 'start' | null = null) => dispatch({ type: 'openVerify', then }),
+      // ── the ID check: CheckpointID through the Pynwheel server, and the card on file through Stripe.js (October 28, 2026) ──
+      openVerify: (then: 'start' | null = null) => {
+        dispatch({ type: 'openVerify', then });
+        void refreshVerification();
+      },
+      /** Reads the server's status again (on resume, after a failure): the server's word is the only thing that moves the flow on. */
+      refreshVerification: () => void refreshVerification(),
       verifyNext: () => {
         if (!state.verify.consent) {
-          toast('Please agree to the self-tour terms');
+          toast('Please agree to the self-tour terms to continue.');
           return;
         }
-        dispatch({ type: 'verifyStep', step: 'scan' });
+        dispatch({ type: 'verifyStep', step: 'document' });
       },
-      simulateCapture: (next: VerifyStep) => {
-        if (state.verify.scanning) return;
-        dispatch({ type: 'verifyScanning', on: true });
-        later('verify', 1200, () => {
-          if (next === 'done') dispatch({ type: 'verified' });
-          else dispatch({ type: 'verifyStep', step: next });
-        });
+      verifyChooseDocument: (documentType: IdDocumentType) => dispatch({ type: 'verifyDocumentType', documentType }),
+      /** A picture taken; the selfie is the last one, and the three go to the server at once. */
+      verifyCaptured: (kind: VerifyCapture, image: string) => {
+        dispatch({ type: 'verifyCaptured', kind, image });
+        if (kind === 'selfie') void submitVerification({ ...state.verify.images, selfie: image });
       },
-      saveCard: () => dispatch({ type: 'verified' }),
+      verifyRetake: (kind: VerifyCapture) => dispatch({ type: 'verifyRetake', kind }),
+      /** After a failure: the same pictures again when only the sending failed, else new pictures. */
+      verifyRetry: () => {
+        const { images, error } = state.verify;
+        if (error?.retryable && images.front && images.selfie) void submitVerification(images);
+        else dispatch({ type: 'verifyStep', step: 'document' });
+      },
       verifyBack: () => {
-        const order: VerifyStep[] = ['intro', 'scan', 'selfie', 'card', 'done'];
-        const st = state.verify.step;
-        if (st === 'intro' || st === 'done') {
-          dispatch({ type: 'navigate', screen: 'home' });
-          return;
+        switch (state.verify.step) {
+          case 'submitting':
+            return;
+          case 'document':
+          case 'result':
+            dispatch({ type: 'verifyStep', step: 'intro' });
+            return;
+          case 'front':
+            dispatch({ type: 'verifyStep', step: 'document' });
+            return;
+          case 'back':
+            dispatch({ type: 'verifyRetake', kind: 'front' });
+            return;
+          case 'selfie':
+            dispatch({ type: 'verifyRetake', kind: DOCUMENT_NEEDS_BACK[state.verify.documentType] ? 'back' : 'front' });
+            return;
+          default:
+            dispatch({ type: 'verifyFinish' });
         }
-        let i = order.indexOf(st) - 1;
-        if (order[i] === 'card' && !state.requireCard) i -= 1;
-        dispatch({ type: 'verifyStep', step: order[Math.max(0, i)] });
+      },
+      /** A Stripe.js token (never a card number) → the server's card on file. */
+      saveCard: async (token: string) => {
+        if (state.verify.cardSaving) return;
+        dispatch({ type: 'verifyCardSaving' });
+        try {
+          const status = await repository.saveCardOnFile(token);
+          dispatch({ type: 'verifyCardSaved', propertyId: status.propertyId, status, now: Date.now() });
+          void success();
+        } catch (error) {
+          dispatch({ type: 'verifyCardFailed', message: messageOf(error, 'The card could not be saved. Please try again.') });
+        }
       },
       verifyFinish: () => {
         if (state.verify.then === 'start') {

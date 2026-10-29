@@ -33,6 +33,9 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- The ID check photographs the visitor's document and a selfie through the web view (getUserMedia), where the property requires it. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <!-- Location while the app is open (October 28, 2026): the check-in sends a fix the server judges against the
          property, and the tour reports presence samples. Never in the background: the igloohome Bluetooth SDK's
          manifests ask for background location (its geofenced "quick unlock") and for notifications (its firmware
