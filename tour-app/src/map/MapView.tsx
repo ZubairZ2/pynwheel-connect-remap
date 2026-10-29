@@ -4,7 +4,7 @@ import type { Amenity, GraphEdge, GraphNode, MapLevel, Route, Unit } from '~/mod
 import { centreOf } from '~/wayfinding/graphIndex';
 import type { WalkerPosition } from '~/wayfinding/simulation';
 import { FROM_COLOR, NETWORK_COLOR, ROUTE_CASING, ROUTE_COLOR, TO_COLOR, symbolOf } from './mapSymbols';
-import { svgPlacement } from './mapBase';
+import { backgroundPlacement, svgPlacement } from './mapBase';
 import { useLevelBase, type BaseErrorKind } from './useLevelBase';
 import { useMapViewport, type Box } from './useMapViewport';
 
@@ -318,11 +318,18 @@ export const MapView = ({ level, floor, nodes, edges, units, amenities, route, w
   const planLayer = useMemo(() => {
     if (base.kind === 'svg' && base.svgUrl && base.viewBox) {
       const placement = svgPlacement(base.frame, base.viewBox, level.svgTransform);
-      return <image href={base.svgUrl} x={placement.x} y={placement.y} width={placement.width} height={placement.height} preserveAspectRatio={placement.preserveAspectRatio} transform={placement.transform ?? undefined} data-plan="svg" />;
+      // A Beans property's shared background map goes under the floor document, in the same drawing units (October 29, 2026).
+      const under = base.background ? backgroundPlacement(base.frame, base.viewBox, base.background.viewBox, level.svgTransform) : null;
+      return (
+        <>
+          {under && base.background ? <image href={base.background.svgUrl} x={under.x} y={under.y} width={under.width} height={under.height} preserveAspectRatio={under.preserveAspectRatio} transform={under.transform ?? undefined} data-plan="background" /> : null}
+          <image href={base.svgUrl} x={placement.x} y={placement.y} width={placement.width} height={placement.height} preserveAspectRatio={placement.preserveAspectRatio} transform={placement.transform ?? undefined} data-plan="svg" />
+        </>
+      );
     }
     if (base.kind === 'image' && base.imageUrl) return <image href={base.imageUrl} x={0} y={0} width={frameWidth} height={frameHeight} preserveAspectRatio="none" data-plan="image" />;
     return <rect x={0} y={0} width={frameWidth} height={frameHeight} fill="#F6F7F8" data-plan={geometry ? 'vector' : 'none'} />;
-  }, [base.kind, base.svgUrl, base.viewBox, base.imageUrl, base.frame, level.svgTransform, frameWidth, frameHeight, geometry]);
+  }, [base.kind, base.svgUrl, base.viewBox, base.imageUrl, base.frame, base.background, level.svgTransform, frameWidth, frameHeight, geometry]);
 
   return (
     <div ref={container} className={`pw-map${className ? ` ${className}` : ''}`} style={style} {...handlers} role="img" aria-label={`${level.name}${floor != null ? `, floor ${floor}` : ''} map`}>

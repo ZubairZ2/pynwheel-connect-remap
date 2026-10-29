@@ -28,6 +28,8 @@ export interface LevelBase {
   viewBox: ViewBox | null;
   imageUrl: string | null;
   frame: Frame;
+  /** A Beans property's shared background map, once read: drawn under the floor SVG in the same drawing units (October 29, 2026). */
+  background: { svgUrl: string; viewBox: ViewBox } | null;
 }
 
 interface CachedSvg {
@@ -37,13 +39,52 @@ interface CachedSvg {
 
 const svgCache = new Map<string, CachedSvg | { error: BaseErrorKind }>();
 const inflight = new Map<string, Promise<CachedSvg>>();
+// The shared background, keyed by its API path (one file per property, whatever the floor).
+const backgroundCache = new Map<string, CachedSvg | { error: BaseErrorKind }>();
+const backgroundInflight = new Map<string, Promise<CachedSvg>>();
 
 export const resetLevelBaseCache = (): void => {
-  svgCache.forEach((v) => {
-    if ('blobUrl' in v) URL.revokeObjectURL(v.blobUrl);
+  [svgCache, backgroundCache].forEach((cache) => {
+    cache.forEach((v) => {
+      if ('blobUrl' in v) URL.revokeObjectURL(v.blobUrl);
+    });
+    cache.clear();
   });
-  svgCache.clear();
   inflight.clear();
+  backgroundInflight.clear();
+};
+
+const toCachedSvg = async (blob: Blob): Promise<CachedSvg> => {
+  const head = await blob.slice(0, 65536).text();
+  if (!looksLikeSvg(head)) throw Object.assign(new Error('not an SVG document'), { kind: 'invalid' });
+  return { blobUrl: URL.createObjectURL(blob.type.startsWith('image/svg') ? blob : new Blob([blob], { type: 'image/svg+xml' })), viewBox: parseSvgViewBox(head) };
+};
+
+/** The background document of a level's property, read once; a background that cannot be read never hides the floor. */
+const loadBackground = (level: MapLevel, repository: Pick<TourRepository, 'getBackgroundSvg'>): Promise<CachedSvg> | null => {
+  const path = level.backgroundSvgPath;
+  if (!path) return null;
+  const cached = backgroundCache.get(path);
+  if (cached) return 'blobUrl' in cached ? Promise.resolve(cached) : null;
+  let promise = backgroundInflight.get(path);
+  if (!promise) {
+    promise = repository
+      .getBackgroundSvg(level)
+      .then(toCachedSvg)
+      .then((entry) => {
+        backgroundCache.set(path, entry);
+        return entry;
+      })
+      .catch((error: unknown) => {
+        const kind: BaseErrorKind = (error as { kind?: BaseErrorKind }).kind === 'invalid' || (error as { code?: string }).code === 'invalid_svg' ? 'invalid' : (error as { code?: string }).code === 'network' || (error as { code?: string }).code === 'timeout' ? 'network' : 'unavailable';
+        if (kind !== 'network') backgroundCache.set(path, { error: kind });
+        throw error;
+      })
+      .finally(() => backgroundInflight.delete(path));
+    promise.catch(() => undefined);
+    backgroundInflight.set(path, promise);
+  }
+  return promise;
 };
 
 /**
@@ -52,7 +93,8 @@ export const resetLevelBaseCache = (): void => {
  * a floor pill switches to it, the map shows at once instead of fetching and
  * decoding a multi-megapixel file in the middle of the animation.
  */
-export const prefetchLevelPlan = (level: MapLevel, repository: Pick<TourRepository, 'getLevelSvg'>): void => {
+export const prefetchLevelPlan = (level: MapLevel, repository: Pick<TourRepository, 'getLevelSvg' | 'getBackgroundSvg'>): void => {
+  loadBackground(level, repository);
   if (level.svgPath && !svgCache.has(level.id) && !inflight.has(level.id)) {
     const promise = repository
       .getLevelSvg(level)
@@ -92,7 +134,26 @@ export const useLevelBase = (level: MapLevel): LevelBase => {
   const repository = useRepository();
   const [svg, setSvg] = useState<CachedSvg | { error: BaseErrorKind } | 'loading' | null>(null);
   const [image, setImage] = useState<{ url: string | null; status: 'loading' | 'ready' | 'error'; natural: { width: number; height: number } | null }>({ url: level.image, status: level.image ? 'loading' : 'error', natural: null });
+  const [background, setBackground] = useState<CachedSvg | null>(null);
   const generation = useRef(0);
+
+  // 0. The property's shared background map, when the level's property has one (a Beans export).
+  useEffect(() => {
+    const promise = loadBackground(level, repository);
+    if (!promise) {
+      setBackground(null);
+      return;
+    }
+    let cancelled = false;
+    promise.then((entry) => {
+      if (!cancelled) setBackground(entry);
+    }, () => {
+      if (!cancelled) setBackground(null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [level.backgroundSvgPath, repository, level]);
 
   // 1. The floor SVG, when the level has one.
   useEffect(() => {
@@ -161,22 +222,23 @@ export const useLevelBase = (level: MapLevel): LevelBase => {
     const svgError = svg && svg !== 'loading' && 'error' in svg ? svg.error : null;
     const viewBox = svgReady?.viewBox ?? null;
     const frame = frameOf(level, viewBox, image.natural);
+    const shared = background && background.viewBox ? { svgUrl: background.blobUrl, viewBox: background.viewBox } : null;
     if (level.svgPath) {
-      if (svgReady) return { status: 'ready', kind: 'svg', error: null, svgUrl: svgReady.blobUrl, viewBox, imageUrl: image.status === 'ready' ? image.url : null, frame };
+      if (svgReady) return { status: 'ready', kind: 'svg', error: null, svgUrl: svgReady.blobUrl, viewBox, imageUrl: image.status === 'ready' ? image.url : null, frame, background: shared };
       if (svgError) {
         // The SVG is the level's plan; a stored raster still shows the floor when the SVG cannot.
-        if (image.status === 'ready') return { status: 'ready', kind: 'image', error: svgError, svgUrl: null, viewBox: null, imageUrl: image.url, frame };
-        if (image.status === 'loading') return { status: 'loading', kind: null, error: null, svgUrl: null, viewBox: null, imageUrl: null, frame };
-        return { status: 'error', kind: null, error: svgError, svgUrl: null, viewBox: null, imageUrl: null, frame };
+        if (image.status === 'ready') return { status: 'ready', kind: 'image', error: svgError, svgUrl: null, viewBox: null, imageUrl: image.url, frame, background: null };
+        if (image.status === 'loading') return { status: 'loading', kind: null, error: null, svgUrl: null, viewBox: null, imageUrl: null, frame, background: null };
+        return { status: 'error', kind: null, error: svgError, svgUrl: null, viewBox: null, imageUrl: null, frame, background: null };
       }
-      return { status: 'loading', kind: null, error: null, svgUrl: null, viewBox: null, imageUrl: null, frame };
+      return { status: 'loading', kind: null, error: null, svgUrl: null, viewBox: null, imageUrl: null, frame, background: null };
     }
     if (level.image) {
-      if (image.status === 'ready') return { status: 'ready', kind: 'image', error: null, svgUrl: null, viewBox: null, imageUrl: image.url, frame };
-      if (image.status === 'loading') return { status: 'loading', kind: null, error: null, svgUrl: null, viewBox: null, imageUrl: null, frame };
-      return { status: 'error', kind: null, error: 'unavailable', svgUrl: null, viewBox: null, imageUrl: null, frame };
+      if (image.status === 'ready') return { status: 'ready', kind: 'image', error: null, svgUrl: null, viewBox: null, imageUrl: image.url, frame, background: null };
+      if (image.status === 'loading') return { status: 'loading', kind: null, error: null, svgUrl: null, viewBox: null, imageUrl: null, frame, background: null };
+      return { status: 'error', kind: null, error: 'unavailable', svgUrl: null, viewBox: null, imageUrl: null, frame, background: null };
     }
     // Demo levels carry inline geometry and no file; anything else without a file has no plan at all.
-    return { status: level.svg ? 'ready' : 'error', kind: null, error: level.svg ? null : 'none', svgUrl: null, viewBox: null, imageUrl: null, frame };
-  }, [level, svg, image]);
+    return { status: level.svg ? 'ready' : 'error', kind: null, error: level.svg ? null : 'none', svgUrl: null, viewBox: null, imageUrl: null, frame, background: null };
+  }, [level, svg, image, background]);
 };

@@ -1116,6 +1116,7 @@ Rails.application.routes.draw do
     get  'properties/:property_id/map', to: 'maps#show'
     get  'properties/:property_id/map/levels/:level_id', to: 'maps#level', constraints: { level_id: %r{[^/]+} }
     get  'properties/:property_id/map/levels/:level_id/svg', to: 'maps#svg', constraints: { level_id: %r{[^/]+} }
+    get  'properties/:property_id/map/background/svg', to: 'maps#background_svg'
     get  'properties/:property_id/graph', to: 'graphs#show'
     post 'properties/:property_id/route', to: 'routes#route'
     post 'properties/:property_id/tour-route', to: 'routes#tour_route'

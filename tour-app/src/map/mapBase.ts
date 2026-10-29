@@ -90,6 +90,21 @@ export const svgPlacement = (frame: Frame, viewBox: ViewBox, transform: AffineTr
   return { x: 0, y: 0, width: frame.width, height: frame.height, transform: null, preserveAspectRatio: 'none' };
 };
 
+/**
+ * Where a Beans property's shared background document is drawn under a floor SVG: both exports share one drawing space,
+ * so the background's viewBox is placed relative to the floor's, through the same mapping that puts the floor document
+ * in the frame (the calibrated matrix, or the floor viewBox stretched over the frame) — the rule of Connect's canvas
+ * (`backgroundBox`), in frame units (October 29, 2026).
+ */
+export const backgroundPlacement = (frame: Frame, floorViewBox: ViewBox, backgroundViewBox: ViewBox, transform: AffineTransform | null | undefined): SvgPlacement => {
+  if (isAffine(transform)) {
+    return { x: backgroundViewBox.x, y: backgroundViewBox.y, width: backgroundViewBox.w, height: backgroundViewBox.h, transform: `matrix(${transform.a} ${transform.b} ${transform.c} ${transform.d} ${transform.e} ${transform.f})`, preserveAspectRatio: 'none' };
+  }
+  const sx = floorViewBox.w > 0 ? frame.width / floorViewBox.w : 1;
+  const sy = floorViewBox.h > 0 ? frame.height / floorViewBox.h : 1;
+  return { x: (backgroundViewBox.x - floorViewBox.x) * sx, y: (backgroundViewBox.y - floorViewBox.y) * sy, width: backgroundViewBox.w * sx, height: backgroundViewBox.h * sy, transform: null, preserveAspectRatio: 'none' };
+};
+
 /** The non-accelerated twin of an S3 Transfer Acceleration URL, for a second try when the accelerated host is unreachable. */
 export const plainS3Url = (url: string): string | null => {
   const m = /^(https?:\/\/)([^/]+)\.s3-accelerate\.amazonaws\.com(\/.*)$/.exec(url);

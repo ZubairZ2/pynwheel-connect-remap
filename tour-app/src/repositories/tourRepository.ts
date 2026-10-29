@@ -406,6 +406,8 @@ export interface TourRepository {
   getPlaces(): Promise<Place[]>;
   /** The level's floor SVG document (through the API, with the session token). Rejects when the level has none or it cannot be fetched. */
   getLevelSvg(level: MapLevel): Promise<Blob>;
+  /** The property's shared background map (a Beans export's `bg.svg`) that the level's floor SVG overlays. Rejects when the level has none. */
+  getBackgroundSvg(level: MapLevel): Promise<Blob>;
   findRoute(from: string, to: string, options?: RouteOptions): Promise<RouteResult>;
   /** The tour's route through the chosen stops (all visible stops when null). */
   getTourRoute(stopNodes: string[] | null, options?: RouteOptions): Promise<TourRouteResult>;

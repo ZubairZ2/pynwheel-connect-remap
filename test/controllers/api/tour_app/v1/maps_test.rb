@@ -7,12 +7,13 @@ class Api::TourApp::V1::MapsTest < ActionDispatch::IntegrationTest
   setup do
     build_tour_app_fixtures!
     @token = api_token_for(users(:super_admin))
-    # plate_b has a floor SVG; plate_c is an SVG-only plate (no raster frame) whose file is not valid SVG.
-    @plate_b.update_columns(svg_image: 'b.svg')
+    # plate_b is a raster plate that also carries a floor SVG; plate_c is an SVG-only plate (no raster image) whose file is not valid SVG.
+    @plate_b.update_columns(svg_image: 'b.svg', image: 'b.png')
     @plate_c.update_columns(svg_image: 'bad.svg', width: 0, height: 0, svg_metadata: { 'width' => 2000, 'height' => 2000 })
     reset_tour_api_caches!
     TourApi::Assets.http = lambda do |url|
       if url.end_with?('/b.svg') then [200, SVG]
+      elsif url.end_with?('/bg.svg') then [200, SVG.sub('viewBox="0 0 1412 912"', 'viewBox="-100 -50 1612 1012"')]
       elsif url.end_with?('/bad.svg') then [200, "PNG\x89 not an svg".b]
       else [404, nil]
       end
@@ -24,7 +25,8 @@ class Api::TourApp::V1::MapsTest < ActionDispatch::IntegrationTest
   test 'the map: levels, buildings and the per-level SVG facts' do
     with_s3_uploads { get "#{@base}/map", headers: auth }
     assert_response :success, response.body
-    assert_equal %w[success property_id graph_version is_sitemap auto_wayfinding scale buildings levels], body.keys
+    assert_equal %w[success property_id graph_version is_sitemap auto_wayfinding scale buildings levels background], body.keys
+    assert_nil body['background'], 'only a Beans property has a shared background map'
     assert_equal TourApi::Engine.version(@community), body['graph_version']
     assert_equal({ 'unit' => 'px', 'ft_per_px' => nil }, body['scale'])
     assert_equal [@level_a, @level_c, @level_b], body['levels'].map { |l| l['id'] }, 'levels sort by lowest floor, then id'
@@ -41,7 +43,8 @@ class Api::TourApp::V1::MapsTest < ActionDispatch::IntegrationTest
     assert_equal "https://bucket.s3-accelerate.amazonaws.com/uploads/floorplate/svg_image/#{@plate_b.id}/b.svg", by_id[@level_b]['svg']
     assert_equal "#{@base}/map/levels/#{@level_b}/svg", by_id[@level_b]['svg_path']
     assert_equal({ 'width' => 2000, 'height' => 2000 }, by_id[@level_c]['svg_size'])
-    assert_nil by_id[@level_c]['width'], 'an SVG-only plate has no raster frame; the app uses the viewBox'
+    # Since October 25, 2026 (Beans street networks) an SVG-only plate is framed by its viewBox and lives in SVG space.
+    assert_equal [2000, 2000, 'svg'], [by_id[@level_c]['width'], by_id[@level_c]['height'], by_id[@level_c]['space']], 'an SVG-only plate is framed by its viewBox'
     assert_equal [{ 'name' => 'A', 'level_ids' => [@level_a, @level_b] }, { 'name' => 'B', 'level_ids' => [@level_c] }], body['buildings']
   end
 
@@ -159,5 +162,36 @@ class Api::TourApp::V1::MapsTest < ActionDispatch::IntegrationTest
     with_s3_uploads { post_json("#{@base}/route", { from_stop_id: @u101, to_stop_id: @u301 }) }
     assert_equal 'Lobby, left of the desk', body['route']['steps'][1]['instruction']
     assert_equal 'Lobby,&nbsp;<b>left</b><br>of the desk', body['route']['steps'][1]['transition'] && @lift.reload.directional_text, 'the CMS text itself is untouched'
+  end
+
+  # A Beans property (October 29, 2026): its floor SVGs overlay one shared background map, served through the API like a floor SVG.
+  test 'a Beans property names its shared background map and serves it' do
+    @community.update_columns(is_beans_svg: true, background_svg_image: 'bg.svg')
+    TourApi::Engine.clear!
+    TourApi::Properties.reset_cache!
+    with_s3_uploads { get "#{@base}/map", headers: auth }
+    assert_response :success, response.body
+    assert_equal({ 'svg_path' => "#{@base}/map/background/svg" }, body['background'])
+
+    with_s3_uploads { get "#{@base}/map/background/svg", headers: auth }
+    assert_response :success, response.body
+    assert response.headers['Content-Type'].start_with?('image/svg+xml')
+    assert_equal '-100 -50 1612 1012', response.headers['X-Svg-ViewBox']
+    assert_includes response.body, '<svg'
+    etag = response.headers['ETag']
+    with_s3_uploads { get "#{@base}/map/background/svg", headers: auth.merge('If-None-Match' => etag) }
+    assert_response :not_modified
+
+    get "#{@base}/map/background/svg"
+    assert_response :unauthorized
+
+    @community.update_columns(is_beans_svg: false)
+    TourApi::Engine.clear!
+    TourApi::Properties.reset_cache!
+    with_s3_uploads { get "#{@base}/map", headers: auth }
+    assert_nil body['background'], 'the background is drawn only for a Beans property'
+    with_s3_uploads { get "#{@base}/map/background/svg", headers: auth }
+    assert_response :not_found
+    assert_equal 'no_background', body['error']['code']
   end
 end

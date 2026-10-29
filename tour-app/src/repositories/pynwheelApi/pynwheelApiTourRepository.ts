@@ -379,6 +379,11 @@ export class PynwheelApiTourRepository implements TourRepository {
     return this.client.blob(level.svgPath);
   }
 
+  async getBackgroundSvg(level: MapLevel): Promise<Blob> {
+    if (!level.backgroundSvgPath) throw new FeatureUnavailableError('A background map for this property');
+    return this.client.blob(level.backgroundSvgPath);
+  }
+
   // ------------------------------------------------------------------ routes
   async findRoute(from: string, to: string, options: RouteOptions = {}): Promise<RouteResult> {
     const id = await this.requireProperty();

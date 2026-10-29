@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { frameOf, looksLikeSvg, parseSvgViewBox, plainS3Url, svgPlacement } from './mapBase';
+import { backgroundPlacement, frameOf, looksLikeSvg, parseSvgViewBox, plainS3Url, svgPlacement } from './mapBase';
 
 const AI = '<?xml version="1.0" encoding="utf-8"?>\n<!-- Generator: Adobe Illustrator -->\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [ <!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/"> ]>\n<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 1412.16 912.24" style="enable-background:new 0 0 1412.16 912.24;" xml:space="preserve"><g/></svg>';
 
@@ -33,5 +33,20 @@ describe('mapBase', () => {
   it('knows the plain twin of an accelerated S3 URL', () => {
     expect(plainS3Url('https://images-pynwheel-cms-v2.s3-accelerate.amazonaws.com/uploads/x.png')).toBe('https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/x.png');
     expect(plainS3Url('https://example.com/x.png')).toBeNull();
+  });
+});
+
+describe('backgroundPlacement', () => {
+  const floor = { x: 0, y: 0, w: 1412, h: 912 };
+  const bg = { x: -100, y: -50, w: 1612, h: 1012 };
+  it('places a Beans background under an SVG-framed floor in the floor viewBox units', () => {
+    expect(backgroundPlacement({ width: 1412, height: 912, source: 'viewBox' }, floor, bg, null)).toEqual({ x: -100, y: -50, width: 1612, height: 1012, transform: null, preserveAspectRatio: 'none' });
+  });
+  it('scales the background with the floor when the floor viewBox is stretched over a raster frame', () => {
+    expect(backgroundPlacement({ width: 706, height: 456, source: 'image' }, floor, bg, null)).toEqual({ x: -50, y: -25, width: 806, height: 506, transform: null, preserveAspectRatio: 'none' });
+  });
+  it('draws the background in viewBox units through the calibrated matrix, like the floor', () => {
+    const m = { a: 0.9, b: 0, c: 0, d: 0.7, e: 10, f: -5 };
+    expect(backgroundPlacement({ width: 706, height: 456, source: 'image' }, floor, bg, m)).toEqual({ x: -100, y: -50, width: 1612, height: 1012, transform: 'matrix(0.9 0 0 0.7 10 -5)', preserveAspectRatio: 'none' });
   });
 });

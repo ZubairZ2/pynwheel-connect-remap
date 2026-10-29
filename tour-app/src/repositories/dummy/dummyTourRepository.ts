@@ -185,6 +185,10 @@ export class DummyTourRepository implements TourRepository {
     throw new FeatureUnavailableError('A floor SVG file');
   }
 
+  async getBackgroundSvg(_level: MapLevel): Promise<Blob> {
+    throw new FeatureUnavailableError('A background map');
+  }
+
   async findRoute(from: string, to: string, options: RouteOptions = {}): Promise<RouteResult> {
     await this.delay('route');
     return this.router(options).find(from, to, { fromFloor: options.fromFloor, toFloor: options.toFloor });
