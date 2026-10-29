@@ -1,0 +1,128 @@
+Database: pynwheel_audit_clone on localhost (postgresql, PostgreSQL 16.15 (Homebrew)), RAILS_ENV=development, DATABASE_URL set
+Production-like: no
+
+Source property : 1618 "Hazel" (company 596 "QuadReal", region nil, group nil, data_provider "yardirentcafe")
+Clone property  : "Hazel [SCRIPT TESTING]"
+Clone company   : "QuadReal [SCRIPT TESTING]"
+Policy          : 2026-10-28.1, suffix " [SCRIPT TESTING]"
+
+step                             category      source expected    skip   clear  sanitized columns
+companies                        sanitize           1        1       0       0  email,phone
+communities                      sanitize           1        1       0       0  email,phone,property_manager_email,property_manager_phone,code,data_provider,...
+credentials (property level)     sanitize           1        1       0       0  password,username,licence_key,api_token,resman_apikey,zaremba_username,...
+crm_credentials                  sanitize           1        1       0       0  crm_provider,entrata_domain,entrata_username,entrata_password,entrata_property_id,realpage_site_id,...
+map_filters                      clone_remap        1        1       0       0  
+favorite_stops                   sanitize           1        1       0       0  user_favorites_unit,user_favorites_amenity
+favorite_settings                sanitize           1        1       0       0  email_from,email_bcc
+designs                          clone_remap        1        1       0       0  
+menus                            clone_remap        1        1       0       0  
+gables                           clone_remap        1        1       0       0  
+filter_panels                    clone_remap        1        1       0       0  
+expressionists                   clone_remap        1        1       0       0  
+home_screens                     clone_remap        1        1       0       0  
+main_screens                     clone_remap        1        1       0       0  
+neighborhoods                    clone_remap        1        1       0       0  
+crm_time_slots                   clone_remap        1        1       0       0  
+crm_discovery_sources            clone_remap        1        1       0       0  
+other_locks                      clone_remap        1        1       0       0  
+galleries                        clone_remap        2        2       0       0  
+opening_hours                    clone_remap        7        7       0       0  
+guided_opening_hours             clone_remap        6        6       0       0  
+floorplans                       clone_remap       21       21       0       0  
+floorplates                      clone_remap       31       31       0       0  
+units                            sanitize         244      244       0     244  access_code
+amenities                        sanitize           6        6       0       0  access_code
+amenity_galleries                clone_remap        6        6       0       0  
+elevators                        sanitize           5        5       0       0  access_code
+doors                            sanitize         233      233       0       0  access_code
+hallways                         clone_remap      232      232       0       0  
+tours                            sanitize           1        1       0       0  access_code,credit_card_required
+tour_settings                    sanitize           1        1       0       0  charge_user_for_id_verfication
+scheduler_widget_settings        clone_remap        1        1       0       0  
+tour_stops                       clone_remap       11       11       0       0  
+statuses                         clone_remap       90       90       0       0  
+(no source rows: company_settings, credentials (company level), regions, community_groups, group_designs, group_homepage_images, group_homepage_videos, font_settings, favorite_images, ebrochure_menu_buttons, home_page_images, homepage_icons, home_page_videos, locations, three_d_maps_configurations, design_directions, calculator_configs, design_system_configs, hardware_specs, launch_remotes, touch_settings, bedroom_marker_colors, sub_communities, gallery_images, webpages, imagepages, additional_images, additional_files, tutorials, tour_closures, sitemaps, unit_space_details, elevator_galleries, building_starting_points, hallway_detection_runs, hallway_edges, hallway_suppressions, wayfinding_stops, hallway_attachments, stop_details, stop_galleries, paths, path_points, neighbour_units)
+TOTAL                                                      915
+
+Files to copy on S3 (61):
+  Community.logo: 1
+  Community.email_logo: 1
+  Community.self_tour_logo: 1
+  Floorplan.image: 12
+  Floorplate.image: 31
+  Amenity.image: 6
+  AmenityGallery.image: 6
+  Elevator.image: 3
+
+Excluded (not cloned):
+  exclude    communities (siblings)                                                 5 rows
+  exclude    users                                                                  4 rows
+  exclude    community_users                                                        6 rows
+  approval   tours (visitor tours)                                                  2 rows
+  approval   schedual_tours                                                         534 rows
+  approval   tour_histories                                                         408 rows
+  approval   visited_stops                                                          2123 rows
+  approval   tour_users                                                             282 rows
+  exclude    visitor_sessions                                                       0 rows
+  approval   prospects                                                              0 rows
+  exclude    as_guests / igloo_guests / igloohome_guests / latch_guests / zerv_guests 
+  approval   pynwheel_access_users                                                  0 rows
+  exclude    favorites / shared_favorites / shared_tours                            
+  exclude    chatrooms / chats / feedbacks                                          
+  exclude    lock_histories / user_stripes / latch_auth_tokens                      
+  exclude    track_sessions / sdk_sessions / sdk_events / access_logs / web_hook_logs / impressions 
+  exclude    svg_optimization_runs                                                  0 rows
+  exclude    versions (PaperTrail)                                                  60 rows
+  exclude    comments                                                               4 rows
+  exclude    temporary_images                                                       0 rows
+  approval   allowed_emails                                                         0 rows
+  sanitize   map_partners                                                           0 rows
+  sanitize   igloohomes / igloohome_locks                                           
+  sanitize   latches / latch_locks                                                  
+  sanitize   zervs / zerv_locks                                                     
+  sanitize   dwelos / edge_states / remote_locks                                    
+  sanitize   schlages / yales                                                       
+  sanitize   elevator_banks                                                         
+  exclude    unit_elevators / maps_positions / portal_tours / portal_tour_stops / portal_tour_stop_galleries 
+
+Rows that would be skipped (0):
+References that would be cleared (244):
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591829 cleared (not part of the clone)
+  units: floorplan_id=3591832 cleared (not part of the clone)
+  ...
+
+Notes:
+  - 5 sibling properties stay with the source company (ids 1601, 1602, 1603, 1604, 1605)
+
+Conflicts: none
+
+Dry-run manifest: <repo>/tmp/property_clones/20261027T213416-property-1618-dry_run.json
+No database change was made.

@@ -1,0 +1,128 @@
+{
+  "source_property_id": 1618,
+  "clone_property_id": 8044,
+  "admin_user_id": 2444,
+  "results": [
+    {
+      "name": "GET /communities/<clone>/edit.json",
+      "status": "PASS",
+      "detail": "status 200"
+    },
+    {
+      "name": "GET /communities/<source>/edit.json refused",
+      "status": "PASS",
+      "detail": "status 404"
+    },
+    {
+      "name": "GET /communities/<sibling>/edit.json refused",
+      "status": "PASS",
+      "detail": "status 404"
+    },
+    {
+      "name": "GET /communities.json lists only the clone",
+      "status": "PASS",
+      "detail": "[8044]"
+    },
+    {
+      "name": "GET /companies.json",
+      "status": "NOT RUN",
+      "detail": "status 403 ([])"
+    },
+    {
+      "name": "GET /communities/<clone>/connect/stops.json",
+      "status": "PASS",
+      "detail": "9 stops"
+    },
+    {
+      "name": "GET /communities/<source>/connect/stops.json refused",
+      "status": "PASS",
+      "detail": "status 404"
+    },
+    {
+      "name": "PUT clone stop content",
+      "status": "PASS",
+      "detail": "status 200, amenity#71822"
+    },
+    {
+      "name": "source stop record unchanged after the clone edit",
+      "status": "PASS",
+      "detail": "amenity#18707"
+    },
+    {
+      "name": "PUT source stop refused",
+      "status": "PASS",
+      "detail": "status 403"
+    },
+    {
+      "name": "PUT source stop id under the clone refused",
+      "status": "PASS",
+      "detail": "status 404"
+    },
+    {
+      "name": "PUT clone tours/save_setup (reorder, hide, remove)",
+      "status": "PASS",
+      "detail": "status 200 "
+    },
+    {
+      "name": "source stops unchanged after clone reorder/remove",
+      "status": "PASS",
+      "detail": "11 stops"
+    },
+    {
+      "name": "PUT source tours/save_setup refused",
+      "status": "PASS",
+      "detail": "status 403"
+    },
+    {
+      "name": "PUT clone booking/rules",
+      "status": "PASS",
+      "detail": "status 200 "
+    },
+    {
+      "name": "source tour_settings unchanged",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "PUT source booking/rules refused",
+      "status": "PASS",
+      "detail": "status 403"
+    },
+    {
+      "name": "clone property / company configuration edited",
+      "status": "PASS",
+      "detail": "name, website, company address"
+    },
+    {
+      "name": "source property name unchanged",
+      "status": "PASS",
+      "detail": "Hazel"
+    },
+    {
+      "name": "legacy GET /communities/<source>/units (check_community) redirected home",
+      "status": "PASS",
+      "detail": "status 302"
+    },
+    {
+      "name": "legacy GET /communities/<clone>/units",
+      "status": "PASS",
+      "detail": "status 200"
+    },
+    {
+      "name": "legacy GET /communities/<source>/tours (no check_community in ToursController)",
+      "status": "FAIL",
+      "detail": "status 200: pre-existing legacy gap, the page is served to any signed-in user"
+    },
+    {
+      "name": "clone unit / door / floorplate destroyed",
+      "status": "PASS",
+      "detail": "Door#2738, Unit#1122854, Floorplate#4637"
+    },
+    {
+      "name": "source fingerprint identical after every operation",
+      "status": "PASS",
+      "detail": ""
+    }
+  ],
+  "generated_at": "2026-10-27T21:48:10Z"
+}
