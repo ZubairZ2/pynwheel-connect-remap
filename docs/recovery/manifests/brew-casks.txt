@@ -1,0 +1,4 @@
+font-meslo-lg-nerd-font 3.4.0
+iterm2 3.6.6
+ngrok 3.36.1
+postman 12.32.4

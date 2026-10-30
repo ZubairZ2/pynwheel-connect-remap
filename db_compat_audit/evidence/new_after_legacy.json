@@ -1,0 +1,1128 @@
+{
+  "label": "new_after_legacy_writes",
+  "code": "65504c205",
+  "schema_version": "20261003100011",
+  "db": "pynwheel_audit_clone",
+  "started": "2026-10-07T12:15:47Z",
+  "requests": [
+    {
+      "tag": "home",
+      "method": "GET",
+      "path": "/",
+      "status": 200,
+      "ms": 2026,
+      "queries": 9,
+      "bytes": 1274515,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "companies",
+      "method": "GET",
+      "path": "/companies",
+      "status": 200,
+      "ms": 317,
+      "queries": 8,
+      "bytes": 130187,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "count": 224,
+        "ids_sha": "297e162e4ec78d30"
+      }
+    },
+    {
+      "tag": "company_edit",
+      "method": "GET",
+      "path": "/companies/44/edit",
+      "status": 200,
+      "ms": 204,
+      "queries": 8,
+      "bytes": 46069,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "company_communities",
+      "method": "GET",
+      "path": "/companies/44/communities",
+      "status": 200,
+      "ms": 349,
+      "queries": 172,
+      "bytes": 71435,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "count": 49,
+        "ids_sha": "71cb228d8a37a0f1"
+      }
+    },
+    {
+      "tag": "properties",
+      "method": "GET",
+      "path": "/communities",
+      "status": 500,
+      "ms": 959,
+      "queries": 172,
+      "bytes": 279801,
+      "location": null,
+      "exception": [
+        "ActionView::Template::Error",
+        "No route matches {:action=>\"index\", :controller=>\"communities\"}, missing required keys: [:company_id]"
+      ],
+      "error_title": "Action Controller: Exception caught"
+    },
+    {
+      "tag": "properties_search",
+      "method": "GET",
+      "path": "/communities?search=demo",
+      "status": 500,
+      "ms": 928,
+      "queries": 172,
+      "bytes": 279904,
+      "location": null,
+      "exception": [
+        "ActionView::Template::Error",
+        "No route matches {:action=>\"index\", :controller=>\"communities\"}, missing required keys: [:company_id]"
+      ],
+      "error_title": "Action Controller: Exception caught"
+    },
+    {
+      "tag": "company_properties_list",
+      "method": "GET",
+      "path": "/companies/975/communities",
+      "status": 200,
+      "ms": 4511,
+      "queries": 11190,
+      "bytes": 2041077,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "count": 3723,
+        "ids_sha": "ef20f4b0bf39a42e"
+      }
+    },
+    {
+      "tag": "company_properties_search",
+      "method": "GET",
+      "path": "/companies/975/communities?search=a",
+      "status": 200,
+      "ms": 4906,
+      "queries": 11190,
+      "bytes": 2041077,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "count": 3723,
+        "ids_sha": "ef20f4b0bf39a42e"
+      }
+    },
+    {
+      "tag": "property_edit:1411",
+      "method": "GET",
+      "path": "/communities/1411/edit",
+      "status": 500,
+      "ms": 981,
+      "queries": 15,
+      "bytes": 283110,
+      "location": null,
+      "exception": [
+        "ActionView::Template::Error",
+        "No route matches {:action=>\"index\", :controller=>\"communities\", :id=>\"1411\"}, missing required keys: [:company_id]"
+      ],
+      "error_title": "Action Controller: Exception caught"
+    },
+    {
+      "tag": "company_property_edit:1411",
+      "method": "GET",
+      "path": "/companies/44/communities/1411/edit",
+      "status": 200,
+      "ms": 309,
+      "queries": 32,
+      "bytes": 88153,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "units:1411",
+      "method": "GET",
+      "path": "/communities/1411/units",
+      "status": 200,
+      "ms": 558,
+      "queries": 26,
+      "bytes": 421510,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "count": 50,
+        "ids_sha": "d0c0517fcdb62da6"
+      }
+    },
+    {
+      "tag": "amenities:1411",
+      "method": "GET",
+      "path": "/communities/1411/amenities",
+      "status": 200,
+      "ms": 246,
+      "queries": 13,
+      "bytes": 89989,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "count": 12,
+        "ids_sha": "b6b216a490075879"
+      }
+    },
+    {
+      "tag": "elevators:1411",
+      "method": "GET",
+      "path": "/communities/1411/elevators",
+      "status": 500,
+      "ms": 591,
+      "queries": 9,
+      "bytes": 284007,
+      "location": null,
+      "exception": [
+        "ActionView::Template::Error",
+        "Nil location provided. Can't build URI."
+      ],
+      "error_title": "Action Controller: Exception caught"
+    },
+    {
+      "tag": "floorplans:1411",
+      "method": "GET",
+      "path": "/communities/1411/floorplans",
+      "status": 200,
+      "ms": 228,
+      "queries": 15,
+      "bytes": 91254,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "count": 7,
+        "ids_sha": "feb9fce2f85d2c07"
+      }
+    },
+    {
+      "tag": "floorplates:1411",
+      "method": "GET",
+      "path": "/communities/1411/floorplates",
+      "status": 200,
+      "ms": 399,
+      "queries": 13,
+      "bytes": 115867,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "count": 6,
+        "ids_sha": "52d2414dbee6e85d"
+      }
+    },
+    {
+      "tag": "plotexp:1411:1867",
+      "method": "GET",
+      "path": "/communities/1411/floorplates/1867/plotexp",
+      "status": 200,
+      "ms": 641,
+      "queries": 212,
+      "bytes": 239114,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "imgs": 17,
+        "svg_refs": 1,
+        "unit_links": 80,
+        "hallways_norm_sha": "e4c270ce327bf462",
+        "hallways_count": 3
+      }
+    },
+    {
+      "tag": "plot_amenities:1411:1867",
+      "method": "GET",
+      "path": "/communities/1411/floorplates/1867/amenities/plot_amenities",
+      "status": 302,
+      "ms": 79,
+      "queries": 47,
+      "bytes": 0,
+      "location": "http://127.0.0.1/communities/1411/floorplates",
+      "exception": null
+    },
+    {
+      "tag": "plotexp:1411:1868",
+      "method": "GET",
+      "path": "/communities/1411/floorplates/1868/plotexp",
+      "status": 200,
+      "ms": 432,
+      "queries": 288,
+      "bytes": 323974,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "imgs": 17,
+        "svg_refs": 1,
+        "unit_links": 118,
+        "hallways_norm_sha": "84c4479fad53453f",
+        "hallways_count": 53
+      }
+    },
+    {
+      "tag": "plot_amenities:1411:1868",
+      "method": "GET",
+      "path": "/communities/1411/floorplates/1868/amenities/plot_amenities",
+      "status": 302,
+      "ms": 51,
+      "queries": 43,
+      "bytes": 0,
+      "location": "http://127.0.0.1/communities/1411/floorplates",
+      "exception": null
+    },
+    {
+      "tag": "plotexp:1411:1869",
+      "method": "GET",
+      "path": "/communities/1411/floorplates/1869/plotexp",
+      "status": 200,
+      "ms": 438,
+      "queries": 320,
+      "bytes": 348294,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "imgs": 17,
+        "svg_refs": 1,
+        "unit_links": 134,
+        "hallways_norm_sha": "a64233da9159d359",
+        "hallways_count": 44
+      }
+    },
+    {
+      "tag": "plot_amenities:1411:1869",
+      "method": "GET",
+      "path": "/communities/1411/floorplates/1869/amenities/plot_amenities",
+      "status": 302,
+      "ms": 44,
+      "queries": 40,
+      "bytes": 0,
+      "location": "http://127.0.0.1/communities/1411/floorplates",
+      "exception": null
+    },
+    {
+      "tag": "map:1411",
+      "method": "GET",
+      "path": "/automate_plotting?community_id=1411",
+      "status": 200,
+      "ms": 370,
+      "queries": 95,
+      "bytes": 186058,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "hallways_norm_sha": "2484ced73bbde567",
+        "hallways_count": 164,
+        "extra_keys": [
+          "community_id",
+          "confidence",
+          "confirmed_at",
+          "created_by_user_id",
+          "detection_run_id",
+          "review_status",
+          "source",
+          "space"
+        ],
+        "imgs": 21,
+        "svg": 0
+      }
+    },
+    {
+      "tag": "shortest:1411:sorting",
+      "method": "GET",
+      "path": "/automate_plotting/shortest_path?community_id=1411&path_type=sorting",
+      "status": 200,
+      "ms": 114,
+      "queries": 64,
+      "bytes": 15916,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "path_object_sha": "c1c514e1bbd2080d",
+        "path_object_len": 14154,
+        "is_multiple_buildings": false,
+        "floor_ids": "[1,2,3]",
+        "keys": [
+          "floor_ids",
+          "is_multiple_buildings",
+          "path_object"
+        ]
+      }
+    },
+    {
+      "tag": "shortest:1411:actual shortest",
+      "method": "GET",
+      "path": "/automate_plotting/shortest_path?community_id=1411&path_type=actual+shortest",
+      "status": 200,
+      "ms": 103,
+      "queries": 64,
+      "bytes": 71,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "path_object_sha": "74234e98afe7498f",
+        "path_object_len": 4,
+        "is_multiple_buildings": false,
+        "floor_ids": "null",
+        "keys": [
+          "floor_ids",
+          "is_multiple_buildings",
+          "path_object"
+        ]
+      }
+    },
+    {
+      "tag": "tour_setup:1411",
+      "method": "GET",
+      "path": "/communities/1411/tours",
+      "status": 200,
+      "ms": 450,
+      "queries": 116,
+      "bytes": 132093,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "tour_stop_links": 4,
+        "stop_rows_sha": "597c96601d9c43ad",
+        "elevator_mentions": 6,
+        "imgs": 26,
+        "select_options": 113
+      }
+    },
+    {
+      "tag": "tour_starting_point:1411",
+      "method": "GET",
+      "path": "/communities/1411/tours/starting_point",
+      "status": 200,
+      "ms": 270,
+      "queries": 46,
+      "bytes": 87553,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "tour_stop_links": 0,
+        "stop_rows_sha": "e3b0c44298fc1c14",
+        "elevator_mentions": 0,
+        "imgs": 16,
+        "select_options": 23
+      }
+    },
+    {
+      "tag": "tour_select_stops:1411",
+      "method": "GET",
+      "path": "/communities/1411/tours/select_stops",
+      "status": 200,
+      "ms": 454,
+      "queries": 332,
+      "bytes": 114780,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "tour_stop_links": 7,
+        "stop_rows_sha": "1f54991237e229be",
+        "elevator_mentions": 2,
+        "imgs": 23,
+        "select_options": 0
+      }
+    },
+    {
+      "tag": "tour_settings:1411",
+      "method": "GET",
+      "path": "/communities/1411/tours/settings",
+      "status": 200,
+      "ms": 370,
+      "queries": 57,
+      "bytes": 136354,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "property_edit:1618",
+      "method": "GET",
+      "path": "/communities/1618/edit",
+      "status": 500,
+      "ms": 709,
+      "queries": 16,
+      "bytes": 283142,
+      "location": null,
+      "exception": [
+        "ActionView::Template::Error",
+        "No route matches {:action=>\"index\", :controller=>\"communities\", :id=>\"1618\"}, missing required keys: [:company_id]"
+      ],
+      "error_title": "Action Controller: Exception caught"
+    },
+    {
+      "tag": "company_property_edit:1618",
+      "method": "GET",
+      "path": "/companies/596/communities/1618/edit",
+      "status": 200,
+      "ms": 188,
+      "queries": 31,
+      "bytes": 86530,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "units:1618",
+      "method": "GET",
+      "path": "/communities/1618/units",
+      "status": 200,
+      "ms": 292,
+      "queries": 27,
+      "bytes": 453743,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "count": 50,
+        "ids_sha": "9a3dc811252a6923"
+      }
+    },
+    {
+      "tag": "amenities:1618",
+      "method": "GET",
+      "path": "/communities/1618/amenities",
+      "status": 200,
+      "ms": 194,
+      "queries": 14,
+      "bytes": 82852,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "count": 6,
+        "ids_sha": "18cd3819c5ead3ec"
+      }
+    },
+    {
+      "tag": "elevators:1618",
+      "method": "GET",
+      "path": "/communities/1618/elevators",
+      "status": 500,
+      "ms": 544,
+      "queries": 9,
+      "bytes": 284008,
+      "location": null,
+      "exception": [
+        "ActionView::Template::Error",
+        "Nil location provided. Can't build URI."
+      ],
+      "error_title": "Action Controller: Exception caught"
+    },
+    {
+      "tag": "floorplans:1618",
+      "method": "GET",
+      "path": "/communities/1618/floorplans",
+      "status": 200,
+      "ms": 247,
+      "queries": 16,
+      "bytes": 104208,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "count": 21,
+        "ids_sha": "b80cb2057ef80ffe"
+      }
+    },
+    {
+      "tag": "floorplates:1618",
+      "method": "GET",
+      "path": "/communities/1618/floorplates",
+      "status": 200,
+      "ms": 279,
+      "queries": 13,
+      "bytes": 152479,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "count": 31,
+        "ids_sha": "07979bd0cf7b1280"
+      }
+    },
+    {
+      "tag": "plotexp:1618:2241",
+      "method": "GET",
+      "path": "/communities/1618/floorplates/2241/plotexp",
+      "status": 200,
+      "ms": 243,
+      "queries": 47,
+      "bytes": 104686,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "imgs": 17,
+        "svg_refs": 0,
+        "unit_links": 0,
+        "hallways_norm_sha": "a12d8df9737e7d94",
+        "hallways_count": 18
+      }
+    },
+    {
+      "tag": "plot_amenities:1618:2241",
+      "method": "GET",
+      "path": "/communities/1618/floorplates/2241/amenities/plot_amenities",
+      "status": 302,
+      "ms": 47,
+      "queries": 40,
+      "bytes": 0,
+      "location": "http://127.0.0.1/communities/1618/floorplates",
+      "exception": null
+    },
+    {
+      "tag": "plotexp:1618:2242",
+      "method": "GET",
+      "path": "/communities/1618/floorplates/2242/plotexp",
+      "status": 200,
+      "ms": 281,
+      "queries": 72,
+      "bytes": 124318,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "imgs": 17,
+        "svg_refs": 0,
+        "unit_links": 16,
+        "hallways_norm_sha": "d3b0dc81477147f6",
+        "hallways_count": 7
+      }
+    },
+    {
+      "tag": "plot_amenities:1618:2242",
+      "method": "GET",
+      "path": "/communities/1618/floorplates/2242/amenities/plot_amenities",
+      "status": 302,
+      "ms": 35,
+      "queries": 35,
+      "bytes": 0,
+      "location": "http://127.0.0.1/communities/1618/floorplates",
+      "exception": null
+    },
+    {
+      "tag": "plotexp:1618:2243",
+      "method": "GET",
+      "path": "/communities/1618/floorplates/2243/plotexp",
+      "status": 200,
+      "ms": 277,
+      "queries": 72,
+      "bytes": 124320,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "imgs": 17,
+        "svg_refs": 0,
+        "unit_links": 16,
+        "hallways_norm_sha": "7b908ef95863e86e",
+        "hallways_count": 7
+      }
+    },
+    {
+      "tag": "plot_amenities:1618:2243",
+      "method": "GET",
+      "path": "/communities/1618/floorplates/2243/amenities/plot_amenities",
+      "status": 302,
+      "ms": 38,
+      "queries": 35,
+      "bytes": 0,
+      "location": "http://127.0.0.1/communities/1618/floorplates",
+      "exception": null
+    },
+    {
+      "tag": "map:1618",
+      "method": "GET",
+      "path": "/automate_plotting?community_id=1618",
+      "status": 200,
+      "ms": 481,
+      "queries": 246,
+      "bytes": 284707,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "hallways_norm_sha": "013fecf84a9a3b5b",
+        "hallways_count": 237,
+        "extra_keys": [
+          "community_id",
+          "confidence",
+          "confirmed_at",
+          "created_by_user_id",
+          "detection_run_id",
+          "review_status",
+          "source",
+          "space"
+        ],
+        "imgs": 46,
+        "svg": 0
+      }
+    },
+    {
+      "tag": "shortest:1618:sorting",
+      "method": "GET",
+      "path": "/automate_plotting/shortest_path?community_id=1618&path_type=sorting",
+      "status": 200,
+      "ms": 194,
+      "queries": 175,
+      "bytes": 30778,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "path_object_sha": "2a24f4fe6d35b0ba",
+        "path_object_len": 27328,
+        "is_multiple_buildings": false,
+        "floor_ids": "[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]",
+        "keys": [
+          "floor_ids",
+          "is_multiple_buildings",
+          "path_object"
+        ]
+      }
+    },
+    {
+      "tag": "shortest:1618:actual shortest",
+      "method": "GET",
+      "path": "/automate_plotting/shortest_path?community_id=1618&path_type=actual+shortest",
+      "status": 200,
+      "ms": 182,
+      "queries": 175,
+      "bytes": 71,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "path_object_sha": "74234e98afe7498f",
+        "path_object_len": 4,
+        "is_multiple_buildings": false,
+        "floor_ids": "null",
+        "keys": [
+          "floor_ids",
+          "is_multiple_buildings",
+          "path_object"
+        ]
+      }
+    },
+    {
+      "tag": "tour_setup:1618",
+      "method": "GET",
+      "path": "/communities/1618/tours",
+      "status": 200,
+      "ms": 322,
+      "queries": 120,
+      "bytes": 137285,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "tour_stop_links": 6,
+        "stop_rows_sha": "e1989da725b89611",
+        "elevator_mentions": 7,
+        "imgs": 16,
+        "select_options": 77
+      }
+    },
+    {
+      "tag": "tour_starting_point:1618",
+      "method": "GET",
+      "path": "/communities/1618/tours/starting_point",
+      "status": 200,
+      "ms": 244,
+      "queries": 67,
+      "bytes": 86826,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "tour_stop_links": 0,
+        "stop_rows_sha": "e3b0c44298fc1c14",
+        "elevator_mentions": 3,
+        "imgs": 16,
+        "select_options": 49
+      }
+    },
+    {
+      "tag": "tour_select_stops:1618",
+      "method": "GET",
+      "path": "/communities/1618/tours/select_stops",
+      "status": 200,
+      "ms": 384,
+      "queries": 277,
+      "bytes": 108140,
+      "location": null,
+      "exception": null,
+      "extract": {
+        "tour_stop_links": 11,
+        "stop_rows_sha": "406c190c3ec37d51",
+        "elevator_mentions": 3,
+        "imgs": 16,
+        "select_options": 0
+      }
+    },
+    {
+      "tag": "tour_settings:1618",
+      "method": "GET",
+      "path": "/communities/1618/tours/settings",
+      "status": 200,
+      "ms": 204,
+      "queries": 57,
+      "bytes": 136786,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "api:start_tour.json:1411",
+      "method": "DELETE",
+      "path": "/api/self_tour/v1/communities/1411/start_tour.json?tour_user_id=14793",
+      "status": 200,
+      "ms": 463,
+      "queries": 272,
+      "bytes": 18586,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "api:wayfinding.json:1411",
+      "method": "GET",
+      "path": "/api/self_tour/v1/communities/1411/wayfinding.json?tour_user_id=14793",
+      "status": 200,
+      "ms": 193,
+      "queries": 44,
+      "bytes": 111725,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "api:tour_route.json:1411",
+      "method": "GET",
+      "path": "/api/self_tour/v1/communities/1411/wayfinding/tour_route.json?tour_user_id=14793",
+      "status": 200,
+      "ms": 97,
+      "queries": 44,
+      "bytes": 5717,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "api:start_tour.json:1618",
+      "method": "DELETE",
+      "path": "/api/self_tour/v1/communities/1618/start_tour.json?tour_user_id=12644",
+      "status": 200,
+      "ms": 519,
+      "queries": 578,
+      "bytes": 47928,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "api:wayfinding.json:1618",
+      "method": "GET",
+      "path": "/api/self_tour/v1/communities/1618/wayfinding.json?tour_user_id=12644",
+      "status": 200,
+      "ms": 163,
+      "queries": 44,
+      "bytes": 178516,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "api:tour_route.json:1618",
+      "method": "GET",
+      "path": "/api/self_tour/v1/communities/1618/wayfinding/tour_route.json?tour_user_id=12644",
+      "status": 200,
+      "ms": 124,
+      "queries": 44,
+      "bytes": 7745,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "api:wayfinding.json:1412",
+      "method": "GET",
+      "path": "/api/self_tour/v1/communities/1412/wayfinding.json?tour_user_id=",
+      "status": 200,
+      "ms": 92,
+      "queries": 46,
+      "bytes": 49329,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "api:tour_route.json:1412",
+      "method": "GET",
+      "path": "/api/self_tour/v1/communities/1412/wayfinding/tour_route.json?tour_user_id=",
+      "status": 200,
+      "ms": 76,
+      "queries": 44,
+      "bytes": 3243,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "api:start_tour.json:2934",
+      "method": "DELETE",
+      "path": "/api/self_tour/v1/communities/2934/start_tour.json?tour_user_id=14898",
+      "status": 200,
+      "ms": 455,
+      "queries": 535,
+      "bytes": 26512,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "api:wayfinding.json:2934",
+      "method": "GET",
+      "path": "/api/self_tour/v1/communities/2934/wayfinding.json?tour_user_id=14898",
+      "status": 200,
+      "ms": 68,
+      "queries": 44,
+      "bytes": 14577,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "api:tour_route.json:2934",
+      "method": "GET",
+      "path": "/api/self_tour/v1/communities/2934/wayfinding/tour_route.json?tour_user_id=14898",
+      "status": 422,
+      "ms": 69,
+      "queries": 44,
+      "bytes": 184,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "api:wayfinding.json:557",
+      "method": "GET",
+      "path": "/api/self_tour/v1/communities/557/wayfinding.json?tour_user_id=",
+      "status": 422,
+      "ms": 11,
+      "queries": 5,
+      "bytes": 107,
+      "location": null,
+      "exception": null
+    },
+    {
+      "tag": "api:tour_route.json:557",
+      "method": "GET",
+      "path": "/api/self_tour/v1/communities/557/wayfinding/tour_route.json?tour_user_id=",
+      "status": 422,
+      "ms": 10,
+      "queries": 5,
+      "bytes": 107,
+      "location": null,
+      "exception": null
+    }
+  ],
+  "writes": [],
+  "api": [
+    {
+      "path": "/api/self_tour/v1/communities/1411/start_tour.json?tour_user_id=14793",
+      "status": 200,
+      "keys": [
+        "tours"
+      ],
+      "audit_mentions": {},
+      "elevator_mentions": 14,
+      "bytes": 18586
+    },
+    {
+      "path": "/api/self_tour/v1/communities/1411/wayfinding.json?tour_user_id=14793",
+      "status": 200,
+      "sha": "6fd1ef3d6d1ab749",
+      "bytes": 111725,
+      "keys": [
+        "auto_wayfinding",
+        "buildings",
+        "community_id",
+        "edges",
+        "gates",
+        "is_sitemap",
+        "levels",
+        "nodes",
+        "scale",
+        "success",
+        "tour",
+        "version",
+        "vertical_connections"
+      ]
+    },
+    {
+      "path": "/api/self_tour/v1/communities/1411/wayfinding/tour_route.json?tour_user_id=14793",
+      "status": 200,
+      "sha": "d9e64e6dc33e6297",
+      "bytes": 5717,
+      "keys": [
+        "avoid_blockers",
+        "duration_s",
+        "from",
+        "legs",
+        "length_ft",
+        "length_px",
+        "step_free",
+        "steps",
+        "success",
+        "to",
+        "version",
+        "warnings"
+      ]
+    },
+    {
+      "path": "/api/self_tour/v1/communities/1618/start_tour.json?tour_user_id=12644",
+      "status": 200,
+      "keys": [
+        "tours"
+      ],
+      "audit_mentions": {},
+      "elevator_mentions": 23,
+      "bytes": 47928
+    },
+    {
+      "path": "/api/self_tour/v1/communities/1618/wayfinding.json?tour_user_id=12644",
+      "status": 200,
+      "sha": "1b124048a1940cbe",
+      "bytes": 178516,
+      "keys": [
+        "auto_wayfinding",
+        "buildings",
+        "community_id",
+        "edges",
+        "gates",
+        "is_sitemap",
+        "levels",
+        "nodes",
+        "scale",
+        "success",
+        "tour",
+        "version",
+        "vertical_connections"
+      ]
+    },
+    {
+      "path": "/api/self_tour/v1/communities/1618/wayfinding/tour_route.json?tour_user_id=12644",
+      "status": 200,
+      "sha": "f71823cc9b37692f",
+      "bytes": 7745,
+      "keys": [
+        "avoid_blockers",
+        "duration_s",
+        "from",
+        "legs",
+        "length_ft",
+        "length_px",
+        "step_free",
+        "steps",
+        "success",
+        "to",
+        "version",
+        "warnings"
+      ]
+    },
+    {
+      "path": "/api/self_tour/v1/communities/1412/wayfinding.json?tour_user_id=",
+      "status": 200,
+      "sha": "318d05911ff78911",
+      "bytes": 49329,
+      "keys": [
+        "auto_wayfinding",
+        "buildings",
+        "community_id",
+        "edges",
+        "gates",
+        "is_sitemap",
+        "levels",
+        "nodes",
+        "scale",
+        "success",
+        "tour",
+        "version",
+        "vertical_connections"
+      ]
+    },
+    {
+      "path": "/api/self_tour/v1/communities/1412/wayfinding/tour_route.json?tour_user_id=",
+      "status": 200,
+      "sha": "f11e847d31ddb81f",
+      "bytes": 3243,
+      "keys": [
+        "avoid_blockers",
+        "duration_s",
+        "from",
+        "legs",
+        "length_ft",
+        "length_px",
+        "step_free",
+        "steps",
+        "success",
+        "to",
+        "version",
+        "warnings"
+      ]
+    },
+    {
+      "path": "/api/self_tour/v1/communities/2934/start_tour.json?tour_user_id=14898",
+      "status": 200,
+      "keys": [
+        "tours"
+      ],
+      "audit_mentions": {},
+      "elevator_mentions": 37,
+      "bytes": 26512
+    },
+    {
+      "path": "/api/self_tour/v1/communities/2934/wayfinding.json?tour_user_id=14898",
+      "status": 200,
+      "sha": "ba058c2627ac3adf",
+      "bytes": 14577,
+      "keys": [
+        "auto_wayfinding",
+        "buildings",
+        "community_id",
+        "edges",
+        "gates",
+        "is_sitemap",
+        "levels",
+        "nodes",
+        "scale",
+        "success",
+        "tour",
+        "version",
+        "vertical_connections"
+      ]
+    },
+    {
+      "path": "/api/self_tour/v1/communities/2934/wayfinding/tour_route.json?tour_user_id=14898",
+      "status": 422,
+      "sha": "cbb4602295174557",
+      "bytes": 184,
+      "keys": [
+        "error",
+        "from",
+        "success",
+        "to",
+        "version",
+        "warnings"
+      ]
+    },
+    {
+      "path": "/api/self_tour/v1/communities/557/wayfinding.json?tour_user_id=",
+      "status": 422,
+      "sha": "e983db0984914b3d",
+      "bytes": 107,
+      "keys": [
+        "error",
+        "success"
+      ]
+    },
+    {
+      "path": "/api/self_tour/v1/communities/557/wayfinding/tour_route.json?tour_user_id=",
+      "status": 422,
+      "sha": "e983db0984914b3d",
+      "bytes": 107,
+      "keys": [
+        "error",
+        "success"
+      ]
+    }
+  ],
+  "communities": [
+    1411,
+    1618
+  ],
+  "finished": "2026-10-07T12:16:20Z"
+}

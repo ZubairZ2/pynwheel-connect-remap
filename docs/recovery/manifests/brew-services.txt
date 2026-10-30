@@ -1,0 +1,8 @@
+Name          Status User           File
+httpd         started         zubairzulifqar ~/Library/LaunchAgents/homebrew.mxcl.httpd.plist
+mysql         none                           
+mysql@9.7     started         zubairzulifqar ~/Library/LaunchAgents/sh.brew.mysql@9.7.plist
+nginx         error  1        zubairzulifqar ~/Library/LaunchAgents/homebrew.mxcl.nginx.plist
+php           started         zubairzulifqar ~/Library/LaunchAgents/homebrew.mxcl.php.plist
+postgresql@16 started         zubairzulifqar ~/Library/LaunchAgents/sh.brew.postgresql@16.plist
+redis         started         zubairzulifqar ~/Library/LaunchAgents/sh.brew.redis.plist

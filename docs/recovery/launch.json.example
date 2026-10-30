@@ -1,0 +1,365 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rails-cms",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_development && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3000 -b 127.0.0.1"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "rails-cms-lan",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES API_ACCESS=true DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_development && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3000 -b 0.0.0.0"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "connect-web",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web && exec npm run dev"
+      ],
+      "port": 3001
+    },
+    {
+      "name": "rails-cms-verify",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_development PYN_CONNECT_WRITES=on API_ACCESS=true && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3100 -b 0.0.0.0 -P <SCRATCHPAD>/rails3100dev.pid"
+      ],
+      "port": 3100
+    },
+    {
+      "name": "connect-verify",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd <SCRATCHPAD>/connect && PYNWHEEL_CMS_URL=http://127.0.0.1:3100 exec npx next dev -p 3005 -H 127.0.0.1"
+      ],
+      "port": 3005
+    },
+    {
+      "name": "tour-app",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/tour-app && VITE_TOUR_API_URL=http://127.0.0.1:3100 exec npm run dev"
+      ],
+      "port": 3012
+    },
+    {
+      "name": "portfolio",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/zubair-portfolio && exec npx next dev -p 3017 -H 127.0.0.1"
+      ],
+      "port": 3017
+    },
+    {
+      "name": "rails-legacy-audit",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd <SCRATCHPAD>/legacy && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_audit_clone && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3200 -b 127.0.0.1 -P <SCRATCHPAD>/rails3200.pid"
+      ],
+      "port": 3200
+    },
+    {
+      "name": "rails-new-audit",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_audit_clone PYN_CONNECT_WRITES=on API_ACCESS=true && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3100 -b 127.0.0.1 -P <SCRATCHPAD>/rails3100.pid"
+      ],
+      "port": 3100
+    },
+    {
+      "name": "rails-cms-prod",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_prod && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3100 -b 127.0.0.1 -P <SCRATCHPAD>/rails3100prod.pid"
+      ],
+      "port": 3100
+    },
+    {
+      "name": "rails-perf-audit",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_audit_clone API_ACCESS=true && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3100 -b 127.0.0.1 -P <SCRATCHPAD>/rails3100perf.pid"
+      ],
+      "port": 3100
+    },
+    {
+      "name": "connect-perf",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd <SCRATCHPAD>/connect && PYNWHEEL_CMS_URL=http://127.0.0.1:3100 PYN_CONNECT_COOKIE_SECURE=false PORT=3005 exec npx next start -p 3005 -H 127.0.0.1"
+      ],
+      "port": 3005
+    },
+    {
+      "name": "tour-app-igloo",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/tour-app && VITE_TOUR_API_URL=http://127.0.0.1:3000 exec npx vite --host 127.0.0.1 --port 3013 --strictPort"
+      ],
+      "port": 3013
+    },
+    {
+      "name": "rails-design-verify",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_development API_ACCESS=true && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3100 -b 127.0.0.1 -P <SCRATCHPAD>/rails3100design.pid"
+      ],
+      "port": 3100
+    },
+    {
+      "name": "connect-design-verify",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web && PYNWHEEL_CMS_URL=http://127.0.0.1:3100 NEXT_PUBLIC_CMS_URL=http://127.0.0.1:3100 exec npx next dev -p 3005 -H 127.0.0.1"
+      ],
+      "port": 3005
+    },
+    {
+      "name": "connect-locks-verify",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web && PYNWHEEL_CMS_URL=http://127.0.0.1:3000 NEXT_PUBLIC_CMS_URL=http://127.0.0.1:3000 PYN_CONNECT_COOKIE_SECURE=false exec npx next dev -p 3006 -H 127.0.0.1"
+      ],
+      "port": 3006
+    },
+    {
+      "name": "rails-settings-clone",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 PYN_CONNECT_WRITES=on API_ACCESS=true SECRET_KEY_BASE_v2=local-dev-only-widget-code DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_audit_clone HOST_URL=http://127.0.0.1:3102 && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3102 -b 127.0.0.1 -P <SCRATCHPAD>/rails3102.pid"
+      ],
+      "port": 3102
+    },
+    {
+      "name": "rails-settings-dev",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 PYN_CONNECT_WRITES=on API_ACCESS=true SECRET_KEY_BASE_v2=local-dev-only-widget-code DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_development HOST_URL=http://127.0.0.1:3101 && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3101 -b 127.0.0.1 -P <SCRATCHPAD>/rails3101.pid"
+      ],
+      "port": 3101
+    },
+    {
+      "name": "connect-settings-verify",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web && PYNWHEEL_CMS_URL=http://127.0.0.1:3102 NEXT_PUBLIC_CMS_URL=http://127.0.0.1:3102 PYN_CONNECT_COOKIE_SECURE=false exec npx next dev -p 3007 -H 127.0.0.1"
+      ],
+      "port": 3007
+    },
+    {
+      "name": "tour-app-settings",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/tour-app && VITE_TOUR_API_URL=http://127.0.0.1:3102 exec npx vite --host 127.0.0.1 --port 3016 --strictPort"
+      ],
+      "port": 3016
+    },
+    {
+      "name": "rails-start-tour-clone",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 PYN_CONNECT_WRITES=on API_ACCESS=true SECRET_KEY_BASE_v2=local-dev-only-widget-code DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_audit_clone HOST_URL=http://127.0.0.1:3104 && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3104 -b 127.0.0.1 -P <SCRATCHPAD>/rails3104.pid"
+      ],
+      "port": 3104
+    },
+    {
+      "name": "tour-app-start-tour",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/tour-app && VITE_TOUR_API_URL=http://127.0.0.1:3104 exec ./node_modules/.bin/vite --host 127.0.0.1 --port 3018 --strictPort"
+      ],
+      "port": 3018
+    },
+    {
+      "name": "tour-app-start-tour-dummy",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/tour-app && VITE_TOUR_DATA_SOURCE=dummy exec ./node_modules/.bin/vite --host 127.0.0.1 --port 3019 --strictPort"
+      ],
+      "port": 3019
+    },
+    {
+      "name": "rails-visitor-clone",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 PYN_CONNECT_WRITES=on API_ACCESS=true SECRET_KEY_BASE_v2=local-dev-only-widget-code DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_audit_clone HOST_URL=http://127.0.0.1:3102 PYN_TOUR_VISITS=on PYN_TOUR_VISITOR_AUTH=on && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3102 -b 127.0.0.1 -P <SCRATCHPAD>/rails3102.pid"
+      ],
+      "port": 3102,
+      "env": {}
+    },
+    {
+      "name": "tour-app-visitor",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/tour-app && VITE_TOUR_API_URL=http://127.0.0.1:3102 VITE_DEMO_SCENARIOS=on exec ./node_modules/.bin/vite --host 127.0.0.1 --port 3019 --strictPort"
+      ],
+      "port": 3019
+    },
+    {
+      "name": "rails-visitor-lan",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 API_ACCESS=true PYN_CONNECT_WRITES=on PYN_TOUR_VISITS=on PYN_TOUR_VISITOR_AUTH=on PYN_TOUR_OTP_DEBUG=on SECRET_KEY_BASE_v2=local-dev-only-widget-code DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_prod HOST_URL=http://192.168.0.106:3020 && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3020 -b 0.0.0.0 -P <SCRATCHPAD>/rails3020.pid"
+      ],
+      "port": 3020,
+      "autoPort": false
+    },
+    {
+      "name": "connect-visitor-verify",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web && PYNWHEEL_CMS_URL=http://192.168.0.106:3020 NEXT_PUBLIC_CMS_URL=http://192.168.0.106:3020 PYN_CONNECT_COOKIE_SECURE=false exec npx next dev -p 3007 -H 0.0.0.0"
+      ],
+      "port": 3007
+    },
+    {
+      "name": "tour-app-qa-3020",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/tour-app && VITE_TOUR_API_URL=http://127.0.0.1:3020 VITE_DEMO_SCENARIOS=on exec ./node_modules/.bin/vite --host 127.0.0.1 --port 3021 --strictPort"
+      ],
+      "port": 3021
+    },
+    {
+      "name": "rails-visitor-lan-qa",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 API_ACCESS=true PYN_CONNECT_WRITES=on PYN_TOUR_VISITS=on PYN_TOUR_VISITOR_AUTH=on PYN_TOUR_OTP_DEBUG=on SECRET_KEY_BASE_v2=local-dev-only-widget-code DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_prod HOST_URL=http://192.168.0.106:3020 && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3020 -b 0.0.0.0 -P <SCRATCHPAD>/rails3020.pid"
+      ],
+      "port": 3020,
+      "autoPort": false
+    },
+    {
+      "name": "rails-visitor-lan-clone",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 API_ACCESS=true PYN_CONNECT_WRITES=on PYN_TOUR_VISITS=on PYN_TOUR_VISITOR_AUTH=on PYN_TOUR_OTP_DEBUG=on SECRET_KEY_BASE_v2=local-dev-only-widget-code DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_audit_clone HOST_URL=http://192.168.0.106:3020 && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3020 -b 0.0.0.0 -P <SCRATCHPAD>/rails3020clone.pid"
+      ],
+      "port": 3020,
+      "autoPort": false
+    },
+    {
+      "name": "rails-location-verify",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 API_ACCESS=true PYN_CONNECT_WRITES=on PYN_TOUR_VISITS=on PYN_TOUR_VISITOR_AUTH=on PYN_TOUR_LOCATION_REQUIRED=on PYN_TOUR_PRESENCE=on PYN_TOUR_OTP_DEBUG=on LAUNCHY_DRY_RUN=true SECRET_KEY_BASE_v2=local-dev-only-widget-code DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_development && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3105 -b 127.0.0.1 -P <SCRATCHPAD>/rails3105.pid"
+      ],
+      "port": 3105,
+      "autoPort": false
+    },
+    {
+      "name": "tour-app-location",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/tour-app && VITE_TOUR_API_URL=http://127.0.0.1:3105 exec ./node_modules/.bin/vite --host 127.0.0.1 --port 3022 --strictPort"
+      ],
+      "port": 3022,
+      "autoPort": false
+    },
+    {
+      "name": "dvs-fake-idv",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "PORT=3199 exec node <SCRATCHPAD>/dvs/fake_dvs.mjs"
+      ],
+      "port": 3199,
+      "autoPort": false
+    },
+    {
+      "name": "rails-idv-verify",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/.claude/worktrees/pensive-sutherland-59c4f3 && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 BUNDLE_GEMFILE=/Users/zubairzulifqar/pynwheel-staging/Gemfile API_ACCESS=true PYN_CONNECT_WRITES=on PYN_TOUR_VISITS=on PYN_TOUR_VISITOR_AUTH=on PYN_TOUR_OTP_DEBUG=on LAUNCHY_DRY_RUN=true SECRET_KEY_BASE_v2=local-dev-only-widget-code CHECKPOINT_DVS_API_KEY=sk_local_fake_dvs_key CHECKPOINT_DVS_URL=http://127.0.0.1:3199 DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_development && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3107 -b 127.0.0.1 -P <SCRATCHPAD>/rails3107.pid"
+      ],
+      "port": 3107,
+      "autoPort": false
+    },
+    {
+      "name": "tour-app-idv",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/.claude/worktrees/pensive-sutherland-59c4f3/tour-app && VITE_TOUR_API_URL=http://127.0.0.1:3107 exec ./node_modules/.bin/vite --host 127.0.0.1 --port 3024 --strictPort"
+      ],
+      "port": 3024,
+      "autoPort": false
+    },
+    {
+      "name": "rails-clone-demo",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 PYN_CONNECT_WRITES=on API_ACCESS=true SECRET_KEY_BASE_v2=local-dev-only-widget-code HOST_URL=http://127.0.0.1:3000 DATABASE_URL=postgres://postgres:123@localhost/pynwheel_audit_clone && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3000 -b 127.0.0.1"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "dvs-fake-qa",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "PORT=3198 exec node <SCRATCHPAD>/dvs/fake_dvs.mjs"
+      ],
+      "port": 3198
+    },
+    {
+      "name": "rails-qa-phone",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging && export PATH=$HOME/.rvm/gems/ruby-3.3.5/bin:$HOME/.rvm/gems/ruby-3.3.5@global/bin:$HOME/.rvm/rubies/ruby-3.3.5/bin:$PATH GEM_HOME=$HOME/.rvm/gems/ruby-3.3.5 GEM_PATH=$HOME/.rvm/gems/ruby-3.3.5:$HOME/.rvm/gems/ruby-3.3.5@global DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES LC_ALL=en_US.UTF-8 API_ACCESS=true PYN_CONNECT_WRITES=on PYN_TOUR_VISITS=on PYN_TOUR_VISITOR_AUTH=on PYN_TOUR_LOCATION_REQUIRED=on PYN_TOUR_PRESENCE=on PYN_TOUR_OTP_DEBUG=on LAUNCHY_DRY_RUN=true SECRET_KEY_BASE_v2=local-dev-only-widget-code CHECKPOINT_DVS_API_KEY=sk_local_fake_dvs_key CHECKPOINT_DVS_URL=http://127.0.0.1:3198 HOST_URL=http://192.168.0.106:3108 DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_audit_clone && exec $HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails server -p 3108 -b 0.0.0.0 -P <SCRATCHPAD>/rails3108.pid"
+      ],
+      "port": 3108
+    },
+    {
+      "name": "tour-app-qa-phone",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd /Users/zubairzulifqar/pynwheel-staging/tour-app && VITE_TOUR_API_URL=http://127.0.0.1:3108 exec ./node_modules/.bin/vite --host 127.0.0.1 --port 3025 --strictPort"
+      ],
+      "port": 3025
+    }
+  ]
+}

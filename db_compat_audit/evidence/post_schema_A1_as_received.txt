@@ -1,0 +1,131 @@
+== new tables
+       table_name       
+------------------------
+ hallway_attachments
+ hallway_detection_runs
+ hallway_edges
+ hallway_suppressions
+ wayfinding_stops
+(5 rows)
+
+== new columns with nullability and defaults
+ table_name  |      column_name       |          data_type          | is_nullable |         column_default         
+-------------+------------------------+-----------------------------+-------------+--------------------------------
+ doors       | note                   | text                        | YES         | 
+ elevators   | accessible             | boolean                     | NO          | true
+ elevators   | floor_positions        | jsonb                       | NO          | '{}'::jsonb
+ elevators   | kind                   | character varying           | NO          | 'elevator'::character varying
+ floorplates | scale_ft_per_px        | numeric                     | YES         | 
+ floorplates | svg_to_image_transform | jsonb                       | YES         | 
+ floorplates | wayfinding_version     | integer                     | NO          | 0
+ hallways    | community_id           | integer                     | YES         | 
+ hallways    | confidence             | double precision            | YES         | 
+ hallways    | confirmed_at           | timestamp without time zone | YES         | 
+ hallways    | created_by_user_id     | integer                     | YES         | 
+ hallways    | detection_run_id       | bigint                      | YES         | 
+ hallways    | review_status          | character varying           | NO          | 'confirmed'::character varying
+ hallways    | source                 | character varying           | NO          | 'manual'::character varying
+ hallways    | space                  | character varying           | NO          | 'raster'::character varying
+ sitemaps    | scale_ft_per_px        | numeric                     | YES         | 
+ sitemaps    | svg_to_image_transform | jsonb                       | YES         | 
+ sitemaps    | wayfinding_version     | integer                     | NO          | 0
+ tour_stops  | duration_minutes       | integer                     | YES         | 
+ tours       | tour_setup_version     | integer                     | NO          | 0
+(20 rows)
+
+== new indexes
+       tablename        |                         indexname                         |                                                                             indexdef                                                                              
+------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ elevators              | index_elevators_on_community_id_and_kind                  | CREATE INDEX index_elevators_on_community_id_and_kind ON public.elevators USING btree (community_id, kind)
+ hallway_attachments    | hallway_attachments_pkey                                  | CREATE UNIQUE INDEX hallway_attachments_pkey ON public.hallway_attachments USING btree (id)
+ hallway_attachments    | index_hallway_attachments_on_hallway_id                   | CREATE INDEX index_hallway_attachments_on_hallway_id ON public.hallway_attachments USING btree (hallway_id)
+ hallway_attachments    | index_hallway_attachments_on_parent_type_and_parent_id    | CREATE INDEX index_hallway_attachments_on_parent_type_and_parent_id ON public.hallway_attachments USING btree (parent_type, parent_id)
+ hallway_attachments    | index_hallway_attachments_unique_per_level                | CREATE UNIQUE INDEX index_hallway_attachments_unique_per_level ON public.hallway_attachments USING btree (attachable_type, attachable_id, parent_type, parent_id)
+ hallway_detection_runs | hallway_detection_runs_pkey                               | CREATE UNIQUE INDEX hallway_detection_runs_pkey ON public.hallway_detection_runs USING btree (id)
+ hallway_detection_runs | index_hallway_detection_runs_on_client_request_id         | CREATE UNIQUE INDEX index_hallway_detection_runs_on_client_request_id ON public.hallway_detection_runs USING btree (client_request_id)
+ hallway_detection_runs | index_hallway_detection_runs_on_parent_type_and_parent_id | CREATE INDEX index_hallway_detection_runs_on_parent_type_and_parent_id ON public.hallway_detection_runs USING btree (parent_type, parent_id)
+ hallway_edges          | hallway_edges_pkey                                        | CREATE UNIQUE INDEX hallway_edges_pkey ON public.hallway_edges USING btree (id)
+ hallway_edges          | index_hallway_edges_on_detection_run_id                   | CREATE INDEX index_hallway_edges_on_detection_run_id ON public.hallway_edges USING btree (detection_run_id)
+ hallway_edges          | index_hallway_edges_on_from_hallway_id_and_to_hallway_id  | CREATE UNIQUE INDEX index_hallway_edges_on_from_hallway_id_and_to_hallway_id ON public.hallway_edges USING btree (from_hallway_id, to_hallway_id)
+ hallway_edges          | index_hallway_edges_on_parent_type_and_parent_id          | CREATE INDEX index_hallway_edges_on_parent_type_and_parent_id ON public.hallway_edges USING btree (parent_type, parent_id)
+ hallway_edges          | index_hallway_edges_on_to_hallway_id                      | CREATE INDEX index_hallway_edges_on_to_hallway_id ON public.hallway_edges USING btree (to_hallway_id)
+ hallway_suppressions   | hallway_suppressions_pkey                                 | CREATE UNIQUE INDEX hallway_suppressions_pkey ON public.hallway_suppressions USING btree (id)
+ hallway_suppressions   | idx_on_parent_type_parent_id_kind_4f50b557e9              | CREATE INDEX idx_on_parent_type_parent_id_kind_4f50b557e9 ON public.hallway_suppressions USING btree (parent_type, parent_id, kind)
+ hallways               | index_hallways_natural_key                                | CREATE INDEX index_hallways_natural_key ON public.hallways USING btree (parent_type, parent_id, space, ((round(x_plot))::integer), ((round(y_plot))::integer))
+ hallways               | index_hallways_on_community_id                            | CREATE INDEX index_hallways_on_community_id ON public.hallways USING btree (community_id)
+ hallways               | index_hallways_routable_lookup                            | CREATE INDEX index_hallways_routable_lookup ON public.hallways USING btree (parent_type, parent_id, review_status, space)
+ tour_stops             | index_tour_stops_on_stop_type_and_stop_id                 | CREATE INDEX index_tour_stops_on_stop_type_and_stop_id ON public.tour_stops USING btree (stop_type, stop_id)
+ units                  | index_units_on_floorplate_id                              | CREATE INDEX index_units_on_floorplate_id ON public.units USING btree (floorplate_id)
+ wayfinding_stops       | index_wayfinding_stops_on_community_id                    | CREATE INDEX index_wayfinding_stops_on_community_id ON public.wayfinding_stops USING btree (community_id)
+ wayfinding_stops       | index_wayfinding_stops_on_community_id_and_kind           | CREATE INDEX index_wayfinding_stops_on_community_id_and_kind ON public.wayfinding_stops USING btree (community_id, kind)
+ wayfinding_stops       | index_wayfinding_stops_on_map_type_and_map_id             | CREATE INDEX index_wayfinding_stops_on_map_type_and_map_id ON public.wayfinding_stops USING btree (map_type, map_id)
+ wayfinding_stops       | wayfinding_stops_pkey                                     | CREATE UNIQUE INDEX wayfinding_stops_pkey ON public.wayfinding_stops USING btree (id)
+(24 rows)
+
+== invalid indexes (a failed CONCURRENTLY build leaves an INVALID index) -- must be empty
+ indexrelid 
+------------
+(0 rows)
+
+== foreign keys on new tables
+        child        |       conname       |                          pg_get_constraintdef                           
+---------------------+---------------------+-------------------------------------------------------------------------
+ hallway_edges       | fk_rails_3485fcbe55 | FOREIGN KEY (to_hallway_id) REFERENCES hallways(id) ON DELETE CASCADE
+ hallway_edges       | fk_rails_4c2c147e6e | FOREIGN KEY (from_hallway_id) REFERENCES hallways(id) ON DELETE CASCADE
+ hallway_attachments | fk_rails_e3eff795d2 | FOREIGN KEY (hallway_id) REFERENCES hallways(id) ON DELETE CASCADE
+ wayfinding_stops    | fk_rails_f5b218a7de | FOREIGN KEY (hallway_id) REFERENCES hallways(id) ON DELETE SET NULL
+(4 rows)
+
+== check constraints on new tables
+      conrelid       |               conname                |                                                            pg_get_constraintdef                                                            
+---------------------+--------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------
+ hallway_edges       | hallway_edges_canonical_pair         | CHECK ((from_hallway_id < to_hallway_id))
+ hallway_attachments | hallway_attachments_mode_consistency | CHECK (((((mode)::text = 'detached'::text) AND (hallway_id IS NULL)) OR (((mode)::text = 'explicit'::text) AND (hallway_id IS NOT NULL))))
+(2 rows)
+
+== triggers / functions added (expect none)
+ event_object_table | trigger_name 
+--------------------+--------------
+(0 rows)
+
+== backfill result: hallways community_id coverage
+ total | filled | still_null 
+-------+--------+------------
+  4343 |   3601 |        742
+(1 row)
+
+== backfill correctness: community_id mismatching parent (must be 0)
+ count 
+-------
+     0
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+== every existing row routable under the defaults (must equal total)
+ total | routable_default 
+-------+------------------
+  4343 |             4343
+(1 row)
+
+== elevators defaults
+ total | defaulted 
+-------+-----------
+   192 |       192
+(1 row)
+
+== version counters all 0
+ fp | sm | t 
+----+----+---
+  1 |  0 | 1
+(1 row)
+
+== new tables row counts (expect 0)
+ e | s | a | r | w 
+---+---+---+---+---
+ 9 | 0 | 1 | 0 | 2
+(1 row)
+

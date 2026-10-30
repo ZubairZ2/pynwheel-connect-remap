@@ -1,0 +1,76 @@
+# System environment inventory — captured 2026-10-30
+ProductName:		macOS
+ProductVersion:		27.0.1
+BuildVersion:		26A434
+arm64
+model: Model Identifier: Mac16,12;Chip: Apple M4;Total Number of Cores: 10 (4 Performance and 6 Efficiency);Memory: 16 GB;
+shell: /bin/zsh (zsh 5.9 (arm-apple-darwin25.0.0))
+
+## PATH (login shell order)
+/Users/zubairzulifqar/.rvm/gems/ruby-3.1.4/bin
+/Users/zubairzulifqar/.rvm/gems/ruby-3.1.4@global/bin
+/Users/zubairzulifqar/.rvm/rubies/ruby-3.1.4/bin
+/Users/zubairzulifqar/.rbenv/shims
+/Users/zubairzulifqar/.local/bin
+/Users/zubairzulifqar/go/bin
+/opt/homebrew/bin
+/opt/homebrew/sbin
+/usr/local/bin
+/System/Cryptexes/App/usr/bin
+/usr/bin
+/bin
+/usr/sbin
+/sbin
+/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin
+/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin
+/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin
+/pkg/env/global/bin
+/Library/Apple/usr/bin
+/opt/homebrew/bin
+/Users/zubairzulifqar/.rvm/bin
+
+## tool versions
+git git version 2.52.0
+gh gh version 2.98.0 (2026-08-20)
+heroku heroku/11.10.0 darwin-arm64 node-v22.23.2
+brew Homebrew 7.0.11
+node v26.8.2 npm 11.19.1 yarn 1.22.22
+python3 Python 3.15.0
+rbenv rbenv 1.3.2
+Warning! PATH is not properly set up, /Users/zubairzulifqar/.rvm/gems/ruby-3.3.5/bin is not available.
+         <log>Usually this is caused by shell initialization files. Search for <code>PATH=...</code> entries.
+         You can also re-add RVM to your profile by running: <code>rvm get stable --auto-dotfiles</code>
+         To fix it temporarily in this shell session run: <code>rvm use ruby-3.3.5</code>
+         To ignore this error add <code>rvm_silence_path_mismatch_check_flag=1</code> to your <code>~/.rvmrc</code> file.
+rvm rvm 1.29.12-next (master) by Michal Papis, Piotr Kuczynski, Wayne E. Seguin [https://rvm.io]
+ruby (shell default) ruby 3.1.4p223 (2023-03-30 revision 957bb7cb81) [arm64-darwin25]
+ruby (project, rvm) ruby 3.3.5 (2024-09-03 revision ef084cc8f4) [arm64-darwin25]
+psql psql (PostgreSQL) 18.6
+redis Redis server v=8.10.1 sha=00000000:1 malloc=libc bits=64 build=81870544b30d700a
+watchman 2026.10.12.00
+imagemagick Version: ImageMagick 7.1.2-31 Q16-HDRI aarch64 8309dc92a:20260903 https://imagemagick.org
+gitleaks 8.30.1
+adb Version 37.0.1-15733141
+xcodebuild Xcode 27.0 Build version 27A266a 
+
+## Homebrew services
+Name          Status User           File
+httpd         started         zubairzulifqar ~/Library/LaunchAgents/homebrew.mxcl.httpd.plist
+mysql         none                           
+mysql@9.7     started         zubairzulifqar ~/Library/LaunchAgents/sh.brew.mysql@9.7.plist
+nginx         error  1        zubairzulifqar ~/Library/LaunchAgents/homebrew.mxcl.nginx.plist
+php           started         zubairzulifqar ~/Library/LaunchAgents/homebrew.mxcl.php.plist
+postgresql@16 started         zubairzulifqar ~/Library/LaunchAgents/sh.brew.postgresql@16.plist
+redis         started         zubairzulifqar ~/Library/LaunchAgents/sh.brew.redis.plist
+
+## ssh hosts (config)
+Host github-personal
+Host github-work
+Host github-toptal
+Host git-toptal
+
+## git identity
+ZubairZulfiqarZ2
+zubair.zulfiqar@7vals.com
+
+## LAN address at capture time: 192.168.0.57

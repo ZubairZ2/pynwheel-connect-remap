@@ -1,0 +1,27 @@
+# Applications — captured 2026-10-30. Method: cask = Homebrew cask, direct = downloaded installer / App Store, company = managed by the employer
+
+App                        Version          Method   Purpose / config location
+Android Studio             2026.2           direct   Android builds; ~/Library/Application Support/Google/AndroidStudio2026.2.1
+AssetSonarAgent            1.3.1            company  compliance agent, reinstalled by IT
+Claude                     3.6556.2         direct   Claude desktop (Code tab); state in ~/.claude
+Cursor                     3.26.13          direct   editor in use (VS Code fork); ~/Library/Application Support/Cursor/User, ~/.cursor/extensions
+Google Chrome              156.0.8078.76    direct   browser for QA; Playwright channel chrome
+Keynote                    14.2             direct   Apple
+MySQLWorkbench             8.0.45.CE        direct   MySQL client, other projects
+NeatDownloadManager        1.3              direct   utility
+Numbers                    14.2             direct   Apple
+Pages                      14.2             direct   Apple
+Postman                    12.32.4          cask     API testing; collections sync to the Postman account
+Raycast                    1.104.32         direct   launcher; export via Raycast > Settings > Advanced
+Safari                     27.0.1           direct   Apple
+Slack                      4.51.180         direct   team chat
+Smart STB                  -                direct   not development-related
+The Unarchiver             4.3.9            direct   utility
+Traffic Racer              -                direct   not development-related
+WhatsApp                   26.36.74         direct   communication
+Xcode                      27.0             direct   iOS builds (Capacitor SPM); ~/Library/Developer/Xcode/UserData
+iTerm                      3.7.6            cask     terminal; ~/Library/Preferences/com.googlecode.iterm2.plist
+Claude Code URL Handler    -                direct   installed by the Claude app
+zoom.us                    7.1.9 (88375)    direct   communication
+
+Not installed today but with leftover profiles: Visual Studio Code (~/Library/Application Support/Code/User, ~/.vscode/extensions, 35 extensions listed in vscode-extensions-previously-installed.txt)

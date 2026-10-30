@@ -1,0 +1,4 @@
+/opt/homebrew/lib
++-- newman@6.2.3
+`-- npm@11.19.1
+

@@ -1,0 +1,156 @@
+== 20261003100011 AddPlottingIndexes: reverting ===============================
+-- remove_index(:units, :floorplate_id, {:algorithm=>:concurrently, :if_not_exists=>true})
+   -> 0.0264s
+-- remove_index(:tour_stops, [:stop_type, :stop_id], {:algorithm=>:concurrently, :if_not_exists=>true})
+   -> 0.0063s
+== 20261003100011 AddPlottingIndexes: reverted (0.0375s) ======================
+
+== 20261003100010 AddTourSetupVersionToToursAndDurationToTourStops: reverting =
+-- remove_column(:tour_stops, :duration_minutes, :integer)
+   -> 0.0032s
+-- remove_column(:tours, :tour_setup_version, :integer, {:null=>false, :default=>0})
+   -> 0.0025s
+== 20261003100010 AddTourSetupVersionToToursAndDurationToTourStops: reverted (0.0059s) 
+
+== 20261003100009 AddWayfindingVersionTransformScaleToFloorplatesAndSitemaps: reverting 
+-- remove_column(:sitemaps, :scale_ft_per_px, :decimal, {:precision=>10, :scale=>6})
+   -> 0.0022s
+-- remove_column(:sitemaps, :svg_to_image_transform, :jsonb)
+   -> 0.0006s
+-- remove_column(:sitemaps, :wayfinding_version, :integer, {:null=>false, :default=>0})
+   -> 0.0007s
+-- remove_column(:floorplates, :scale_ft_per_px, :decimal, {:precision=>10, :scale=>6})
+   -> 0.0018s
+-- remove_column(:floorplates, :svg_to_image_transform, :jsonb)
+   -> 0.0006s
+-- remove_column(:floorplates, :wayfinding_version, :integer, {:null=>false, :default=>0})
+   -> 0.0007s
+== 20261003100009 AddWayfindingVersionTransformScaleToFloorplatesAndSitemaps: reverted (0.0068s) 
+
+== 20261003100008 AddNoteToDoors: reverting ===================================
+-- remove_column(:doors, :note, :text)
+   -> 0.0023s
+== 20261003100008 AddNoteToDoors: reverted (0.0024s) ==========================
+
+== 20261003100007 AddKindAccessibleFloorPositionsToElevators: reverting =======
+-- remove_index(:elevators, [:community_id, :kind])
+   -> 0.0047s
+-- remove_column(:elevators, :floor_positions, :jsonb, {:null=>false, :default=>{}})
+   -> 0.0010s
+-- remove_column(:elevators, :accessible, :boolean, {:null=>false, :default=>true})
+   -> 0.0008s
+-- remove_column(:elevators, :kind, :string, {:null=>false, :default=>"elevator"})
+   -> 0.0007s
+== 20261003100007 AddKindAccessibleFloorPositionsToElevators: reverted (0.0073s) 
+
+== 20261003100006 CreateWayfindingStops: reverting ============================
+-- remove_foreign_key(:wayfinding_stops, :hallways, {:column=>:hallway_id, :on_delete=>:nullify})
+   -> 0.0113s
+-- remove_index(:wayfinding_stops, [:community_id, :kind])
+   -> 0.0031s
+-- remove_index(:wayfinding_stops, [:map_type, :map_id])
+   -> 0.0029s
+-- remove_index(:wayfinding_stops, :community_id)
+   -> 0.0024s
+-- drop_table(:wayfinding_stops)
+   -> 0.0035s
+== 20261003100006 CreateWayfindingStops: reverted (0.0234s) ===================
+
+== 20261003100005 CreateHallwayDetectionRuns: reverting =======================
+-- remove_index(:hallway_detection_runs, [:parent_type, :parent_id])
+   -> 0.0041s
+-- remove_index(:hallway_detection_runs, :client_request_id, {:unique=>true})
+   -> 0.0026s
+-- drop_table(:hallway_detection_runs)
+   -> 0.0034s
+== 20261003100005 CreateHallwayDetectionRuns: reverted (0.0102s) ==============
+
+== 20261003100004 CreateHallwayAttachments: reverting =========================
+-- remove_check_constraint(:hallway_attachments, "(mode = 'detached' AND hallway_id IS NULL) OR (mode = 'explicit' AND hallway_id IS NOT NULL)", {:name=>"hallway_attachments_mode_consistency"})
+   -> 0.0035s
+-- remove_foreign_key(:hallway_attachments, :hallways, {:column=>:hallway_id, :on_delete=>:cascade})
+   -> 0.0051s
+-- remove_index(:hallway_attachments, :hallway_id)
+   -> 0.0046s
+-- remove_index(:hallway_attachments, [:parent_type, :parent_id])
+   -> 0.0026s
+-- remove_index(:hallway_attachments, [:attachable_type, :attachable_id, :parent_type, :parent_id], {:unique=>true, :name=>"index_hallway_attachments_unique_per_level"})
+   -> 0.0019s
+-- drop_table(:hallway_attachments)
+   -> 0.0018s
+== 20261003100004 CreateHallwayAttachments: reverted (0.0198s) ================
+
+== 20261003100003 CreateHallwaySuppressions: reverting ========================
+-- remove_index(:hallway_suppressions, [:parent_type, :parent_id, :kind])
+   -> 0.0042s
+-- drop_table(:hallway_suppressions)
+   -> 0.0017s
+== 20261003100003 CreateHallwaySuppressions: reverted (0.0060s) ===============
+
+== 20261003100002 CreateHallwayEdges: reverting ===============================
+-- remove_check_constraint(:hallway_edges, "from_hallway_id < to_hallway_id", {:name=>"hallway_edges_canonical_pair"})
+   -> 0.0035s
+-- remove_foreign_key(:hallway_edges, :hallways, {:column=>:to_hallway_id, :on_delete=>:cascade})
+   -> 0.0044s
+-- remove_foreign_key(:hallway_edges, :hallways, {:column=>:from_hallway_id, :on_delete=>:cascade})
+   -> 0.0043s
+-- remove_index(:hallway_edges, :detection_run_id)
+   -> 0.0034s
+-- remove_index(:hallway_edges, [:parent_type, :parent_id])
+   -> 0.0021s
+-- remove_index(:hallway_edges, :to_hallway_id)
+   -> 0.0022s
+-- remove_index(:hallway_edges, [:from_hallway_id, :to_hallway_id], {:unique=>true})
+   -> 0.0020s
+-- drop_table(:hallway_edges)
+   -> 0.0024s
+== 20261003100002 CreateHallwayEdges: reverted (0.0246s) ======================
+
+== 20261003100001 AddWayfindingColumnsToHallways: reverting ===================
+-- index_name_exists?(:hallways, "index_hallways_natural_key")
+   -> 0.0026s
+-- remove_index(:hallways, {:name=>"index_hallways_natural_key"})
+   -> 0.0010s
+-- index_name_exists?(:hallways, "index_hallways_routable_lookup")
+   -> 0.0007s
+-- remove_index(:hallways, {:name=>"index_hallways_routable_lookup"})
+   -> 0.0010s
+-- index_exists?(:hallways, :community_id)
+   -> 0.0027s
+-- remove_index(:hallways, :community_id)
+   -> 0.0024s
+-- column_exists?(:hallways, :source)
+   -> 0.0048s
+-- remove_column(:hallways, :source)
+   -> 0.0010s
+-- column_exists?(:hallways, :review_status)
+   -> 0.0012s
+-- remove_column(:hallways, :review_status)
+   -> 0.0009s
+-- column_exists?(:hallways, :confidence)
+   -> 0.0015s
+-- remove_column(:hallways, :confidence)
+   -> 0.0006s
+-- column_exists?(:hallways, :space)
+   -> 0.0009s
+-- remove_column(:hallways, :space)
+   -> 0.0009s
+-- column_exists?(:hallways, :community_id)
+   -> 0.0013s
+-- remove_column(:hallways, :community_id)
+   -> 0.0007s
+-- column_exists?(:hallways, :detection_run_id)
+   -> 0.0012s
+-- remove_column(:hallways, :detection_run_id)
+   -> 0.0007s
+-- column_exists?(:hallways, :confirmed_at)
+   -> 0.0012s
+-- remove_column(:hallways, :confirmed_at)
+   -> 0.0007s
+-- column_exists?(:hallways, :created_by_user_id)
+   -> 0.0013s
+-- remove_column(:hallways, :created_by_user_id)
+   -> 0.0008s
+== 20261003100001 AddWayfindingColumnsToHallways: reverted (0.0305s) ==========
+
+$HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails db:rollback STEP=1  5.96s user 3.10s system 75% cpu 11.927 total

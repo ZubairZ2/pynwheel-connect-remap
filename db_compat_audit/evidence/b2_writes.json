@@ -1,0 +1,416 @@
+{
+  "started": "2026-10-07T12:14:04Z",
+  "code": "65504c205",
+  "communities": {
+    "1411": {
+      "level_id": 1868,
+      "before": {
+        "hallways": 146,
+        "hallways_pending": 0,
+        "hallways_svg": 0,
+        "hallway_edges": 0,
+        "attachments": 0,
+        "suppressions": 0,
+        "wayfinding_stops": 0,
+        "elevators": 2,
+        "elevators_stairs": 0,
+        "tour_stops": 69,
+        "units": 294,
+        "doors": 0,
+        "versions": 3
+      },
+      "steps": [
+        {
+          "step": "edit_confirmed",
+          "key_map": {
+            "c:1": 6070,
+            "c:2": 6071
+          },
+          "counts": {
+            "nodes_added": 2,
+            "edges_added": 2
+          },
+          "version": 1,
+          "anchor_id": 5735,
+          "anchor_next_points": [
+            5736,
+            6071
+          ]
+        },
+        {
+          "step": "detect_pending",
+          "key_map": {
+            "p:1": 6072,
+            "p:2": 6073
+          },
+          "counts": {
+            "nodes_added": 2,
+            "edges_added": 2
+          },
+          "run_id": 1,
+          "pending_rows": [
+            {
+              "id": 6072,
+              "x_plot": 150.0,
+              "y_plot": 350.0,
+              "next_points": [],
+              "review_status": "pending",
+              "source": "inferred",
+              "space": "raster",
+              "selected": false
+            },
+            {
+              "id": 6073,
+              "x_plot": 250.0,
+              "y_plot": 350.0,
+              "next_points": [],
+              "review_status": "pending",
+              "source": "inferred",
+              "space": "raster",
+              "selected": false
+            }
+          ],
+          "anchor_next_points": [
+            5736,
+            6071
+          ]
+        },
+        {
+          "step": "svg_node",
+          "key_map": {
+            "s:1": 6074
+          },
+          "rows": [
+            {
+              "id": 6074,
+              "x_plot": 1200.5,
+              "y_plot": 900.25,
+              "space": "svg",
+              "review_status": "confirmed"
+            }
+          ]
+        },
+        {
+          "step": "stops_create",
+          "key_map": {
+            "n:1": "elevator:943",
+            "n:2": "elevator:944",
+            "n:3": "stop:1",
+            "n:4": "stop:2"
+          },
+          "counts": {
+            "stops_created": 4
+          },
+          "elevators": [
+            {
+              "id": 943,
+              "name": "Audit stairs",
+              "kind": "stairs",
+              "accessible": false,
+              "x_plot": 620,
+              "y_plot": 100,
+              "floorplate_covering_range": "3",
+              "floorplate_id": 1868,
+              "building": null
+            },
+            {
+              "id": 944,
+              "name": "Audit lift",
+              "kind": "elevator",
+              "accessible": true,
+              "x_plot": 600,
+              "y_plot": 100,
+              "floorplate_covering_range": "3",
+              "floorplate_id": 1868,
+              "building": null
+            }
+          ],
+          "elevator_tour_stops": [
+            {
+              "id": 25021,
+              "tour_id": 822,
+              "stop_id": 944,
+              "name": "Audit lift",
+              "display_stop": true
+            }
+          ]
+        },
+        {
+          "step": "stop_list_unit_on",
+          "unit_id": 940318,
+          "changed": true,
+          "tour_stop": {
+            "id": 25022,
+            "tour_id": 822,
+            "stop_type": "unit",
+            "stop_id": 940318,
+            "name": "153",
+            "sort": 3782,
+            "display_stop": true,
+            "latitude": "1546.0",
+            "longitude": "528.0",
+            "duration_minutes": null
+          }
+        },
+        {
+          "step": "stop_list_amenity_on",
+          "amenity_id": 15125,
+          "changed": false,
+          "tour_stop": {
+            "id": 22872,
+            "tour_id": 822,
+            "stop_type": "amenity",
+            "stop_id": 15125,
+            "display_stop": true
+          },
+          "breezway_lock_visible": true
+        },
+        {
+          "step": "tour_setup_save",
+          "counts": {
+            "duration": 1,
+            "reordered": 7
+          },
+          "version": 2,
+          "first_stop": {
+            "id": 2839,
+            "sort": 8,
+            "duration_minutes": 7
+          }
+        }
+      ],
+      "after": {
+        "hallways": 151,
+        "hallways_pending": 2,
+        "hallways_svg": 1,
+        "hallway_edges": 4,
+        "attachments": 0,
+        "suppressions": 0,
+        "wayfinding_stops": 2,
+        "elevators": 4,
+        "elevators_stairs": 1,
+        "tour_stops": 71,
+        "units": 294,
+        "doors": 0,
+        "versions": 9
+      },
+      "created": {
+        "confirmed_hallways": [
+          6070,
+          6071
+        ],
+        "pending_hallways": [
+          6072,
+          6073
+        ],
+        "svg_hallways": [
+          6074
+        ]
+      }
+    },
+    "1618": {
+      "level_id": 2241,
+      "before": {
+        "hallways": 228,
+        "hallways_pending": 0,
+        "hallways_svg": 0,
+        "hallway_edges": 0,
+        "attachments": 0,
+        "suppressions": 0,
+        "wayfinding_stops": 0,
+        "elevators": 3,
+        "elevators_stairs": 0,
+        "tour_stops": 30,
+        "units": 244,
+        "doors": 233,
+        "versions": 36
+      },
+      "steps": [
+        {
+          "step": "edit_confirmed",
+          "key_map": {
+            "c:1": 6075,
+            "c:2": 6076
+          },
+          "counts": {
+            "nodes_added": 2,
+            "edges_added": 2
+          },
+          "version": 1,
+          "anchor_id": 6056,
+          "anchor_next_points": [
+            6076
+          ]
+        },
+        {
+          "step": "detect_pending",
+          "key_map": {
+            "p:1": 6077,
+            "p:2": 6078
+          },
+          "counts": {
+            "nodes_added": 2,
+            "edges_added": 2
+          },
+          "run_id": 2,
+          "pending_rows": [
+            {
+              "id": 6077,
+              "x_plot": 150.0,
+              "y_plot": 350.0,
+              "next_points": [],
+              "review_status": "pending",
+              "source": "inferred",
+              "space": "raster",
+              "selected": false
+            },
+            {
+              "id": 6078,
+              "x_plot": 250.0,
+              "y_plot": 350.0,
+              "next_points": [],
+              "review_status": "pending",
+              "source": "inferred",
+              "space": "raster",
+              "selected": false
+            }
+          ],
+          "anchor_next_points": [
+            6076
+          ]
+        },
+        {
+          "step": "svg_node",
+          "key_map": {
+            "s:1": 6079
+          },
+          "rows": [
+            {
+              "id": 6079,
+              "x_plot": 1200.5,
+              "y_plot": 900.25,
+              "space": "svg",
+              "review_status": "confirmed"
+            }
+          ]
+        },
+        {
+          "step": "stops_create",
+          "key_map": {
+            "n:1": "elevator:945",
+            "n:2": "elevator:946",
+            "n:3": "stop:3",
+            "n:4": "stop:4"
+          },
+          "counts": {
+            "stops_created": 4
+          },
+          "elevators": [
+            {
+              "id": 945,
+              "name": "Audit stairs",
+              "kind": "stairs",
+              "accessible": false,
+              "x_plot": 620,
+              "y_plot": 100,
+              "floorplate_covering_range": "1",
+              "floorplate_id": 2241,
+              "building": null
+            },
+            {
+              "id": 946,
+              "name": "Audit lift",
+              "kind": "elevator",
+              "accessible": true,
+              "x_plot": 600,
+              "y_plot": 100,
+              "floorplate_covering_range": "1",
+              "floorplate_id": 2241,
+              "building": null
+            }
+          ],
+          "elevator_tour_stops": [
+            {
+              "id": 25023,
+              "tour_id": 1089,
+              "stop_id": 946,
+              "name": "Audit lift",
+              "display_stop": true
+            }
+          ]
+        },
+        {
+          "step": "stop_list_unit_on",
+          "unit_id": 483861,
+          "changed": true,
+          "tour_stop": {
+            "id": 25024,
+            "tour_id": 1089,
+            "stop_type": "unit",
+            "stop_id": 483861,
+            "name": "1001",
+            "sort": 3782,
+            "display_stop": true,
+            "latitude": "818.0",
+            "longitude": "204.0",
+            "duration_minutes": null
+          }
+        },
+        {
+          "step": "stop_list_amenity_on",
+          "amenity_id": 18694,
+          "changed": false,
+          "tour_stop": {
+            "id": 7076,
+            "tour_id": 1089,
+            "stop_type": "amenity",
+            "stop_id": 18694,
+            "display_stop": true
+          },
+          "breezway_lock_visible": true
+        },
+        {
+          "step": "tour_setup_save",
+          "counts": {
+            "duration": 1,
+            "reordered": 10
+          },
+          "version": 2,
+          "first_stop": {
+            "id": 7076,
+            "sort": 11,
+            "duration_minutes": 7
+          }
+        }
+      ],
+      "after": {
+        "hallways": 233,
+        "hallways_pending": 2,
+        "hallways_svg": 1,
+        "hallway_edges": 4,
+        "attachments": 0,
+        "suppressions": 0,
+        "wayfinding_stops": 2,
+        "elevators": 5,
+        "elevators_stairs": 1,
+        "tour_stops": 32,
+        "units": 244,
+        "doors": 233,
+        "versions": 42
+      },
+      "created": {
+        "confirmed_hallways": [
+          6075,
+          6076
+        ],
+        "pending_hallways": [
+          6077,
+          6078
+        ],
+        "svg_hallways": [
+          6079
+        ]
+      }
+    }
+  }
+}

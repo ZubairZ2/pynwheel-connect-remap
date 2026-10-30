@@ -1,0 +1,46 @@
+### 1. legacy snapshot 1411 (legacy code, migrated schema, unchanged data)
+1411 John Demo: snapshot written (0.97s)
+### 2. new compare 1411
+1411 John Demo: identical
+### 3. B2 writes (new code, committed)
+1411: {:hallways=>146, :hallways_pending=>0, :hallways_svg=>0, :hallway_edges=>0, :attachments=>0, :suppressions=>0, :wayfinding_stops=>0, :elevators=>2, :elevators_stairs=>0, :tour_stops=>69, :units=>294, :doors=>0, :versions=>3} -> {:hallways=>151, :hallways_pending=>2, :hallways_svg=>1, :hallway_edges=>4, :attachments=>0, :suppressions=>0, :wayfinding_stops=>2, :elevators=>4, :elevators_stairs=>1, :tour_stops=>71, :units=>294, :doors=>0, :versions=>9}
+1618: {:hallways=>228, :hallways_pending=>0, :hallways_svg=>0, :hallway_edges=>0, :attachments=>0, :suppressions=>0, :wayfinding_stops=>0, :elevators=>3, :elevators_stairs=>0, :tour_stops=>30, :units=>244, :doors=>233, :versions=>36} -> {:hallways=>233, :hallways_pending=>2, :hallways_svg=>1, :hallway_edges=>4, :attachments=>0, :suppressions=>0, :wayfinding_stops=>2, :elevators=>5, :elevators_stairs=>1, :tour_stops=>32, :units=>244, :doors=>233, :versions=>42}
+### 4. legacy reads + legacy mobile API after B2 writes
+500 917ms q=172 GET /communities ["ActionView::Template::Error", "No route matches {:action=>\"index\", :controller=>\"communities\"}, missing required keys: [:company_id]"]
+500 906ms q=172 GET /communities?search=demo ["ActionView::Template::Error", "No route matches {:action=>\"index\", :controller=>\"communities\"}, missing required keys: [:company_id]"]
+500 1096ms q=15 GET /communities/1411/edit ["ActionView::Template::Error", "No route matches {:action=>\"index\", :controller=>\"communities\", :id=>\"1411\"}, missing required keys: [:company_id]"]
+500 575ms q=10 GET /communities/1411/elevators ["ActionView::Template::Error", "Nil location provided. Can't build URI."]
+500 783ms q=16 GET /communities/1618/edit ["ActionView::Template::Error", "No route matches {:action=>\"index\", :controller=>\"communities\", :id=>\"1618\"}, missing required keys: [:company_id]"]
+500 566ms q=10 GET /communities/1618/elevators ["ActionView::Template::Error", "Nil location provided. Can't build URI."]
+404 332ms q=0 GET /api/self_tour/v1/communities/1411/wayfinding.json?tour_user_id=14793 
+404 492ms q=0 GET /api/self_tour/v1/communities/1411/wayfinding/tour_route.json?tour_user_id=14793 
+404 316ms q=0 GET /api/self_tour/v1/communities/1618/wayfinding.json?tour_user_id=12644 
+404 321ms q=0 GET /api/self_tour/v1/communities/1618/wayfinding/tour_route.json?tour_user_id=12644 
+404 351ms q=0 GET /api/self_tour/v1/communities/1412/wayfinding.json?tour_user_id= 
+404 453ms q=0 GET /api/self_tour/v1/communities/1412/wayfinding/tour_route.json?tour_user_id= 
+404 325ms q=0 GET /api/self_tour/v1/communities/2934/wayfinding.json?tour_user_id=14898 
+404 351ms q=0 GET /api/self_tour/v1/communities/2934/wayfinding/tour_route.json?tour_user_id=14898 
+404 331ms q=0 GET /api/self_tour/v1/communities/557/wayfinding.json?tour_user_id= 
+404 348ms q=0 GET /api/self_tour/v1/communities/557/wayfinding/tour_route.json?tour_user_id= 
+DONE 61 requests, 16 non-200/302: [[500, "/communities"], [500, "/communities?search=demo"], [500, "/communities/1411/edit"], [500, "/communities/1411/elevators"], [500, "/communities/1618/edit"], [500, "/communities/1618/elevators"], [404, "/api/self_tour/v1/communities/1411/wayfinding.json?tour_user_id=14793"], [404, "/api/self_tour/v1/communities/1411/wayfinding/tour_route.json?tour_user_id=14793"], [404, "/api/self_tour/v1/communities/1618/wayfinding.json?tour_user_id=12644"], [404, "/api/self_tour/v1/communities/1618/wayfinding/tour_route.json?tour_user_id=12644"], [404, "/api/self_tour/v1/communities/1412/wayfinding.json?tour_user_id="], [404, "/api/self_tour/v1/communities/1412/wayfinding/tour_route.json?tour_user_id="], [404, "/api/self_tour/v1/communities/2934/wayfinding.json?tour_user_id=14898"], [404, "/api/self_tour/v1/communities/2934/wayfinding/tour_route.json?tour_user_id=14898"], [404, "/api/self_tour/v1/communities/557/wayfinding.json?tour_user_id="], [404, "/api/self_tour/v1/communities/557/wayfinding/tour_route.json?tour_user_id="]]
+### 5. legacy committed writes
+500 932ms q=172 GET /communities ["ActionView::Template::Error", "No route matches {:action=>\"index\", :controller=>\"communities\"}, missing required keys: [:company_id]"]
+500 940ms q=172 GET /communities?search=demo ["ActionView::Template::Error", "No route matches {:action=>\"index\", :controller=>\"communities\"}, missing required keys: [:company_id]"]
+500 1119ms q=15 GET /communities/1411/edit ["ActionView::Template::Error", "No route matches {:action=>\"index\", :controller=>\"communities\", :id=>\"1411\"}, missing required keys: [:company_id]"]
+500 637ms q=10 GET /communities/1411/elevators ["ActionView::Template::Error", "Nil location provided. Can't build URI."]
+500 806ms q=16 GET /communities/1618/edit ["ActionView::Template::Error", "No route matches {:action=>\"index\", :controller=>\"communities\", :id=>\"1618\"}, missing required keys: [:company_id]"]
+500 566ms q=10 GET /communities/1618/elevators ["ActionView::Template::Error", "Nil location provided. Can't build URI."]
+DONE 78 requests, 6 non-200/302: [[500, "/communities"], [500, "/communities?search=demo"], [500, "/communities/1411/edit"], [500, "/communities/1411/elevators"], [500, "/communities/1618/edit"], [500, "/communities/1618/elevators"]]
+### 6. new reads + Tour App API after legacy writes
+500 959ms q=172 GET /communities ["ActionView::Template::Error", "No route matches {:action=>\"index\", :controller=>\"communities\"}, missing required keys: [:company_id]"]
+500 928ms q=172 GET /communities?search=demo ["ActionView::Template::Error", "No route matches {:action=>\"index\", :controller=>\"communities\"}, missing required keys: [:company_id]"]
+500 981ms q=15 GET /communities/1411/edit ["ActionView::Template::Error", "No route matches {:action=>\"index\", :controller=>\"communities\", :id=>\"1411\"}, missing required keys: [:company_id]"]
+500 591ms q=9 GET /communities/1411/elevators ["ActionView::Template::Error", "Nil location provided. Can't build URI."]
+500 709ms q=16 GET /communities/1618/edit ["ActionView::Template::Error", "No route matches {:action=>\"index\", :controller=>\"communities\", :id=>\"1618\"}, missing required keys: [:company_id]"]
+500 544ms q=9 GET /communities/1618/elevators ["ActionView::Template::Error", "Nil location provided. Can't build URI."]
+422 69ms q=44 GET /api/self_tour/v1/communities/2934/wayfinding/tour_route.json?tour_user_id=14898 
+422 11ms q=5 GET /api/self_tour/v1/communities/557/wayfinding.json?tour_user_id= 
+422 10ms q=5 GET /api/self_tour/v1/communities/557/wayfinding/tour_route.json?tour_user_id= 
+DONE 61 requests, 9 non-200/302: [[500, "/communities"], [500, "/communities?search=demo"], [500, "/communities/1411/edit"], [500, "/communities/1411/elevators"], [500, "/communities/1618/edit"], [500, "/communities/1618/elevators"], [422, "/api/self_tour/v1/communities/2934/wayfinding/tour_route.json?tour_user_id=14898"], [422, "/api/self_tour/v1/communities/557/wayfinding.json?tour_user_id="], [422, "/api/self_tour/v1/communities/557/wayfinding/tour_route.json?tour_user_id="]]
+### 7. state A3
+### CHAIN DONE

@@ -1,0 +1,23 @@
+            t             | count  
+--------------------------+--------
+ amenities                |  56194
+ building_starting_points |    191
+ communities              |   4832
+ companies                |    224
+ doors                    |   1823
+ elevators                |    196
+ floorplans               |  70134
+ floorplates              |   2727
+ hallways                 |   4353
+ hallways_selected        |    200
+ path_points              |  15703
+ paths                    |   2991
+ schedual_tours           |   6682
+ sitemaps                 |    840
+ tour_stops               |   6858
+ tours                    |   1883
+ units                    | 558566
+ users                    |    884
+ versions                 |     97
+(19 rows)
+

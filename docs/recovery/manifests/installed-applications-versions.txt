@@ -1,0 +1,22 @@
+Android Studio | 2026.2
+AssetSonarAgent | 1.3.1
+Claude | 3.6556.2
+Cursor | 3.26.13
+Google Chrome | 156.0.8078.76
+Keynote | 14.2
+MySQLWorkbench | 8.0.45.CE
+NeatDownloadManager | 1.3
+Numbers | 14.2
+Pages | 14.2
+Postman | 12.32.4
+Raycast | 1.104.32
+Safari | 27.0.1
+Slack | 4.51.180
+Smart STB | 
+The Unarchiver | 4.3.9
+Traffic Racer | 
+WhatsApp | 26.36.74
+Xcode | 27.0
+iTerm | 3.7.6
+Claude Code URL Handler | 
+zoom.us | 7.1.9 (88375)

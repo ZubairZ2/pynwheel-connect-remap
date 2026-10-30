@@ -1,0 +1,10 @@
+[DEPRECATION] `sortable_fetch` is deprecated. Please use Enumerable#each_with_sortable_id instead.
+[WARNING] Your uploader's #filename method defined at /private/tmp/claude-501/-Users-zubairzulifqar-pynwheel-staging/7939f5fc-1ebd-48f9-9061-0bdecf73ef90/scratchpad/legacy/app/uploaders/avatar_uploader.rb:5 didn't return value after storing the file.
+It's likely that the method is safeguarded with `if original_filename`, which were necessary for pre-3.x CarrierWave but is no longer needed.
+Removing it is recommended, as it is known to cause issues depending on the use case: https://github.com/carrierwaveuploader/carrierwave/issues/2708
+{"label":"legacy process on OLD schema","hallway_columns_cached":9,"map":200,"shortest":[200,9108],"tour_setup":200,"plotexp":200,"point_save":[200,58,9],"update":200,"delete":200,"add_elevator":200,"delete_elevator_stop":302,"display_stop":200,"unit_update":302,"db_schema":"20260923140000"}
+{"migrated_underneath":true}
+[DEPRECATION] `sortable_fetch` is deprecated. Please use Enumerable#each_with_sortable_id instead.
+{"label":"SAME legacy process, schema migrated underneath (no restart)","hallway_columns_cached":9,"map":200,"shortest":[200,9108],"tour_setup":200,"plotexp":200,"point_save":[200,58,17],"update":200,"delete":200,"add_elevator":200,"delete_elevator_stop":500,"display_stop":200,"unit_update":302,"db_schema":"20261003100011"}
+[DEPRECATION] `sortable_fetch` is deprecated. Please use Enumerable#each_with_sortable_id instead.
+{"label":"same process after reset_column_information (= what a restart sees)","hallway_columns_cached":17,"map":200,"shortest":[200,10088],"tour_setup":200,"plotexp":200,"point_save":[200,58,17],"update":200,"delete":200,"add_elevator":200,"delete_elevator_stop":302,"display_stop":200,"unit_update":302,"db_schema":"20261003100011"}

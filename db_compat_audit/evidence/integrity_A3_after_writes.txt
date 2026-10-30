@@ -1,0 +1,109 @@
+orphan floorplates (community missing)
+ count 
+-------
+     0
+(1 row)
+
+orphan units (community missing)
+ count 
+-------
+  2160
+(1 row)
+
+units pointing at missing floorplate
+ count 
+-------
+    94
+(1 row)
+
+orphan amenities (community missing)
+ count 
+-------
+ 50492
+(1 row)
+
+orphan tour_stops (tour missing)
+ count 
+-------
+     0
+(1 row)
+
+tour_stops whose record is missing (unit/amenity/elevator/bsp)
+        stop_type        | count 
+-------------------------+-------
+ building_starting_point |    61
+ elevator                |    40
+ unit                    |    19
+(3 rows)
+
+duplicate tour stops (same tour, type, id)
+ count 
+-------
+    19
+(1 row)
+
+orphan paths (tour_stop missing)
+ count 
+-------
+     0
+(1 row)
+
+paths by map_path_type
+     map_path_type     | count 
+-----------------------+-------
+ Amenity               |  1397
+ BuildingStartingPoint |   482
+ Elevator              |   382
+ Tour                  |     4
+ Unit                  |   661
+                       |    65
+(6 rows)
+
+orphan path_points (path missing)
+ count 
+-------
+     0
+(1 row)
+
+orphan hallways (parent missing)
+ count 
+-------
+   742
+(1 row)
+
+hallways with dangling next_points ids
+ count 
+-------
+     5
+(1 row)
+
+hallways self loops
+ count 
+-------
+    50
+(1 row)
+
+levels with selected count != 1 (among levels that have hallways)
+ count 
+-------
+     8
+(1 row)
+
+duplicate logical hallway points (same level, same rounded coords)
+ count 
+-------
+     0
+(1 row)
+
+elevators pointing at missing floorplate
+ count 
+-------
+     0
+(1 row)
+
+units with floor outside floorplate range (informational)
+ count 
+-------
+ 22279
+(1 row)
+

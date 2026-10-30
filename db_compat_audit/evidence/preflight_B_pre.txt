@@ -1,0 +1,89 @@
+== hallways rows total
+ count 
+-------
+  4343
+(1 row)
+
+== MUST BE 0: hallways with NaN/Infinity or |coord| > 2^31-1 (index_hallways_natural_key casts round(x)::int)
+ count 
+-------
+     0
+(1 row)
+
+== hallways with NULL coordinates (index tolerates NULL; informational)
+ count 
+-------
+     0
+(1 row)
+
+== hallways orphans (parent floorplate/sitemap missing) -> backfill leaves community_id NULL
+ parent_type | count 
+-------------+-------
+ Floorplate  |   519
+ Sitemap     |   223
+(2 rows)
+
+== hallways by parent_type
+ parent_type | count 
+-------------+-------
+ Floorplate  |  3512
+ Sitemap     |   831
+(2 rows)
+
+== elevators rows (NOT NULL defaults added: kind/accessible/floor_positions)
+ count 
+-------
+   192
+(1 row)
+
+== floorplates / sitemaps / tours rows (NOT NULL default columns added)
+  fp  | sm  |  t   |  ts  |   u    |  d   
+------+-----+------+------+--------+------
+ 2727 | 840 | 1883 | 6854 | 558566 | 1823
+(1 row)
+
+== table sizes for lock/backfill estimate
+   relname   |  size   | n_live_tup 
+-------------+---------+------------
+ doors       | 408 kB  |          0
+ elevators   | 136 kB  |          0
+ floorplates | 5448 kB |          0
+ hallways    | 1360 kB |          0
+ sitemaps    | 1088 kB |          0
+ tour_stops  | 992 kB  |          0
+ tours       | 568 kB  |          0
+ units       | 249 MB  |          0
+ versions    | 88 kB   |          0
+(9 rows)
+
+== name collisions with new tables (must be empty)
+ table_name 
+------------
+(0 rows)
+
+== column collisions (must be empty)
+ table_name | column_name 
+------------+-------------
+(0 rows)
+
+== existing triggers on affected tables (expect none / list)
+ event_object_table | trigger_name 
+--------------------+--------------
+(0 rows)
+
+== views depending on affected tables
+ relname 
+---------
+(0 rows)
+
+== schema_migrations state
+      max       
+----------------
+ 20260923140000
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+

@@ -1,0 +1,160 @@
+== 20261003100001 AddWayfindingColumnsToHallways: migrating ===================
+-- column_exists?(:hallways, :source)
+   -> 0.0094s
+-- add_column(:hallways, :source, :string, {:null=>false, :default=>"manual"})
+   -> 0.0062s
+-- column_exists?(:hallways, :review_status)
+   -> 0.0016s
+-- add_column(:hallways, :review_status, :string, {:null=>false, :default=>"confirmed"})
+   -> 0.0012s
+-- column_exists?(:hallways, :confidence)
+   -> 0.0014s
+-- add_column(:hallways, :confidence, :float)
+   -> 0.0008s
+-- column_exists?(:hallways, :space)
+   -> 0.0014s
+-- add_column(:hallways, :space, :string, {:null=>false, :default=>"raster"})
+   -> 0.0014s
+-- column_exists?(:hallways, :community_id)
+   -> 0.0016s
+-- add_column(:hallways, :community_id, :integer)
+   -> 0.0007s
+-- column_exists?(:hallways, :detection_run_id)
+   -> 0.0014s
+-- add_column(:hallways, :detection_run_id, :bigint)
+   -> 0.0007s
+-- column_exists?(:hallways, :confirmed_at)
+   -> 0.0014s
+-- add_column(:hallways, :confirmed_at, :datetime)
+   -> 0.0008s
+-- column_exists?(:hallways, :created_by_user_id)
+   -> 0.0014s
+-- add_column(:hallways, :created_by_user_id, :integer)
+   -> 0.0011s
+-- index_exists?(:hallways, :community_id)
+   -> 0.0048s
+-- add_index(:hallways, :community_id)
+   -> 0.0076s
+-- index_exists?(:hallways, [:parent_type, :parent_id, :review_status, :space], {:name=>"index_hallways_routable_lookup"})
+   -> 0.0020s
+-- add_index(:hallways, [:parent_type, :parent_id, :review_status, :space], {:name=>"index_hallways_routable_lookup"})
+   -> 0.0135s
+-- index_name_exists?(:hallways, "index_hallways_natural_key")
+   -> 0.0017s
+-- add_index(:hallways, "parent_type, parent_id, space, (round(x_plot)::int), (round(y_plot)::int)", {:name=>"index_hallways_natural_key"})
+   -> 0.0098s
+-- execute("UPDATE hallways h SET community_id = f.community_id\n  FROM floorplates f\n WHERE h.parent_type = 'Floorplate' AND h.parent_id = f.id AND h.community_id IS NULL;\n")
+   -> 0.0615s
+-- execute("UPDATE hallways h SET community_id = s.community_id\n  FROM sitemaps s\n WHERE h.parent_type = 'Sitemap' AND h.parent_id = s.id AND h.community_id IS NULL;\n")
+   -> 0.0186s
+== 20261003100001 AddWayfindingColumnsToHallways: migrated (0.1527s) ==========
+
+== 20261003100002 CreateHallwayEdges: migrating ===============================
+-- create_table(:hallway_edges)
+   -> 0.0097s
+-- add_index(:hallway_edges, [:from_hallway_id, :to_hallway_id], {:unique=>true})
+   -> 0.0014s
+-- add_index(:hallway_edges, :to_hallway_id)
+   -> 0.0010s
+-- add_index(:hallway_edges, [:parent_type, :parent_id])
+   -> 0.0010s
+-- add_index(:hallway_edges, :detection_run_id)
+   -> 0.0013s
+-- add_foreign_key(:hallway_edges, :hallways, {:column=>:from_hallway_id, :on_delete=>:cascade})
+   -> 0.0033s
+-- add_foreign_key(:hallway_edges, :hallways, {:column=>:to_hallway_id, :on_delete=>:cascade})
+   -> 0.0011s
+-- add_check_constraint(:hallway_edges, "from_hallway_id < to_hallway_id", {:name=>"hallway_edges_canonical_pair"})
+   -> 0.0010s
+== 20261003100002 CreateHallwayEdges: migrated (0.0199s) ======================
+
+== 20261003100003 CreateHallwaySuppressions: migrating ========================
+-- create_table(:hallway_suppressions)
+   -> 0.0046s
+-- add_index(:hallway_suppressions, [:parent_type, :parent_id, :kind])
+   -> 0.0013s
+== 20261003100003 CreateHallwaySuppressions: migrated (0.0060s) ===============
+
+== 20261003100004 CreateHallwayAttachments: migrating =========================
+-- create_table(:hallway_attachments)
+   -> 0.0035s
+-- add_index(:hallway_attachments, [:attachable_type, :attachable_id, :parent_type, :parent_id], {:unique=>true, :name=>"index_hallway_attachments_unique_per_level"})
+   -> 0.0010s
+-- add_index(:hallway_attachments, [:parent_type, :parent_id])
+   -> 0.0010s
+-- add_index(:hallway_attachments, :hallway_id)
+   -> 0.0009s
+-- add_foreign_key(:hallway_attachments, :hallways, {:column=>:hallway_id, :on_delete=>:cascade})
+   -> 0.0011s
+-- add_check_constraint(:hallway_attachments, "(mode = 'detached' AND hallway_id IS NULL) OR (mode = 'explicit' AND hallway_id IS NOT NULL)", {:name=>"hallway_attachments_mode_consistency"})
+   -> 0.0006s
+== 20261003100004 CreateHallwayAttachments: migrated (0.0083s) ================
+
+== 20261003100005 CreateHallwayDetectionRuns: migrating =======================
+-- create_table(:hallway_detection_runs)
+   -> 0.0043s
+-- add_index(:hallway_detection_runs, :client_request_id, {:unique=>true})
+   -> 0.0010s
+-- add_index(:hallway_detection_runs, [:parent_type, :parent_id])
+   -> 0.0010s
+== 20261003100005 CreateHallwayDetectionRuns: migrated (0.0063s) ==============
+
+== 20261003100006 CreateWayfindingStops: migrating ============================
+-- create_table(:wayfinding_stops)
+   -> 0.0042s
+-- add_index(:wayfinding_stops, :community_id)
+   -> 0.0010s
+-- add_index(:wayfinding_stops, [:map_type, :map_id])
+   -> 0.0012s
+-- add_index(:wayfinding_stops, [:community_id, :kind])
+   -> 0.0010s
+-- add_foreign_key(:wayfinding_stops, :hallways, {:column=>:hallway_id, :on_delete=>:nullify})
+   -> 0.0011s
+== 20261003100006 CreateWayfindingStops: migrated (0.0086s) ===================
+
+== 20261003100007 AddKindAccessibleFloorPositionsToElevators: migrating =======
+-- add_column(:elevators, :kind, :string, {:null=>false, :default=>"elevator"})
+   -> 0.0026s
+-- add_column(:elevators, :accessible, :boolean, {:null=>false, :default=>true})
+   -> 0.0008s
+-- add_column(:elevators, :floor_positions, :jsonb, {:null=>false, :default=>{}})
+   -> 0.0008s
+-- add_index(:elevators, [:community_id, :kind])
+   -> 0.0012s
+== 20261003100007 AddKindAccessibleFloorPositionsToElevators: migrated (0.0054s) 
+
+== 20261003100008 AddNoteToDoors: migrating ===================================
+-- add_column(:doors, :note, :text)
+   -> 0.0026s
+== 20261003100008 AddNoteToDoors: migrated (0.0026s) ==========================
+
+== 20261003100009 AddWayfindingVersionTransformScaleToFloorplatesAndSitemaps: migrating 
+-- add_column(:floorplates, :wayfinding_version, :integer, {:null=>false, :default=>0})
+   -> 0.0015s
+-- add_column(:floorplates, :svg_to_image_transform, :jsonb)
+   -> 0.0006s
+-- add_column(:floorplates, :scale_ft_per_px, :decimal, {:precision=>10, :scale=>6})
+   -> 0.0006s
+-- add_column(:sitemaps, :wayfinding_version, :integer, {:null=>false, :default=>0})
+   -> 0.0016s
+-- add_column(:sitemaps, :svg_to_image_transform, :jsonb)
+   -> 0.0006s
+-- add_column(:sitemaps, :scale_ft_per_px, :decimal, {:precision=>10, :scale=>6})
+   -> 0.0006s
+== 20261003100009 AddWayfindingVersionTransformScaleToFloorplatesAndSitemaps: migrated (0.0056s) 
+
+== 20261003100010 AddTourSetupVersionToToursAndDurationToTourStops: migrating =
+-- add_column(:tours, :tour_setup_version, :integer, {:null=>false, :default=>0})
+   -> 0.0020s
+-- add_column(:tour_stops, :duration_minutes, :integer)
+   -> 0.0007s
+== 20261003100010 AddTourSetupVersionToToursAndDurationToTourStops: migrated (0.0027s) 
+
+== 20261003100011 AddPlottingIndexes: migrating ===============================
+-- add_index(:tour_stops, [:stop_type, :stop_id], {:algorithm=>:concurrently, :if_not_exists=>true})
+   -> 0.0101s
+-- add_index(:units, :floorplate_id, {:algorithm=>:concurrently, :if_not_exists=>true})
+   -> 0.3064s
+== 20261003100011 AddPlottingIndexes: migrated (0.3166s) ======================
+
+$HOME/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec rails db:migrate  5.90s user 2.87s system 83% cpu 10.485 total

@@ -1,0 +1,4 @@
+Package    Version
+---------- -------
+pip        26.2.1
+pywatchman 4.0.0

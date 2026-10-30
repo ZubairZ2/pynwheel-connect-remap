@@ -1,0 +1,29 @@
+# Java and Gradle — captured 2026-10-30
+JAVA_HOME in shell: <unset>
+java on PATH: /usr/bin/java -> openjdk version "21.0.11" 2026-04-21
+
+Matching Java Virtual Machines (1):
+    21.0.11 (arm64) "JetBrains s.r.o." - "JBR-21.0.11+10-1163.116-nomod 21.0.11" /Users/zubairzulifqar/Library/Java/JavaVirtualMachines/jbr-21.0.11/Contents/Home
+/Users/zubairzulifqar/Library/Java/JavaVirtualMachines/jbr-21.0.11/Contents/Home
+
+## ~/Library/Java/JavaVirtualMachines
+jbr-21.0.11
+## ~/.gradle/jdks
+CACHEDIR.TAG
+## Homebrew JDKs
+openjdk@17 17.0.20.1
+
+## Android Studio JDK table
+<name value="Android API 37.0, extension level 22 Platform"
+homePath value="$USER_HOME$/Library/Android/sdk"
+<name value="jbr-21"
+homePath value="$USER_HOME$/Library/Java/JavaVirtualMachines/jbr-21.0.11/Contents/Home"
+<name value="Android API 36.0, extension level 17 Platform"
+homePath value="$USER_HOME$/Library/Android/sdk"
+
+## gradle: no standalone gradle on PATH; projects use their wrapper
+tour-app/android wrapper: gradle-8.14.3-all.zip
+pyn-tour-old/android wrapper: gradle-7.6.4-all.zip
+
+## ~/.gradle/gradle.properties keys (values withheld)
+iglooGitlabToken=<withheld>
