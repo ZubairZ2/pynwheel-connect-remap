@@ -73,3 +73,25 @@
 only after checklist steps 1–3: the Raycast export, the policy decisions, and the encrypted archive
 verified on a destination other than this Mac. Those steps are yours and take about fifteen minutes plus
 the copy time.
+
+## Verification record (October 30, 2026, 19:22 PKT)
+
+Pushed by the owner's approval and checked three independent ways:
+
+| Branch | Commit on origin (`git ls-remote`) | Also seen by the unauthenticated GitHub API |
+|---|---|---|
+| `temporary/local_unpushed_code_branch` | `e65d2e2d21a80981571aefabb7b6285ce5e256f3` | yes |
+| `temporary/stash-igloohome-ios-plugin-prep-2026-10-30` | `dc1cbfd1c822c213265c90dd4666581a0538d572` (files: `tour-app/ios/App/App.xcodeproj/project.pbxproj`, `tour-app/ios/App/App/Info.plist`) | yes |
+| `fix/integration_btw_locks_visitors_settings_mobile_app` | `197ddc029468098e0485226652983c737c82b4bf` | yes |
+
+Fresh clone test: `git clone --branch temporary/local_unpushed_code_branch --single-branch git@github-work:ZubairZ2/pynwheel-connect-remap.git`
+into a scratch folder produced HEAD `e65d2e2d2`; its tree listed the same 4,450 paths as the local branch,
+the `docs/recovery` + `scripts/recovery` content hashed identically, `docs/recovery` held 14 documents, 18 manifests,
+the stash patch and `launch.json.example`, `scripts/recovery` the 6 scripts, and none of `credentails.md`,
+`config/application.yml`, `pyn-connect-web/.env.local`, `tour-app/.env.production.local` or the design HTML
+exports existed in it. gitleaks over the clone's commit: no leaks. (Fetching further branches from inside that
+scratch clone failed with a key error that is a sandbox limitation of the session's scratch folder, not of
+GitHub: the same fetch from the repository checkout succeeds, and the API confirms both branches.)
+
+The local backup bundle `05_git_bundles/pynwheel-staging-all-refs.bundle` was regenerated after this commit and
+lists all three branches; `SHA256SUMS` re-checked clean.
